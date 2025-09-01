@@ -845,6 +845,17 @@
   .outerWrapperOceanDepths { background: linear-gradient(135deg, #000046, #1cb5e0) !important; }
   .outerWrapperDarkWine { background: linear-gradient(135deg, #200122, #6f0000) !important; }
 
+  /* Padrões */
+  .outerWrapperBlueWhiteStripes {
+    background: repeating-linear-gradient(
+      90deg,
+      #134496,
+      #134496 34px,
+      #ffffff 34px,
+      #ffffff 68px
+    ) !important;
+  }
+
   // Ajustes de contraste para texto em colunas coloridas (fundos escuros)
   .outerWrapperBerryRed .headerName,
   .outerWrapperPumpkinOrange .headerName,
@@ -873,6 +884,13 @@
   .outerWrapperDarkWine .headerName,
   .outerWrapperCornflowerBlue .headerName {
     color: #ffffff !important;
+  }
+
+  /* Ajuste de contraste específico para riscas */
+  .outerWrapperBlueWhiteStripes .headerName {
+    color: #134496 !important;
+    font-weight: 700 !important;
+    text-shadow: 0 0 2px #ffffff, 0 0 3px #ffffff !important;
   }
 
   // Ajustes para colunas claras (fundos claros)
@@ -929,6 +947,16 @@
     &:hover {
       background: rgba(255, 255, 255, 0.2) !important;
       color: #ffffff !important;
+    }
+  }
+
+  /* Ajuste de contraste específico para riscas */
+  .outerWrapperBlueWhiteStripes .headerButton,
+  .outerWrapperBlueWhiteStripes .headerIcon {
+    color: #134496 !important;
+    text-shadow: 0 0 2px #ffffff, 0 0 3px #ffffff !important;
+     &:hover {
+      background: rgba(255, 255, 255, 0.5) !important;
     }
   }
 

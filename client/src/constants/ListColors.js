@@ -4,49 +4,72 @@
  */
 
 export default [
+  // Vermelhos e Rosas
   'berry-red',
-  'pumpkin-orange',
-  'lagoon-blue',
   'pink-tulip',
-  'light-mud',
-  'orange-peel',
-  'bright-moss',
-  'antique-blue',
-  'dark-granite',
-  'turquoise-sea',
-  // Novas cores inspiradas em Hogwarts e brasões
   'gryffindor-red',
-  'slytherin-green',
+  'bright-coral',
+  'soft-pink',
+  'dusty-rose',
+  'pale-dogwood',
+
+  // Laranjas e Amarelos
+  'pumpkin-orange',
+  'orange-peel',
+  'phoenix-orange',
+  'peach',
   'hufflepuff-gold',
-  'ravenclaw-blue',
-  'hogwarts-purple',
   'golden-snitch',
+  'light-mud',
+
+  // Verdes
+  'bright-moss',
+  'slytherin-green',
+  'mint-green',
+  'turquoise-sea',
+  'deep-teal',
+
+  // Azuis
+  'lagoon-blue',
+  'antique-blue',
+  'ravenclaw-blue',
+  'powder-blue',
+  'cornflower-blue',
+
+  // Roxos
+  'hogwarts-purple',
+  'lavender',
+  'lilac',
+
+  // Cinzentos e Neutros
+  'dark-granite',
+  'slate-gray',
   'magical-silver',
   'dark-wizard',
-  'phoenix-orange',
   'unicorn-white',
-  'deep-teal',
-  'bright-coral',
-  'dusty-rose',
-  'slate-gray',
-  'soft-pink',
-  'lavender',
-  'powder-blue',
-  'mint-green',
-  'peach',
-  'lilac',
-  'cornflower-blue',
-  'pale-dogwood',
-  'ocean-breeze',
+
+  // --- Gradientes ---
+
+  // Gradientes - Rosas e Roxos
   'pink-purple-dream',
+  'purple-dusk',
   'galaxy-dream',
+  'dark-wine',
+
+  // Gradientes - Multi-cor e Pôr do Sol
   'vibrant-sunset',
   'pastel-dream',
-  'moonlit-asteroid',
-  'cool-sky',
-  'emerald-water',
-  'purple-dusk',
-  'deep-space',
+
+  // Gradientes - Azuis e Verdes
+  'ocean-breeze',
   'ocean-depths',
-  'dark-wine',
+  'emerald-water',
+  'cool-sky',
+
+  // Gradientes - Escuros
+  'moonlit-asteroid',
+  'deep-space',
+
+  // --- Padrões ---
+  'blue-white-stripes',
 ];

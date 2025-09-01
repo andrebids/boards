@@ -956,6 +956,17 @@
   .backgroundCornflowerBlue { background: #6495ED !important; }
   .backgroundPaleDogwood { background: #EDDCD2 !important; }
 
+  /* Padrão para o seletor de cores */
+  .backgroundBlueWhiteStripes {
+    background: repeating-linear-gradient(
+      90deg,
+      #134496,
+      #134496 8px,
+      #ffffff 8px,
+      #ffffff 16px
+    ) !important;
+  }
+
   .backgroundOceanBreeze {
     background: linear-gradient(135deg, #2328ff, #a1ffaa) !important;
   }
