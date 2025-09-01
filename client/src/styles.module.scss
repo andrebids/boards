@@ -942,6 +942,68 @@
     background: #f8f8ff !important;
   }
 
+  /* Novas cores sólidas adicionadas - para o seletor de cores */
+  .backgroundDeepTeal { background: #005B5B !important; }
+  .backgroundBrightCoral { background: #FF6F61 !important; }
+  .backgroundDustyRose { background: #D8A0A0 !important; }
+  .backgroundSlateGray { background: #6D8393 !important; }
+  .backgroundSoftPink { background: #FFB6C1 !important; }
+  .backgroundLavender { background: #E6E6FA !important; }
+  .backgroundPowderBlue { background: #B0E0E6 !important; }
+  .backgroundMintGreen { background: #98FB98 !important; }
+  .backgroundPeach { background: #FFDAB9 !important; }
+  .backgroundLilac { background: #C8A2C8 !important; }
+  .backgroundCornflowerBlue { background: #6495ED !important; }
+  .backgroundPaleDogwood { background: #EDDCD2 !important; }
+
+  .backgroundOceanBreeze {
+    background: linear-gradient(135deg, #2328ff, #a1ffaa) !important;
+  }
+
+  .backgroundPinkPurpleDream {
+    background: linear-gradient(135deg, #f6a4d4, #a545ff) !important;
+  }
+
+  .backgroundGalaxyDream {
+    background: linear-gradient(135deg, #060087, #f289ff) !important;
+  }
+
+  .backgroundVibrantSunset {
+    background: linear-gradient(135deg, #fff845, #ff3389, #9f2eff) !important;
+  }
+
+  .backgroundPastelDream {
+    background: linear-gradient(135deg, #ff5994, #4f4fff, #89ffbe) !important;
+  }
+
+  .backgroundMoonlitAsteroid {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364) !important;
+  }
+
+  .backgroundCoolSky {
+    background: linear-gradient(135deg, #2980b9, #6dd5fa, #ffffff) !important;
+  }
+
+  .backgroundEmeraldWater {
+    background: linear-gradient(135deg, #1f4037, #99f2c8) !important;
+  }
+
+  .backgroundPurpleDusk {
+    background: linear-gradient(135deg, #ad5389, #3c1053) !important;
+  }
+
+  .backgroundDeepSpace {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e) !important;
+  }
+
+  .backgroundOceanDepths {
+    background: linear-gradient(135deg, #000046, #1cb5e0) !important;
+  }
+
+  .backgroundDarkWine {
+    background: linear-gradient(135deg, #200122, #6f0000) !important;
+  }
+
   .colorGryffindorRed {
     color: #740001 !important;
   }
@@ -980,6 +1042,68 @@
 
   .colorUnicornWhite {
     color: #f8f8ff !important;
+  }
+
+  /* Novas cores sólidas */
+  .colorDeepTeal {
+    color: #ffffff !important;
+  }
+  .colorBrightCoral {
+    color: #ffffff !important;
+  }
+  .colorDustyRose {
+    color: #17394d !important;
+  }
+  .colorSlateGray {
+    color: #ffffff !important;
+  }
+
+  .colorOceanBreeze {
+    color: #ffffff !important;
+  }
+
+  .colorPinkPurpleDream {
+    color: #ffffff !important;
+  }
+
+  .colorGalaxyDream {
+    color: #ffffff !important;
+  }
+
+  .colorVibrantSunset {
+    color: #17394d !important;
+  }
+
+  .colorPastelDream {
+    color: #ffffff !important;
+  }
+
+  .colorMoonlitAsteroid {
+    color: #ffffff !important;
+  }
+
+  .colorCoolSky {
+    color: #17394d !important;
+  }
+
+  .colorEmeraldWater {
+    color: #ffffff !important;
+  }
+
+  .colorPurpleDusk {
+    color: #ffffff !important;
+  }
+
+  .colorDeepSpace {
+    color: #ffffff !important;
+  }
+
+  .colorOceanDepths {
+    color: #ffffff !important;
+  }
+
+  .colorDarkWine {
+    color: #ffffff !important;
   }
 }
 

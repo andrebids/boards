@@ -1,49 +1,23 @@
-# Contributing to PLANKA
+# Como Contribuir
 
-First off, thanks for taking the time to contribute!
+Agradecemos o seu interesse em contribuir para este projeto.
 
-## Code of Conduct
+## Código de Conduta
 
-This project and everyone participating in it is governed by the [PLANKA Code of Conduct](https://github.com/plankanban/planka/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+Este projeto e todos os que nele participam são regidos pelo nosso [Código de Conduta](CODE_OF_CONDUCT.md). Ao participar, espera-se que cumpra este código.
 
-## How Can I Contribute?
+## Reportar Problemas ou Sugerir Melhorias
 
-### Reporting Bugs
+A forma preferencial de reportar um problema (`bug`) ou sugerir uma melhoria é através da criação de uma "issue" neste repositório do GitHub. Antes de criar uma nova "issue", por favor, verifique se já não existe uma semelhante.
 
-Feel free to create a bug report as a new issue on GitHub. Before creating, please check if there is already existing one. When creating a bug report, please include as many details as possible.
+## Guias de Estilo
 
-### Suggesting Enhancements
+### Mensagens de Commit
 
-Feel free to create an enhancement suggestion as a new issue on GitHub. Before creating, please check if there is already existing one. When creating an enhancement suggestion, please include as many details as possible.
+*   As mensagens de commit devem ser claras e descritivas.
+*   Use o tempo verbal no imperativo (ex: "Adiciona funcionalidade" em vez de "Adicionada funcionalidade").
+*   O corpo da mensagem deve explicar o "quê" e o "porquê" da alteração, não o "como".
 
-### Pull Requests
+### Estilo de Código
 
-Before submitting a pull request please discuss with the core team by creating or commenting in an issue on GitHub – we'd also love to hear from you in the discussions. This way we can ensure that an approach is agreed on before code is written. This will result in a much higher liklihood of your code being accepted.
-
-If you’re looking for ways to get started, here's a list of ways to help us improve PLANKA:
-
-- [Translation](https://github.com/plankanban/planka/issues/66) into other languages
-- Issues with [`good first issue`](https://github.com/plankanban/planka/labels/good%20first%20issue) label
-- Performance improvements, both on client and server
-- Developer happiness and documentation
-- Bugs and other issues listed on GitHub
-
-## Styleguides
-
-### Git Commit Messages
-
-Commit messages should follow the [commit message convention](https://conventionalcommits.org), so changelogs could be generated automatically by that.
-
-Additional rules:
-
-- Separate subject from body with a blank line
-- Limit the subject line to 70 characters
-- Capitalize the subject line
-- Do not end the subject line with a period
-- Use the imperative mood in the subject line
-- Use the body to explain what and why vs. how
-- Each commit should be a single, stable change
-
-### JavaScript
-
-All JavaScript code should follow this [JavaScript style guide](https://github.com/airbnb/javascript). The pre-commit hook will help you find linting errors before committing.
+O projeto utiliza `linters` para garantir um estilo de código consistente. Por favor, certifique-se de que o seu código passa nas verificações do `linter` antes de o submeter.

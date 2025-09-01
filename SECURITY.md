@@ -1,13 +1,11 @@
-# Security Policy
+# Política de Segurança
 
-## Supported Versions
+## Reportar uma Vulnerabilidade
 
-Most recent release.
+Levamos a segurança deste projeto muito a sério. Se descobrir uma vulnerabilidade de segurança, pedimos que a reporte de forma responsável.
 
-## Reporting a Vulnerability
+Por favor, **NÃO crie "issues" públicas no GitHub** para reportar vulnerabilidades de segurança.
 
-Please report any security issues you discovered to [security@planka.group](mailto:security@planka.group). If the issue is confirmed, we will release a patch as soon as possible depending on complexity.
+Em vez disso, contacte diretamente os responsáveis pelo repositório para que o problema possa ser analisado e corrigido.
 
-**Do NOT create public issues on GitHub for security vulnerabilities.**
-
-Thank you for your contribution!
+Agradecemos a sua contribuição para manter este projeto seguro.

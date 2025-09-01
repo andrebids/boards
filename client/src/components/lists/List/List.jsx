@@ -29,7 +29,6 @@ import PlusMathIcon from '../../../assets/images/plus-math-icon.svg?react';
 import { processSupportedFiles } from '../../../utils/file-helpers';
 
 import styles from './List.module.scss';
-import globalStyles from '../../../styles.module.scss';
 
 const List = React.memo(({ id, index }) => {
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);

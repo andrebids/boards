@@ -295,6 +295,193 @@
     }
   }
 
+  .addCardButtonOceanBreeze {
+    background: linear-gradient(135deg, #2328ff, #a1ffaa) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(90%);
+    }
+  }
+
+  .addCardButtonPinkPurpleDream {
+    background: linear-gradient(135deg, #f6a4d4, #a545ff) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(90%);
+    }
+  }
+
+  .addCardButtonGalaxyDream {
+    background: linear-gradient(135deg, #060087, #f289ff) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(90%);
+    }
+  }
+
+  .addCardButtonVibrantSunset {
+    background: linear-gradient(135deg, #fff845, #ff3389, #9f2eff) !important;
+    border: none !important;
+    color: #17394d !important;
+    fill: #17394d !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(90%);
+    }
+  }
+
+  .addCardButtonPastelDream {
+    background: linear-gradient(135deg, #ff5994, #4f4fff, #89ffbe) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(90%);
+    }
+  }
+
+  .addCardButtonMoonlitAsteroid {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(120%);
+    }
+  }
+
+  .addCardButtonCoolSky {
+    background: linear-gradient(135deg, #2980b9, #6dd5fa, #ffffff) !important;
+    border: none !important;
+    color: #17394d !important;
+    fill: #17394d !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(90%);
+    }
+  }
+
+  .addCardButtonPurpleDusk {
+    background: linear-gradient(135deg, #ad5389, #3c1053) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(120%);
+    }
+  }
+
+  .addCardButtonOceanDepths {
+    background: linear-gradient(135deg, #000046, #1cb5e0) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(120%);
+    }
+  }
+
+  .addCardButtonDarkWine {
+    background: linear-gradient(135deg, #200122, #6f0000) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(120%);
+    }
+  }
+
+  .addCardButtonEmeraldWater {
+    background: linear-gradient(135deg, #1f4037, #99f2c8) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(120%);
+    }
+  }
+
+  /* Novas cores sólidas para botões */
+  .addCardButtonDeepTeal {
+    background: #005B5B !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    &:hover {
+      background: #004C4C !important;
+    }
+  }
+  .addCardButtonBrightCoral {
+    background: #FF6F61 !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    &:hover {
+      background: #E66456 !important;
+    }
+  }
+  .addCardButtonDustyRose {
+    background: #D8A0A0 !important;
+    color: #17394d !important;
+    fill: #17394d !important;
+    &:hover {
+      background: #C39090 !important;
+    }
+  }
+  .addCardButtonSlateGray {
+    background: #6D8393 !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    &:hover {
+      background: #5E7282 !important;
+    }
+  }
+
+  /* Novas cores suaves para botões */
+  .addCardButtonSoftPink { background: #FFB6C1 !important; color: #17394d !important; fill: #17394d !important; &:hover { background: #E6A3B0 !important; } }
+  .addCardButtonLavender { background: #E6E6FA !important; color: #17394d !important; fill: #17394d !important; &:hover { background: #D1D1E6 !important; } }
+  .addCardButtonPowderBlue { background: #B0E0E6 !important; color: #17394d !important; fill: #17394d !important; &:hover { background: #9DCBCD !important; } }
+  .addCardButtonMintGreen { background: #98FB98 !important; color: #17394d !important; fill: #17394d !important; &:hover { background: #87E287 !important; } }
+  .addCardButtonPeach { background: #FFDAB9 !important; color: #17394d !important; fill: #17394d !important; &:hover { background: #E6C5A8 !important; } }
+  .addCardButtonLilac { background: #C8A2C8 !important; color: #17394d !important; fill: #17394d !important; &:hover { background: #B391B3 !important; } }
+  .addCardButtonCornflowerBlue { background: #6495ED !important; color: #ffffff !important; fill: #ffffff !important; &:hover { background: #5A84D4 !important; } }
+  .addCardButtonPaleDogwood { background: #EDDCD2 !important; color: #17394d !important; fill: #17394d !important; &:hover { background: #D4C7BD !important; } }
+
   .addCardButtonDragOver {
     background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
     border: 3px dashed #0079bf;
@@ -628,7 +815,37 @@
     background: #f8f8ff !important;
   }
 
-  // Ajustes de contraste para texto em colunas coloridas
+  /* Novas cores sólidas */
+  .outerWrapperDeepTeal { background: #005B5B !important; }
+  .outerWrapperBrightCoral { background: #FF6F61 !important; }
+  .outerWrapperDustyRose { background: #D8A0A0 !important; }
+  .outerWrapperSlateGray { background: #6D8393 !important; }
+
+  /* Novas cores suaves */
+  .outerWrapperSoftPink { background: #FFB6C1 !important; }
+  .outerWrapperLavender { background: #E6E6FA !important; }
+  .outerWrapperPowderBlue { background: #B0E0E6 !important; }
+  .outerWrapperMintGreen { background: #98FB98 !important; }
+  .outerWrapperPeach { background: #FFDAB9 !important; }
+  .outerWrapperLilac { background: #C8A2C8 !important; }
+  .outerWrapperCornflowerBlue { background: #6495ED !important; }
+  .outerWrapperPaleDogwood { background: #EDDCD2 !important; }
+
+  /* Cores com gradiente */
+  .outerWrapperOceanBreeze { background: linear-gradient(135deg, #2328ff, #a1ffaa) !important; }
+  .outerWrapperPinkPurpleDream { background: linear-gradient(135deg, #f6a4d4, #a545ff) !important; }
+  .outerWrapperGalaxyDream { background: linear-gradient(135deg, #060087, #f289ff) !important; }
+  .outerWrapperVibrantSunset { background: linear-gradient(135deg, #fff845, #ff3389, #9f2eff) !important; }
+  .outerWrapperPastelDream { background: linear-gradient(135deg, #ff5994, #4f4fff, #89ffbe) !important; }
+  .outerWrapperMoonlitAsteroid { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364) !important; }
+  .outerWrapperCoolSky { background: linear-gradient(135deg, #2980b9, #6dd5fa, #ffffff) !important; }
+  .outerWrapperEmeraldWater { background: linear-gradient(135deg, #1f4037, #99f2c8) !important; }
+  .outerWrapperPurpleDusk { background: linear-gradient(135deg, #ad5389, #3c1053) !important; }
+  .outerWrapperDeepSpace { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e) !important; }
+  .outerWrapperOceanDepths { background: linear-gradient(135deg, #000046, #1cb5e0) !important; }
+  .outerWrapperDarkWine { background: linear-gradient(135deg, #200122, #6f0000) !important; }
+
+  // Ajustes de contraste para texto em colunas coloridas (fundos escuros)
   .outerWrapperBerryRed .headerName,
   .outerWrapperPumpkinOrange .headerName,
   .outerWrapperLagoonBlue .headerName,
@@ -640,11 +857,25 @@
   .outerWrapperRavenclawBlue .headerName,
   .outerWrapperHogwartsPurple .headerName,
   .outerWrapperDarkWizard .headerName,
-  .outerWrapperPhoenixOrange .headerName {
+  .outerWrapperPhoenixOrange .headerName,
+  .outerWrapperDeepTeal .headerName,
+  .outerWrapperBrightCoral .headerName,
+  .outerWrapperSlateGray .headerName,
+  .outerWrapperOceanBreeze .headerName,
+  .outerWrapperPinkPurpleDream .headerName,
+  .outerWrapperGalaxyDream .headerName,
+  .outerWrapperPastelDream .headerName,
+  .outerWrapperMoonlitAsteroid .headerName,
+  .outerWrapperEmeraldWater .headerName,
+  .outerWrapperPurpleDusk .headerName,
+  .outerWrapperDeepSpace .headerName,
+  .outerWrapperOceanDepths .headerName,
+  .outerWrapperDarkWine .headerName,
+  .outerWrapperCornflowerBlue .headerName {
     color: #ffffff !important;
   }
 
-  // Ajustes para colunas claras
+  // Ajustes para colunas claras (fundos claros)
   .outerWrapperLightMud .headerName,
   .outerWrapperBrightMoss .headerName,
   .outerWrapperAntiqueBlue .headerName,
@@ -652,11 +883,21 @@
   .outerWrapperHufflepuffGold .headerName,
   .outerWrapperGoldenSnitch .headerName,
   .outerWrapperMagicalSilver .headerName,
-  .outerWrapperUnicornWhite .headerName {
+  .outerWrapperUnicornWhite .headerName,
+  .outerWrapperDustyRose .headerName,
+  .outerWrapperVibrantSunset .headerName,
+  .outerWrapperCoolSky .headerName,
+  .outerWrapperSoftPink .headerName,
+  .outerWrapperLavender .headerName,
+  .outerWrapperPowderBlue .headerName,
+  .outerWrapperMintGreen .headerName,
+  .outerWrapperPeach .headerName,
+  .outerWrapperLilac .headerName,
+  .outerWrapperPaleDogwood .headerName {
     color: #17394d !important;
   }
 
-  // Ajustes de botões para colunas coloridas
+  // Ajustes de botões para colunas coloridas (fundos escuros)
   .outerWrapperBerryRed .headerButton,
   .outerWrapperPumpkinOrange .headerButton,
   .outerWrapperLagoonBlue .headerButton,
@@ -668,7 +909,21 @@
   .outerWrapperRavenclawBlue .headerButton,
   .outerWrapperHogwartsPurple .headerButton,
   .outerWrapperDarkWizard .headerButton,
-  .outerWrapperPhoenixOrange .headerButton {
+  .outerWrapperPhoenixOrange .headerButton,
+  .outerWrapperDeepTeal .headerButton,
+  .outerWrapperBrightCoral .headerButton,
+  .outerWrapperSlateGray .headerButton,
+  .outerWrapperOceanBreeze .headerButton,
+  .outerWrapperPinkPurpleDream .headerButton,
+  .outerWrapperGalaxyDream .headerButton,
+  .outerWrapperPastelDream .headerButton,
+  .outerWrapperMoonlitAsteroid .headerButton,
+  .outerWrapperEmeraldWater .headerButton,
+  .outerWrapperPurpleDusk .headerButton,
+  .outerWrapperDeepSpace .headerButton,
+  .outerWrapperOceanDepths .headerButton,
+  .outerWrapperDarkWine .headerButton,
+  .outerWrapperCornflowerBlue .headerButton {
     color: #ffffff !important;
 
     &:hover {
@@ -689,7 +944,21 @@
   .outerWrapperRavenclawBlue .headerIcon,
   .outerWrapperHogwartsPurple .headerIcon,
   .outerWrapperDarkWizard .headerIcon,
-  .outerWrapperPhoenixOrange .headerIcon {
+  .outerWrapperPhoenixOrange .headerIcon,
+  .outerWrapperDeepTeal .headerIcon,
+  .outerWrapperBrightCoral .headerIcon,
+  .outerWrapperSlateGray .headerIcon,
+  .outerWrapperOceanBreeze .headerIcon,
+  .outerWrapperPinkPurpleDream .headerIcon,
+  .outerWrapperGalaxyDream .headerIcon,
+  .outerWrapperPastelDream .headerIcon,
+  .outerWrapperMoonlitAsteroid .headerIcon,
+  .outerWrapperEmeraldWater .headerIcon,
+  .outerWrapperPurpleDusk .headerIcon,
+  .outerWrapperDeepSpace .headerIcon,
+  .outerWrapperOceanDepths .headerIcon,
+  .outerWrapperDarkWine .headerIcon,
+  .outerWrapperCornflowerBlue .headerIcon {
     color: #ffffff !important;
   }
 }
