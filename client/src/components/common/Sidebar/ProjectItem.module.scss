@@ -1,0 +1,167 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(14, 17, 23, 0.75); // igual ao container de notificações
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  
+  &:hover {
+    background: rgba(22, 28, 39, 0.8);
+    transform: translateY(-1px);
+    box-shadow: 
+      0 8px 16px rgba(0, 0, 0, 0.22),
+      0 2px 6px rgba(0, 0, 0, 0.12);
+  }
+  
+  &:focus {
+    outline: none;
+    background: rgba(49, 130, 206, 0.12);
+    box-shadow: 
+      0 0 0 2px rgba(49, 130, 206, 0.28),
+      0 6px 18px rgba(0, 0, 0, 0.14);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    background: rgba(74, 85, 104, 0.22);
+  }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 6px;
+  min-height: 42px;
+}
+
+.draggable {
+  cursor: grab;
+  
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.dragHandle {
+  color: rgba(255, 255, 255, 0.45);
+  margin-right: 2px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  cursor: grab;
+  
+  &:hover {
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.thumbnailContainer {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+}
+
+.projectThumbnail {
+  width: 52px;
+  height: 32px;
+  border-radius: 8px;
+  background: #555;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s ease;
+  
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.24);
+  }
+}
+
+.notificationOverlay {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  z-index: 10;
+}
+
+.name {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  letter-spacing: 0.2px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.favoriteButton {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.24);
+    transform: scale(1.05);
+    box-shadow: 0 0 0 1px rgba(207, 227, 255, 0.35) inset;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(207, 227, 255, 0.35);
+  }
+}
+
+.favoriteButtonAppearable {
+  opacity: 0;
+}
+
+.icon.favoriteButtonIcon {
+  font-size: 16px;
+  color: #e6edf3;
+}
+
+.favoriteActive .favoriteButtonIcon {
+  color: #F6C85C;
+  text-shadow: 0 0 6px rgba(246, 200, 92, 0.3);
+}
+
+.wrapper:hover .favoriteButtonAppearable {
+  opacity: 1;
+}
+
+.hasNotifications {
+  background: rgba(49, 130, 206, 0.18);
+  border-color: rgba(49, 130, 206, 0.28);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+
+  &:hover {
+    background: rgba(49, 130, 206, 0.22);
+  }
+
+  .name {
+    color: #ffffff;
+    font-weight: 700;
+  }
+}

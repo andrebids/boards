@@ -1,0 +1,108 @@
+// Variáveis para responsividade
+$sidebar-width-desktop: 240px; // Revertido para largura original
+$sidebar-width-tablet: 200px;  // Revertido para largura original
+$sidebar-width-mobile: 100vw;
+
+.wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: $sidebar-width-desktop;
+  height: 100vh;
+  background: rgba(14, 17, 23, 0.35); // igual ao popup de notificações
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  isolation: isolate;
+  overflow: hidden;
+
+  // Camada de realce interno (sutil)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: none; // sem brilho interno para não parecer segunda borda
+    background: transparent;
+    pointer-events: none;
+  }
+
+  // Estado expandido (será controlado por classe)
+  &.expanded {
+    transform: translateX(0);
+  }
+  
+  // Estado oculto (será usado depois)
+  &.collapsed {
+    transform: translateX(-100%);
+  }
+  
+  // Responsividade - Tablet (768px - 1024px)
+  @media (max-width: 1024px) {
+    width: $sidebar-width-tablet;
+  }
+  
+  // Responsividade - Mobile (< 768px)
+  @media (max-width: 767px) {
+    width: $sidebar-width-mobile;
+    
+    // Em mobile, o sidebar pode sobrepor completamente
+    &.expanded {
+      transform: translateX(0);
+    }
+  }
+}
+
+.content {
+  padding: 12px; // Reduzido para liberar mais área útil horizontal
+  height: 100%;
+  overflow-y: auto;
+  color: #e2e8f0;
+  
+  // Scrollbar personalizada para tema azul escuro
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(45, 55, 72, 0.2);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(74, 85, 104, 0.4);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(113, 128, 150, 0.6);
+  }
+}
+
+// Overlay para mobile quando sidebar está expandido
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(32, 41, 54, 0.8);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+  
+  // Só mostrar em mobile quando sidebar está expandido
+  @media (max-width: 767px) {
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    
+    &.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}

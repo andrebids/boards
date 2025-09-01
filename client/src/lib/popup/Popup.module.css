@@ -1,0 +1,135 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+.closeButton {
+  background: rgba(59, 130, 246, 0.08) !important; /* cor muito suave na bola */
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 6px !important;
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  border: none !important;
+  border-radius: 50% !important;
+  color: #cfe3ff !important;
+  cursor: pointer;
+  z-index: 3000; /* garantir clique acima do header da lista */
+  pointer-events: auto;
+}
+
+.closeButton:hover,
+.closeButton:focus {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1px rgba(207, 227, 255, 0.35) inset !important; /* leve realce */
+}
+
+.closeButton i.icon {
+  font-size: 14px !important; /* X menor */
+  line-height: 1 !important;
+}
+
+.wrapper {
+  border-radius: 3px !important;
+  border-width: 0 !important;
+  box-shadow: 0 8px 16px -4px rgba(9, 45, 66, 0.25),
+    0 0 0 1px rgba(9, 45, 66, 0.08) !important;
+  margin-top: 6px !important;
+  max-height: calc(100% - 70px);
+  padding: 0 12px 12px !important;
+  width: 304px;
+}
+
+/* Variante genérica de vidro para popups em geral */
+.glass {
+  border-radius: 16px !important;
+  background: rgba(14, 17, 23, 0.45) !important;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35) !important;
+  padding: 0 16px 12px !important;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #e6edf3;
+}
+
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  z-index: -1; /* manter blur atrás do conteúdo */
+  pointer-events: none;
+}
+
+/* Variante azul-escuro exclusiva para o popup de notificações */
+.notifications {
+  width: 392px;
+  border-radius: 16px !important;
+  background: rgba(14, 17, 23, 0.45) !important; /* fundo escuro mais transparente */
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35) !important; /* sombra mais suave */
+  padding: 0 16px 16px !important;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.notifications::before {
+  /* desativado para evitar aparência de dupla borda */
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 16px;
+  box-shadow: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.notifications::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  pointer-events: none;
+}
+
+/* Variante para o popup do utilizador (vidro compacto) */
+.user {
+  width: 320px;
+  border-radius: 16px !important;
+  background: rgba(14, 17, 23, 0.45) !important;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35) !important;
+  padding: 0 16px 12px !important;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #e6edf3; /* garantir contraste do texto */
+}
+
+.user::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  z-index: -1; /* não cobrir o conteúdo */
+  pointer-events: none;
+}

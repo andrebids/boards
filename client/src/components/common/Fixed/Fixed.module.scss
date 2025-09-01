@@ -1,0 +1,47 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+// Variáveis para responsividade
+$sidebar-width-desktop: 240px; // Reduzido de 280px
+$sidebar-width-tablet: 200px;  // Reduzido de 240px
+
+:global(#app) {
+  .wrapper {
+    position: fixed;
+    width: 100%;
+    z-index: 1001; // Maior que o sidebar (1000)
+    
+    // Adicionar padding-left para compensar o sidebar
+    padding-left: 0; // Sem padding por padrão (sidebar oculto)
+    
+    // Transição suave
+    transition: padding-left 0.3s ease;
+    
+    // Quando sidebar estiver expandido - Desktop
+    &.sidebarExpanded {
+      padding-left: $sidebar-width-desktop;
+    }
+    
+    // Quando sidebar estiver oculto
+    &.sidebarCollapsed {
+      padding-left: 0;
+    }
+    
+    // Responsividade - Tablet (768px - 1024px)
+    @media (max-width: 1024px) {
+      &.sidebarExpanded {
+        padding-left: $sidebar-width-tablet;
+      }
+    }
+    
+    // Responsividade - Mobile (< 768px)
+    @media (max-width: 767px) {
+      // Em mobile, não há padding - o sidebar sobrepõe
+      &.sidebarExpanded {
+        padding-left: 0;
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  /* Estilos globais para ícones em popups escuros */
+  .ui.icon.button {
+    i.icon {
+      color: #60a5fa !important; /* ícone azul claro para fundo escuro */
+    }
+    
+    &:hover i.icon {
+      color: #93c5fd !important; /* ícone mais claro no hover */
+    }
+  }
+
+  .deleteButton {
+    bottom: 12px;
+    box-shadow: 0 1px 0 #cbcccc;
+    position: absolute;
+    right: 9px;
+  }
+
+  .fieldBox {
+    display: inline-block;
+    margin: 0 4px 12px;
+    width: calc(33.3333% - 22px);
+  }
+
+  .fieldWrapper {
+    margin: 0 -4px;
+    
+    /* Garantir que os campos de input tenham texto claro */
+    input {
+      color: #e6edf3 !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    input:focus {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+  }
+
+  .iconButton {
+    background: rgba(59, 130, 246, 0.2) !important; /* fundo azul transparente */
+    box-shadow: none;
+    margin: 0 4px 0 1px;
+    width: 36px;
+    color: #60a5fa !important; /* ícone azul claro */
+
+    /* Estilo específico para o ícone dentro do botão */
+    i.icon {
+      color: #60a5fa !important; /* ícone azul claro */
+    }
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.3) !important; /* fundo azul mais intenso no hover */
+      color: #93c5fd !important; /* ícone mais claro no hover */
+      
+      i.icon {
+        color: #93c5fd !important; /* ícone mais claro no hover */
+      }
+    }
+  }
+
+  .text {
+    color: #e6edf3 !important; /* texto claro para fundo escuro */
+    font-size: 12px;
+    font-weight: bold;
+    padding-bottom: 4px;
+    padding-left: 2px;
+  }
+}

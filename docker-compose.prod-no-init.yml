@@ -1,0 +1,54 @@
+services:
+  planka:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: planka-producao-desenvolvimento
+    pull_policy: never
+    restart: on-failure
+    volumes:
+      - favicons:/app/public/favicons
+      - user-avatars:/app/public/user-avatars
+      - background-images:/app/public/background-images
+      - attachments:/app/private/attachments
+    ports:
+      - 3001:1337
+    environment:
+      - BASE_URL=${PLANKA_BASE_URL:-http://localhost:3001}
+      - DATABASE_URL=postgresql://postgres@postgres/planka
+      - SECRET_KEY=notsecretkey
+      - DEFAULT_ADMIN_EMAIL=admin@example.com
+      - DEFAULT_ADMIN_PASSWORD=admin123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Aguardando PostgreSQL...' &&
+        sleep 10 &&
+        echo 'Base de dados não será reiniciada.' &&
+        echo 'Iniciando Planka...' &&
+        npm run start:prod
+      "
+
+  postgres:
+    image: postgres:15-alpine
+    restart: on-failure
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=planka
+      - POSTGRES_USER=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  favicons:
+  user-avatars:
+  background-images:
+  attachments:
+  postgres:

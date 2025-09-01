@@ -1,0 +1,28 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .radio {
+    margin-bottom: 16px;
+    width: 100%;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .wrapper {
+    border: none;
+    box-shadow: none;
+    background: transparent !important;
+    color: rgba(230, 237, 243, 0.9);
+  }
+
+  /* aumentar contraste do label dos toggles */
+  .ui.toggle.checkbox label,
+  .ui.checkbox label {
+    color: rgba(230, 237, 243, 0.9) !important;
+  }
+}

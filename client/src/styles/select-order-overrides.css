@@ -1,0 +1,103 @@
+/*!
+ * Overrides para o menu de seleção de ordem
+ * Sobrescreve as regras do Semantic UI para cores mais claras
+ */
+
+/* Menu de seleção de ordem - cores claras */
+.ui.secondary.vertical.menu .item {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.ui.secondary.vertical.menu .item:hover {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.ui.secondary.menu .active.item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.ui.secondary.menu .active.item:hover {
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+/* Seletores mais específicos para garantir prioridade */
+#app .ui.secondary.vertical.menu .item {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+#app .ui.secondary.vertical.menu .item:hover {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+#app .ui.secondary.menu .active.item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#app .ui.secondary.menu .active.item:hover {
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+/* Overrides para cabeçalhos de tabela - cores claras */
+.ui.table thead th {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.ui.table th {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Seletores mais específicos para tabelas */
+#app .ui.table thead th {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#app .ui.table th {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Override específico para o texto "Título" */
+#app .ui.form ._text_1tqk1_8 {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Override mais específico para garantir que funcione */
+#app .ui.form div[class*="_text_"] {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ===== REGRAS ESSENCIAIS PARA ABAS DOS CARDS ===== */
+/* Regras específicas para abas com _menuItem_1mevl_5 dentro de modais - cores escuras */
+#app.ui.modal .ui.pointing.secondary.menu .item._menuItem_1mevl_5 {
+  color: #6b7c93 !important;
+}
+
+#app.ui.modal .ui.pointing.secondary.menu .active.item._menuItem_1mevl_5 {
+  color: #17394d !important;
+  font-weight: 600 !important;
+}
+
+#app.ui.modal .ui.pointing.secondary.menu .item._menuItem_1mevl_5:hover {
+  color: #17394d !important;
+}
+
+#app.ui.modal .ui.pointing.secondary.menu .active.item._menuItem_1mevl_5:hover {
+  color: #0f2a3a !important;
+}
+
+/* Regras específicas para abas com _menuItem_1mevl_5 dentro de modais glass - cores escuras */
+#app.ui.modal.glass .ui.pointing.secondary.menu .item._menuItem_1mevl_5 {
+  color: #6b7c93 !important;
+}
+
+#app.ui.modal.glass .ui.pointing.secondary.menu .active.item._menuItem_1mevl_5 {
+  color: #17394d !important;
+  font-weight: 600 !important;
+}
+
+#app.ui.modal.glass .ui.pointing.secondary.menu .item._menuItem_1mevl_5:hover {
+  color: #17394d !important;
+}
+
+#app.ui.modal.glass .ui.pointing.secondary.menu .active.item._menuItem_1mevl_5:hover {
+  color: #0f2a3a !important;
+}

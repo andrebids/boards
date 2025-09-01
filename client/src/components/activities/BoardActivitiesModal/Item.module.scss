@@ -1,0 +1,207 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .author {
+    color: #ffffff;
+    font-weight: bold;
+  }
+
+  .content {
+    border-bottom: none !important;
+    border: none !important;
+    display: inline-block;
+    line-height: 20px;
+    padding-bottom: 8px;
+    vertical-align: top;
+    width: calc(100% - 40px);
+    word-wrap: break-word;
+  }
+
+  .date {
+    color: #6b808c;
+    font-size: 12px;
+  }
+
+  .user {
+    display: inline-block;
+    padding: 4px 8px 0 0;
+    vertical-align: top;
+  }
+
+  // Remover bordas do componente Comment do Semantic UI
+  .comment {
+    border-bottom: none !important;
+    border: none !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 0 !important;
+  }
+
+  .comment .content {
+    border-bottom: none !important;
+    border: none !important;
+    padding-bottom: 0 !important;
+  }
+
+  .comment .text {
+    border-bottom: none !important;
+    border: none !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+// Thumbnails de imagens
+.thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0 0;
+  width: 100%;
+}
+
+.thumbnail {
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  border: 2px solid transparent !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  border-radius: 8px !important;
+
+  &:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    border-color: var(--accent) !important;
+  }
+}
+
+.moreImages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(var(--glass-bg-rgb), 0.8);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(var(--glass-bg-rgb), 0.9);
+    color: var(--text-primary);
+    transform: scale(1.1);
+  }
+}
+
+// Estilos para atividades de comentário
+.commentActivity {
+  // Integrar com sistema glass existente
+  background: rgba(var(--glass-bg-rgb), 0.05) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 8px !important;
+  margin-bottom: 8px !important;
+  padding: 12px !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    background: rgba(var(--glass-bg-rgb), 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  // Aplicar classes glass existentes
+  &.glass-panel {
+    backdrop-filter: blur(var(--glass-blur)) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  }
+}
+
+.commentText {
+  // Estilo glass para comentários
+  background: rgba(var(--glass-bg-rgb), 0.03) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  margin: 8px 0 !important;
+
+  .commentContent {
+    // Aplicar contraste glass (iOS 26 style)
+    color: var(--text-white-secondary) !important;
+    text-shadow: var(--text-shadow-ios) !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+.mentions {
+  margin-top: 6px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+
+  .mention {
+    background: rgba(var(--accent-rgb), 0.2) !important;
+    color: var(--accent) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    border: 1px solid rgba(var(--accent-rgb), 0.3) !important;
+  }
+}
+
+.deletedComment {
+  font-style: italic !important;
+  color: var(--text-tertiary) !important;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 6px !important;
+  border-left: 3px solid #db2828 !important;
+}
+
+// Estilos para thumbnails de vídeo no histórico
+.videoThumbnail {
+  position: relative;
+  display: inline-block;
+  margin: 8px 0 0 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(var(--glass-bg-rgb), 0.05);
+  border: 1px solid var(--glass-border);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(var(--glass-bg-rgb), 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
+  }
+
+  .thumbnailImage {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+    border-radius: 6px;
+  }
+
+  .videoDuration {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    z-index: 1;
+  }
+}

@@ -1,0 +1,131 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px; // Muito pequena
+  height: 12px; // Muito pequena
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+  animation: badgeFloat 3s ease-in-out infinite;
+  
+  // Azul para o sidebar
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  box-shadow: 
+    0 2px 6px rgba(96, 165, 250, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  
+  &:hover {
+    transform: scale(1.2) translateY(-1px);
+    animation-play-state: paused;
+  }
+  
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.badgeContent {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+// Efeitos visuais
+.pulseRing {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulseRing 2s ease-out infinite;
+  z-index: 1;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+}
+
+.glowEffect {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: glowPulse 3s ease-in-out infinite;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, transparent 70%);
+}
+
+// Animações
+@keyframes badgeFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-0.5px) rotate(0.3deg);
+  }
+  50% {
+    transform: translateY(-0.3px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-0.7px) rotate(-0.3deg);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.03);
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .badge {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+// Modo escuro (se aplicável)
+@media (prefers-color-scheme: dark) {
+  .badge {
+    box-shadow: 
+      0 2px 6px rgba(0, 0, 0, 0.3),
+      0 1px 2px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+}
+
+

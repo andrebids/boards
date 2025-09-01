@@ -1,0 +1,59 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .field {
+    margin-bottom: 16px; /* Aumentar espaçamento entre campos */
+    
+    /* Garantir que os campos de input tenham texto claro */
+    input {
+      color: #e6edf3 !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    input:focus {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    /* Estilo para dropdowns */
+    .ui.selection.dropdown {
+      color: #e6edf3 !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    .ui.selection.dropdown .text {
+      color: #e6edf3 !important;
+    }
+    
+    .ui.selection.dropdown .menu {
+      background: rgba(14, 17, 23, 0.95) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    .ui.selection.dropdown .menu .item {
+      color: #e6edf3 !important;
+    }
+    
+    .ui.selection.dropdown .menu .item:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+
+  .text {
+    color: #e6edf3 !important; /* texto claro para fundo escuro */
+    font-size: 12px;
+    font-weight: bold;
+    padding-bottom: 8px; /* Aumentar espaçamento abaixo do texto */
+    margin-bottom: 4px; /* Adicionar margem extra */
+  }
+  
+  /* Regra robusta para textos neste popup específico */
+  .field [class*="_text_"] {
+    color: #e6edf3 !important; /* texto claro para fundo escuro */
+  }
+}

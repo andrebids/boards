@@ -1,0 +1,240 @@
+:root {
+  --glass-bg-rgb: 14, 17, 23;
+  --glass-bg-strong-rgb: 20, 25, 34;
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+  --glass-blur: 16px;
+  --text-primary: #e6edf3;
+  --text-secondary: rgba(230, 237, 243, 0.75);
+  --accent: #3b82f6;
+}
+
+/* Utilitários base para superfícies vidro */
+.glass-panel {
+  background: rgba(var(--glass-bg-rgb), 0.75);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-secondary);
+}
+
+.glass-card {
+  background: rgba(var(--glass-bg-strong-rgb), 0.8);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
+}
+
+.glass-header {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--glass-bg-rgb), 0.95) 0%,
+    rgba(var(--glass-bg-rgb), 0.85) 100%
+  );
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.glass-ghost-button {
+  background: rgba(30, 58, 138, 0.18);
+  color: #93c5fd;
+  border-radius: 10px;
+}
+
+.glass-scroll::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.45),
+    rgba(29, 78, 216, 0.45)
+  );
+}
+
+  /*
+   * Glass Perfeito — padrão reutilizável
+   *
+   * Objetivo: superfície vítrea com profundidade, reflexo e blur consistente.
+   * Uso: aplique a classe `.glass-perfect-card` no contêiner do item e posicione
+   * o conteúdo interno acima (z-index: 1) caso use pseudo-elementos.
+   *
+   * Notas:
+   * - Ajuste a intensidade via --glass-blur ou sobrescreva o blur local.
+   * - Para superfícies interativas, combine com :hover para leve "lift".
+   * - Compatível com fallback (sem backdrop-filter), mantendo contraste adequado.
+   */
+  .glass-perfect-card {
+    position: relative;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+    backdrop-filter: blur(8px) saturate(160%);
+    isolation: isolate;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .glass-perfect-card:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+    box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35), 0 0 0 1px rgba(96, 165, 250, 0.25) inset;
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+
+  .glass-perfect-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: inset 0 0 20px -6px rgba(255, 255, 255, 0.55), inset 0 -10px 24px rgba(13, 18, 28, 0.35);
+    background: radial-gradient(120% 120% at 0% 0%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 60%);
+  }
+
+  .glass-perfect-card::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: -10%;
+    width: 140%;
+    height: 70%;
+    border-radius: 40px;
+    transform: rotate(-6deg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @supports not (backdrop-filter: blur(2px)) {
+    .glass-perfect-card {
+      background: rgba(var(--glass-bg-strong-rgb), 0.8);
+      border-color: var(--glass-border);
+    }
+  }
+
+/* Overrides específicos: Modal Configurações do Projeto (classe adicional project-settings) */
+/* mantém vidro como base; ajustes são no .content e internos */
+
+.ui.modal.glass.project-settings > .content,
+.ui.basic.modal.glass.project-settings > .content {
+  color: var(--text-primary); /* texto mais claro */
+  background: rgba(var(--glass-bg-rgb), 0.72) !important;
+}
+
+/* Títulos, labels e texto dentro do modal */
+.ui.modal.glass.project-settings .ui.header,
+.ui.modal.glass.project-settings .ui.form .field > label,
+.ui.modal.glass.project-settings .field > label,
+.ui.modal.glass.project-settings .ui.menu .item,
+.ui.modal.glass.project-settings .ui.menu .item.active {
+  color: var(--text-primary) !important;
+}
+
+/* Inputs e textareas mais claros para evitar texto apagado */
+.ui.modal.glass.project-settings .ui.input input,
+.ui.modal.glass.project-settings input[type='text'],
+.ui.modal.glass.project-settings textarea,
+.ui.modal.glass.project-settings .ui.selection.dropdown {
+  background: #f8fafc !important; /* claro */
+  color: #0f172a !important;      /* texto escuro no campo */
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+
+/* Botões de opção no separador Fundo (Gradientes / Imagens Enviadas) */
+.ui.modal.glass.project-settings .ui.buttons .button,
+.ui.modal.glass.project-settings .ui.basic.buttons .button {
+  color: var(--text-secondary) !important;
+  background: rgba(255, 255, 255, 0.04) !important; /* evitar branco ao hover */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+.ui.modal.glass.project-settings .ui.buttons .active.button,
+.ui.modal.glass.project-settings .ui.basic.buttons .active.button {
+  color: #ffffff !important;
+  background: rgba(59, 130, 246, 0.18) !important;
+}
+
+/* Hover/focus com contraste legível */
+.ui.modal.glass.project-settings .ui.buttons .button:hover,
+.ui.modal.glass.project-settings .ui.buttons .button:focus,
+.ui.modal.glass.project-settings .ui.basic.buttons .button:hover,
+.ui.modal.glass.project-settings .ui.basic.buttons .button:focus {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-primary) !important;
+}
+.ui.modal.glass.project-settings .ui.buttons .active.button:hover,
+.ui.modal.glass.project-settings .ui.basic.buttons .active.button:hover {
+  background: rgba(59, 130, 246, 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* Switch (Radio toggle) e label alinhados ao modo vidro claro */
+.ui.modal.glass.project-settings .ui.toggle.checkbox label,
+.ui.modal.glass.project-settings .ui.checkbox label {
+  color: var(--text-primary) !important;
+}
+.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ .box:before,
+.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ label:before {
+  background-color: #16a34a !important; /* verde legível no vidro escuro */
+}
+.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ .box:after,
+.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ label:after {
+  background: #ffffff !important;
+}
+
+/* Botões default dentro do modal */
+.ui.modal.glass.project-settings .ui.button,
+.ui.modal.glass.project-settings .ui.primary.button {
+  color: #0f172a;
+}
+
+/* Separadores (Tab) e apontados */
+.ui.modal.glass.project-settings .ui.menu { background: transparent !important; }
+.ui.modal.glass.project-settings .ui.pointing.secondary.menu .item {
+  color: rgba(230, 237, 243, 0.9) !important; /* mais contraste */
+  opacity: 1 !important;
+}
+.ui.modal.glass.project-settings .ui.pointing.secondary.menu .item:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+.ui.modal.glass.project-settings .ui.pointing.secondary.menu .active.item {
+  color: #ffffff !important;
+  background: rgba(59, 130, 246, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+}
+
+/* Glass Theme Overrides */
+
+/* Toggle Checkbox - Texto claro para fundos escuros */
+.ui.toggle.checkbox input:checked ~ label,
+.ui.toggle.checkbox input:focus:checked ~ label {
+  color: #e6edf3 !important; /* texto claro */
+}
+
+/* Regra mais específica para garantir prioridade */
+.ui.toggle.checkbox input:checked ~ label {
+  color: #e6edf3 !important; /* texto claro */
+}
+
+/* Regra para estado focus */
+.ui.toggle.checkbox input:focus:checked ~ label {
+  color: #e6edf3 !important; /* texto claro */
+}
+
+/* Regra para estado hover também */
+.ui.toggle.checkbox input:checked ~ label:hover {
+  color: #e6edf3 !important; /* texto claro */
+}
+
+/* Regra com máxima especificidade */
+.ui.toggle.checkbox input:checked ~ label,
+.ui.toggle.checkbox input:focus:checked ~ label,
+.ui.toggle.checkbox input:checked ~ label:hover,
+.ui.toggle.checkbox input:checked ~ label:focus {
+  color: #e6edf3 !important; /* texto claro */
+}

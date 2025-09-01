@@ -1,0 +1,7 @@
+FROM node:lts-alpine
+
+RUN apk -U upgrade \
+  && apk add bash build-base python3 xdg-utils ffmpeg --no-cache \
+  && npm install npm --global
+
+WORKDIR /app

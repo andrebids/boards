@@ -1,0 +1,96 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  /* Container visual do conteúdo do popup de notificações */
+  .container {
+    padding: 8px 0 0 0;
+    color: #d6e2f2;
+  }
+
+  /* Escopo apenas ao popup de notificações */
+  .headerRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px 0 10px 0;
+    padding: 6px 8px 10px 8px;
+    /* Reserva espaço para o botão de fechar (40px) sem afastar demais */
+    padding-right: 44px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: sticky;
+    top: 0;
+    background: transparent; /* unifica com o fundo do popup */
+    backdrop-filter: none;
+    z-index: 2;
+  }
+
+  .title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e6edf3;
+  }
+
+  .headerAction {
+    background: rgba(30, 58, 138, 0.18);
+    border: none;
+    color: #93c5fd;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+
+    &:hover {
+      background: rgba(29, 78, 216, 0.25);
+      color: #bfdbfe;
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  .deleteAllButton {
+    background: rgba(30, 58, 138, 0.18);
+    box-shadow: none;
+    color: #93c5fd;
+    font-weight: normal;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    transition: background 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      background: rgba(29, 78, 216, 0.25);
+      color: #bfdbfe;
+    }
+  }
+
+  .items {
+    margin: 0 -12px;
+    max-height: 60vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    @supports (-moz-appearance: none) {
+      scrollbar-color: rgba(59, 130, 246, 0.45) transparent;
+      scrollbar-width: thin;
+    }
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px;
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.45), rgba(29, 78, 216, 0.45));
+    }
+  }
+}

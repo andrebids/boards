@@ -1,0 +1,122 @@
+.wrapper {
+  width: 100%;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e6edf3;
+  margin: 8px 0 8px 0; /* margem uniforme para todos os títulos */
+  padding-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+  }
+}
+
+/* Espaçamento extra entre a lista de favoritos e o próximo título (com ou sem row de controles) */
+.list + .title,
+.list + .titleRow {
+  margin-top: 14px;
+}
+
+/* Linha com título + controles mantém o mesmo espaçamento vertical do título isolado */
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* separador removido para evitar dupla linha visual */
+
+.notificationBadge {
+  background: #e74c3c;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 50px; // Para droppable area
+}
+
+.draggableItem {
+  transition: box-shadow 0.2s ease, background 0.2s ease;
+  
+  &.dragging {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 20px;
+  color: rgba(113, 128, 150, 0.8); // Cor mais suave para o fundo transparente
+  
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+}
+
+.moreProjects {
+  margin-top: 6px;
+  text-align: center;
+}
+
+.moreButton {
+  background: rgba(74, 85, 104, 0.3);
+  color: rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(113, 128, 150, 0.3);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  
+  &:hover {
+    background: rgba(74, 85, 104, 0.5);
+    color: rgba(226, 232, 240, 1);
+    border-color: rgba(113, 128, 150, 0.5);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+@media (max-width: 420px) {
+  .title {
+    font-size: 16px;
+    margin: 4px 0 6px 0;
+    padding-bottom: 3px;
+  }
+
+  .moreButton {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}

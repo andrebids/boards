@@ -1,0 +1,69 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .editButton {
+    background: rgba(59, 130, 246, 0.12);
+    box-shadow: none;
+    flex: 0 0 auto;
+    font-weight: normal;
+    padding: 8px 10px;
+    text-decoration: underline;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: #cfe3ff;
+
+    i.icon {
+      color: #e6edf3 !important;
+      opacity: 1 !important;
+      font-size: 14px;
+    }
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.24);
+      color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 0 1px rgba(207, 227, 255, 0.35) inset;
+    }
+  }
+
+  .name {
+    border-radius: 3px;
+    color: #fff;
+    cursor: pointer;
+    flex: 1 1 auto;
+    font-weight: bold;
+    overflow: hidden;
+    padding: 8px 32px 8px 10px;
+    position: relative;
+    text-overflow: ellipsis;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      opacity: 0.92;
+    }
+  }
+
+  .nameActive:before {
+    bottom: 1px;
+    content: "Г";
+    font-size: 18px;
+    font-weight: normal;
+    line-height: 36px;
+    position: absolute;
+    right: 2px;
+    text-align: center;
+    transform: rotate(-135deg);
+    width: 36px;
+    color: #cfe3ff;
+  }
+
+  .wrapper {
+    display: flex;
+    margin-bottom: 4px;
+    max-width: 280px;
+    white-space: nowrap;
+  }
+}

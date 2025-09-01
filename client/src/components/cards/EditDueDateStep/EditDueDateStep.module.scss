@@ -1,0 +1,43 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .deleteButton {
+    bottom: 12px;
+    box-shadow: 0 1px 0 #cbcccc;
+    position: absolute;
+    right: 9px;
+  }
+
+  .fieldBox {
+    display: inline-block;
+    margin: 0 4px 12px;
+    width: calc(50% - 8px);
+  }
+
+  .fieldWrapper {
+    margin: 0 -4px;
+    
+    /* Garantir que os campos de input tenham texto claro */
+    input {
+      color: #e6edf3 !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    input:focus {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+  }
+
+  .text {
+    color: #e6edf3 !important; /* texto claro para fundo escuro */
+    font-size: 12px;
+    font-weight: bold;
+    padding-bottom: 4px;
+    padding-left: 2px;
+  }
+}

@@ -1,0 +1,163 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .author {
+    color: #e6edf3;
+    font-weight: 600;
+  }
+
+  .button {
+    background: transparent;
+    box-shadow: none;
+    height: 28px;
+    width: 28px;
+    line-height: 28px;
+    min-height: auto;
+    padding: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+    color: #93c5fd;
+    display: inline-flex !important; /* força layout flex, sobrepondo Semantic UI */
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    z-index: 1; /* garantir acima das camadas glass */
+    text-align: center;
+
+    /* centralização verdadeira do glifo do Semantic UI (usa ::before) */
+    > i.icon {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      margin: 0 !important;
+      width: 16px !important;
+      height: 16px !important;
+      line-height: 1 !important;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    /* garante centralização do glifo ::before dentro do i.icon */
+    > i.icon::before {
+      position: static !important;
+      display: block !important;
+      margin: 0 !important;
+      transform: none !important;
+    }
+
+    &:hover {
+      background: transparent !important; /* remove o retângulo de hover */
+      box-shadow: none !important;
+      color: #bfdbfe; /* mantém feedback visual pelo ícone */
+    }
+
+    /* remove qualquer pseudo-elemento que crie "fundo" no ícone */
+    &::before,
+    &::after {
+      content: none !important;
+    }
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    line-height: 20px;
+    min-height: 36px;
+    overflow: hidden;
+    padding: 0 40px 0 8px; /* espaço para o botão fixo à direita */
+    vertical-align: top;
+    word-break: break-word;
+    color: rgba(230, 237, 243, 0.9);
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+    z-index: 1; /* conteúdo acima das camadas glass */
+
+    a {
+      color: #93c5fd;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+        color: #bfdbfe;
+      }
+    }
+  }
+
+  .date {
+    color: rgba(230, 237, 243, 0.65);
+    font-size: 12px;
+  }
+
+  .wrapper {
+    padding: 12px;
+    border-radius: 18px;
+    /* base do efeito glass */
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+    isolation: isolate;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    margin: 8px 8px 0 8px;
+    display: flex;
+    align-items: center;
+    position: relative; /* para ancorar o botão à direita */
+    overflow: hidden;
+
+    &:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+      box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35), 0 0 0 1px rgba(96, 165, 250, 0.25) inset;
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    /* avatar (primeiro filho) */
+    > :first-child {
+      margin-right: 8px;
+      flex: 0 0 auto;
+    }
+
+    /* Camada de profundidade/tonalidade interna */
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      box-shadow: inset 0 0 20px -6px rgba(255, 255, 255, 0.55), inset 0 -10px 24px rgba(13, 18, 28, 0.35);
+      background: radial-gradient(120% 120% at 0% 0%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 60%);
+    }
+
+    /* Faixa de brilho suave (reflexo) */
+    &::after {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: -10%;
+      width: 140%;
+      height: 70%;
+      border-radius: 40px;
+      transform: rotate(-6deg);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Fallback quando não há suporte a blur do backdrop */
+    @supports not (backdrop-filter: blur(2px)) {
+      background: linear-gradient(180deg, rgba(20, 25, 34, 0.82), rgba(20, 25, 34, 0.68));
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+}

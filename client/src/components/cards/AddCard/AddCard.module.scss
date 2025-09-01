@@ -1,0 +1,185 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .button {
+    white-space: nowrap;
+  }
+
+  .controls {
+    display: flex;
+  }
+
+  .field {
+    border: none;
+    margin-bottom: 4px;
+    outline: none;
+    overflow: hidden;
+    padding: 0;
+    resize: none;
+    width: 100%;
+    background: transparent;
+    color: #f3f4f6;
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+
+  .fieldProcessing {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .fieldWrapper {
+    background: #1f2937;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    margin-bottom: 8px;
+    min-height: 20px;
+    padding: 8px 12px 4px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      background: rgba(23, 37, 58, 0.55);
+    }
+  }
+
+  .fieldWrapperDragOver {
+    background: #1f2937;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transform: none;
+    z-index: 5;
+    animation: none;
+  }
+
+
+
+  .fieldWrapperProcessing {
+    background: #4b5563;
+    opacity: 0.7;
+  }
+
+  .selectTypeButton {
+    background: transparent;
+    box-shadow: none;
+    color: #9ca3af;
+    font-weight: normal;
+    margin-left: auto;
+    margin-right: 0;
+    overflow: hidden;
+    text-align: left;
+    text-decoration: underline;
+    text-overflow: ellipsis;
+    transition: none;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+  }
+
+  .selectTypeButtonIcon {
+    text-decoration: none;
+  }
+
+  .wrapperClosed {
+    display: none;
+  }
+
+  .dragOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(33, 150, 243, 0.15);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    z-index: 10;
+    animation: fadeIn 0.2s ease-in-out;
+    padding: 20px;
+
+    span {
+      margin-top: 16px;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 18px;
+      text-align: center;
+      padding: 0 20px;
+      line-height: 1.4;
+      white-space: nowrap;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      background: rgba(59, 130, 246, 0.9);
+      padding: 8px 16px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    i {
+      color: #ffffff;
+      font-size: 48px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+      background: rgba(59, 130, 246, 0.9);
+      padding: 16px;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .processingOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(3px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    z-index: 10;
+    animation: fadeIn 0.3s ease-in-out;
+
+    span {
+      margin-top: 12px;
+      color: #d1d5db;
+      font-weight: 500;
+      font-size: 14px;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    i {
+      color: #9ca3af;
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+  }
+}

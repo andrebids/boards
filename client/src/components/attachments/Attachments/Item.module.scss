@@ -1,0 +1,89 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .content {
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .contentViewer {
+    height: 90%;
+    width: MIN(90%, 1120px); // https://github.com/sass/node-sass/issues/2815
+  }
+
+  .contentError {
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    height: 20px;
+    text-align: center;
+    width: 470px;
+  }
+
+  .videoContent {
+    // Manter position: absolute para centramento, mas garantir que os controles sejam visíveis
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    min-height: 200px; // Altura mínima para garantir que os controles sejam visíveis
+    object-fit: contain;
+    border-radius: 4px;
+    background-color: #000; // Fundo preto para vídeos
+    z-index: 10; // Garantir que os controles apareçam acima de outros elementos
+
+    // Garantir que os controles sejam visíveis
+    &::-webkit-media-controls {
+      display: flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      z-index: 100 !important; // Z-index alto para garantir visibilidade
+    }
+
+    &::-webkit-media-controls-panel {
+      display: flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      z-index: 100 !important; // Z-index alto para garantir visibilidade
+    }
+
+    &::-webkit-media-controls-play-button {
+      display: flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    &::-webkit-media-controls-pause-button {
+      display: flex !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    // Estilos para outros navegadores
+    &::-moz-media-controls {
+      display: block !important;
+    }
+
+    &::-moz-media-controls-panel {
+      display: block !important;
+    }
+
+    // Garantir que os controles sejam sempre visíveis
+    &:hover::-webkit-media-controls {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    &:hover::-webkit-media-controls-panel {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+  }
+}

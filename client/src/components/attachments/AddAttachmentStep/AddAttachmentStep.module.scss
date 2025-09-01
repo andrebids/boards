@@ -1,0 +1,39 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .divider {
+    background: #e6edf3; /* linha divisória mais clara */
+    border: 0;
+    height: 1px;
+    margin-bottom: 8px;
+  }
+
+  .menu {
+    margin: -7px -12px -5px;
+    width: calc(100% + 24px);
+    
+    /* Garantir que todos os itens do menu tenham texto claro */
+    .item {
+      color: #e6edf3 !important;
+    }
+    
+    .item:hover {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+
+  .menuItem {
+    margin: 0;
+    padding-left: 14px;
+    color: #e6edf3 !important; /* texto claro para fundo escuro */
+  }
+
+  .tip {
+    opacity: 0.5;
+    color: #e6edf3 !important; /* texto claro para fundo escuro */
+  }
+}

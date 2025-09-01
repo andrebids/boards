@@ -1,0 +1,62 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+.backButton {
+  background: transparent !important;
+  box-shadow: none !important;
+  left: 4px;
+  margin: 0 !important;
+  padding: 8px !important;
+  position: absolute;
+  top: 2px;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  border: none !important;
+  border-radius: 50% !important;
+  color: #cfe3ff !important; /* cor da seta */
+  z-index: 2000;
+}
+
+.backButton:hover,
+.backButton:focus {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #ffffff !important;
+}
+
+.backButton i.icon {
+  font-size: 14px !important;
+  line-height: 1 !important;
+  color: #cfe3ff !important; /* garantir cor do ícone */
+}
+
+.content {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff; /* ← COR BRANCA COMO BASE */
+  text-shadow: 
+    0 0 1px rgba(0, 0, 0, 0.6),    /* ← SOMBRA MAIS SUTIL */
+    0 0 2px rgba(0, 0, 0, 0.4);    /* ← SOMBRA DIFUSA LEVE */
+  left: 0;
+  line-height: 22px;
+  margin: 0 12px;
+  padding: 12px 44px 8px 12px; /* espaço para botão fechar */
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.wrapper {
+  height: 40px;
+  margin: 0 -12px 8px !important;
+  position: relative;
+  text-align: left; /* alinhar com notificações */
+}
+
+.withBack .content {
+  padding-left: 44px; /* reservar espaço para seta */
+}

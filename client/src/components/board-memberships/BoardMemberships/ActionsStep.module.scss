@@ -1,0 +1,93 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .button {
+    background: transparent;
+    box-shadow: none;
+    color: #cfe3ff; /* links/ações com contraste no vidro */
+    font-weight: normal;
+    margin-top: 8px;
+    padding: 6px 11px;
+    text-align: left;
+    text-decoration: underline;
+    transition: none;
+
+    &:hover {
+      background: rgba(30, 58, 138, 0.18);
+      color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22),
+        0 0 0 1px rgba(96, 165, 250, 0.18) inset;
+    }
+  }
+
+  .content {
+    display: inline-block;
+    width: calc(100% - 44px);
+  }
+
+  .divider {
+    background: rgba(255, 255, 255, 0.06);
+    border: 0;
+    height: 1px;
+  }
+
+  .information {
+    color: rgba(230, 237, 243, 0.8);
+    margin-bottom: 8px;
+  }
+
+  .informationIcon {
+    margin-right: 6px;
+    color: #cfe3ff;
+    opacity: 0.8;
+  }
+
+  .name {
+    color: #e6edf3;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 9px 28px 0 2px;
+  }
+
+  .userWrapper {
+    margin-bottom: 8px;
+    min-height: 49px;
+  }
+
+  .user {
+    display: inline-block;
+    padding-right: 8px;
+    padding-top: 10px;
+    vertical-align: top;
+  }
+
+  .username {
+    color: #b9c5d6;
+    font-size: 14px;
+    line-height: 1.2;
+    padding: 2px 0 2px 2px;
+    word-wrap: break-word;
+  }
+
+  /* Botão de filtro destacado em estilo vidro suave */
+  .filterButton {
+    background: rgba(59, 130, 246, 0.08) !important;
+    color: #e6edf3 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+    border-radius: 10px !important;
+    padding: 8px 10px !important;
+
+    &:hover,
+    &:focus {
+      background: rgba(59, 130, 246, 0.18) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 1px rgba(207, 227, 255, 0.35) inset !important;
+    }
+  }
+}

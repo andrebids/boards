@@ -1,0 +1,24 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .menu {
+    margin: 8px 0 6px 0; /* igual ao visual do notifications */
+    width: 100%;
+  }
+
+  .menuItem {
+    margin: 0;
+    padding: 10px 8px 10px 8px; /* espaçamento confortável em vidro */
+    color: #d6e2f2;
+    border-radius: 8px;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.12);
+      color: #ffffff;
+    }
+  }
+}

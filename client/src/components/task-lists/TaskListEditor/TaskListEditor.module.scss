@@ -1,0 +1,87 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  /* Regra global mais específica para sobrescrever o toggle checkbox */
+  .ui.toggle.checkbox input:checked ~ .box, .ui.toggle.checkbox input:checked ~ label {
+    color: #e6edf3 !important; /* texto claro mesmo quando ativo */
+  }
+  
+  /* Regras com maior especificidade para garantir que sobrescrevam */
+  .ui.toggle.checkbox input:checked ~ label,
+  .ui.toggle.checkbox input:focus:checked ~ label {
+    color: #e6edf3 !important; /* texto claro */
+  }
+  
+  /* Regra ainda mais específica para garantir prioridade máxima */
+  .ui.toggle.checkbox input:checked ~ label {
+    color: #e6edf3 !important; /* texto claro */
+  }
+  
+  /* Regra para o estado focus também */
+  .ui.toggle.checkbox input:focus:checked ~ label {
+    color: #e6edf3 !important; /* texto claro */
+  }
+  
+  .field {
+    margin-bottom: 8px;
+    
+    /* Garantir que os campos de input tenham texto claro */
+    input {
+      color: #e6edf3 !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    input:focus {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+  }
+
+  .fieldRadio {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    width: 100%;
+
+    &:last-of-type {
+      margin-bottom: 16px;
+    }
+    
+    /* Estilo para o toggle switch */
+    .ui.toggle.checkbox {
+      label {
+        color: #e6edf3 !important; /* texto claro para fundo escuro */
+      }
+      
+      /* Sobrescrever a cor do texto quando o checkbox está marcado - regra mais específica */
+      input:checked ~ label,
+      input:checked ~ label:after,
+      input:checked ~ label:before {
+        color: #e6edf3 !important; /* texto claro mesmo quando ativo */
+      }
+      
+      /* Regra ainda mais específica para garantir que sobrescreva */
+      .ui.toggle.checkbox input:checked ~ label {
+        color: #e6edf3 !important; /* texto claro mesmo quando ativo */
+      }
+      
+      input:checked ~ label:before {
+        background: #21ba45 !important; /* verde quando ativo */
+      }
+      
+      input:not(:checked) ~ label:before {
+        background: rgba(255, 255, 255, 0.2) !important; /* cinza transparente quando inativo */
+      }
+    }
+  }
+
+  .text {
+    color: #e6edf3 !important; /* texto claro para fundo escuro */
+    font-size: 12px;
+    font-weight: bold;
+    padding-bottom: 6px;
+  }
+}
