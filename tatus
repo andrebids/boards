@@ -1,0 +1,439 @@
+[1mdiff --git a/planos-desenvolvimento/BOARD_CREAS_2026_DOCUMENTACAO.md b/planos-desenvolvimento/BOARD_CREAS_2026_DOCUMENTACAO.md[m
+[1mnew file mode 100644[m
+[1mindex 0000000..3f8927d[m
+[1m--- /dev/null[m
+[1m+++ b/planos-desenvolvimento/BOARD_CREAS_2026_DOCUMENTACAO.md[m
+[36m@@ -0,0 +1,267 @@[m
+[32m+[m[32m# 📋 Documentação Completa - Board CREAS 2026[m
+[32m+[m
+[32m+[m[32m## 🎯 Visão Geral[m
+[32m+[m
+[32m+[m[32m**Board**: CREAS 2026[m[41m  [m
+[32m+[m[32m**Projeto**: XMAS DECOR[m[41m  [m
+[32m+[m[32m**URL**: https://planka.dsproject.pt/boards/1539166681719375789[m[41m  [m
+[32m+[m[32m**Data de Documentação**: Dezembro 2024[m[41m  [m
+[32m+[m
+[32m+[m[32m## 🏗️ Estrutura do Board[m
+[32m+[m
+[32m+[m[32m### Informações Gerais[m
+[32m+[m[32m- **Nome do Board**: CREAS 2026[m
+[32m+[m[32m- **Projeto Associado**: XMAS DECOR[m
+[32m+[m[32m- **Tipo de Vista**: Kanban (padrão)[m
+[32m+[m[32m- **Contexto**: Board principal de desenvolvimento[m
+[32m+[m
+[32m+[m[32m### Membros da Equipa[m
+[32m+[m[32m- **AG** - André Garcia (Proprietário)[m
+[32m+[m[32m- **aa** - aurelien allouche[m
+[32m+[m[32m- **CG** - Clea Garanger[m
+[32m+[m[32m- **JT** - Julie Taton[m
+[32m+[m[32m- **LF** - Linda Ferreira[m
+[32m+[m[32m- **Ni** - Nicolas[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 📋 Colunas (Lists) e Cartões[m
+[32m+[m
+[32m+[m[32m### 1. 🎄 LES FIGURINES DE NOËL[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 2. 🚀 VOYAGE JULES VERNE[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 3. 🌟 NOUVELLES SPHÈRES[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 4. 🌲 SAPIN ROI[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 5. 🎅 LE PÈRE NOËL/BONHOMME NEIGE TRADI[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 6. 🎈 BOULE PASSANTE[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 7. 💡 GP ET CLIPLIGHT[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 8. ✨ RECY SHINY ET CLIPLIGHT[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 9. 😄 LES TROP TROP RIGOLOS[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 10. 💌 CARTE DE VOEUX[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 11. 🚢 L'ODYSSÉE[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 12. ⚪ RECY BLANC ET LED MULTICO[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 13. 🎭 TUNNEL rgbww[m
+[32m+[m[32m**Status**: Coluna com 1 cartão[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **TUNNEL rgbww** - Cartão principal da coluna[m
+[32m+[m[32m- **Ação**: Cartão em desenvolvimento[m
+[32m+[m
+[32m+[m[32m### 14. 🖼️ DÉCOR FLEXI SANS CADRE[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 15. 🌈 DUOCOLORS[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 16. 🎩 COMPLÉMENT GATSBY[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 17. 💎 COMPLÉMENT CRISTAL[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 18. 🐻 DÉCORS TYPE JOSÉ[m
+[32m+[m[32m**Status**: Coluna com 3 cartões[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **Approved CG26-FIG22-OURS 1**[m[41m [m
+[32m+[m[32m    - Código: CG26-FIG22-OURS[m
+[32m+[m[32m    - Status: ✅ Aprovado[m
+[32m+[m[32m    - Anexos: 1 (CG26-FIG22-OURS.jpg)[m
+[32m+[m[32m    - Data: 23 de Junho às 11:38 AM[m
+[32m+[m[32m    - Label: Approved (verde)[m
+[32m+[m[32m  - **Approved CG26-FIG22-OURS2 1**[m
+[32m+[m[32m    - Código: CG26-FIG22-OURS2[m
+[32m+[m[32m    - Status: ✅ Aprovado[m
+[32m+[m[32m    - Anexos: 1[m
+[32m+[m[32m    - Label: Approved (verde)[m
+[32m+[m[32m  - **Modify 8CXMAR13446625-M74 1**[m
+[32m+[m[32m    - Código: 8CXMAR13446625-M74[m
+[32m+[m[32m    - Status: 🔄 Em Modificação[m
+[32m+[m[32m    - Anexos: 1[m
+[32m+[m
+[32m+[m[32m### 19. 💡 2 LUSTRES PAMPILLES[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m### 20. 🎨 DÉCORS JOSÉ FLEXI[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 📊 Estatísticas do Board[m
+[32m+[m
+[32m+[m[32m### Resumo por Status[m
+[32m+[m[32m- **Colunas Vazias**: 19 colunas (95%)[m
+[32m+[m[32m- **Colunas com Cartões**: 2 colunas (10%)[m
+[32m+[m[32m- **Total de Cartões**: 4 cartões[m
+[32m+[m[32m- **Cartões Aprovados**: 2 cartões[m
+[32m+[m[32m- **Cartões em Modificação**: 1 cartão[m
+[32m+[m[32m- **Cartões em Desenvolvimento**: 1 cartão[m
+[32m+[m
+[32m+[m[32m### Distribuição de Trabalho[m
+[32m+[m[32m- **DÉCORS TYPE JOSÉ**: 3 cartões (75% do trabalho)[m
+[32m+[m[32m- **TUNNEL rgbww**: 1 cartão (25% do trabalho)[m
+[32m+[m[32m- **Outras colunas**: Aguardam desenvolvimento[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 🔍 Análise dos Cartões Existentes[m
+[32m+[m
+[32m+[m[32m### Cartões Aprovados (Status: ✅)[m
+[32m+[m[32m1. **CG26-FIG22-OURS** - Figurine de Ours (Urso)[m
+[32m+[m[32m   - Aprovado e finalizado[m
+[32m+[m[32m   - Inclui imagem de referência[m
+[32m+[m[32m   - Pronto para produção[m
+[32m+[m
+[32m+[m[32m2. **CG26-FIG22-OURS2** - Segunda versão da Figurine de Ours[m
+[32m+[m[32m   - Aprovado e finalizado[m
+[32m+[m[32m   - Inclui imagem de referência[m
+[32m+[m[32m   - Pronto para produção[m
+[32m+[m
+[32m+[m[32m### Cartões em Modificação (Status: 🔄)[m
+[32m+[m[32m1. **8CXMAR13446625-M74** - Código de referência específico[m
+[32m+[m[32m   - Em processo de modificação[m
+[32m+[m[32m   - Requer ajustes antes da aprovação[m
+[32m+[m
+[32m+[m[32m### Cartões em Desenvolvimento (Status: 🚧)[m
+[32m+[m[32m1. **TUNNEL rgbww** - Produto em desenvolvimento[m
+[32m+[m[32m   - Coluna: TUNNEL rgbww[m
+[32m+[m[32m   - Em fase de criação/conceção[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 📋 Funcionalidades do Board[m
+[32m+[m
+[32m+[m[32m### Filtros Disponíveis[m
+[32m+[m[32m- **Membros**: Filtro por todos os membros da equipa[m
+[32m+[m[32m- **Labels**: Filtro por todas as etiquetas[m
+[32m+[m[32m- **Pesquisa**: Campo de pesquisa de cartões[m
+[32m+[m
+[32m+[m[32m### Ações por Cartão[m
+[32m+[m[32m- Adicionar membros[m
+[32m+[m[32m- Adicionar etiquetas[m
+[32m+[m[32m- Definir data de vencimento[m
+[32m+[m[32m- Adicionar cronómetro[m
+[32m+[m[32m- Anexar ficheiros[m
+[32m+[m[32m- Subscrever[m
+[32m+[m[32m- Mover[m
+[32m+[m[32m- Duplicar[m
+[32m+[m[32m- Copiar link[m
+[32m+[m[32m- Eliminar[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 🎯 Recomendações e Próximos Passos[m
+[32m+[m
+[32m+[m[32m### Prioridades Imediatas[m
+[32m+[m[32m1. **Desenvolver cartões nas colunas vazias** - 19 colunas aguardam conteúdo[m
+[32m+[m[32m2. **Finalizar modificações** - Cartão 8CXMAR13446625-M74 requer conclusão[m
+[32m+[m[32m3. **Expandir TUNNEL rgbww** - Adicionar detalhes e anexos[m
+[32m+[m
+[32m+[m[32m### Estratégia de Desenvolvimento[m
+[32m+[m[32m1. **Fase 1**: Completar cartões em colunas existentes[m
+[32m+[m[32m2. **Fase 2**: Criar cartões para colunas vazias[m
+[32m+[m[32m3. **Fase 3**: Revisão e aprovação de todos os produtos[m
+[32m+[m[32m4. **Fase 4**: Preparação para produção[m
+[32m+[m
+[32m+[m[32m### Gestão de Qualidade[m
+[32m+[m[32m- Manter padrão de aprovação estabelecido[m
+[32m+[m[32m- Documentar todos os produtos com imagens[m
+[32m+[m[32m- Estabelecer fluxo de trabalho consistente[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 📸 Imagens Capturadas[m
+[32m+[m
+[32m+[m[32m### Screenshots do Board[m
+[32m+[m[32m- **CREAS_2026_board_overview.png** - Vista geral completa do board[m
+[32m+[m[32m- **CREAS_2026-card_CG26-FIG22-OURS.png** - Detalhes do cartão aprovado[m
+[32m+[m
+[32m+[m[32m### Localização das Imagens[m
+[32m+[m[32mAs imagens estão guardadas em: `c:\Users\AndreGarcia\Desktop\boards\.playwright-mcp\`[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 🔗 Informações Técnicas[m
+[32m+[m
+[32m+[m[32m### Sistema[m
+[32m+[m[32m- **Plataforma**: Planka[m
+[32m+[m[32m- **Versão**: Sistema personalizado[m
+[32m+[m[32m- **URL Base**: https://planka.dsproject.pt[m
+[32m+[m[32m- **ID do Board**: 1539166681719375789[m
+[32m+[m
+[32m+[m[32m### Estrutura de Dados[m
+[32m+[m[32m- **Modelo**: Kanban Board[m
+[32m+[m[32m- **Sistema de Etiquetas**: Labels coloridos[m
+[32m+[m[32m- **Sistema de Membros**: Gestão de equipa[m
+[32m+[m[32m- **Sistema de Anexos**: Suporte para ficheiros[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 📝 Notas Finais[m
+[32m+[m
+[32m+[m[32mEste board representa um projeto de decoração de Natal (XMAS DECOR) para 2026, com foco em produtos de iluminação e decoração. A estrutura está bem organizada em colunas temáticas, mas a maioria das colunas ainda aguarda desenvolvimento de conteúdo.[m
+[32m+[m
+[32m+[m[32mO sistema está configurado para gestão eficiente de projetos com funcionalidades completas de colaboração, incluindo gestão de membros, etiquetas, anexos e fluxo de trabalho.[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m*Documento criado automaticamente a partir do board CREAS 2026 do Planka*[m[41m  [m
+[32m+[m[32m*Data: Dezembro 2024*[m[41m  [m
+[32m+[m[32m*Sistema: Planka Personalizado*[m
+[1mdiff --git a/planos-desenvolvimento/BOARD_TAREFAS_2025_2026_DOCUMENTACAO.md b/planos-desenvolvimento/BOARD_TAREFAS_2025_2026_DOCUMENTACAO.md[m
+[1mnew file mode 100644[m
+[1mindex 0000000..6ac1f04[m
+[1m--- /dev/null[m
+[1m+++ b/planos-desenvolvimento/BOARD_TAREFAS_2025_2026_DOCUMENTACAO.md[m
+[36m@@ -0,0 +1,303 @@[m
+[32m+[m[32m# 📋 Documentação Completa - Board TAREFAS 2025/2026[m
+[32m+[m
+[32m+[m[32m## 🎯 Visão Geral[m
+[32m+[m
+[32m+[m[32m**Board**: TAREFAS 2025/2026[m[41m  [m
+[32m+[m[32m**Projeto**: TAREFAS 2025/2026[m[41m  [m
+[32m+[m[32m**URL**: https://planka.dsproject.pt/boards/1515231239416580051[m[41m  [m
+[32m+[m[32m**Data de Documentação**: Dezembro 2024[m[41m  [m
+[32m+[m
+[32m+[m[32m## 🏗️ Estrutura do Board[m
+[32m+[m
+[32m+[m[32m### Informações Gerais[m
+[32m+[m[32m- **Nome do Board**: TAREFAS 2025/2026[m
+[32m+[m[32m- **Projeto Associado**: TAREFAS 2025/2026[m
+[32m+[m[32m- **Tipo de Vista**: Kanban (padrão)[m
+[32m+[m[32m- **Contexto**: Board de gestão de tarefas e projetos para 2025/2026[m
+[32m+[m
+[32m+[m[32m### Membros da Equipa[m
+[32m+[m[32m- **AG** - André Garcia (Proprietário)[m
+[32m+[m[32m- **Be** - Bernardo[m
+[32m+[m[32m- **Ca** - Catarina[m
+[32m+[m[32m- **Di** - Diana[m
+[32m+[m[32m- **ED** - Eduardo Duarte[m
+[32m+[m[32m- **Fi** - Filipa[m
+[32m+[m[32m- **+8** - Mais 8 membros adicionais[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 📋 Colunas (Lists) e Cartões[m
+[32m+[m
+[32m+[m[32m### 1. 🎨 CONCEITOS?[m
+[32m+[m[32m**Status**: Coluna vazia - apenas botão "Add card"[m
+[32m+[m[32m- **Cartões**: Nenhum cartão criado ainda[m
+[32m+[m[32m- **Ação**: Aguarda criação de cartões conceituais[m
+[32m+[m
+[32m+[m[32m### 2. 🎬 CINEMA 4D[m
+[32m+[m[32m**Status**: Coluna com 6 cartões[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **Refazer lucioles mais parecidos com Aurelien, menos realidade, mais efeito wow**[m[41m [m
+[32m+[m[32m    - Status: ✅ Concluído (1/1)[m
+[32m+[m[32m    - Descrição: "Mais redondos, menos pau"[m
+[32m+[m[32m    - Anexos: 1 (teste flexi16.jpg - 1 de Setembro às 10:21 AM)[m
+[32m+[m[32m    - Responsável: André Garcia (AG)[m
+[32m+[m[32m    - Tipo: Efeitos visuais e renderização[m
+[32m+[m[32m  - **Leds ver aurelien,com sparkles**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Iluminação LED com efeitos sparkle[m
+[32m+[m[32m    - Responsável: Aurelien[m
+[32m+[m[32m  - **Renderizar por layers**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Técnica de renderização por camadas[m
+[32m+[m[32m  - **Fog para projetores**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Efeitos de névoa para projetores[m
+[32m+[m[32m  - **Fazer GX060 em 3D**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Modelação 3D do produto GX060[m
+[32m+[m[32m  - **Texturas flexi com relevo 4 Be**[m
+[32m+[m[32m    - Status: Em desenvolvimento (0/4)[m
+[32m+[m[32m    - Tipo: Criação de texturas flexíveis com relevo[m
+[32m+[m[32m    - Responsável: Bernardo (Be)[m
+[32m+[m
+[32m+[m[32m### 3. 🏗️ SKETCHUP[m
+[32m+[m[32m**Status**: Coluna com 1 cartão[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **Refazer materiais com novo update mais realista**[m
+[32m+[m[32m    - Status: Em desenvolvimento (0/1)[m
+[32m+[m[32m    - Tipo: Atualização de materiais para maior realismo[m
+[32m+[m[32m    - Software: SketchUp[m
+[32m+[m
+[32m+[m[32m### 4. 🤖 IA[m
+[32m+[m[32m**Status**: Coluna com 2 cartões[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **Fazer videos de pessoas a carregar em cenas e outras posiçoes no runaway, remover fundo com lockdown**[m
+[32m+[m[32m    - Status: ✅ Concluído (1/1)[m
+[32m+[m[32m    - Tipo: Criação de vídeos com IA[m
+[32m+[m[32m    - Técnica: Remoção de fundo com Lockdown[m
+[32m+[m[32m    - Software: Runway[m
+[32m+[m[32m  - **Fazer cenas para Auto simu**[m
+[32m+[m[32m    - Status: Em desenvolvimento (0/4)[m
+[32m+[m[32m    - Tipo: Criação de cenas para simulação automóvel[m
+[32m+[m
+[32m+[m[32m### 5. 📜 SCRIPTS[m
+[32m+[m[32m**Status**: Coluna com 1 cartão[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **Illustrator**[m
+[32m+[m[32m    - Status: Em desenvolvimento (0/4)[m
+[32m+[m[32m    - Tipo: Scripts para Adobe Illustrator[m
+[32m+[m[32m    - Software: Adobe Illustrator[m
+[32m+[m
+[32m+[m[32m### 6. 🖼️ PHOTOSHOP[m
+[32m+[m[32m**Status**: Coluna com 5 cartões[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **testar https://borisfx.com/products/optics/**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Teste de plugin Boris FX Optics[m
+[32m+[m[32m    - Software: Adobe Photoshop[m
+[32m+[m[32m    - Plugin: Boris FX Optics[m
+[32m+[m[32m  - **Nik Collection by DxO**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Teste de plugin Nik Collection[m
+[32m+[m[32m    - Software: Adobe Photoshop[m
+[32m+[m[32m    - Plugin: Nik Collection by DxO[m
+[32m+[m[32m  - **testar MOBGLOW 2**[m
+[32m+[m[32m    - Status: Em desenvolvimento (0/2)[m
+[32m+[m[32m    - Tipo: Teste de plugin MOBGLOW[m
+[32m+[m[32m    - Software: Adobe Photoshop[m
+[32m+[m[32m    - Plugin: MOBGLOW 2[m
+[32m+[m[32m  - **Make trees white, snow trees, glitter several sizes**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Efeitos de árvores com neve e glitter[m
+[32m+[m[32m    - Software: Adobe Photoshop[m
+[32m+[m
+[32m+[m[32m### 7. 🎬 AFTER[m
+[32m+[m[32m**Status**: Coluna com 4 cartões[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **FORMAÇAO VRANOS LOCKDOWN 3.0**[m
+[32m+[m[32m    - Status: ✅ Concluído (1/1)[m
+[32m+[m[32m    - Tipo: Formação em Lockdown 3.0[m
+[32m+[m[32m    - Software: Lockdown[m
+[32m+[m[32m    - Formador: Vranos[m
+[32m+[m[32m  - **FORMAÇÃO ANIME VIA IA**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Formação em criação de anime via IA[m
+[32m+[m[32m  - **TESTAR EFEITOS REDGIANT**[m
+[32m+[m[32m    - Status: Em desenvolvimento[m
+[32m+[m[32m    - Tipo: Teste de efeitos Red Giant[m
+[32m+[m[32m    - Software: Adobe After Effects[m
+[32m+[m[32m    - Plugin: Red Giant[m
+[32m+[m[32m  - **SCRIPT AFTER**[m
+[32m+[m[32m    - Status: Em desenvolvimento (0/3)[m
+[32m+[m[32m    - Tipo: Scripts para Adobe After Effects[m
+[32m+[m[32m    - Software: Adobe After Effects[m
+[32m+[m
+[32m+[m[32m### 8. 📊 Organização[m
+[32m+[m[32m**Status**: Coluna com 1 cartão[m
+[32m+[m[32m- **Cartões**:[m
+[32m+[m[32m  - **Decidir metodo para modifs**[m
+[32m+[m[32m    - Status: Em desenvolvimento (0/3)[m
+[32m+[m[32m    - Tipo: Decisão sobre método para modificações[m
+[32m+[m[32m    - Categoria: Organização e gestão[m
+[32m+[m
+[32m+[m[32m---[m
+[32m+[m
+[32m+[m[32m## 📊 Estatísticas do Board[m
+[32m+[m
+[32m+[m[32m### Resumo por Status[m
+[32m+[m[32m- **Total de Colunas**: 8 colunas[m
+[32m+[m[32m- **Colunas com Cartões**: 8 colunas (100%)[m
+[32m+[m[32m- **Total de Cartões**: 20 cartões[m
+[32m+[m[32m- **Cartões Concluídos**: 3 cartões (15%)[m
+[32m+[m[32m- **Cartões em Desenvolvimento**: 17 cartões (85%)[m
+[32m+[m
+[32m+[m[32m### Distribuição por Categoria[m
+[32m+[m[32m- **CINEMA 4D**: 6 cartões (30%)[m
+[32m+[m[32m- **PHOTOSHOP**: 5 cartões (25%)[m
+[32m+[m[32m- **AFTER**: 4 cartões (20%)[m
+[32m+[m[32m- **IA**: 2 cartões (10%)[m
+[32m+[m[32m- **SKETCHUP**: 1 cartão (5%)[m
+[32m+[m[32m- **SCRIP
