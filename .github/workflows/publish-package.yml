@@ -1,5 +1,6 @@
 name: Build and Push Docker Image to GitHub Container Registry
 
+# Workflow atualizado com permissões corretas para ghcr.io
 on:
   push:
     branches: [ main ]
