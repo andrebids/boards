@@ -51,6 +51,13 @@ const EditColorStep = React.memo(({ listId, onBack, onClose }) => {
     onClose();
   }, [listId, onClose, dispatch]);
 
+  const formatColorName = (color) => {
+    return color
+      .split('-')
+      .map(word => upperFirst(word))
+      .join(' ');
+  };
+
   return (
     <>
       <Popup.Header onBack={onBack}>
@@ -63,6 +70,7 @@ const EditColorStep = React.memo(({ listId, onBack, onClose }) => {
           {LIST_COLORS.map(color => (
             <Button
               key={color}
+              title={formatColorName(color)}
               type="button"
               value={color}
               className={classNames(

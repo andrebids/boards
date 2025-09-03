@@ -27,6 +27,13 @@ const Editor = React.memo(({ data, onFieldChange }) => {
     nameFieldRef.current.focus();
   }, [nameFieldRef]);
 
+  const formatColorName = (color) => {
+    return color
+      .split('-')
+      .map(word => upperFirst(word))
+      .join(' ');
+  };
+
   return (
     <>
       <div className={styles.text}>{t('common.title')}</div>
@@ -44,6 +51,7 @@ const Editor = React.memo(({ data, onFieldChange }) => {
         {LABEL_COLORS.map(color => (
           <Button
             key={color}
+            title={formatColorName(color)}
             type="button"
             name="color"
             value={color}

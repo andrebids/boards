@@ -11,47 +11,65 @@
  */
 
 const COLORS = [
-  'muddy-grey',
-  'autumn-leafs',
-  'morning-sky',
-  'antique-blue',
+  // Vermelhos e Rosas
+  'berry-red',
+  'pink-tulip',
+  'apricot-red',
+  'piggy-red',
+  'red-burgundy',
+  'rosso-corsa',
+  'hot-pink',
+
+  // Laranjas e Amarelos
+  'pumpkin-orange',
+  'orange-peel',
+  'light-orange',
   'egg-yellow',
   'desert-sand',
-  'dark-granite',
-  'fresh-salad',
-  'lagoon-blue',
-  'midnight-blue',
-  'light-orange',
-  'pumpkin-orange',
-  'light-concrete',
-  'sunny-grass',
-  'navy-blue',
-  'lilac-eyes',
-  'apricot-red',
-  'orange-peel',
-  'silver-glint',
-  'bright-moss',
-  'deep-ocean',
-  'summer-sky',
-  'berry-red',
   'light-cocoa',
-  'grey-stone',
+  'shady-rust',
+  'light-mud',
+  'bright-yellow',
+  'pure-orange',
+
+  // Verdes
+  'fresh-salad',
+  'sunny-grass',
+  'bright-moss',
   'tank-green',
   'coral-green',
-  'sugar-plum',
-  'pink-tulip',
-  'shady-rust',
-  'wet-rock',
   'wet-moss',
-  'turquoise-sea',
-  'lavender-fields',
-  'piggy-red',
-  'light-mud',
-  'gun-metal',
   'modern-green',
+  'lime-green',
+
+  // Azuis
+  'morning-sky',
+  'antique-blue',
+  'lagoon-blue',
+  'midnight-blue',
+  'navy-blue',
+  'summer-sky',
+  'turquoise-sea',
   'french-coast',
+  'deep-ocean',
+  'bright-blue',
+
+  // Roxos
+  'lilac-eyes',
+  'sugar-plum',
   'sweet-lilac',
-  'red-burgundy',
+  'lavender-fields',
+
+  // Cinzentos e Neutros
+  'muddy-grey',
+  'dark-granite',
+  'light-concrete',
+  'grey-stone',
+  'wet-rock',
+  'gun-metal',
+
+  // --- Gradientes ---
+  'silver-glint',
   'pirate-gold',
 ];
 
