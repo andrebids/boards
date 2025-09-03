@@ -191,14 +191,15 @@ module.exports = {
         _.pick(notificationService, ['url', 'format']),
       );
 
-      buildAndSendNotifications(
-        services,
-        inputs.board,
-        values.card,
-        comment,
-        values.user,
-        sails.helpers.utils.makeTranslator(),
-      );
+      // This helper is now called from actions/create-one.js
+      // buildAndSendNotifications(
+      //   services,
+      //   inputs.board,
+      //   values.card,
+      //   comment,
+      //   values.user,
+      //   sails.helpers.utils.makeTranslator(),
+      // );
     }
 
     return comment;
