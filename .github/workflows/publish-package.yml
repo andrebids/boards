@@ -1,6 +1,7 @@
 name: Build and Push Docker Image to GitHub Container Registry
 
 # Workflow atualizado com permissões corretas para ghcr.io
+# Token configurado via CR_PAT secret no GitHub
 on:
   push:
     branches: [ main ]
