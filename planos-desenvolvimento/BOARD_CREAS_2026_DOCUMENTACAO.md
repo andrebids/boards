@@ -1,4 +1,4 @@
-# 📋 Documentação Completa - Board CREAS 2026
+# 📋 Documentação Completa - Board CREAS 2026 
 
 ## 🎯 Visão Geral
 
