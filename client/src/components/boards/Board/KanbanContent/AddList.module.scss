@@ -29,6 +29,10 @@
     }
   }
 
+  .field > :global(input) {
+    color: #172b4d !important;
+  }
+
   .selectTypeButton {
     background: transparent;
     box-shadow: none;
