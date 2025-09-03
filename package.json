@@ -1,22 +1,7 @@
 {
-  "name": "@andrebids/planka",
+  "name": "planka",
   "version": "2.0.0-rc.4",
-  "private": false,
-  "description": "Planka personalizado com funcionalidades avançadas para gestão de projetos",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/andrebids/boards.git"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
-  "keywords": [
-    "planka",
-    "kanban",
-    "project-management",
-    "boards",
-    "task-management"
-  ],
+  "private": true,
   "scripts": {
     "client:build": "npm run build --prefix client",
     "client:lint": "npm run lint --prefix client",
@@ -45,7 +30,7 @@
       "npm run client:lint"
     ],
     "server/**/*.js": [
-      "npm run server:lint"
+      "npm run lint"
     ]
   },
   "dependencies": {

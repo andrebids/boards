@@ -11,30 +11,34 @@ Dezembro 2024
 - **Screenshots**: Capturas de ecrã completas dos boards
 - **Análise**: Estatísticas e recomendações para desenvolvimento
 
-### 🔧 Configuração GitHub Packages
-- **Novo package**: `@andrebids/planka`
-- **Workflow automático**: Publicação automática via GitHub Actions
-- **Registry configurado**: npm.pkg.github.com
-- **Scope**: @andrebids
+### 🔧 Configuração GitHub Container Registry
+- **Imagem Docker**: `ghcr.io/andrebids/boards:latest`
+- **Workflow automático**: Build e push automático via GitHub Actions
+- **Registry configurado**: ghcr.io (GitHub Container Registry)
+- **Tags automáticas**: Versões, branches e commits
 
 ## 🛠️ Melhorias Técnicas
 - **Build otimizado**: Vite com configuração de produção
-- **Dependências atualizadas**: Versões mais recentes
-- **Configuração NPM**: .npmrc para GitHub Packages
-- **Workflow CI/CD**: Automatização de publicação
+- **Docker workflow**: CI/CD automático para imagens Docker
+- **Cache otimizado**: GitHub Actions cache para builds mais rápidos
+- **Tags inteligentes**: Sistema automático de versioning
 
-## 📦 Como Instalar
+## 🐳 Como Usar
 
-```bash
-npm install @andrebids/planka
+```yaml
+# docker-compose.yml
+services:
+  planka:
+    image: ghcr.io/andrebids/boards:latest
+    # ... resto da configuração
 ```
 
 ## 🔗 Links
 - **GitHub**: https://github.com/andrebids/boards
-- **Package**: https://github.com/andrebids?tab=packages&repo_name=boards
+- **Container Registry**: ghcr.io/andrebids/boards
 - **Documentação**: Incluída no repositório
 
 ## 🎯 Próximos Passos
-- Monitorização do workflow de publicação
-- Validação do package no GitHub Packages
-- Atualizações futuras via releases
+- Monitorização do workflow de build Docker
+- Validação da imagem no GitHub Container Registry
+- Atualizações futuras via releases e commits
