@@ -2,11 +2,15 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [main, master, develop, feature/*]
+    branches: [main, master]
     paths-ignore:
       - '.github/**'
       - 'charts/**'
       - '*.md'
+      - 'RELEASE_*.md'
+      - 'CONTRIBUTING.md'
+      - 'CODE_OF_CONDUCT.md'
+      - 'SECURITY.md'
   release:
     types: [created]
   workflow_dispatch:

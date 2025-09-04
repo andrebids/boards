@@ -1,17 +1,21 @@
-name: Build Docker Image on Push
+name: Build Docker Image Manual
 
 on:
-  push:
-    branches: [main, master]
-    paths-ignore:
-      - '.github/**'
-      - 'charts/**'
-      - '*.md'
-      - 'RELEASE_*.md'
-      - 'CONTRIBUTING.md'
-      - 'CODE_OF_CONDUCT.md'
-      - 'SECURITY.md'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (leave empty for package.json version)'
+        required: false
+        type: string
+      platform:
+        description: 'Platform to build'
+        required: false
+        default: 'linux/amd64'
+        type: choice
+        options:
+          - linux/amd64
+          - linux/arm64
+          - linux/arm/v7
 
 jobs:
   build-docker:
@@ -34,7 +38,11 @@ jobs:
       - name: Get version from package.json
         id: version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
@@ -42,7 +50,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64
+          platforms: ${{ github.event.inputs.platform }}
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
@@ -55,3 +63,4 @@ jobs:
           echo "✅ Docker image built and pushed successfully!"
           echo "Image: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}"
           echo "Latest: ghcr.io/${{ github.repository }}:latest"
+          echo "Platform: ${{ github.event.inputs.platform }}"
