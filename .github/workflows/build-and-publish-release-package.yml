@@ -38,8 +38,12 @@ jobs:
           cp ../dist/public/index.html ../dist/views
         working-directory: ./client
 
-      - name: Include README.md, SECURITY.md into dist
-        run: mv README.md SECURITY.md dist
+      - name: Include documentation files into dist
+        run: |
+          # Move files only if they exist
+          [ -f README.md ] && mv README.md dist/ || echo "README.md not found"
+          [ -f SECURITY.md ] && mv SECURITY.md dist/ || echo "SECURITY.md not found"
+          [ -f LICENSE.md ] && mv LICENSE.md dist/ || echo "LICENSE.md not found"
 
       - name: Create release package
         run: |
