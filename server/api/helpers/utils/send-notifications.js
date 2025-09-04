@@ -25,11 +25,33 @@ module.exports = {
   },
 
   async fn(inputs) {
-    return promisifyExecFile(`${sails.config.appPath}/.venv/bin/python3`, [
-      `${sails.config.appPath}/utils/send_notifications.py`,
+    const pythonExecutable = `${sails.config.appPath}/.venv/bin/python3`;
+    const pythonScript = `${sails.config.appPath}/utils/send_notifications.py`;
+    const args = [
+      pythonScript,
       JSON.stringify(inputs.services),
       inputs.title,
       JSON.stringify(inputs.bodyByFormat),
-    ]);
+    ];
+
+    console.log('--- [send-notifications] Attempting to send notification ---');
+    console.log(`Executing: ${pythonExecutable}`);
+    console.log('With arguments:', JSON.stringify(args, null, 2));
+
+    try {
+      const { stdout, stderr } = await promisifyExecFile(pythonExecutable, args);
+
+      console.log('[send-notifications] Python script stdout:', stdout);
+
+      if (stderr) {
+        console.error('[send-notifications] Python script stderr:', stderr);
+      }
+
+      console.log('--- [send-notifications] Notification command executed ---');
+    } catch (error) {
+      console.error('--- [send-notifications] CRITICAL: Error executing Python script ---');
+      console.error(error);
+      throw error;
+    }
   },
 };
