@@ -1,0 +1,117 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
+      - 'charts/**'
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (leave empty for package.json version)'
+        required: false
+        type: string
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Get version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [ -n "${{ github.event.release.tag_name }}" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Install dependencies
+        run: |
+          npm install --omit=dev
+          cd client && npm install --omit=dev
+
+      - name: Build client
+        run: |
+          cd client
+          DISABLE_ESLINT_PLUGIN=true npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create release package (only on release)
+        if: github.event_name == 'release'
+        run: |
+          # Create dist directory
+          mkdir -p dist/public
+          mkdir -p dist/views
+          
+          # Copy server files
+          cp -r server dist/
+          
+          # Copy client build
+          cp -r client/dist/* dist/public/
+          cp dist/public/index.html dist/views/
+          
+          # Copy documentation files if they exist
+          [ -f README.md ] && cp README.md dist/ || echo "README.md not found, skipping"
+          [ -f SECURITY.md ] && cp SECURITY.md dist/ || echo "SECURITY.md not found, skipping"
+          [ -f LICENSE.md ] && cp LICENSE.md dist/ || echo "LICENSE.md not found, skipping"
+          
+          # Create package
+          mv dist planka
+          zip -r planka-${{ steps.version.outputs.version }}.zip planka
+          
+          echo "Release package created: planka-${{ steps.version.outputs.version }}.zip"
+
+      - name: Upload release package (only on release)
+        if: github.event_name == 'release'
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} planka-${{ steps.version.outputs.version }}.zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Show success message
+        run: |
+          echo "✅ Build completed successfully!"
+          echo "🐳 Docker image: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}"
+          echo "🏷️  Latest tag: ghcr.io/${{ github.repository }}:latest"
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "📦 Release package: planka-${{ steps.version.outputs.version }}.zip"
+          fi
