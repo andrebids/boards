@@ -77,6 +77,7 @@ const UsersPane = React.memo(() => {
         placeholder={t('common.searchUsers')}
         maxLength={256}
         icon="search"
+        className={styles.searchInput}
         onChange={handleSearchChange}
       />
       <Divider />
