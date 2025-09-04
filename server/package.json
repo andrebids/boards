@@ -1,5 +1,6 @@
 {
   "name": "planka-server",
+  "version": "1.3.0",
   "private": true,
   "main": "app.js",
   "scripts": {
