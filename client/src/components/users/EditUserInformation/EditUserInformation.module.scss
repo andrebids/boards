@@ -6,6 +6,10 @@
 :global(#app) {
   .field {
     margin-bottom: 8px;
+
+    input {
+      color: #000 !important;
+    }
   }
 
   .text {

@@ -8,6 +8,11 @@
     margin-bottom: 14px;
   }
 
+  .field:global(.ui.input) > input,
+  textarea.field {
+    color: #000 !important;
+  }
+
   .selectTypeButton {
     background: transparent;
     box-shadow: none;
