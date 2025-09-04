@@ -7,7 +7,7 @@ Sentry.init({
   sendDefaultPii: true,
   // Configurações adicionais para o ambiente
   environment: process.env.NODE_ENV || 'development',
-  release: 'planka-client@1.3.0',
+  release: 'planka-client@1.3.3',
   // Configurar sample rate para performance
   tracesSampleRate: 1.0,
 });
