@@ -1,8 +1,15 @@
 name: Build and Push Docker Image
 
 on:
+  push:
+    branches: [main, master, develop, feature/*]
+    paths-ignore:
+      - '.github/**'
+      - 'charts/**'
+      - '*.md'
   release:
     types: [created]
+  workflow_dispatch:
 
 jobs:
   build-and-push-docker-image:
@@ -25,12 +32,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set version from release tag
-        uses: actions/github-script@v6
+      - name: Set version from package.json
         id: set-version
-        with:
-          result-encoding: string
-          script: return context.payload.release.tag_name.replace('v', '')
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Generate Docker image tags
         id: metadata
@@ -39,7 +45,8 @@ jobs:
           images: |
             name=ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=${{ steps.set-version.outputs.result }}
+            type=raw,value=${{ steps.set-version.outputs.version }}
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4

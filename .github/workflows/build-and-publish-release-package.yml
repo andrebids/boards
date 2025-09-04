@@ -38,8 +38,8 @@ jobs:
           cp ../dist/public/index.html ../dist/views
         working-directory: ./client
 
-      - name: Include LICENSE.md, README.md, SECURITY.md into dist
-        run: mv LICENSE.md README.md SECURITY.md dist
+      - name: Include README.md, SECURITY.md into dist
+        run: mv README.md SECURITY.md dist
 
       - name: Create release package
         run: |
