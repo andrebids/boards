@@ -28,9 +28,17 @@ module.exports = {
   async fn(inputs) {
     const { currentUser } = this.req;
 
-    const { notificationService, user, project } = await sails.helpers.notificationServices
-      .getPathToUserById(inputs.id)
+    const {
+      notificationService,
+      user,
+      project,
+    } = await sails.helpers.notificationServices.getPathToUserById
+      .with({
+        id: inputs.id,
+      })
       .intercept('pathNotFound', () => Errors.NOTIFICATION_SERVICE_NOT_FOUND);
+
+    console.log(`--- [test.js controller] Received test request for notification service ID: ${notificationService.id} ---`);
 
     if (notificationService.userId) {
       if (user.id !== currentUser.id) {
@@ -47,10 +55,14 @@ module.exports = {
       }
     }
 
-    await sails.helpers.notificationServices.testOne.with({
-      record: notificationService,
-      i18n: this.req.i18n,
-    });
+    const t = sails.helpers.utils.makeTranslator(currentUser.language);
+
+    await sails.helpers.notificationServices.testOne
+      .with({
+        record: notificationService,
+        i18n: t,
+      })
+      .intercept('badRequest', (error) => error);
 
     return {
       item: notificationService,
