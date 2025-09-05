@@ -16,3 +16,39 @@
     }
   }
 }
+
+:global(.ui.modal.glass[class*='_wrapperUsers_'] > i.close.icon:hover) {
+  color: #ffffff !important;
+  background: rgba(55, 65, 81, 0.4) !important;
+  border-color: rgba(75, 85, 99, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 3px rgba(255, 255, 255, 0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+:global(.ui.modal.glass[class*='_wrapperUsers_'] > i.close.icon) {
+  color: rgba(230, 237, 243, 0.9) !important;
+  background: rgba(55, 65, 81, 0.4) !important;
+  border: 1px solid rgba(75, 85, 99, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+:global(.ui.modal.glass > i.close.icon:hover) {
+  background: rgba(59, 130, 246, 0.12);
+  color: #ffffff;
+}
+:global(.ui.modal.glass > i.close.icon) {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  padding: 4px !important;
+  background: transparent;
+  color: #d7e7ff;
+  cursor: pointer;
+}

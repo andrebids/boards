@@ -1,0 +1,12 @@
+# Apprise Configuration File
+# Force STARTTLS for all email notifications
+
+# SMTP Security Settings
+smtp_secure: starttls
+smtp_mode: starttls
+smtp_timeout: 30
+verify_certificate: false
+
+# Override any custom defaults
+secure: true
+mode: starttls

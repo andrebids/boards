@@ -8,46 +8,66 @@ const escapeMarkdown = require('escape-markdown');
 const escapeHtml = require('escape-html');
 
 const buildTitle = (action, t) => {
+  let baseTitle;
   switch (action.type) {
     case sails.models.action.Types.CREATE_CARD:
-      return t('Card Created');
+      baseTitle = t('Card Created');
+      break;
     case sails.models.action.Types.MOVE_CARD:
-      return t('Card Moved');
+      baseTitle = t('Card Moved');
+      break;
     case sails.models.action.Types.CREATE_TASK:
-      return t('Task Created');
+      baseTitle = t('Task Created');
+      break;
     case sails.models.action.Types.DELETE_TASK:
-      return t('Task Deleted');
+      baseTitle = t('Task Deleted');
+      break;
     case sails.models.action.Types.UPDATE_TASK:
-      return t('Task Updated');
+      baseTitle = t('Task Updated');
+      break;
     case sails.models.action.Types.COMPLETE_TASK:
-      return t('Task Completed');
+      baseTitle = t('Task Completed');
+      break;
     case sails.models.action.Types.UNCOMPLETE_TASK:
-      return t('Task Marked Incomplete');
+      baseTitle = t('Task Marked Incomplete');
+      break;
     case sails.models.action.Types.CREATE_TASK_LIST:
-      return t('Task List Created');
+      baseTitle = t('Task List Created');
+      break;
     case sails.models.action.Types.DELETE_TASK_LIST:
-      return t('Task List Deleted');
+      baseTitle = t('Task List Deleted');
+      break;
     case sails.models.action.Types.CREATE_ATTACHMENT:
-      return t('Attachment Created');
+      baseTitle = t('Attachment Created');
+      break;
     case sails.models.action.Types.DELETE_ATTACHMENT:
-      return t('Attachment Deleted');
+      baseTitle = t('Attachment Deleted');
+      break;
     case sails.models.action.Types.SET_DUE_DATE:
-      return t('Due Date Set');
+      baseTitle = t('Due Date Set');
+      break;
     case sails.models.action.Types.ADD_LABEL_TO_CARD:
-      return t('Label Added');
+      baseTitle = t('Label Added');
+      break;
     case sails.models.action.Types.REMOVE_LABEL_FROM_CARD:
-      return t('Label Removed');
+      baseTitle = t('Label Removed');
+      break;
     case sails.models.action.Types.COMMENT_CREATE:
-      return t('Comment Created');
+      baseTitle = t('Comment Created');
+      break;
     case sails.models.action.Types.COMMENT_UPDATE:
-      return t('Comment Updated');
+      baseTitle = t('Comment Updated');
+      break;
     case sails.models.action.Types.COMMENT_DELETE:
-      return t('Comment Deleted');
+      baseTitle = t('Comment Deleted');
+      break;
     case sails.models.action.Types.COMMENT_REPLY:
-      return t('Comment Reply');
+      baseTitle = t('Comment Reply');
+      break;
     default:
       return null;
   }
+  return `Blachere Boards - ${baseTitle}`;
 };
 
 const buildBodyByFormat = (board, card, action, actorUser, t) => {

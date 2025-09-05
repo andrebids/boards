@@ -25,11 +25,30 @@ module.exports = {
   },
 
   async fn(inputs) {
-    return promisifyExecFile(`${sails.config.appPath}/.venv/bin/python3`, [
-      `${sails.config.appPath}/utils/send_notifications.py`,
+    const pythonExecutable = `${sails.config.appPath}/.venv/bin/python3`;
+    const pythonScript = `${sails.config.appPath}/utils/send_notifications.py`;
+    const args = [
+      pythonScript,
       JSON.stringify(inputs.services),
       inputs.title,
       JSON.stringify(inputs.bodyByFormat),
-    ]);
+    ];
+
+    try {
+      const { stdout, stderr } = await promisifyExecFile(pythonExecutable, args);
+
+      // Log apenas erros críticos
+      if (stderr && stderr.includes('ERROR')) {
+        console.error('[send-notifications] Error:', stderr);
+      }
+
+      // Log simples de sucesso
+      if (stdout.includes('Success:')) {
+        console.log('✅ Email enviado com sucesso');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao enviar email:', error.message);
+      throw error;
+    }
   },
 };

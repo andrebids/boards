@@ -4,6 +4,7 @@
  */
 
 /* eslint-disable no-underscore-dangle */
+const _ = require('lodash');
 
 module.exports = {
   inputs: {
@@ -18,15 +19,18 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const { i18n } = inputs;
+    const { i18n, record } = inputs;
+
+    console.log(`--- [test-one.js helper] Preparing to send test notification for service ID: ${record.id} ---`);
+    console.log(`Service URL: ${record.url}`);
 
     await sails.helpers.utils.sendNotifications.with({
       services: [_.pick(inputs.record, ['url', 'format'])],
-      title: i18n.__('Test Title'),
+      title: i18n('Test Title'),
       bodyByFormat: {
-        text: i18n.__('This is a test text message!'),
-        markdown: i18n.__('This is a *test* **markdown** `message`!'),
-        html: i18n.__('This is a <i>test</i> <b>html</b> <code>message</code>'),
+        text: i18n('This is a test text message!'),
+        markdown: i18n('This is a *test* **markdown** `message`!'),
+        html: i18n('This is a <i>test</i> <b>html</b> <code>message</code>'),
       },
     });
   },
