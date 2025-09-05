@@ -9,18 +9,24 @@ const escapeHtml = require('escape-html');
 const { formatTextWithMentions } = require('../../../utils/mentions');
 
 const buildTitle = (notification, t) => {
+  let baseTitle;
   switch (notification.type) {
     case Notification.Types.MOVE_CARD:
-      return t('Card Moved');
+      baseTitle = t('Card Moved');
+      break;
     case Notification.Types.COMMENT_CARD:
-      return t('New Comment');
+      baseTitle = t('New Comment');
+      break;
     case Notification.Types.ADD_MEMBER_TO_CARD:
-      return t('You Were Added to Card');
+      baseTitle = t('You Were Added to Card');
+      break;
     case Notification.Types.MENTION_IN_COMMENT:
-      return t('You Were Mentioned in Comment');
+      baseTitle = t('You Were Mentioned in Comment');
+      break;
     default:
       return null;
   }
+  return `Blachere Boards - ${baseTitle}`;
 };
 
 const buildBodyByFormat = (board, card, notification, actorUser, t) => {
@@ -128,16 +134,173 @@ const buildBodyByFormat = (board, card, notification, actorUser, t) => {
   }
 };
 
-const buildAndSendNotifications = async (services, board, card, notification, actorUser, t) => {
-  await sails.helpers.utils.sendNotifications(
-    services,
-    buildTitle(notification, t),
-    buildBodyByFormat(board, card, notification, actorUser, t),
-  );
+const buildAndSendNotifications = async (services, board, card, notification, actorUser, t, inputs) => {
+  // ✅ Se templates estão ativos, usar HTML dos templates para serviços HTML
+  if (EMAIL_TEMPLATES_ENABLED) {
+    try {
+      const notifiableUser = inputs.notifiableUser;
+      
+      // Verificar se algum serviço usa formato HTML
+      const hasHtmlService = services.some(service => service.format === 'html');
+      
+      if (hasHtmlService) {
+        // Gerar HTML dos templates apenas se houver serviços HTML
+        const templateHtml = await buildAndSendEmailWithTemplates(board, card, notification, actorUser, notifiableUser, t, inputs);
+        
+        // Criar body com HTML dos templates
+        const bodyByFormat = buildBodyByFormat(board, card, notification, actorUser, t);
+        const bodyWithTemplates = {
+          ...bodyByFormat,
+          html: templateHtml // Substituir HTML padrão pelos templates
+        };
+        
+        await sails.helpers.utils.sendNotifications(
+          services,
+          buildTitle(notification, t),
+          bodyWithTemplates,
+        );
+      } else {
+        // Nenhum serviço HTML, usar formato padrão
+        await sails.helpers.utils.sendNotifications(
+          services,
+          buildTitle(notification, t),
+          buildBodyByFormat(board, card, notification, actorUser, t),
+        );
+      }
+    } catch (error) {
+      sails.log.error('❌ Erro nos templates para Apprise, usando formato padrão:', error);
+      // Fallback para formato original
+      await sails.helpers.utils.sendNotifications(
+        services,
+        buildTitle(notification, t),
+        buildBodyByFormat(board, card, notification, actorUser, t),
+      );
+    }
+  } else {
+    // Usar formato original se templates não estão ativos
+    await sails.helpers.utils.sendNotifications(
+      services,
+      buildTitle(notification, t),
+      buildBodyByFormat(board, card, notification, actorUser, t),
+    );
+  }
 };
 
-// TODO: use templates (views) to build html
-const buildAndSendEmail = async (board, card, notification, actorUser, notifiableUser, t) => {
+// ✅ Sistema de templates com fallback
+const EMAIL_TEMPLATES_ENABLED = process.env.EMAIL_TEMPLATES_ENABLED === 'true';
+
+const buildAndSendEmail = async (board, card, notification, actorUser, notifiableUser, t, inputs) => {
+  if (EMAIL_TEMPLATES_ENABLED) {
+    try {
+      await buildAndSendEmailWithTemplates(board, card, notification, actorUser, notifiableUser, t, inputs);
+    } catch (error) {
+      sails.log.error('❌ Erro nos templates, usando fallback para HTML inline:', error);
+      await buildAndSendEmailLegacy(board, card, notification, actorUser, notifiableUser, t);
+    }
+  } else {
+    await buildAndSendEmailLegacy(board, card, notification, actorUser, notifiableUser, t);
+  }
+};
+
+const buildAndSendEmailWithTemplates = async (board, card, notification, actorUser, notifiableUser, t, inputs) => {
+  const project = inputs.project || board.project;
+  const currentList = inputs.list || card.list;
+  const listName = currentList ? sails.helpers.lists.makeName(currentList) : 'Lista';
+  
+  // Dados específicos por tipo de notificação
+  const getNotificationSpecificData = (notification, actorUser, t, card, currentList) => {
+    switch (notification?.type) {
+      case Notification.Types.MOVE_CARD: {
+        const fromListName = notification?.data?.fromList ? 
+          sails.helpers.lists.makeName(notification.data.fromList) : 'Lista Origem';
+        const toListName = notification?.data?.toList ? 
+          sails.helpers.lists.makeName(notification.data.toList) : 'Lista Destino';
+        return {
+          from_list: escapeHtml(fromListName),
+          to_list: escapeHtml(toListName),
+          action_verb: 'moveu',
+          action_object: 'o cartão',
+          notification_type_label: 'Movimento',
+          type_background_color: '#eff8ff',
+          type_border_color: '#b2ddff',
+          type_text_color: '#175cd3',
+        };
+      }
+      case Notification.Types.COMMENT_CARD:
+        return {
+          action_verb: 'comentou',
+          action_object: 'o cartão',
+          notification_type_label: 'Comentário',
+          type_background_color: '#f0f9ff',
+          type_border_color: '#7dd3fc',
+          type_text_color: '#0369a1',
+        };
+      case Notification.Types.ADD_MEMBER_TO_CARD:
+        return {
+          action_verb: 'adicionou-o',
+          action_object: 'ao cartão',
+          notification_type_label: 'Membro Adicionado',
+          type_background_color: '#f0fdf4',
+          type_border_color: '#86efac',
+          type_text_color: '#166534',
+        };
+      case Notification.Types.MENTION_IN_COMMENT:
+        return {
+          action_verb: 'mencionou-o',
+          action_object: 'num comentário',
+          notification_type_label: 'Menção',
+          type_background_color: '#fef3c7',
+          type_border_color: '#fcd34d',
+          type_text_color: '#92400e',
+        };
+      default:
+        return {};
+    }
+  };
+  
+  const templateData = {
+    actor_name: escapeHtml(actorUser?.name || 'Utilizador'),
+    card_title: escapeHtml(card?.name || 'Carta'),
+    card_id: card?.id || '',
+    project_name: escapeHtml(project?.name || board?.name || 'Projeto'),
+    board_name: escapeHtml(board?.name || 'Quadro'),
+    list_name: escapeHtml(listName),
+    card_url: `${sails.config.custom?.baseUrl || 'http://localhost:3000'}/cards/${card?.id || ''}`,
+    planka_base_url: sails.config.custom?.baseUrl || 'http://localhost:3000',
+    logo_url: `cid:logo@planka`, // CID para anexo inline
+    send_date: new Date().toLocaleDateString('pt-PT'),
+    user_email: notifiableUser?.email || 'utilizador@exemplo.com',
+    current_year: new Date().getFullYear(),
+    
+    // Null-safe
+    comment_excerpt: notification?.data?.text ? 
+      escapeHtml(notification.data.text.substring(0, 100) + '...') : 
+      'Sem comentário',
+    due_date: card?.dueDate ? 
+      new Date(card.dueDate).toLocaleDateString('pt-PT') : 
+      'Sem prazo',
+    
+    // Avatar do utilizador
+    actor_avatar_url: actorUser?.avatar?.dirname && actorUser?.avatar?.extension ? 
+      `${sails.config.custom?.baseUrl || 'http://localhost:3000'}/api/avatars/${actorUser.avatar.dirname}/cover-180.${actorUser.avatar.extension}` : 
+      `${sails.config.custom?.baseUrl || 'http://localhost:3000'}/default-avatar.png`,
+    actor_avatar_alt: escapeHtml(actorUser?.name || 'Utilizador'),
+    
+    // Dados específicos do tipo
+    ...getNotificationSpecificData(notification, actorUser, t, card, currentList),
+  };
+
+  const html = await sails.helpers.utils.compileEmailTemplate.with({
+    templateName: notification?.type || 'comment-card',
+    data: templateData,
+  });
+
+  // Retornar HTML para uso no Apprise
+  return html;
+};
+
+// ✅ Fallback para HTML inline (método antigo)
+const buildAndSendEmailLegacy = async (board, card, notification, actorUser, notifiableUser, t) => {
   const cardLink = `<a href="${sails.config.custom.baseUrl}/cards/${card.id}">${escapeHtml(card.name)}</a>`;
   const boardLink = `<a href="${sails.config.custom.baseUrl}/boards/${board.id}">${escapeHtml(board.name)}</a>`;
 
@@ -286,6 +449,7 @@ module.exports = {
           notification,
           values.creatorUser,
           t,
+          { notifiableUser },
         );
       }
 
@@ -297,6 +461,7 @@ module.exports = {
           values.creatorUser,
           notifiableUser,
           t,
+          inputs,
         );
       }
     }

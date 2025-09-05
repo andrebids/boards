@@ -34,23 +34,20 @@ module.exports = {
       JSON.stringify(inputs.bodyByFormat),
     ];
 
-    console.log('--- [send-notifications] Attempting to send notification ---');
-    console.log(`Executing: ${pythonExecutable}`);
-    console.log('With arguments:', JSON.stringify(args, null, 2));
-
     try {
       const { stdout, stderr } = await promisifyExecFile(pythonExecutable, args);
 
-      console.log('[send-notifications] Python script stdout:', stdout);
-
-      if (stderr) {
-        console.error('[send-notifications] Python script stderr:', stderr);
+      // Log apenas erros críticos
+      if (stderr && stderr.includes('ERROR')) {
+        console.error('[send-notifications] Error:', stderr);
       }
 
-      console.log('--- [send-notifications] Notification command executed ---');
+      // Log simples de sucesso
+      if (stdout.includes('Success:')) {
+        console.log('✅ Email enviado com sucesso');
+      }
     } catch (error) {
-      console.error('--- [send-notifications] CRITICAL: Error executing Python script ---');
-      console.error(error);
+      console.error('❌ Erro ao enviar email:', error.message);
       throw error;
     }
   },
