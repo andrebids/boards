@@ -1,0 +1,62 @@
+services:
+  planka-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: planka-dev-video-test
+    pull_policy: never
+    container_name: boards-server
+    command: [ "bash", "-c", "npm install && npm run db:init && npm start" ]
+    restart: on-failure
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    extra_hosts:
+      - "smtp.bids.pt:127.0.0.1"
+    volumes:
+      - ./server:/app
+    ports:
+      - 1337:1337
+    environment:
+      - BASE_URL=http://localhost:3000
+      - DATABASE_URL=postgresql://postgres@postgres/planka
+      - SECRET_KEY=notsecretkey
+      - LOG_LEVEL=info
+      - EMAIL_TEMPLATES_ENABLED=true
+      - DEFAULT_ADMIN_EMAIL=admin@example.com
+      - DEFAULT_ADMIN_PASSWORD=admin123
+      - DEFAULT_ADMIN_NAME=Admin User
+      - DEFAULT_ADMIN_USERNAME=admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  planka-client:
+    image: planka-dev-video-test
+    pull_policy: never
+    container_name: boards-client
+    command: [ "bash", "-c", "npm install && npx vite --host" ]
+    restart: on-failure
+    volumes:
+      - ./client:/app
+    ports:
+      - 3000:3000
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: boards-postgres
+    restart: on-failure
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=planka
+      - POSTGRES_USER=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres:

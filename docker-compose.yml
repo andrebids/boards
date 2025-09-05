@@ -14,11 +14,12 @@ services:
     ports:
       - 3000:1337
     environment:
-      - BASE_URL=${PLANKA_BASE_URL:-http://104.197.195.116:3000}
+      - BASE_URL=${PLANKA_BASE_URL:-https://boards.dsproject.pt}
       - DATABASE_URL=postgresql://postgres@postgres/planka
       - SECRET_KEY=notsecretkey
       - DEFAULT_ADMIN_EMAIL=admin@example.com
       - DEFAULT_ADMIN_PASSWORD=admin123
+      - EMAIL_TEMPLATES_ENABLED=true
     depends_on:
       postgres:
         condition: service_healthy
