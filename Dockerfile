@@ -8,6 +8,10 @@ WORKDIR /app
 COPY server/package.json server/package-lock.json server/requirements.txt ./
 COPY server/setup-python.js ./
 
+# Configurar variáveis de ambiente para resolver problemas com undici
+ENV NODE_OPTIONS="--no-experimental-fetch"
+ENV UNDICI_NO_FILE_API=1
+
 RUN npm install npm --global \
   && npm install --omit=dev
 
@@ -27,6 +31,10 @@ FROM node:18-alpine
 RUN apk -U upgrade \
   && apk add bash python3 ffmpeg --no-cache \
   && npm install npm --global
+
+# Configurar variáveis de ambiente para resolver problemas com undici
+ENV NODE_OPTIONS="--no-experimental-fetch"
+ENV UNDICI_NO_FILE_API=1
 
 USER node
 WORKDIR /app
