@@ -9,18 +9,24 @@ const escapeHtml = require('escape-html');
 const { formatTextWithMentions } = require('../../../utils/mentions');
 
 const buildTitle = (notification, t) => {
+  let baseTitle;
   switch (notification.type) {
     case Notification.Types.MOVE_CARD:
-      return t('Card Moved');
+      baseTitle = t('Card Moved');
+      break;
     case Notification.Types.COMMENT_CARD:
-      return t('New Comment');
+      baseTitle = t('New Comment');
+      break;
     case Notification.Types.ADD_MEMBER_TO_CARD:
-      return t('You Were Added to Card');
+      baseTitle = t('You Were Added to Card');
+      break;
     case Notification.Types.MENTION_IN_COMMENT:
-      return t('You Were Mentioned in Comment');
+      baseTitle = t('You Were Mentioned in Comment');
+      break;
     default:
       return null;
   }
+  return `Blachere Boards - ${baseTitle}`;
 };
 
 const buildBodyByFormat = (board, card, notification, actorUser, t) => {
