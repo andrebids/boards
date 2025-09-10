@@ -437,38 +437,61 @@ module.exports = {
 
     // --- LÓGICA DE ENVIO DE NOTIFICAÇÕES ---
 
+    // Define quais os tipos de notificação que devem acionar um e-mail
+    const EMAIL_NOTIFIABLE_TYPES = [
+      'setDueDate',
+      'addMemberToCard',
+      'commentCard', // Corrigido de 'commentCreate' e 'commentUpdate'
+    ];
+
     const globalNotificationsEnabled = sails.config.custom.globalNotifications?.enabled;
     const notificationServices = await NotificationService.qm.getByUserId(notification.userId);
     const smtpIsEnabled = sails.hooks.smtp.isEnabled();
 
+    // Verificar se algum mecanismo de envio de e-mail está ativo
     if (globalNotificationsEnabled || notificationServices.length > 0 || smtpIsEnabled) {
-      const notifiableUser = values.user || (await User.qm.getOneById(notification.userId));
-      const t = sails.helpers.utils.makeTranslator(notifiableUser.language);
-      const emailHtml = await buildAndSendEmailWithTemplates(
-        inputs.board, values.card, notification, values.creatorUser, notifiableUser, t, inputs,
-      );
-      const emailData = getNotificationSpecificData(
-        notification, values.creatorUser, t, values.card, inputs.list, inputs.board,
-      );
-
-      // PRIORIDADE 1: Notificações Globais
-      if (globalNotificationsEnabled) {
-        sails.log.info(
-          `[GLOBAL_NOTIFICATIONS] A tentar envio global para "${notifiableUser.email}"...`,
+      // E verificar também se o tipo de notificação é um dos permitidos para e-mail
+      if (EMAIL_NOTIFIABLE_TYPES.includes(notification.type)) {
+        const notifiableUser = values.user || (await User.qm.getOneById(notification.userId));
+        const t = sails.helpers.utils.makeTranslator(notifiableUser.language);
+        const emailHtml = await buildAndSendEmailWithTemplates(
+          inputs.board,
+          values.card,
+          notification,
+          values.creatorUser,
+          notifiableUser,
+          t,
+          inputs,
         );
-        try {
-          await sails.helpers.utils.sendGlobalNotification.with({
-            to: notifiableUser.email,
-            subject: buildTitle(notification, t),
-            html: emailHtml,
-            data: emailData,
-          });
-        } catch (error) {
-          sails.log.error(
-            `[GLOBAL_NOTIFICATIONS] Falha no envio global.`,
-            error,
+        const emailData = getNotificationSpecificData(
+          notification,
+          values.creatorUser,
+          t,
+          values.card,
+          inputs.list,
+          inputs.board,
+        );
+
+        // PRIORIDADE 1: Notificações Globais
+        if (globalNotificationsEnabled) {
+          sails.log.info(
+            `[GLOBAL_NOTIFICATIONS] A tentar envio global para "${notifiableUser.email}"...`,
           );
+          try {
+            await sails.helpers.utils.sendGlobalNotification.with({
+              to: notifiableUser.email,
+              subject: buildTitle(notification, t),
+              html: emailHtml,
+              data: emailData,
+            });
+          } catch (error) {
+            sails.log.error(`[GLOBAL_NOTIFICATIONS] Falha no envio global.`, error);
+          }
         }
+      } else {
+        sails.log.info(
+          `[NOTIFICATIONS] Envio de e-mail ignorado para o tipo de notificação "${notification.type}" pois não está na lista de e-mails permitidos.`,
+        );
       }
     }
 
