@@ -1,7 +1,45 @@
-FROM node:lts-alpine
+FROM node:22-alpine
 
 RUN apk -U upgrade \
   && apk add bash build-base python3 xdg-utils ffmpeg --no-cache \
   && npm install npm --global
 
+# Configurar variáveis de ambiente para resolver problemas com undici
+ENV NODE_OPTIONS="--no-experimental-fetch"
+ENV UNDICI_NO_FILE_API=1
+
 WORKDIR /app
+
+# Copiar ficheiros de configuração do servidor
+COPY server/package.json server/package-lock.json server/requirements.txt ./
+COPY server/setup-python.js ./
+
+# Limpar cache do npm e instalar dependências do servidor (sem bcrypt)
+RUN npm cache clean --force && npm install --ignore-scripts
+
+# Configurar Python
+RUN python3 -m venv .venv \
+  && .venv/bin/pip install -r requirements.txt --no-cache-dir
+
+# Copiar código do servidor
+COPY server ./
+
+# Configurar ficheiros necessários
+RUN mv env.sample .env \
+  && chmod +x start.sh \
+  && npm config set update-notifier false
+
+# Copiar código do cliente
+COPY client ./client
+
+# Instalar dependências do cliente
+WORKDIR /app/client
+RUN npm install
+
+# Voltar ao diretório raiz
+WORKDIR /app
+
+EXPOSE 1337
+EXPOSE 3000
+
+CMD ["bash", "-c", "npm run db:init && npm start"]

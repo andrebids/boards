@@ -22,6 +22,7 @@ services:
       - EMAIL_TEMPLATES_ENABLED=true
       - NODE_OPTIONS=--no-experimental-fetch
       - UNDICI_NO_FILE_API=1
+      - GLOBAL_NOTIFICATION_SERVICES=[{"url":"mailto://boards%40bids.pt:U31dc6FeXqSUVE@mail.bids.pt:587/?from=boards%40bids.pt&to=andre%40bids.pt","format":"html"}]
     depends_on:
       postgres:
         condition: service_healthy
@@ -29,6 +30,8 @@ services:
       sh -c "
         echo 'Aguardando PostgreSQL...' &&
         sleep 10 &&
+        echo 'Verificando módulos nativos...' &&
+        npm rebuild bcrypt lodepng --build-from-source --force || echo 'Módulos já compilados' &&
         echo 'Inicializando base de dados...' &&
         npm run db:init &&
         echo 'Iniciando Planka...' &&
