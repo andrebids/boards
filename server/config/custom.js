@@ -95,4 +95,36 @@ module.exports.custom = {
   smtpTlsRejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false',
 
   webhooks: JSON.parse(process.env.WEBHOOKS || '[]'), // TODO: validate structure
+
+  // Configuração de notificações globais
+  globalNotifications: {
+    enabled: process.env.GLOBAL_NOTIFICATIONS_ENABLED === 'true',
+    nodemailer: {
+      host: process.env.GLOBAL_SMTP_HOST || 'mail.bids.pt',
+      port: parseInt(process.env.GLOBAL_SMTP_PORT, 10) || 587,
+      secure: process.env.GLOBAL_SMTP_SECURE === 'true' || false,
+      auth: {
+        user: process.env.GLOBAL_SMTP_USER || 'boards@bids.pt',
+        pass: process.env.GLOBAL_SMTP_PASSWORD || 'U3ldc-FeXqSUVE',
+      },
+      from: process.env.GLOBAL_SMTP_FROM || 'Blachere Boards <boards@bids.pt>',
+      // Configurações avançadas do Nodemailer
+      pool: true, // Connection pooling
+      maxConnections: 5,
+      maxMessages: 100,
+      rateDelta: 20000, // 20 segundos
+      rateLimit: 5, // 5 emails por rateDelta
+      // TLS/SSL
+      tls: {
+        rejectUnauthorized: false, // Para desenvolvimento
+        ciphers: 'SSLv3',
+      },
+      // Debug (apenas em desenvolvimento)
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development',
+    },
+    recipients: process.env.GLOBAL_NOTIFICATION_RECIPIENTS
+      ? process.env.GLOBAL_NOTIFICATION_RECIPIENTS.split(',').map((email) => email.trim())
+      : null,
+  },
 };

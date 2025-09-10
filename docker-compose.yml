@@ -13,16 +13,13 @@ services:
       - attachments:/app/private/attachments
     ports:
       - 3000:1337
+    env_file:
+      - ./server/.env
     environment:
       - BASE_URL=${PLANKA_BASE_URL:-https://boards.dsproject.pt}
       - DATABASE_URL=postgresql://postgres@postgres/planka
-      - SECRET_KEY=notsecretkey
-      - DEFAULT_ADMIN_EMAIL=admin@example.com
-      - DEFAULT_ADMIN_PASSWORD=admin123
-      - EMAIL_TEMPLATES_ENABLED=true
       - NODE_OPTIONS=--no-experimental-fetch
       - UNDICI_NO_FILE_API=1
-      - GLOBAL_NOTIFICATION_SERVICES=[{"url":"mailto://boards%40bids.pt:U31dc6FeXqSUVE@mail.bids.pt:587/?from=boards%40bids.pt&to=andre%40bids.pt","format":"html"}]
     depends_on:
       postgres:
         condition: service_healthy

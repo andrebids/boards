@@ -120,7 +120,7 @@ const transporter = nodemailer.createTransport({
   secure: false,
   auth: {
     user: 'boards@bids.pt',
-    pass: 'U3ldc6FeXqSUVE',
+    pass: '<YOUR_SMTP_PASSWORD>',
   },
   tls: {
     rejectUnauthorized: false
@@ -505,7 +505,7 @@ const transporter = nodemailer.createTransport({
   secure: false, // true para 465, false para outros ports
   auth: {
     user: 'boards@bids.pt',
-    pass: 'U3ldc6FeXqSUVE',
+    pass: '<YOUR_SMTP_PASSWORD>',
   },
   tls: {
     rejectUnauthorized: false
@@ -561,7 +561,7 @@ const transporter = nodemailer.createTransport({
   host: 'mail.bids.pt',
   port: 587,
   secure: false,
-  auth: { user: 'boards@bids.pt', pass: 'U3ldc6FeXqSUVE' },
+  auth: { user: 'boards@bids.pt', pass: '<YOUR_SMTP_PASSWORD>' },
   tls: { rejectUnauthorized: false }
 });
 transporter.verify((err, success) => {
@@ -587,8 +587,8 @@ ENV GLOBAL_NOTIFICATIONS_ENABLED=true
 ENV GLOBAL_SMTP_HOST=mail.bids.pt
 ENV GLOBAL_SMTP_PORT=587
 ENV GLOBAL_SMTP_SECURE=false
-ENV GLOBAL_SMTP_USER=boards@bids.pt
-ENV GLOBAL_SMTP_PASSWORD=U3ldc6FeXqSUVE
+ENV GLOBAL_SMTP_USER="boards@bids.pt"
+ENV GLOBAL_SMTP_PASSWORD="<YOUR_SMTP_PASSWORD_INJECTED_AT_RUNTIME>"
 ENV GLOBAL_SMTP_FROM="Planka <boards@bids.pt>"
 ```
 
@@ -605,8 +605,8 @@ ENV GLOBAL_NOTIFICATIONS_ENABLED=true
 ENV GLOBAL_SMTP_HOST=mail.bids.pt
 ENV GLOBAL_SMTP_PORT=587
 ENV GLOBAL_SMTP_SECURE=false
-ENV GLOBAL_SMTP_USER=boards@bids.pt
-ENV GLOBAL_SMTP_PASSWORD=U3ldc6FeXqSUVE
+ENV GLOBAL_SMTP_USER="boards@bids.pt"
+ENV GLOBAL_SMTP_PASSWORD="<YOUR_SMTP_PASSWORD_INJECTED_AT_RUNTIME>"
 ENV GLOBAL_SMTP_FROM="Planka <boards@bids.pt>"
 
 # ... resto do Dockerfile ...
@@ -655,6 +655,39 @@ docker exec planka-server env | grep GLOBAL
 # GLOBAL_SMTP_USER=boards@bids.pt
 # GLOBAL_SMTP_PASSWORD=U3ldc6FeXqSUVE
 # GLOBAL_SMTP_FROM=Planka <boards@bids.pt>
+```
+
+---
+
+## 🐞 **LOGS DE DEBUG E MONITORIZAÇÃO**
+
+Para garantir visibilidade total sobre o processo, serão adicionados logs estratégicos que aparecerão nos logs do Docker.
+
+### **1. Logs de Inicialização (em `sails.config.lift`)**
+Ao arrancar, o sistema irá logar o estado da configuração.
+```
+✅ [GLOBAL_NOTIFICATIONS] Sistema de notificações globais ATIVADO.
+   - Host SMTP: mail.bids.pt | Porta: 587
+   - Utilizador SMTP: boards@bids.pt
+```
+
+### **2. Logs de Fluxo (em `create-one.js`)**
+Permitem seguir cada notificação.
+```
+debug: [GLOBAL_NOTIFICATIONS] A processar notificação "COMMENT_CARD" para user ID 1
+info: [GLOBAL_NOTIFICATIONS] A tentar envio global para "user@example.com"...
+```
+
+### **3. Logs de Resultado (em `send-global-notification.js`)**
+Mostram o sucesso ou falha do envio.
+```
+info: ✅ [GLOBAL_NOTIFICATIONS] Notificação enviada. Message ID: <...>
+error: ❌ [GLOBAL_NOTIFICATIONS] Falha ao enviar para "user@example.com". Erro: ...
+```
+
+### **Comando para Filtrar Logs:**
+```bash
+docker-compose logs -f planka | grep "GLOBAL_NOTIFICATIONS"
 ```
 
 ---
@@ -787,7 +820,7 @@ module.exports = {
     const config = sails.config.custom.globalNotifications.nodemailer;
     
     // Criar transporter Nodemailer com configurações otimizadas
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       host: config.host,
       port: config.port,
       secure: config.secure, // true para 465, false para outros ports
@@ -1066,7 +1099,7 @@ docker-compose exec planka-server env | grep GLOBAL
 # Testar conectividade SMTP com Nodemailer
 docker-compose exec planka-server node -e "
 const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.GLOBAL_SMTP_HOST,
   port: process.env.GLOBAL_SMTP_PORT,
   secure: process.env.GLOBAL_SMTP_SECURE === 'true',
@@ -1090,7 +1123,7 @@ transporter.verify().then(() => {
 # Testar envio de email
 docker-compose exec planka-server node -e "
 const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.GLOBAL_SMTP_HOST,
   port: process.env.GLOBAL_SMTP_PORT,
   secure: process.env.GLOBAL_SMTP_SECURE === 'true',
@@ -1191,7 +1224,7 @@ docker-compose exec planka-server env | grep GLOBAL_SMTP
 # Testar conectividade
 docker-compose exec planka-server node -e "
 const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.GLOBAL_SMTP_HOST,
   port: process.env.GLOBAL_SMTP_PORT,
   auth: { user: process.env.GLOBAL_SMTP_USER, pass: process.env.GLOBAL_SMTP_PASSWORD }

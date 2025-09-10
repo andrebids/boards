@@ -480,9 +480,9 @@ GLOBAL_NOTIFICATIONS_ENABLED=true
 GLOBAL_SMTP_HOST=mail.bids.pt
 GLOBAL_SMTP_PORT=587
 GLOBAL_SMTP_SECURE=false
-GLOBAL_SMTP_USER=boards@bids.pt
-GLOBAL_SMTP_PASSWORD=U3ldc6FeXqSUVE
-GLOBAL_SMTP_FROM=Planka <boards@bids.pt>
+GLOBAL_SMTP_USER="<YOUR_SMTP_USER>"
+GLOBAL_SMTP_PASSWORD="<YOUR_SMTP_PASSWORD>"
+GLOBAL_SMTP_FROM="Planka <boards@bids.pt>"
 
 # Destinatários opcionais (se não especificado, usa emails dos utilizadores)
 # GLOBAL_NOTIFICATION_RECIPIENTS=admin@bids.pt,manager@bids.pt
@@ -502,8 +502,8 @@ module.exports = {
       port: parseInt(process.env.GLOBAL_SMTP_PORT) || 587,
       secure: process.env.GLOBAL_SMTP_SECURE === 'true' || false,
       auth: {
-        user: process.env.GLOBAL_SMTP_USER || 'boards@bids.pt',
-        pass: process.env.GLOBAL_SMTP_PASSWORD || 'U3ldc6FeXqSUVE',
+        user: process.env.GLOBAL_SMTP_USER || '<YOUR_SMTP_USER>',
+        pass: process.env.GLOBAL_SMTP_PASSWORD || '<YOUR_SMTP_PASSWORD>',
       },
       from: process.env.GLOBAL_SMTP_FROM || 'Planka <boards@bids.pt>',
       // Configurações avançadas do Nodemailer
@@ -539,7 +539,7 @@ const transporter = nodemailer.createTransport({
   secure: false, // true para 465, false para outros ports
   auth: {
     user: 'boards@bids.pt',
-    pass: 'U3ldc6FeXqSUVE',
+    pass: '<YOUR_SMTP_PASSWORD>',
   },
   tls: {
     rejectUnauthorized: false
@@ -727,7 +727,7 @@ module.exports = {
     const config = sails.config.custom.globalNotifications.nodemailer;
     
     // Criar transporter Nodemailer com configurações otimizadas
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       host: config.host,
       port: config.port,
       secure: config.secure, // true para 465, false para outros ports
@@ -1012,7 +1012,7 @@ environment:
 # Testar conexão SMTP
 docker-compose exec planka-server node -e "
 const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.GLOBAL_SMTP_HOST,
   port: process.env.GLOBAL_SMTP_PORT,
   secure: process.env.GLOBAL_SMTP_SECURE === 'true',
@@ -1036,7 +1036,7 @@ transporter.verify().then(() => {
 # Testar envio de email
 docker-compose exec planka-server node -e "
 const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.GLOBAL_SMTP_HOST,
   port: process.env.GLOBAL_SMTP_PORT,
   secure: process.env.GLOBAL_SMTP_SECURE === 'true',
@@ -1074,7 +1074,7 @@ const nodemailer = require('nodemailer');
 
 // Criar conta de teste Ethereal
 nodemailer.createTestAccount().then((testAccount) => {
-  const transporter = nodemailer.createTransporter({
+  const transporter = nodemailer.createTransport({
     host: 'smtp.ethereal.email',
     port: 587,
     secure: false,
@@ -1285,3 +1285,51 @@ O **Nodemailer** é a solução perfeita para este projeto:
 ---
 
 **🚀 Sistema pronto para produção com Nodemailer - notificações globais simples, seguras e eficazes!**
+
+---
+
+## 🐞 LOGS DE DEBUG E MONITORIZAÇÃO
+
+Para garantir que o sistema é transparente e fácil de depurar, serão adicionados logs estratégicos que aparecerão nos logs do Docker (`docker-compose logs planka`).
+
+### **1. Logs de Inicialização**
+
+Ao arrancar, o sistema irá logar o estado da configuração de notificações globais. Isto será adicionado ao `sails.config.lift`.
+
+**Exemplo no Docker Log:**
+```
+✅ [GLOBAL_NOTIFICATIONS] Sistema de notificações globais ATIVADO.
+   - Host SMTP: mail.bids.pt
+   - Porta SMTP: 587
+   - Utilizador SMTP: boards@bids.pt
+   - Destinatários: Emails dos utilizadores notificados.
+```
+
+### **2. Logs de Fluxo de Notificação (em `create-one.js`)**
+
+Estes logs permitem seguir o percurso de cada notificação.
+
+**Exemplo no Docker Log:**
+```
+debug: [GLOBAL_NOTIFICATIONS] A processar notificação do tipo "COMMENT_CARD" para o utilizador ID: 1
+info: [GLOBAL_NOTIFICATIONS] A tentar enviar notificação global para "user@example.com"...
+info: ✅ [GLOBAL_NOTIFICATIONS] Conexão SMTP verificada com sucesso
+info: ✅ [GLOBAL_NOTIFICATIONS] Notificação global enviada com Nodemailer:
+info:    📧 Message ID: <...messageId...>
+info:    📬 Para: user@example.com
+info:    📋 Assunto: Blachere Boards: New Comment
+```
+
+### **3. Logs no Helper (`send-global-notification.js`)**
+
+Os logs já definidos no helper mostram o resultado detalhado do envio.
+
+### **Como Filtrar os Logs**
+
+Para ver apenas os logs relevantes, pode usar `grep`:
+
+```bash
+docker-compose logs -f planka | grep "GLOBAL_NOTIFICATIONS"
+```
+
+Esta abordagem garante visibilidade total sobre o funcionamento do sistema, facilitando a identificação de problemas.

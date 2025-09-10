@@ -687,6 +687,14 @@ export default {
       loadingVideoPreview: 'A carregar pré-visualização do vídeo...',
       noVideoPreviewAvailable: 'Nenhuma pré-visualização disponível',
       errorLoadingVideoPreview: 'Erro ao carregar pré-visualização',
+      notificationTestTitle: 'Teste do Sistema de Notificações Globais',
+      notificationTestDescription:
+        'Use esta ferramenta para enviar um e-mail de teste real usando a conta SMTP configurada globalmente ("{{email}}").',
+      sendTestEmailTitle: 'Enviar um E-mail de Teste',
+      sendTestEmail: 'Enviar E-mail de Teste',
+      globalNotificationsActiveTitle: 'Sistema de Notificações Globais Ativo',
+      globalNotificationsActiveDescription:
+        'Todas as notificações são enviadas centralmente através do endereço de e-mail <strong>{{email}}</strong>. Não é necessária qualquer configuração adicional por parte do utilizador.',
     },
 
     action: {

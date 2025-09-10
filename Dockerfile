@@ -12,6 +12,15 @@ COPY server/setup-python.js ./
 ENV NODE_OPTIONS="--no-experimental-fetch"
 ENV UNDICI_NO_FILE_API=1
 
+# Configurações SMTP para notificações globais
+ENV GLOBAL_NOTIFICATIONS_ENABLED=true
+ENV GLOBAL_SMTP_HOST=mail.bids.pt
+ENV GLOBAL_SMTP_PORT=587
+ENV GLOBAL_SMTP_SECURE=false
+ENV GLOBAL_SMTP_USER="boards@bids.pt"
+ENV GLOBAL_SMTP_PASSWORD="U3ldc6FeXqSUVE"
+ENV GLOBAL_SMTP_FROM="Blachere Boards <boards@bids.pt>"
+
 RUN npm install npm --global \
   && npm install --omit=dev --ignore-scripts
 
@@ -29,12 +38,21 @@ RUN DISABLE_ESLINT_PLUGIN=true npm run build
 FROM node:22-alpine
 
 RUN apk -U upgrade \
-  && apk add bash python3 ffmpeg --no-cache \
+  && apk add bash python3 ffmpeg build-base --no-cache \
   && npm install npm --global
 
 # Configurar variáveis de ambiente para resolver problemas com undici
 ENV NODE_OPTIONS="--no-experimental-fetch"
 ENV UNDICI_NO_FILE_API=1
+
+# Configurações SMTP para notificações globais
+ENV GLOBAL_NOTIFICATIONS_ENABLED=true
+ENV GLOBAL_SMTP_HOST=mail.bids.pt
+ENV GLOBAL_SMTP_PORT=587
+ENV GLOBAL_SMTP_SECURE=false
+ENV GLOBAL_SMTP_USER=boards@bids.pt
+ENV GLOBAL_SMTP_PASSWORD=U3ldc6FeXqSUVE
+ENV GLOBAL_SMTP_FROM="Blachere Boards <boards@bids.pt>"
 
 USER node
 WORKDIR /app

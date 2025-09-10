@@ -25,4 +25,23 @@ module.exports.bootstrap = async () => {
   //   // etc.
   // ]);
   // ```
+
+  // Log de inicialização para o sistema de notificações globais
+  if (sails.config.custom.globalNotifications && sails.config.custom.globalNotifications.enabled) {
+    const config = sails.config.custom.globalNotifications.nodemailer;
+    sails.log.info('✅ [GLOBAL_NOTIFICATIONS] Sistema de notificações globais ATIVADO.');
+    sails.log.info(`   - Host SMTP: ${config.host} | Porta: ${config.port}`);
+    sails.log.info(`   - Utilizador SMTP: ${config.auth.user}`);
+    if (sails.config.custom.globalNotifications.recipients) {
+      sails.log.info(
+        `   - Destinatários: Apenas os seguintes endereços -> ${sails.config.custom.globalNotifications.recipients.join(
+          ', ',
+        )}`,
+      );
+    } else {
+      sails.log.info('   - Destinatários: Emails dos utilizadores notificados.');
+    }
+  } else {
+    sails.log.info('❕ [GLOBAL_NOTIFICATIONS] Sistema de notificações globais DESATIVADO.');
+  }
 };

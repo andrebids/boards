@@ -25,3 +25,7 @@
     margin-bottom: 12px;
   }
 }
+
+:global(.ui.input).emailInput input {
+  color: #212529 !important;
+}

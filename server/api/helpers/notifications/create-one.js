@@ -26,7 +26,7 @@ const buildTitle = (notification, t) => {
     default:
       return null;
   }
-  return `Blachere Boards - ${baseTitle}`;
+  return `Blachere Boards: ${baseTitle}`;
 };
 
 const buildBodyByFormat = (board, card, notification, actorUser, t) => {
@@ -431,41 +431,80 @@ module.exports = {
       user: values.creatorUser,
     });
 
-    const notificationServices = await NotificationService.qm.getByUserId(notification.userId);
+    sails.log.debug(
+      `[GLOBAL_NOTIFICATIONS] A processar notificação do tipo "${notification.type}" para o utilizador ID: ${notification.userId}`,
+    );
 
-    if (notificationServices.length > 0 || sails.hooks.smtp.isEnabled()) {
+    // --- LÓGICA DE ENVIO DE NOTIFICAÇÕES ---
+
+    const globalNotificationsEnabled = sails.config.custom.globalNotifications?.enabled;
+    const notificationServices = await NotificationService.qm.getByUserId(notification.userId);
+    const smtpIsEnabled = sails.hooks.smtp.isEnabled();
+
+    if (globalNotificationsEnabled || notificationServices.length > 0 || smtpIsEnabled) {
       const notifiableUser = values.user || (await User.qm.getOneById(notification.userId));
       const t = sails.helpers.utils.makeTranslator(notifiableUser.language);
+      const emailHtml = await buildAndSendEmailWithTemplates(
+        inputs.board, values.card, notification, values.creatorUser, notifiableUser, t, inputs,
+      );
+      const emailData = getNotificationSpecificData(
+        notification, values.creatorUser, t, values.card, inputs.list, inputs.board,
+      );
 
-      if (notificationServices.length > 0) {
-        const services = notificationServices.map((notificationService) =>
-          _.pick(notificationService, ['url', 'format']),
+      // PRIORIDADE 1: Notificações Globais
+      if (globalNotificationsEnabled) {
+        sails.log.info(
+          `[GLOBAL_NOTIFICATIONS] A tentar envio global para "${notifiableUser.email}"...`,
         );
-
-        buildAndSendNotifications(
-          services,
-          inputs.board,
-          values.card,
-          notification,
-          values.creatorUser,
-          t,
-          { notifiableUser },
-        );
-      }
-
-      if (sails.hooks.smtp.isEnabled()) {
-        buildAndSendEmail(
-          inputs.board,
-          values.card,
-          notification,
-          values.creatorUser,
-          notifiableUser,
-          t,
-          inputs,
-        );
+        try {
+          await sails.helpers.utils.sendGlobalNotification.with({
+            to: notifiableUser.email,
+            subject: buildTitle(notification, t),
+            html: emailHtml,
+            data: emailData,
+          });
+        } catch (error) {
+          sails.log.error(
+            `[GLOBAL_NOTIFICATIONS] Falha no envio global.`,
+            error,
+          );
+        }
       }
     }
 
     return notification;
   },
+};
+
+const getNotificationSpecificData = (notification, creatorUser, t, card, list, board) => {
+  const cardUrl = `${sails.config.custom.baseUrl}/cards/${card.id}`;
+  const boardForNotification = board || card.board; // Usa o board passado, com fallback para o do cartão
+
+  // Medida de segurança para evitar crashes se os dados estiverem incompletos
+  if (!boardForNotification || !boardForNotification.project) {
+    sails.log.warn('Dados do quadro ou do projeto em falta para a notificação (ID do cartão: %s)', card.id);
+    return {
+      actor_name: creatorUser.name,
+      action_verb: t(`notification:${notification.type}.verb`),
+      action_object: t(`notification:${notification.type}.object`),
+      project_name: 'Projeto desconhecido',
+      board_name: 'Quadro desconhecido',
+      list_name: list ? list.name : card.list?.name || 'Lista desconhecida',
+      card_title: card.name,
+      card_id: card.id,
+      card_url: cardUrl,
+    };
+  }
+
+  return {
+    actor_name: creatorUser.name,
+    action_verb: t(`notification:${notification.type}.verb`),
+    action_object: t(`notification:${notification.type}.object`),
+    project_name: boardForNotification.project.name,
+    board_name: boardForNotification.name,
+    list_name: list ? list.name : card.list.name,
+    card_title: card.name,
+    card_id: card.id,
+    card_url: cardUrl,
+  };
 };
