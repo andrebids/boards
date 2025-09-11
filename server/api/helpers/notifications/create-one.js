@@ -23,6 +23,15 @@ const buildTitle = (notification, t) => {
     case Notification.Types.MENTION_IN_COMMENT:
       baseTitle = t('You Were Mentioned in Comment');
       break;
+    case 'setDueDate':
+      baseTitle = t('Due Date Updated');
+      break;
+    case 'createTask':
+       baseTitle = t('Task Created');
+      break;
+    case 'completeTask':
+      baseTitle = t('Task Completed');
+       break;
     default:
       return null;
   }
@@ -253,6 +262,15 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
           type_border_color: '#fcd34d',
           type_text_color: '#92400e',
         };
+      case Notification.Types.SET_DUE_DATE:
+        return {
+          action_verb: 'alterou',
+          action_object: 'a data de entrega',
+          notification_type_label: 'Data de Entrega Alterada',
+          type_background_color: '#eff6ff',
+          type_border_color: '#93c5fd',
+          type_text_color: '#1d4ed8',
+        };
       default:
         return {};
     }
@@ -280,15 +298,11 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
       new Date(card.dueDate).toLocaleDateString('pt-PT') : 
       'Sem prazo',
     
-    // Avatar do utilizador
-    actor_avatar_url: actorUser?.avatar?.dirname && actorUser?.avatar?.extension ? 
-      `${sails.config.custom?.baseUrl || 'http://localhost:3000'}/api/avatars/${actorUser.avatar.dirname}/cover-180.${actorUser.avatar.extension}` : 
-      `${sails.config.custom?.baseUrl || 'http://localhost:3000'}/default-avatar.png`,
-    actor_avatar_alt: escapeHtml(actorUser?.name || 'Utilizador'),
     
     // Dados específicos do tipo
     ...getNotificationSpecificData(notification, actorUser, t, card, currentList),
   };
+
 
   const html = await sails.helpers.utils.compileEmailTemplate.with({
     templateName: notification?.type || 'comment-card',

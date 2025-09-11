@@ -10,7 +10,8 @@ const NOTIFICATION_TYPE_TO_PARTIAL = {
   'moveCard': 'move-card',
   'commentCard': 'comment-card', 
   'addMemberToCard': 'add-member-to-card',
-  'mentionInComment': 'mention-in-comment'
+  'mentionInComment': 'mention-in-comment',
+  'setDueDate': 'set-due-date' // Adicionar esta linha
 };
 
 module.exports = {
