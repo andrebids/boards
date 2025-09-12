@@ -136,24 +136,98 @@
   }
 
   .notification {
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-    border-radius: 10px;
+    background: #60a5fa; /* Azul claro flat */
+    border-radius: 50%; /* Bola perfeitamente redonda */
     color: #fff;
-    display: inline-block;
-    font-size: 12px;
-    font-weight: bold;
-    height: 18px;
-    left: 20px;
-    line-height: 18px;
-    min-width: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    height: 22px; /* Altura e largura iguais para bola perfeita */
+    width: 22px;
+    left: 18px;
+    line-height: 1;
     position: absolute;
     text-align: center;
-    top: 6px;
-    padding: 0 5px;
-    box-shadow:
-      0 6px 14px rgba(30, 64, 175, 0.45),
-      0 1px 2px rgba(0, 0, 0, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    top: 4px;
+    padding: 0;
+    box-shadow: 
+      0 0 20px rgba(96, 165, 250, 0.8), /* Glow mais visível */
+      0 0 40px rgba(96, 165, 250, 0.4),
+      0 2px 8px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    animation: notificationPulse 2s ease-in-out infinite;
+    
+    /* Efeito de brilho mais visível */
+    &::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      background: radial-gradient(circle, 
+        rgba(96, 165, 250, 0.6) 0%, 
+        rgba(147, 197, 253, 0.4) 50%, 
+        rgba(96, 165, 250, 0.2) 100%);
+      border-radius: 50%;
+      z-index: -1;
+      opacity: 0.8;
+      filter: blur(6px);
+      animation: glowPulse 2s ease-in-out infinite;
+    }
+    
+    /* Efeito de ping animado */
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      background: #60a5fa;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: notificationPing 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+      z-index: -2;
+    }
+  }
+
+  @keyframes notificationPulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 
+        0 0 20px rgba(96, 165, 250, 0.8),
+        0 0 40px rgba(96, 165, 250, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 
+        0 0 30px rgba(96, 165, 250, 1),
+        0 0 60px rgba(96, 165, 250, 0.6),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes notificationPing {
+    75%, 100% {
+      transform: translate(-50%, -50%) scale(1.8);
+      opacity: 0;
+    }
   }
 
   /* Classe específica para o container do popup de notificações (usada via usePopup) */
