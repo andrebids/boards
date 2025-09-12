@@ -174,14 +174,16 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
             selected={nullableDate}
             onChange={handleDatePickerChange}
           />
-          <Button positive content={t('action.save')} />
+          <div className={styles.actionsWrapper}>
+            <Button positive content={t('action.save')} />
+            <Button
+              negative
+              content={t('action.remove')}
+              className={styles.deleteButton}
+              onClick={handleClearClick}
+            />
+          </div>
         </Form>
-        <Button
-          negative
-          content={t('action.remove')}
-          className={styles.deleteButton}
-          onClick={handleClearClick}
-        />
       </Popup.Content>
     </>
   );

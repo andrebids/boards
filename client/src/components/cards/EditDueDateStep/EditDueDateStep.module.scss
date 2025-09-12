@@ -5,10 +5,83 @@
 
 :global(#app) {
   .deleteButton {
-    bottom: 12px;
-    box-shadow: 0 1px 0 #cbcccc;
-    position: absolute;
-    right: 9px;
+    /* From Uiverse.io by cssbuttons-io - ajustado para tamanho do Salvar */
+    width: 85px !important; /* Aumentado para dar mais espaço */
+    height: 32px !important; /* Igual ao Salvar */
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    background: #e62222 !important;
+    border: none !important;
+    border-radius: 4px !important; /* Igual ao Salvar */
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.15) !important;
+    position: relative;
+    overflow: hidden;
+    transition: 200ms;
+    
+    /* Remover estilos padrão do Semantic UI */
+    font-size: 14px !important; /* Igual ao Salvar */
+    font-weight: bold !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: transparent !important; /* Esconder texto original */
+    
+    &::before {
+      content: "Remover";
+      position: absolute;
+      left: 8px; /* Ajustado para tamanho menor */
+      color: white;
+      font-weight: bold;
+      transition: 200ms;
+      font-size: 12px; /* Reduzido para caber melhor */
+    }
+    
+    &::after {
+      content: "×";
+      position: absolute;
+      right: 8px; /* Ajustado para largura maior */
+      color: #eee;
+      font-size: 18px; /* Aumentado ainda mais */
+      font-weight: bold;
+      transition: 200ms;
+      border-left: 1px solid #c41b1b; /* Cor da barra separadora */
+      padding-left: 6px; /* Ajustado */
+      height: 24px; /* Aumentado para acomodar o X maior */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    &:hover {
+      background: #ff3636 !important;
+      
+      &::before {
+        color: transparent;
+      }
+      
+      &::after {
+        border-left-color: transparent !important;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        font-size: 22px; /* X maior no hover */
+        height: 32px; /* Altura total do botão para centramento perfeito */
+        width: 32px; /* Largura igual à altura para quadrado perfeito */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0; /* Remover padding para centramento perfeito */
+      }
+    }
+    
+    &:focus {
+      outline: none;
+    }
+    
+    &:active::after {
+      transform: translateX(-50%) scale(0.85);
+      font-size: 20px; /* X ligeiramente menor quando clicado */
+    }
   }
 
   .fieldBox {
@@ -18,26 +91,28 @@
   }
 
   .fieldWrapper {
-    margin: 0 -4px;
-    
-    /* Garantir que os campos de input tenham texto claro */
-    input {
-      color: #e6edf3 !important;
-      background: rgba(255, 255, 255, 0.1) !important;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    }
-    
-    input:focus {
-      background: rgba(255, 255, 255, 0.15) !important;
-      border-color: rgba(255, 255, 255, 0.3) !important;
-    }
+    display: flex;
+    margin-bottom: 8px;
+    gap: 8px;
   }
 
   .text {
-    color: #e6edf3 !important; /* texto claro para fundo escuro */
-    font-size: 12px;
+    margin-bottom: 4px;
     font-weight: bold;
-    padding-bottom: 4px;
-    padding-left: 2px;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 8px; /* Adicionar padding para alinhar com o calendário */
+  }
+
+  .actionsWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Adicionado para alinhar verticalmente */
+    margin-top: 16px;
+    width: 100%; /* Adicionar margem para alinhar */
   }
 }
