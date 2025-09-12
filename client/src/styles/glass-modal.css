@@ -66,6 +66,9 @@
   background: transparent;
   color: #d7e7ff;
   cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .ui.modal.glass > i.close.icon:hover {
