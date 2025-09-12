@@ -8,6 +8,42 @@ const escapeHtml = require('escape-html');
 
 const { formatTextWithMentions } = require('../../../utils/mentions');
 
+// Função para gerar iniciais do nome do utilizador
+const generateInitials = (name) => {
+  if (!name || typeof name !== 'string') {
+    return 'U';
+  }
+  
+  const words = name.trim().split(/\s+/);
+  if (words.length === 0) {
+    return 'U';
+  }
+  
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+  
+  // Primeira letra do primeiro nome + primeira letra do último nome
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+};
+
+// Função para gerar URLs dinâmicas
+const generateUrl = (path = '') => {
+  const baseUrl = sails.config.custom?.baseUrl;
+  
+  if (!baseUrl) {
+    console.warn('⚠️ BASE_URL não configurada, usando localhost como fallback');
+    return `http://localhost:3000${path}`;
+  }
+  
+  // Remove barra final do baseUrl se existir
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+  // Adiciona barra inicial ao path se não existir
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  
+  return `${cleanBaseUrl}${cleanPath}`;
+};
+
 const buildTitle = (notification, t) => {
   let baseTitle;
   switch (notification.type) {
@@ -39,8 +75,8 @@ const buildTitle = (notification, t) => {
 };
 
 const buildBodyByFormat = (board, card, notification, actorUser, t) => {
-  const markdownCardLink = `[${escapeMarkdown(card.name)}](${sails.config.custom.baseUrl}/cards/${card.id})`;
-  const htmlCardLink = `<a href="${sails.config.custom.baseUrl}/cards/${card.id}">${escapeHtml(card.name)}</a>`;
+  const markdownCardLink = `[${escapeMarkdown(card.name)}](${generateUrl(`cards/${card.id}`)})`;
+  const htmlCardLink = `<a href="${generateUrl(`cards/${card.id}`)}">${escapeHtml(card.name)}</a>`;
 
   switch (notification.type) {
     case Notification.Types.MOVE_CARD: {
@@ -278,17 +314,21 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
   
   const templateData = {
     actor_name: escapeHtml(actorUser?.name || 'Utilizador'),
+    actor_initials: generateInitials(actorUser?.name || 'Utilizador'),
+    user_name: escapeHtml(notifiableUser?.name || 'Utilizador'),
     card_title: escapeHtml(card?.name || 'Carta'),
     card_id: card?.id || '',
     project_name: escapeHtml(project?.name || board?.name || 'Projeto'),
     board_name: escapeHtml(board?.name || 'Quadro'),
     list_name: escapeHtml(listName),
-    card_url: `${sails.config.custom?.baseUrl || 'http://localhost:3000'}/cards/${card?.id || ''}`,
-    planka_base_url: sails.config.custom?.baseUrl || 'http://localhost:3000',
-    logo_url: `cid:logo@planka`, // CID para anexo inline
+    card_url: generateUrl(`cards/${card?.id || ''}`),
+    planka_base_url: generateUrl(),
+    logo_url: generateUrl('logo512.png'), // URL dinâmica para a logo
     send_date: new Date().toLocaleDateString('pt-PT'),
     user_email: notifiableUser?.email || 'utilizador@exemplo.com',
     current_year: new Date().getFullYear(),
+    notification_type: notification?.type || '',
+    show_due_date_in_header: notification?.type !== 'SET_DUE_DATE',
     
     // Null-safe
     comment_excerpt: notification?.data?.text ? 
@@ -315,8 +355,8 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
 
 // ✅ Fallback para HTML inline (método antigo)
 const buildAndSendEmailLegacy = async (board, card, notification, actorUser, notifiableUser, t) => {
-  const cardLink = `<a href="${sails.config.custom.baseUrl}/cards/${card.id}">${escapeHtml(card.name)}</a>`;
-  const boardLink = `<a href="${sails.config.custom.baseUrl}/boards/${board.id}">${escapeHtml(board.name)}</a>`;
+  const cardLink = `<a href="${generateUrl(`cards/${card.id}`)}">${escapeHtml(card.name)}</a>`;
+  const boardLink = `<a href="${generateUrl(`boards/${board.id}`)}">${escapeHtml(board.name)}</a>`;
 
   let html;
   switch (notification.type) {
@@ -484,6 +524,7 @@ module.exports = {
           values.card,
           inputs.list,
           inputs.board,
+          inputs.project,
         );
 
         // PRIORIDADE 1: Notificações Globais
@@ -513,12 +554,12 @@ module.exports = {
   },
 };
 
-const getNotificationSpecificData = (notification, creatorUser, t, card, list, board) => {
-  const cardUrl = `${sails.config.custom.baseUrl}/cards/${card.id}`;
+const getNotificationSpecificData = (notification, creatorUser, t, card, list, board, project) => {
+  const cardUrl = generateUrl(`cards/${card.id}`);
   const boardForNotification = board || card.board; // Usa o board passado, com fallback para o do cartão
 
   // Medida de segurança para evitar crashes se os dados estiverem incompletos
-  if (!boardForNotification || !boardForNotification.project) {
+  if (!boardForNotification || !project) {
     sails.log.warn('Dados do quadro ou do projeto em falta para a notificação (ID do cartão: %s)', card.id);
     return {
       actor_name: creatorUser.name,
@@ -533,15 +574,75 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     };
   }
 
+  // Gerar URL específica baseada no tipo de notificação
+  let specificUrl = cardUrl; // Fallback para o cartão geral
+  
+  if (notification.type === 'COMMENT_CARD' || notification.type === 'MENTION_IN_COMMENT') {
+    // Para comentários, tentar levar diretamente ao comentário específico
+    if (notification.data?.commentId) {
+      specificUrl = generateUrl(`cards/${card.id}#comment-${notification.data.commentId}`);
+    }
+  } else if (notification.type === 'MOVE_CARD') {
+    // Para movimentos, manter o cartão geral (já mostra a nova posição)
+    specificUrl = cardUrl;
+  } else if (notification.type === 'CREATE_TASK' || notification.type === 'COMPLETE_TASK') {
+    // Para tarefas, tentar levar à tarefa específica se disponível
+    if (notification.data?.taskId) {
+      specificUrl = generateUrl(`cards/${card.id}#task-${notification.data.taskId}`);
+    }
+  }
+
+  // Gerar texto específico do botão CTA baseado no tipo de notificação
+  let ctaButtonText = t('email:viewCard'); // Fallback padrão
+  
+  if (notification.type === 'COMMENT_CARD' || notification.type === 'MENTION_IN_COMMENT') {
+    ctaButtonText = t('email:viewComment');
+  } else if (notification.type === 'CREATE_TASK' || notification.type === 'COMPLETE_TASK') {
+    ctaButtonText = t('email:viewTask');
+  } else if (notification.type === 'MOVE_CARD') {
+    ctaButtonText = t('email:viewCard');
+  } else if (notification.type === 'ADD_MEMBER_TO_CARD') {
+    ctaButtonText = t('email:viewCard');
+  } else if (notification.type === 'SET_DUE_DATE') {
+    ctaButtonText = t('email:viewCard');
+  }
+
   return {
     actor_name: creatorUser.name,
     action_verb: t(`notification:${notification.type}.verb`),
     action_object: t(`notification:${notification.type}.object`),
-    project_name: boardForNotification.project.name,
+    project_name: project.name,
     board_name: boardForNotification.name,
     list_name: list ? list.name : card.list.name,
     card_title: card.name,
     card_id: card.id,
-    card_url: cardUrl,
+    card_url: specificUrl,
+    cta_button_text: ctaButtonText,
+    
+    // Traduções para labels e descrições
+    email_label_comment: t('email:label:comment'),
+    email_label_moved: t('email:label:moved'),
+    email_label_addedMember: t('email:label:addedMember'),
+    email_label_mentioned: t('email:label:mentioned'),
+    email_label_dueDateChanged: t('email:label:dueDateChanged'),
+    email_label_newTask: t('email:label:newTask'),
+    email_label_taskCompleted: t('email:label:taskCompleted'),
+    email_label_cardTitle: t('email:label:cardTitle'),
+    email_label_cardMovement: t('email:label:cardMovement'),
+    email_label_dueDateSet: t('email:label:dueDateSet'),
+    email_label_newTaskCreated: t('email:label:newTaskCreated'),
+    email_label_addedToCard: t('email:label:addedToCard'),
+    email_label_dueDateCard: t('email:label:dueDateCard'),
+    email_action_moveCard: t('email:action:moveCard'),
+    email_action_setDueDate: t('email:action:setDueDate'),
+    email_action_createTask: t('email:action:createTask'),
+    email_action_completeTask: t('email:action:completeTask'),
+    email_dueDate: t('email:dueDate'),
+    
+    // Traduções para descrições
+    email_description_addedMember: t('email:description:addedMember'),
+    email_description_dueDateChanged: t('email:description:dueDateChanged'),
+    email_description_newTask: t('email:description:newTask'),
+    email_description_taskCompleted: t('email:description:taskCompleted'),
   };
 };

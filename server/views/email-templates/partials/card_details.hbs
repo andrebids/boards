@@ -1,0 +1,40 @@
+<!-- Cartão -->
+<tr>
+  <td class="px" style="padding:0 24px 24px 24px;">
+    <table role="presentation" width="100%" style="background:#27272a; border:1px solid #3f3f46; border-radius:12px;">
+      <tr>
+        <td style="padding:16px 16px 8px 16px;">
+          {{#if due_date}}
+            {{#if show_due_date_in_header}}
+            <div style="margin-bottom:8px;">
+              <div style="font:500 12px/16px -apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#a1a1aa; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+                📅 {{email_label_dueDateCard}}
+              </div>
+              <div style="font:400 14px/20px -apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#d4d4d8;">
+                {{due_date}}
+              </div>
+            </div>
+            {{/if}}
+          {{/if}}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:0 16px 16px 16px;">
+          <table role="presentation" width="100%">
+            <tr>
+              <td style="border-top:1px solid #3f3f46;">&nbsp;</td>
+            </tr>
+          </table>
+          <div style="margin-top:12px; font:400 14px/22px -apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#d4d4d8;">
+            {{> (lookup . 'notification_partial_name')}}
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:0 16px 16px 16px;">
+          {{> cta_button}}
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>

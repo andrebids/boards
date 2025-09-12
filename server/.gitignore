@@ -148,5 +148,7 @@ private/attachments/*
 
 views/*
 !views/.gitkeep
+!views/email-templates
+!views/email-templates/**
 
 logs
