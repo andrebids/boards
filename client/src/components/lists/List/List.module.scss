@@ -425,6 +425,38 @@
     }
   }
 
+  .addCardButtonDeepSpace {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e) !important;
+    border: none !important;
+    color: #ffffff !important;
+    fill: #ffffff !important;
+    text-shadow: none !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(120%);
+    }
+  }
+
+  .addCardButtonBlueWhiteStripes {
+    background: repeating-linear-gradient(
+      90deg,
+      #134496,
+      #134496 34px,
+      #ffffff 34px,
+      #ffffff 68px
+    ) !important;
+    border: none !important;
+    color: #134496 !important;
+    fill: #134496 !important;
+    text-shadow: 0 0 2px #ffffff, 0 0 3px #ffffff !important;
+    transition: filter 0.2s ease-in-out;
+
+    &:hover {
+      filter: brightness(90%);
+    }
+  }
+
   .addCardButtonEmeraldWater {
     background: linear-gradient(135deg, #1f4037, #99f2c8) !important;
     border: none !important;
