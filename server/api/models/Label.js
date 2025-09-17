@@ -71,6 +71,16 @@ const COLORS = [
   // --- Gradientes ---
   'silver-glint',
   'pirate-gold',
+  'sunset-glow',
+  'deep-sea',
+  'emerald-isle',
+  'purple-bliss',
+  'cosmic-fusion',
+  'royal-gold',
+  'ocean-dive',
+  'old-lime',
+  'deep-ocean',
+  'tzepesch-style',
 ];
 
 module.exports = {
