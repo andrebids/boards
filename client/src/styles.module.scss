@@ -1320,3 +1320,96 @@
 :global(body), :global(#app) {
   font-family: 'Plus Jakarta Sans', sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
 }
+
+/* Fix elegante para o campo de título do cartão - baseado na versão funcional */
+:global(#app) {
+  /* Fix específico para o campo de título do cartão no modal */
+  .ui.modal textarea {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    color: #17394d !important;
+  }
+  
+  /* Modo de edição - fundo branco e borda azul */
+  .ui.modal textarea:focus {
+    background: #ffffff !important;
+    border: 2px solid rgba(0, 123, 255, 0.6) !important;
+    border-radius: 5px !important;
+    padding: 10px !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15), 0 0 20px rgba(0, 123, 255, 0.1) !important;
+    transform: none !important;
+    transition: none !important;
+    outline: none !important;
+  }
+  
+  /* Fix para qualquer textarea dentro de elementos com classes que contenham "field" */
+  [class*="field"] textarea,
+  [class*="Field"] textarea {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    color: #17394d !important;
+  }
+  
+  /* Modo de edição para elementos field */
+  [class*="field"] textarea:focus,
+  [class*="Field"] textarea:focus {
+    background: #ffffff !important;
+    border: 2px solid rgba(0, 123, 255, 0.6) !important;
+    border-radius: 5px !important;
+    padding: 10px !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15), 0 0 20px rgba(0, 123, 255, 0.1) !important;
+    transform: none !important;
+    transition: none !important;
+    outline: none !important;
+  }
+  
+  /* Fix específico para o campo de título do cartão - solução robusta */
+  textarea[class*="field"][class*="input"],
+  textarea[class*="_field_"][class*="input"],
+  textarea[class*="field_"][class*="input"] {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    color: #17394d !important;
+  }
+  
+  /* Modo de edição para classes específicas */
+  textarea[class*="field"][class*="input"]:focus,
+  textarea[class*="_field_"][class*="input"]:focus,
+  textarea[class*="field_"][class*="input"]:focus {
+    background: #ffffff !important;
+    border: 2px solid rgba(0, 123, 255, 0.6) !important;
+    border-radius: 5px !important;
+    padding: 10px !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15), 0 0 20px rgba(0, 123, 255, 0.1) !important;
+    transform: none !important;
+    transition: none !important;
+    outline: none !important;
+  }
+}

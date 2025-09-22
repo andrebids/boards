@@ -178,17 +178,35 @@
     font-weight: bold;
     line-height: 24px;
     word-wrap: break-word;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
   }
 
   .headerTitleWrapper {
     margin: 4px 0;
     padding: 6px 0 0;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
   }
 
   .headerWrapper {
     margin: 12px 48px 12px 56px;
     position: relative;
     overflow: visible !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
   }
 
   .hidable {
@@ -259,6 +277,12 @@
   .moduleWrapper {
     margin: 0 0 0 40px;
     position: relative;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
   }
 
   .sidebarPadding {
@@ -300,6 +324,12 @@
     border-radius: 4px;
     margin: 0;
     overflow: visible !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
   }
 
   // Fix para garantir que todos os elementos do Grid permitam overflow
