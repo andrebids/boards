@@ -1412,4 +1412,72 @@
     transition: none !important;
     outline: none !important;
   }
+
+  /* Fix específico para o AddCard - sobrescrever todos os estilos globais */
+  .fieldWrapper textarea {
+    color: #f3f4f6 !important;
+    font-size: 14px !important;
+    line-height: 18px !important;
+    margin-bottom: 8px !important;
+    word-wrap: break-word !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    &:focus {
+      color: #f3f4f6 !important;
+      font-size: 14px !important;
+      line-height: 18px !important;
+      margin-bottom: 8px !important;
+      word-wrap: break-word !important;
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    &::placeholder {
+      color: #cccccc !important;
+      font-size: 14px !important;
+    }
+  }
+
+  /* Fix ULTRA específico para o AddCard - sobrescrever TUDO */
+  textarea[placeholder="Digite o título do cartão..."] {
+    color: #f3f4f6 !important;
+    font-size: 14px !important;
+    line-height: 18px !important;
+    margin-bottom: 8px !important;
+    word-wrap: break-word !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    
+    &:focus {
+      color: #f3f4f6 !important;
+      font-size: 14px !important;
+      line-height: 18px !important;
+      margin-bottom: 8px !important;
+      word-wrap: break-word !important;
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    &::placeholder {
+      color: #cccccc !important;
+      font-size: 14px !important;
+    }
+  }
 }
