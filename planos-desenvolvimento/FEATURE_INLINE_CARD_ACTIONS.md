@@ -41,19 +41,26 @@ O núcleo da implementação será um componente configurado `MentionsInput` que
 
 ### Passo 2: Implementação no Modal de Edição (`NameField.jsx`)
 
-1.  **Estado Local:** Introduzir estados para gerir o nome do cartão e as seleções:
+1.  **Estado Local:** Introduzir estados para gerir o nome do cartão e as seleções.
     - `name`: Para o texto do título.
-    - `usersToAdd`: Array de IDs de utilizadores selecionados.
-    - `labelsToAdd`: Array de IDs de etiquetas selecionadas.
-
 2.  **Substituição do Input:** Trocar o `TextareaAutosize` pelo `MentionsInput` configurado.
     - O `value` do input será ligado ao estado `name`.
-    - O `onChange` atualizará o estado `name`.
-
-3.  **Implementar `onAdd`:**
-    - Na seleção, adicionar o ID do utilizador/etiqueta ao respetivo array no estado local (`usersToAdd` ou `labelsToAdd`).
-    - Despachar imediatamente a ação Redux correspondente (`addUserToCurrentCard` ou `addLabelToCurrentCard`), uma vez que o cartão já existe.
+    - O `onChange` atualizará o estado `name`, tendo em atenção a incompatibilidade com o hook `useField` (será necessário adaptar o valor).
+3.  **Fontes de Dados:** Carregar utilizadores e etiquetas do Redux.
+4.  **Implementar `onAdd`:**
+    - Na seleção, despachar imediatamente a ação Redux correspondente (`addUserToCurrentCard` ou `addLabelToCurrentCard`), uma vez que o cartão já existe.
     - Após o dispatch, limpar o texto da menção do estado `name`.
+5.  **Estilização Inicial:** Aplicar as classes de CSS existentes ao `MentionsInput` para manter a aparência do campo de texto original.
+
+---
+### **Pausa para Testes ⏸️: Verificação da Edição de Cartões**
+**Objetivo:** Validar a funcionalidade no modal de edição antes de prosseguir.
+- **Teste 1:** Abrir um cartão para editar. O layout do modal deve estar intacto.
+- **Teste 2:** Digitar `@` no título. A lista de utilizadores deve aparecer e estar **visível** (não por baixo de outros elementos).
+- **Teste 3:** Selecionar um utilizador. O utilizador deve ser imediatamente adicionado ao cartão e o texto `@nome` deve desaparecer do título.
+- **Teste 4:** Repetir os testes 2 e 3 com `#` para etiquetas.
+- **Teste 5:** Verificar se a edição normal do título (sem menções) continua a funcionar como esperado.
+---
 
 ### Passo 3: Implementação na Criação de Cartão (`AddCard.jsx`)
 
@@ -61,60 +68,39 @@ O núcleo da implementação será um componente configurado `MentionsInput` que
     - `name`: Para o título do novo cartão.
     - `usersToAdd`: Array de IDs de utilizadores a serem atribuídos.
     - `labelsToAdd`: Array de IDs de etiquetas a serem adicionadas.
-
-2.  **Integração do `MentionsInput`:** Substituir o `TextareaAutosize` pelo `MentionsInput`.
-
+2.  **Integração do `MentionsInput`:** Substituir o `TextareaAutosize` pelo `MentionsInput`, aplicando os estilos existentes.
 3.  **Implementar `onAdd`:**
     - Na seleção de um utilizador ou etiqueta, adicionar o seu ID ao estado local (`usersToAdd` ou `labelsToAdd`).
     - Atualizar o estado `name` para remover o texto da menção.
-
 4.  **Lógica de Submissão (`handleSubmit`):**
-    - Na função que cria o cartão, obter o ID do cartão recém-criado.
-    - Após a criação bem-sucedida, percorrer os arrays `usersToAdd` e `labelsToAdd` e despachar as ações Redux (`addUserToCard`, `addLabelToCard`) para cada item, associando-os ao novo cartão.
+    - Modificar a saga ou a lógica de submissão para, após a criação bem-sucedida do cartão, percorrer os arrays `usersToAdd` e `labelsToAdd` e despachar as ações para associar os itens ao novo cartão.
+5.  **Correção de `z-index`:** Aplicar um `z-index` elevado ao dropdown de menções para garantir que ele apareça sempre por cima da lista de cartões.
 
-### Passo 4: Estilização e Integração com Semantic UI
+---
+### **Pausa para Testes ⏸️: Verificação da Criação de Cartões**
+**Objetivo:** Validar o fluxo de criação de cartões de ponta a ponta.
+- **Teste 1:** O layout da coluna e do formulário de criação deve estar intacto.
+- **Teste 2:** Digitar um título com `@`. A lista de utilizadores deve aparecer e estar **visível**.
+- **Teste 3:** Selecionar um utilizador e uma etiqueta. Os textos das menções devem desaparecer.
+- **Teste 4:** Clicar em "Adicionar Cartão".
+- **Teste 5:** Verificar se o cartão foi criado com o título correto (sem as menções) e se o utilizador e a etiqueta selecionados foram corretamente associados a ele.
+- **Teste 6:** Adicionar um cartão sem menções para garantir que o fluxo normal não foi afetado.
+---
 
-Esta é uma fase crítica que requer atenção especial para evitar os problemas de layout encontrados anteriormente.
+### Passo 4: Adição de Logs para Debugging
 
-- **Manter Layout Original:** O `MentionsInput` deve ser estilizado para se parecer e comportar exatamente como o `TextareaAutosize` que substitui. É crucial aplicar as classes CSS existentes para garantir que o layout da coluna não seja desconfigurado.
-- **Corrigir Visibilidade do Dropdown:** O problema do dropdown de sugestões aparecer por baixo de outros elementos é quase sempre relacionado com `z-index`.
-  - **Ação:** Inspecionar os elementos `div` gerados pela `react-mentions` e aplicar um `z-index` elevado (ex: `z-index: 9999;`) nos ficheiros SCSS correspondentes (`AddCard.module.scss`, etc.). Pode ser necessário também ajustar a `position` (ex: `position: relative;`) no contentor pai.
-- **Consistência com Semantic UI:** O estilo do dropdown deve ser idêntico ao que já existe nos comentários. Reutilizar as mesmas classes e variáveis de SASS para garantir consistência visual.
-
-### Passo 5: Adição de Logs para Debugging
-
-- **Ação:** Adicionar `console.log` para monitorizar o fluxo de dados.
+- **Ação:** Adicionar `console.log` para monitorizar o fluxo de dados em pontos-chave.
 - **Pontos de Log:**
-  - `NameField.jsx` e `AddCard.jsx`: Logar os dados carregados do Redux. Ex: `console.log('[Mentions] Carregados X utilizadores e Y etiquetas.');`
-  - `onAdd` callback: Logar o item selecionado. Ex: `console.log('[Mentions] Item selecionado:', item);`
+  - `NameField.jsx` e `AddCard.jsx`: Logar os dados carregados do Redux.
+  - `onAdd` callback: Logar o item selecionado.
   - `handleSubmit` em `AddCard.jsx`: Logar os arrays de utilizadores e etiquetas antes de despachar as ações.
 
-### Passo 6: Pontos de Atenção e Erros Comuns a Evitar
+### Passo 5: Pontos de Atenção e Erros Comuns a Evitar
 
-As tentativas anteriores revelaram alguns desafios técnicos. É importante estar ciente deles para não repetir os mesmos erros:
+- **Incompatibilidade de `ref`:** Utilizar `useRef` do React em vez de `useNestedRef` se surgirem problemas.
+- **Incompatibilidade com `useForm`:** Adaptar o `onChange` do `MentionsInput` para passar os dados no formato que o `useForm` espera.
+- **Gestão de `ref` com `useClickAwayListener`:** Garantir que as referências são geridas corretamente para evitar erros.
 
-- **Incompatibilidade de `ref`:** A biblioteca `react-mentions` pode não ser compatível com hooks como `useNestedRef`.
-  - **Solução:** Utilizar `useRef` do React diretamente para referenciar o input.
-- **Incompatibilidade com `useForm`:** O `onChange` do `MentionsInput` tem uma assinatura diferente de um input normal, o que pode causar erros no hook `useForm`.
-  - **Solução:** Criar uma função intermediária para o `onChange` que extrai o valor do texto e o passa para o `useForm` no formato que ele espera (ex: `{ target: { value: newPlainTextValue } }`).
-- **Gestão de `ref` com `useClickAwayListener`:** O erro `current.contains is not a function` pode ocorrer se a `ref` não for gerida corretamente.
-  - **Solução:** Garantir que o `useClickAwayListener` recebe uma `ref` corretamente associada a um elemento do DOM.
-
-### Passo 7: Testes e Validação
-
-- **Testes Manuais:**
-  - **Cenário 1: Edição de Cartão**
-    - Abrir um cartão, editar o título e digitar `@`. Verificar se a lista de membros aparece e está **visível**.
-    - Selecionar um membro. Confirmar que é atribuído e que o texto `@user` desaparece.
-    - Fazer o mesmo com `#` para etiquetas.
-    - Adicionar múltiplos utilizadores e etiquetas na mesma edição.
-  - **Cenário 2: Criação de Cartão**
-    - No formulário de criação, digitar um nome e `@`. Verificar se a lista aparece e está **visível**.
-    - Selecionar um membro e uma etiqueta.
-    - Criar o cartão. Verificar se o cartão é criado com o nome correto (sem as menções) e com o utilizador e a etiqueta devidamente associados.
-    - Testar a adição de múltiplos itens.
-  - **Caso de Borda:** Testar a filtragem das listas (ex: `@an...`) e a seleção via teclado (setas e Enter).
-
-### Passo 8: Verificação Final
-- **Ação:** Executar o linter e o processo de build para garantir que não há erros pendentes antes de finalizar a tarefa.
-- **Resultado Esperado:** O código deve compilar sem erros e passar em todas as verificações de qualidade de código.
+### Passo 6: Verificação Final
+- **Ação:** Executar o linter e o processo de build para garantir que não há erros pendentes.
+- **Resultado Esperado:** O código deve compilar sem erros e passar em todas as verificações de qualidade.
