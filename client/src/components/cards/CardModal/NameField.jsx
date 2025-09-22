@@ -4,14 +4,19 @@
  */
 
 import upperFirst from 'lodash/upperFirst';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import TextareaAutosize from 'react-textarea-autosize';
-import { TextArea } from 'semantic-ui-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Mention, MentionsInput } from 'react-mentions';
+import camelCase from 'lodash/camelCase';
 import { useDidUpdate, usePrevious, useToggle } from '../../../lib/hooks';
 
-import { useEscapeInterceptor, useField, useNestedRef } from '../../../hooks';
+import selectors from '../../../selectors';
+import entryActions from '../../../entry-actions';
+import { useEscapeInterceptor } from '../../../hooks';
+import UserAvatar from '../../users/UserAvatar';
+import globalStyles from '../../../styles.module.scss';
 
 import styles from './NameField.module.scss';
 
@@ -21,17 +26,21 @@ const Sizes = {
 };
 
 const NameField = React.memo(({ defaultValue, size, onUpdate }) => {
+  const [value, setValue] = useState(defaultValue);
   const prevDefaultValue = usePrevious(defaultValue);
-  const [value, handleChange, setValue] = useField(defaultValue);
   const [blurFieldState, blurField] = useToggle();
 
-  const [fiedRef, handleFieldRef] = useNestedRef();
+  const fieldRef = useRef(null);
   const isFocusedRef = useRef(false);
+
+  const dispatch = useDispatch();
+  const users = useSelector(selectors.selectMembershipsForCurrentBoard);
+  const labels = useSelector(selectors.selectLabelsForCurrentBoard);
 
   const handleEscape = useCallback(() => {
     setValue(defaultValue);
     blurField();
-  }, [defaultValue, setValue, blurField]);
+  }, [defaultValue, blurField]);
 
   const [activateEscapeInterceptor, deactivateEscapeInterceptor] =
     useEscapeInterceptor(handleEscape);
@@ -45,10 +54,13 @@ const NameField = React.memo(({ defaultValue, size, onUpdate }) => {
     event => {
       if (event.key === 'Enter') {
         event.preventDefault();
-        fiedRef.current.blur();
+
+        if (fieldRef.current) {
+          fieldRef.current.blur();
+        }
       }
     },
-    [fiedRef]
+    [],
   );
 
   const handleBlur = useCallback(() => {
@@ -64,7 +76,57 @@ const NameField = React.memo(({ defaultValue, size, onUpdate }) => {
     } else {
       setValue(defaultValue);
     }
-  }, [defaultValue, onUpdate, value, setValue, deactivateEscapeInterceptor]);
+  }, [defaultValue, onUpdate, value, deactivateEscapeInterceptor]);
+
+  const handleChange = useCallback(
+    (event, newValue) => {
+      setValue(newValue);
+    },
+    [],
+  );
+
+  const handleUserAdd = useCallback(
+    (userId, display) => {
+      // eslint-disable-next-line no-console
+      console.log('[NameField] Dispatching addUserToCurrentCard with userId:', userId);
+      setValue(prevValue => prevValue.replace(`@${display}`, '').trim());
+      dispatch(entryActions.addUserToCurrentCard(userId));
+    },
+    [dispatch],
+  );
+
+  const handleLabelAdd = useCallback(
+    (labelId, display) => {
+      setValue(prevValue => prevValue.replace(`#${display}`, '').trim());
+      dispatch(entryActions.addLabelToCurrentCard(labelId));
+    },
+    [dispatch],
+  );
+
+  const userSuggestionRenderer = useCallback(
+    (entry, search, highlightedDisplay) => (
+      <div className={styles.suggestion}>
+        <UserAvatar id={entry.id} size="tiny" />
+        {highlightedDisplay}
+      </div>
+    ),
+    [],
+  );
+
+  const labelSuggestionRenderer = useCallback(
+    (entry, search, highlightedDisplay) => (
+      <div className={styles.suggestion}>
+        <span
+          className={classNames(
+            styles.labelSuggestion,
+            globalStyles[`background${upperFirst(camelCase(entry.color))}`],
+          )}
+        />
+        {highlightedDisplay}
+      </div>
+    ),
+    [],
+  );
 
   useDidUpdate(() => {
     if (!isFocusedRef.current && defaultValue !== prevDefaultValue) {
@@ -73,22 +135,55 @@ const NameField = React.memo(({ defaultValue, size, onUpdate }) => {
   }, [defaultValue, prevDefaultValue]);
 
   useDidUpdate(() => {
-    fiedRef.current.blur();
+    if (fieldRef.current) {
+      fieldRef.current.blur();
+    }
   }, [blurFieldState]);
 
   return (
-    <TextArea
-      ref={handleFieldRef}
-      as={TextareaAutosize}
+    <MentionsInput
+      inputRef={fieldRef}
       value={value}
       maxLength={1024}
       spellCheck={false}
-      className={classNames(styles.field, styles[`field${upperFirst(size)}`])}
+      className={classNames(styles.field, styles[`field${upperFirst(size)}`], 'mentions-input')}
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
       onChange={handleChange}
       onBlur={handleBlur}
-    />
+      allowSpaceInQuery
+      allowSuggestionsAboveCursor
+      style={{
+        control: {
+          minHeight: 'auto',
+        },
+      }}
+    >
+      <Mention
+        trigger="@"
+        markup="@__display__"
+        data={users.map(({ user }) => ({
+          id: user.id,
+          display: user.username,
+          avatarUrl: user.avatarUrl,
+        }))}
+        onAdd={handleUserAdd}
+        renderSuggestion={userSuggestionRenderer}
+        className={styles.mention}
+      />
+      <Mention
+        trigger="#"
+        markup="#__display__"
+        data={labels.map(label => ({
+          id: label.id,
+          display: label.name,
+          color: label.color,
+        }))}
+        onAdd={handleLabelAdd}
+        renderSuggestion={labelSuggestionRenderer}
+        className={styles.mention}
+      />
+    </MentionsInput>
   );
 });
 

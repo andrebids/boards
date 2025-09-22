@@ -3,13 +3,15 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import TextareaAutosize from 'react-textarea-autosize';
-import { Button, Form, Icon, TextArea } from 'semantic-ui-react';
+import { Mention, MentionsInput } from 'react-mentions';
+import upperFirst from 'lodash/upperFirst';
+import camelCase from 'lodash/camelCase';
+import { Button, Form, Icon } from 'semantic-ui-react';
 import {
   useClickAwayListener,
   useDidUpdate,
@@ -24,15 +26,18 @@ import { isModifierKeyPressed } from '../../../utils/event-helpers';
 import { CardTypeIcons } from '../../../constants/Icons';
 import { processSupportedFiles } from '../../../utils/file-helpers';
 import SelectCardTypeStep from '../SelectCardTypeStep';
+import UserAvatar from '../../users/UserAvatar';
+import globalStyles from '../../../styles.module.scss';
 
 import styles from './AddCard.module.scss';
+import mentionsInputStyle from './mentions-input-style';
 
 const DEFAULT_DATA = {
   name: '',
 };
 
 const AddCard = React.memo(
-  ({ isOpened, className, onCreate, onCreateWithAttachment, onClose }) => {
+  ({ isOpened, className, listId, onCreate, onCreateWithAttachment, onClose }) => {
     const {
       defaultCardType: defaultType,
       limitCardTypesToDefaultOne: limitTypesToDefaultOne,
@@ -41,10 +46,21 @@ const AddCard = React.memo(
     const [t] = useTranslation();
     const prevDefaultType = usePrevious(defaultType);
 
-    const [data, handleFieldChange, setData] = useForm(() => ({
+    const [data, setData] = useState(() => ({
       ...DEFAULT_DATA,
       type: defaultType,
     }));
+
+    const [usersToAdd, setUsersToAdd] = useState([]);
+    const [labelsToAdd, setLabelsToAdd] = useState([]);
+
+    const boardMemberships = useSelector(
+      selectors.selectMembershipsForCurrentBoard,
+    );
+    const labels = useSelector(selectors.selectLabelsForCurrentBoard);
+
+    console.log('AddCard users:', boardMemberships);
+    console.log('AddCard labels:', labels);
 
     const [focusNameFieldState, focusNameField] = useToggle();
     const [isClosableActiveRef, activateClosable, deactivateClosable] =
@@ -54,7 +70,7 @@ const AddCard = React.memo(
     const [isDragOver, setIsDragOver] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const [nameFieldRef, handleNameFieldRef] = useNestedRef();
+    const nameFieldRef = useRef(null);
     const [submitButtonRef, handleSubmitButtonRef] = useNestedRef();
     const [selectTypeButtonRef, handleSelectTypeButtonRef] = useNestedRef();
 
@@ -63,7 +79,6 @@ const AddCard = React.memo(
         const cleanData = {
           ...data,
           name: data.name.trim(),
-          type: defaultType, // Sempre usar o tipo padrão do board para consistência
         };
 
         if (!cleanData.name) {
@@ -71,12 +86,15 @@ const AddCard = React.memo(
           return;
         }
 
-        onCreate(cleanData, autoOpen);
+        console.log('Creating card with users:', usersToAdd, 'and labels:', labelsToAdd);
+        onCreate({ ...cleanData, userIds: usersToAdd, labelIds: labelsToAdd }, autoOpen);
 
         setData({
           ...DEFAULT_DATA,
           type: defaultType,
         });
+        setUsersToAdd([]);
+        setLabelsToAdd([]);
 
         if (autoOpen) {
           onClose();
@@ -92,6 +110,8 @@ const AddCard = React.memo(
         setData,
         focusNameField,
         nameFieldRef,
+        usersToAdd,
+        labelsToAdd,
       ]
     );
 
@@ -106,7 +126,60 @@ const AddCard = React.memo(
           type,
         }));
       },
-      [setData]
+      [setData],
+    );
+
+    const handleNameChange = useCallback(
+      (_, newValue) => {
+        setData(prevData => ({
+          ...prevData,
+          name: newValue,
+        }));
+      },
+      [setData],
+    );
+
+    const handleUserAdd = useCallback((id, display) => {
+      console.log('Adding user to card (local state):', id);
+      setUsersToAdd(prevUsers => [...prevUsers, id]);
+      setData(prevData => ({
+        ...prevData,
+        name: prevData.name.replace(`@${display}`, '').trim(),
+      }));
+    }, [setData]);
+
+    const handleLabelAdd = useCallback((id, display) => {
+      console.log('Adding label to card (local state):', id);
+      setLabelsToAdd(prevLabels => [...prevLabels, id]);
+      setData(prevData => ({
+        ...prevData,
+        name: prevData.name.replace(`#${display}`, '').trim(),
+      }));
+    }, [setData]);
+
+    const userSuggestionRenderer = useCallback(
+      (entry, search, highlightedDisplay) => (
+        <div className={styles.suggestion}>
+          <UserAvatar id={entry.id} size="tiny" />
+          <span>{highlightedDisplay}</span>
+        </div>
+      ),
+      [],
+    );
+
+    const labelSuggestionRenderer = useCallback(
+      (entry, search, highlightedDisplay) => (
+        <div className={styles.suggestion}>
+          <span
+            className={classNames(
+              styles.labelSuggestion,
+              globalStyles[`background${upperFirst(camelCase(entry.color))}`],
+            )}
+          />
+          {highlightedDisplay}
+        </div>
+      ),
+      [],
     );
 
     const handleFieldKeyDown = useCallback(
@@ -272,11 +345,9 @@ const AddCard = React.memo(
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <TextArea
+          <MentionsInput
             {...clickAwayProps}
-            ref={handleNameFieldRef}
-            as={TextareaAutosize}
-            name="name"
+            inputRef={nameFieldRef}
             value={data.name}
             placeholder={
               isDragOver
@@ -284,16 +355,55 @@ const AddCard = React.memo(
                 : t('common.enterCardTitle')
             }
             maxLength={1024}
-            minRows={3}
+            rows={3}
             spellCheck={false}
             className={classNames(
-              styles.field,
-              isProcessing && styles.fieldProcessing
+              isProcessing && styles.fieldProcessing,
             )}
+            style={mentionsInputStyle}
             onKeyDown={handleFieldKeyDown}
-            onChange={handleFieldChange}
+            onChange={handleNameChange}
             disabled={isProcessing}
-          />
+            allowSpaceInQuery
+            allowSuggestionsAboveCursor
+          >
+            <Mention
+              trigger="@"
+              markup="@__display__"
+              data={boardMemberships.map(({ user }) => ({
+                id: user.id,
+                display: user.username,
+                avatarUrl: user.avatarUrl,
+              }))}
+              onAdd={handleUserAdd}
+              renderSuggestion={userSuggestionRenderer}
+              className={styles.mention}
+            />
+            <Mention
+              trigger="#"
+              markup="#__display__"
+              data={labels.map(label => ({
+                id: label.id,
+                display: label.name,
+                color: label.color,
+              }))}
+              onAdd={handleLabelAdd}
+              renderSuggestion={labelSuggestionRenderer}
+              className={styles.mention}
+            />
+          </MentionsInput>
+          {usersToAdd.length > 0 && (
+            <span className={styles.selectedUsers}>
+              {usersToAdd.map(userId => (
+                <span
+                  key={userId}
+                  className={styles.selectedUserAvatar}
+                >
+                  <UserAvatar id={userId} size="small" />
+                </span>
+              ))}
+            </span>
+          )}
           {isDragOver && (
             <div className={styles.dragOverlay}>
               <Icon name="upload" size="large" />
@@ -343,6 +453,7 @@ const AddCard = React.memo(
 AddCard.propTypes = {
   isOpened: PropTypes.bool,
   className: PropTypes.string,
+  listId: PropTypes.string.isRequired,
   onCreate: PropTypes.func.isRequired,
   onCreateWithAttachment: PropTypes.func,
   onClose: PropTypes.func.isRequired,

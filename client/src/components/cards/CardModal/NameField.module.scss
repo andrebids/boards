@@ -5,35 +5,51 @@
 
 :global(#app) {
   .field {
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    box-shadow: none;
-    color: #17394d;
-    font-weight: bold;
-    margin: -5px;
-    overflow: hidden;
-    padding: 4px;
-    resize: none;
+    flex-grow: 1;
     width: 100%;
+    border: none;
+    background: none;
+    line-height: 1.4;
+    resize: none;
+    overflow: hidden;
 
     &:focus {
       background: #fff;
-      border-color: #5ba4cf;
-      box-shadow: 0 0 2px 0 #5ba4cf;
-      outline: 0;
+      box-shadow: 0 0 0 1px #2185d0;
     }
   }
 
   /* Sizes */
 
   .fieldMedium {
-    font-size: 20px;
-    line-height: 24px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .labelSuggestion {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    margin-right: 8px;
   }
 
   .fieldLarge {
-    font-size: 28px;
-    line-height: 34px;
+    padding: 8px 12px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .suggestion {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+
+    > :first-child {
+      margin-right: 8px;
+    }
+  }
+
+  .mention {
+    background-color: #eee;
   }
 }

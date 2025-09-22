@@ -23,6 +23,8 @@ import Comment from './Comment';
 import Activity from './Activity';
 import Notification from './Notification';
 import NotificationService from './NotificationService';
+import CardMembership from './CardMembership';
+import CardLabel from './CardLabel';
 
 export {
   User,
@@ -45,4 +47,6 @@ export {
   Activity,
   Notification,
   NotificationService,
+  CardMembership,
+  CardLabel,
 };

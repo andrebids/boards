@@ -248,6 +248,7 @@ const List = React.memo(({ id, index }) => {
                 onCreate={handleCardCreate}
                 onCreateWithAttachment={handleCardCreateWithAttachment}
                 onClose={handleAddCardClose}
+                listId={id}
               />
             )}
           </div>

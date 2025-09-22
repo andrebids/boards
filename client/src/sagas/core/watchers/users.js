@@ -91,9 +91,12 @@ export default function* usersWatchers() {
       EntryActionTypes.USER_TO_CARD_ADD,
       ({ payload: { id, cardId } }) => services.addUserToCard(id, cardId)
     ),
+    takeEvery(EntryActionTypes.USER_TO_CURRENT_CARD_ADD, ({ payload: { userId } }) =>
+      services.addUserToCurrentCard(userId),
+    ),
     takeEvery(
-      EntryActionTypes.USER_TO_CURRENT_CARD_ADD,
-      ({ payload: { id } }) => services.addUserToCurrentCard(id)
+      EntryActionTypes.CURRENT_USER_TO_CURRENT_CARD_ADD,
+      ({ payload: { cardId } }) => services.addCurrentUserToCurrentCard(cardId),
     ),
     takeEvery(EntryActionTypes.CURRENT_USER_TO_CURRENT_CARD_ADD, () =>
       services.addCurrentUserToCurrentCard()

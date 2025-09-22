@@ -27,6 +27,25 @@ const createCard = (listId, data, autoOpen) => ({
   },
 });
 
+const addUserToCard = (id, userId) => {
+  console.log('🔍 [addUserToCard] Entry Action called with:', { id, userId });
+  return {
+    type: EntryActionTypes.CARD_USER_ADD,
+    payload: {
+      id,
+      userId,
+    },
+  };
+};
+
+const addLabelToCard = (id, labelId) => ({
+  type: EntryActionTypes.CARD_LABEL_ADD,
+  payload: {
+    id,
+    labelId,
+  },
+});
+
 const createCardInCurrentList = (data, autoOpen) => ({
   type: EntryActionTypes.CARD_IN_CURRENT_LIST_CREATE,
   payload: {
@@ -183,12 +202,28 @@ const createCardWithAttachment = (listId, cardData, attachmentFile) => ({
   },
 });
 
+const addUserToCurrentCard = (userId) => ({
+  type: EntryActionTypes.USER_TO_CURRENT_CARD_ADD,
+  payload: {
+    userId,
+  },
+});
+
+const addLabelToCurrentCard = (labelId) => ({
+  type: EntryActionTypes.LABEL_TO_CURRENT_CARD_ADD,
+  payload: {
+    labelId,
+  },
+});
+
 export default {
   fetchCardsInCurrentList,
   handleCardsUpdate,
   createCard,
   createCardInCurrentList,
   createCardInFirstFiniteList,
+  addUserToCard,
+  addLabelToCard,
   handleCardCreate,
   updateCard,
   updateCurrentCard,
@@ -208,4 +243,6 @@ export default {
   deleteCurrentCard,
   handleCardDelete,
   createCardWithAttachment,
+  addUserToCurrentCard,
+  addLabelToCurrentCard,
 };

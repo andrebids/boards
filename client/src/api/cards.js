@@ -112,6 +112,12 @@ const deleteCard = (id, headers) =>
     item: transformCard(body.item),
   }));
 
+const createCardMembership = (id, data, headers) =>
+  socket.post(`/cards/${id}/memberships`, data, headers);
+
+const createCardLabel = (id, data, headers) =>
+  socket.post(`/cards/${id}/labels`, data, headers);
+
 /* Event handlers */
 
 const makeHandleCardsUpdate = next => body => {
@@ -148,4 +154,6 @@ export default {
   makeHandleCardCreate,
   makeHandleCardUpdate,
   makeHandleCardDelete,
+  createCardMembership,
+  createCardLabel,
 };

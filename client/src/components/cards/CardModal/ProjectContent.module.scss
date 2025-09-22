@@ -188,6 +188,7 @@
   .headerWrapper {
     margin: 12px 48px 12px 56px;
     position: relative;
+    overflow: visible !important;
   }
 
   .hidable {
@@ -298,5 +299,19 @@
     background: #f5f6f7;
     border-radius: 4px;
     margin: 0;
+    overflow: visible !important;
+  }
+
+  // Fix para garantir que todos os elementos do Grid permitam overflow
+  .contentPadding {
+    overflow: visible !important;
+  }
+
+  .sidebarPadding {
+    overflow: visible !important;
+  }
+
+  .modalPadding {
+    overflow: visible !important;
   }
 }

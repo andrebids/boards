@@ -233,6 +233,54 @@ const handleCardDelete = card => ({
   },
 });
 
+const addUserToCard = (id, userId) => ({
+  type: ActionTypes.CARD_USER_ADD,
+  payload: {
+    id,
+    userId,
+  },
+});
+
+addUserToCard.success = cardMembership => ({
+  type: ActionTypes.CARD_USER_ADD__SUCCESS,
+  payload: {
+    cardMembership,
+  },
+});
+
+addUserToCard.failure = (id, userId, error) => ({
+  type: ActionTypes.CARD_USER_ADD__FAILURE,
+  payload: {
+    id,
+    userId,
+    error,
+  },
+});
+
+const addLabelToCard = (id, labelId) => ({
+  type: ActionTypes.CARD_LABEL_ADD,
+  payload: {
+    id,
+    labelId,
+  },
+});
+
+addLabelToCard.success = cardLabel => ({
+  type: ActionTypes.CARD_LABEL_ADD__SUCCESS,
+  payload: {
+    cardLabel,
+  },
+});
+
+addLabelToCard.failure = (id, labelId, error) => ({
+  type: ActionTypes.CARD_LABEL_ADD__FAILURE,
+  payload: {
+    id,
+    labelId,
+    error,
+  },
+});
+
 export default {
   fetchCards,
   handleCardsUpdate,
@@ -243,4 +291,6 @@ export default {
   duplicateCard,
   deleteCard,
   handleCardDelete,
+  addUserToCard,
+  addLabelToCard,
 };

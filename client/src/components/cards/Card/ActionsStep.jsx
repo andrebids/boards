@@ -161,13 +161,15 @@ const ActionsStep = React.memo(({ cardId, onNameEdit, onClose }) => {
 
   const handleUserSelect = useCallback(
     userId => {
-      dispatch(entryActions.addUserToCard(userId, cardId));
+      console.log('🔍 [ActionsStep] Dispatching addUserToCard with cardId:', cardId, 'userId:', userId);
+      dispatch(entryActions.addUserToCard(cardId, userId));
     },
     [cardId, dispatch]
   );
 
   const handleUserDeselect = useCallback(
     userId => {
+      console.log('🔍 [ActionsStep] Dispatching removeUserFromCard with userId:', userId, 'cardId:', cardId);
       dispatch(entryActions.removeUserFromCard(userId, cardId));
     },
     [cardId, dispatch]
@@ -175,13 +177,15 @@ const ActionsStep = React.memo(({ cardId, onNameEdit, onClose }) => {
 
   const handleLabelSelect = useCallback(
     labelId => {
-      dispatch(entryActions.addLabelToCard(labelId, cardId));
+      console.log('🔍 [ActionsStep] Dispatching addLabelToCard with cardId:', cardId, 'labelId:', labelId);
+      dispatch(entryActions.addLabelToCard(cardId, labelId));
     },
     [cardId, dispatch]
   );
 
   const handleLabelDeselect = useCallback(
     labelId => {
+      console.log('🔍 [ActionsStep] Dispatching removeLabelFromCard with labelId:', labelId, 'cardId:', cardId);
       dispatch(entryActions.removeLabelFromCard(labelId, cardId));
     },
     [cardId, dispatch]

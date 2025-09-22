@@ -90,6 +90,7 @@ O núcleo da implementação será um componente configurado `MentionsInput` que
 ### Passo 4: Adição de Logs para Debugging
 
 - **Ação:** Adicionar `console.log` para monitorizar o fluxo de dados em pontos-chave.
+- **Nota:** Os logs devem ser mantidos no código até que a funcionalidade seja validada e aprovada pelo utilizador.
 - **Pontos de Log:**
   - `NameField.jsx` e `AddCard.jsx`: Logar os dados carregados do Redux.
   - `onAdd` callback: Logar o item selecionado.
@@ -101,6 +102,6 @@ O núcleo da implementação será um componente configurado `MentionsInput` que
 - **Incompatibilidade com `useForm`:** Adaptar o `onChange` do `MentionsInput` para passar os dados no formato que o `useForm` espera.
 - **Gestão de `ref` com `useClickAwayListener`:** Garantir que as referências são geridas corretamente para evitar erros.
 
-### Passo 6: Verificação Final
-- **Ação:** Executar o linter e o processo de build para garantir que não há erros pendentes.
-- **Resultado Esperado:** O código deve compilar sem erros e passar em todas as verificações de qualidade.
+### Passo 6: Verificação Manual (Utilizador)
+- **Ação:** O utilizador irá testar a funcionalidade manualmente para garantir que todos os requisitos foram cumpridos.
+- **Resultado Esperado:** A funcionalidade de menções funciona como esperado na criação e edição de cartões.

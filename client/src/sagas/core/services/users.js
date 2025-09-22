@@ -102,10 +102,8 @@ export function* handleUserUpdate(user) {
     ({ items: users1 } = yield call(request, api.getUsers));
 
     if (user.role === UserRoles.ADMIN) {
-      ({ item: config } = yield call(request, api.getConfig));
-
       ({
-        items: projects,
+        item: config,
         included: {
           projectManagers,
           backgroundImages,
@@ -386,7 +384,14 @@ export function* addUserToCard(id, cardId) {
 }
 
 export function* addUserToCurrentCard(id) {
+  console.log('🔍 [users/addUserToCurrentCard] Service called with userId:', id);
   const { cardId } = yield select(selectors.selectPath);
+  console.log('🔍 [users/addUserToCurrentCard] Retrieved cardId from path:', cardId);
+
+  if (!cardId) {
+    console.error('🚨 [users/addUserToCurrentCard] No cardId found in path');
+    return;
+  }
 
   yield call(addUserToCard, id, cardId);
 }

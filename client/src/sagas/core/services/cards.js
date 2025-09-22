@@ -11,6 +11,7 @@ import request from '../request';
 import selectors from '../../../selectors';
 import actions from '../../../actions';
 import api from '../../../api';
+import entryActions from '../../../entry-actions';
 import { createLocalId } from '../../../utils/local-id';
 import {
   isListArchiveOrTrash,
@@ -130,6 +131,7 @@ export function* handleCardsUpdate(cards, activities) {
 }
 
 export function* createCard(listId, data, autoOpen) {
+  const { userIds, labelIds, ...cardData } = data;
   const localId = yield call(createLocalId);
   const list = yield select(selectors.selectListById, listId);
 
@@ -139,7 +141,7 @@ export function* createCard(listId, data, autoOpen) {
   );
 
   const nextData = {
-    ...data,
+    ...cardData,
   };
 
   if (isListFinite(list)) {
@@ -181,6 +183,20 @@ export function* createCard(listId, data, autoOpen) {
   }
 
   yield put(actions.createCard.success(localId, card));
+
+  if (userIds && userIds.length > 0) {
+    console.log(`Adding ${userIds.length} users to card ${card.id}`);
+    for (const userId of userIds) {
+      yield put(entryActions.addUserToCard(card.id, userId));
+    }
+  }
+
+  if (labelIds && labelIds.length > 0) {
+    console.log(`Adding ${labelIds.length} labels to card ${card.id}`);
+    for (const labelId of labelIds) {
+      yield put(entryActions.addLabelToCard(card.id, labelId));
+    }
+  }
 
   if (
     watchForCreateCardActionTask &&
@@ -734,6 +750,65 @@ export function* handleCardDelete(card) {
   }
 }
 
+export function* addUserToCard(id, userId) {
+  console.log('🔍 [addUserToCard] Service called with:', { id, userId });
+  yield put(actions.addUserToCard(id, userId));
+
+  let cardMembership;
+  try {
+    ({ item: cardMembership } = yield call(request, api.createCardMembership, id, {
+      userId,
+    }));
+  } catch (error) {
+    yield put(actions.addUserToCard.failure(id, userId, error));
+    return;
+  }
+
+  yield put(actions.addUserToCard.success(cardMembership));
+}
+
+export function* addUserToCurrentCard(userId) {
+  console.log('🔍 [addUserToCurrentCard] Service called with userId:', userId);
+  const { cardId } = yield select(selectors.selectPath);
+  console.log('🔍 [addUserToCurrentCard] Retrieved cardId from path:', cardId);
+
+  if (!cardId) {
+    console.error('🚨 [addUserToCurrentCard] No cardId found in path');
+    return;
+  }
+
+  yield call(addUserToCard, cardId, userId);
+}
+
+export function* addLabelToCard(id, labelId) {
+  yield put(actions.addLabelToCard(id, labelId));
+
+  let cardLabel;
+  try {
+    ({ item: cardLabel } = yield call(request, api.createCardLabel, id, {
+      labelId,
+    }));
+  } catch (error) {
+    yield put(actions.addLabelToCard.failure(id, labelId, error));
+    return;
+  }
+
+  yield put(actions.addLabelToCard.success(cardLabel));
+}
+
+export function* addLabelToCurrentCard(labelId) {
+  console.log('🔍 [addLabelToCurrentCard] Service called with labelId:', labelId);
+  const { cardId } = yield select(selectors.selectPath);
+  console.log('🔍 [addLabelToCurrentCard] Retrieved cardId from path:', cardId);
+
+  if (!cardId) {
+    console.error('🚨 [addLabelToCurrentCard] No cardId found in path');
+    return;
+  }
+
+  yield call(addLabelToCard, cardId, labelId);
+}
+
 export default {
   fetchCards,
   fetchCardsInCurrentList,
@@ -760,4 +835,8 @@ export default {
   deleteCard,
   deleteCurrentCard,
   handleCardDelete,
+  addUserToCard,
+  addLabelToCard,
+  addUserToCurrentCard,
+  addLabelToCurrentCard,
 };

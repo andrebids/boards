@@ -44,6 +44,17 @@ export default function* cardsWatchers() {
     takeEvery(EntryActionTypes.CARD_UPDATE, ({ payload: { id, data } }) =>
       services.updateCard(id, data)
     ),
+    takeEvery(
+      EntryActionTypes.CARD_USER_ADD,
+      ({ payload: { id, userId } }) => {
+        console.log('🔍 [CARD_USER_ADD] Watcher received payload:', { id, userId });
+        return services.addUserToCard(id, userId);
+      },
+    ),
+    takeEvery(
+      EntryActionTypes.CARD_LABEL_ADD,
+      ({ payload: { id, labelId } }) => services.addLabelToCard(id, labelId),
+    ),
     takeEvery(EntryActionTypes.CURRENT_CARD_UPDATE, ({ payload: { data } }) =>
       services.updateCurrentCard(data)
     ),
@@ -99,8 +110,14 @@ export default function* cardsWatchers() {
     takeEvery(EntryActionTypes.CURRENT_CARD_DELETE, () =>
       services.deleteCurrentCard()
     ),
-    takeEvery(EntryActionTypes.CARD_DELETE_HANDLE, ({ payload: { card } }) =>
-      services.handleCardDelete(card)
+    takeEvery(EntryActionTypes.CARD_DELETE_HANDLE, ({ payload }) =>
+      services.handleCardDelete(payload.card),
+    ),
+    takeEvery(EntryActionTypes.ADD_USER_TO_CURRENT_CARD, ({ payload }) =>
+      services.addUserToCurrentCard(payload.userId),
+    ),
+    takeEvery(EntryActionTypes.ADD_LABEL_TO_CURRENT_CARD, ({ payload }) =>
+      services.addLabelToCurrentCard(payload.labelId),
     ),
   ]);
 }

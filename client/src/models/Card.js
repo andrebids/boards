@@ -144,6 +144,7 @@ export default class extends BaseModel {
       }
       case ActionTypes.USER_TO_CARD_ADD__SUCCESS:
       case ActionTypes.USER_TO_CARD_ADD_HANDLE:
+      case ActionTypes.CARD_USER_ADD__SUCCESS:
         try {
           Card.withId(payload.cardMembership.cardId).users.add(
             payload.cardMembership.userId
@@ -204,6 +205,7 @@ export default class extends BaseModel {
         break;
       case ActionTypes.LABEL_TO_CARD_ADD__SUCCESS:
       case ActionTypes.LABEL_TO_CARD_ADD_HANDLE:
+      case ActionTypes.CARD_LABEL_ADD__SUCCESS:
         try {
           Card.withId(payload.cardLabel.cardId).labels.add(
             payload.cardLabel.labelId

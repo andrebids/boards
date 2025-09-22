@@ -26,6 +26,8 @@ import {
   Task,
   TaskList,
   User,
+  CardMembership,
+  CardLabel,
 } from './models';
 
 const orm = new ORM({
@@ -52,7 +54,9 @@ orm.register(
   Comment,
   Activity,
   Notification,
-  NotificationService
+  NotificationService,
+  CardMembership,
+  CardLabel,
 );
 
 export default orm;

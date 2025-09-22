@@ -644,10 +644,16 @@
 
   .cards {
     min-height: 1px;
+    overflow: visible;
+    
+    // Garantir overflow visível quando há dropdown de menções
+    &:has(.mentions-input__suggestions) {
+      overflow: visible !important;
+    }
   }
 
   .cardsInnerWrapper {
-    overflow-x: hidden;
+    overflow-x: visible;
     overflow-y: auto;
     width: 290px;
 
@@ -677,6 +683,12 @@
     padding: 0 8px;
     white-space: normal;
     width: 272px;
+    overflow: visible;
+    
+    // Garantir overflow visível quando há dropdown de menções
+    &:has(.mentions-input__suggestions) {
+      overflow: visible !important;
+    }
   }
 
   .header {
@@ -753,8 +765,14 @@
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 198px);
-    overflow: hidden;
+    overflow: visible;
     transition: background-color 0.3s ease;
+    
+    // Garantir overflow visível quando há dropdown de menções
+    &:has(.mentions-input__suggestions) {
+      overflow: visible !important;
+      z-index: 1;
+    }
   }
 
   .outerWrapperTransitioning {

@@ -10,6 +10,7 @@
 
   .controls {
     display: flex;
+    gap: 8px;
   }
 
   .field {
@@ -26,11 +27,28 @@
     &::placeholder {
       color: #9ca3af;
     }
+
+    textarea {
+      background: transparent !important;
+      color: #f3f4f6 !important;
+
+      &::placeholder {
+        color: #9ca3af !important;
+      }
+    }
   }
 
   .fieldProcessing {
     opacity: 0.5;
     cursor: not-allowed;
+    background-color: #f8f8f8;
+  }
+
+  .labelSuggestion {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    margin-right: 8px;
   }
 
   .fieldWrapper {
@@ -38,8 +56,8 @@
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     margin-bottom: 8px;
-    min-height: 20px;
-    padding: 8px 12px 4px;
+    min-height: 48px;
+    padding: 16px 16px 12px;
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
@@ -182,4 +200,50 @@
       margin-bottom: 4px;
     }
   }
+
+  .suggestion {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 13px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    > :first-child {
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .mention {
+    background-color: #eee;
+  }
+
+  .selectedUsers {
+    display: inline-block;
+    float: right;
+    line-height: 0;
+    margin-top: 6px;
+    padding-bottom: 2px;
+    position: absolute;
+    top: 8px;
+    right: 12px;
+  }
+
+  .selectedUserAvatar {
+    display: inline-block;
+    line-height: 0;
+    margin: 0 0 6px 2px;
+    max-width: 100%;
+    vertical-align: top;
+  }
+
 }
