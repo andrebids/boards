@@ -210,3 +210,10 @@
 .ui.modal.glass .field > label {
   color: rgba(230, 237, 243, 0.9) !important;
 }
+
+/* Regra específica para o modal de configurações do quadro */
+.ui.modal.glass .ui.fluid.input input[name="name"] {
+  color: #17394d !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+}
