@@ -655,7 +655,7 @@
   .cardsInnerWrapper {
     overflow-x: visible;
     overflow-y: auto;
-    width: 290px;
+    width: 272px; // Alinhar com innerWrapper (272px)
 
     @supports (-moz-appearance: none) {
       scrollbar-color: rgba(0, 0, 0, 0.32) transparent;
@@ -663,7 +663,7 @@
     }
 
     &:hover {
-      width: 272px;
+      width: 272px; // Manter consistente
     }
 
     &::-webkit-scrollbar {
