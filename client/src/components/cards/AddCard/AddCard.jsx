@@ -27,6 +27,7 @@ import { CardTypeIcons } from '../../../constants/Icons';
 import { processSupportedFiles } from '../../../utils/file-helpers';
 import SelectCardTypeStep from '../SelectCardTypeStep';
 import UserAvatar from '../../users/UserAvatar';
+import LabelChip from '../../labels/LabelChip/LabelChip';
 import globalStyles from '../../../styles.module.scss';
 
 import styles from './AddCard.module.scss';
@@ -403,6 +404,18 @@ const AddCard = React.memo(
                 </span>
               ))}
             </span>
+          )}
+          {labelsToAdd.length > 0 && (
+            <div className={styles.selectedLabels}>
+              {labelsToAdd.map(labelId => (
+                <span
+                  key={labelId}
+                  className={styles.selectedLabel}
+                >
+                  <LabelChip id={labelId} size="tiny" />
+                </span>
+              ))}
+            </div>
           )}
           {isDragOver && (
             <div className={styles.dragOverlay}>
