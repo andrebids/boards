@@ -373,7 +373,7 @@ const AddCard = React.memo(
               markup="@__display__"
               data={boardMemberships.map(({ user }) => ({
                 id: user.id,
-                display: user.username,
+                display: user.username || user.name,
                 avatarUrl: user.avatarUrl,
               }))}
               onAdd={handleUserAdd}

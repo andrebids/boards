@@ -164,7 +164,7 @@ const NameField = React.memo(({ defaultValue, size, onUpdate }) => {
         markup="@__display__"
         data={users.map(({ user }) => ({
           id: user.id,
-          display: user.username,
+          display: user.username || user.name,
           avatarUrl: user.avatarUrl,
         }))}
         onAdd={handleUserAdd}
