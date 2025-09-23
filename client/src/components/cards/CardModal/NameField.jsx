@@ -157,6 +157,26 @@ const NameField = React.memo(({ defaultValue, size, onUpdate }) => {
         control: {
           minHeight: 'auto',
         },
+        suggestions: {
+          list: {
+            backgroundColor: 'rgba(14, 17, 23, 0.75)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '12px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            zIndex: 100020,
+          },
+          item: {
+            color: '#e6edf3',
+            fontWeight: '600',
+            '&focused': {
+              backgroundColor: 'rgba(59, 130, 246, 0.15)',
+              color: '#ffffff',
+              fontWeight: '700',
+            },
+          },
+        },
       }}
     >
       <Mention
