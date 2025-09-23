@@ -13,11 +13,10 @@
 }
 
 .ui.secondary.menu .active.item {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.ui.secondary.menu .active.item:hover {
-  color: rgba(255, 255, 255, 1) !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Seletores mais específicos para garantir prioridade */
@@ -30,11 +29,10 @@
 }
 
 #app .ui.secondary.menu .active.item {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-#app .ui.secondary.menu .active.item:hover {
-  color: rgba(255, 255, 255, 1) !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Overrides para cabeçalhos de tabela - cores claras */
