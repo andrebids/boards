@@ -86,17 +86,21 @@ import { MentionsInput, Mention } from 'react-mentions';
   onKeyDown={handleKeyDown}
 >
   <Mention
+    trigger="@"
     appendSpaceOnAdd
     data={usersData}
     displayTransform={(_, display) => `@${display}`}
     renderSuggestion={suggestionRenderer}
+    onAdd={handleUserAdd}
     className={styles.mention}
   />
   <Mention
+    trigger="#"
     appendSpaceOnAdd
     data={labelsData}
     displayTransform={(_, display) => `#${display}`}
     renderSuggestion={renderLabelSuggestion}
+    onAdd={handleLabelAdd}
     className={styles.mention}
   />
 </MentionsInput>
@@ -215,28 +219,180 @@ const handleLabelAdd = (id, display, startPos, endPos) => {
     - **Implementar** sistema para passar estes dados para a saga `createCard`.
 2.  **Integração do `MentionsInput`:** **IMPLEMENTAR** - Substituir o `TextareaAutosize` pelo `MentionsInput`, aplicando os estilos existentes.
 3.  **Estrutura de Dados dos Utilizadores:** **IMPLEMENTAR - GARANTIR SUPORTE COMPLETO:**
-    - **Display:** Usar `user.name || user.username` para mostrar o nome completo ou username como fallback.
+    - **Display:** Usar `user.username || user.name` para consistência com o sistema existente (username primeiro).
     - **Dados do Mention:** Incluir tanto `name` como `username` para permitir busca por ambos.
-    - **Renderização:** Mostrar nome principal e username secundário (se diferente) no dropdown.
+    - **Renderização:** Mostrar username principal e name secundário (se diferente) no dropdown.
 4.  **Implementar `onAdd` - IMPLEMENTAR NOVA LÓGICA:**
     - **Para Utilizadores:** Adicionar o ID ao array `usersToAdd` (implementar).
     - **Para Etiquetas:** Adicionar o ID ao array `labelsToAdd` (implementar).
     - **Limpeza do Texto:** Remover o texto da menção do campo `name` (implementar).
-5.  **Preview Visual:** **IMPLEMENTAR SISTEMA DE PREVIEW:**
-    - **Criar** sistema de preview funcional para mostrar utilizadores e etiquetas selecionados.
-    - **Implementar** preview usando `usersToAdd` e `labelsToAdd`.
-    - **Classes CSS:** Usar `StoryContent.module.scss`:
-      - Utilizadores: `styles.attachments`, `styles.attachmentsRight`, `styles.attachment`, `styles.attachmentRight`
-      - Etiquetas: `styles.labels`, `styles.attachment`, `styles.attachmentLeft`
-    - **Componentes:** Usar `UserAvatar` (size="small") e `LabelChip` (size="tiny").
-6.  **Tema Glass Effect:** **IMPLEMENTAR - APLICAR AO DROPDOWN:**
-    - **Base:** Usar o sistema de estilos já existente em `mentions-input-style.js`.
-    - **Glass Effect:** Aplicar o tema glass effect do `glass-modal.css`:
-      - Background: `rgba(14, 17, 23, 0.75)` com `backdrop-filter: blur(16px)`
-      - Border: `1px solid rgba(255, 255, 255, 0.08)`
-      - Box-shadow: `0 14px 34px rgba(0, 0, 0, 0.55)`
-      - Border-radius: `16px` para consistência
-    - **Z-index:** Manter `z-index: 100020` para aparecer por cima de todos os elementos.
+5.  **Preview Visual - ESTRUTURA DEFINIDA BASEADA NO PLANKA:**
+    - **Localização:** O preview deve aparecer **dentro do `.fieldWrapper`** (linha 264-274) logo **ANTES** do campo de texto.
+    - **Estrutura dos Previews:**
+      
+      **🏷️ Labels (Etiquetas) - FICAM NO TOPO, ALINHADOS À ESQUERDA:**
+      ```jsx
+      {labelsToAdd.length > 0 && (
+        <div className={styles.previewLabels}>
+          {labelsToAdd.map(labelId => (
+            <span key={labelId} className={classNames(styles.previewAttachment, styles.previewAttachmentLeft)}>
+              <LabelChip id={labelId} size="tiny" />
+            </span>
+          ))}
+        </div>
+      )}
+      ```
+      
+      **👥 Utilizadores - FICAM NO TOPO, ALINHADOS À DIREITA (float: right):**
+      ```jsx
+      {usersToAdd.length > 0 && (
+        <div className={classNames(styles.previewAttachments, styles.previewAttachmentsRight)}>
+          {usersToAdd.map(userId => (
+            <span key={userId} className={classNames(styles.previewAttachment, styles.previewAttachmentRight)}>
+              <UserAvatar id={userId} size="small" />
+            </span>
+          ))}
+        </div>
+      )}
+      ```
+    
+    - **Classes CSS a Adicionar ao `AddCard.module.scss`:**
+      ```scss
+      .previewAttachment {
+        display: inline-block;
+        line-height: 0;
+        margin: 0 0 6px 0;
+        max-width: 100%;
+        vertical-align: top;
+      }
+      
+      .previewAttachmentLeft {
+        margin-right: 4px;
+      }
+      
+      .previewAttachmentRight {
+        margin-left: 2px;
+      }
+      
+      .previewAttachments {
+        display: inline-block;
+        padding-bottom: 2px;
+      }
+      
+      .previewAttachmentsRight {
+        float: right;
+        line-height: 0;
+        margin-top: 6px;
+      }
+      
+      .previewLabels {
+        max-width: 100%;
+        overflow: hidden;
+        margin-bottom: 4px;
+      }
+      
+      // Clearfix para garantir layout correto com float
+      .fieldWrapper:after {
+        clear: both;
+        content: "";
+        display: table;
+      }
+      ```
+    
+    - **Posicionamento:** 
+      - Labels ficam numa linha própria no topo, alinhados à esquerda
+      - Utilizadores ficam numa linha própria no topo, alinhados à direita (float)
+      - Campo de texto fica por baixo dos previews
+      - **Exatamente como nos cartões do Planka** - mesma estrutura visual
+6.  **Tema Glass Effect - ESPECIFICAÇÃO EXATA BASEADA NO PROJETO:**
+    
+    **📍 Localização:** Os estilos já existem em `client/src/styles.module.scss` (linhas 79-102).
+    
+    **🎨 Estilos Atuais do Dropdown (a substituir):**
+    ```scss
+    // ATUAL em styles.module.scss (linhas 85-101)
+    .mentions-input {
+      &__suggestions {
+        border: 1px solid #d4d4d5;
+        border-radius: 3px;
+        box-shadow: 0 8px 16px -4px rgba(9, 45, 66, 0.25);
+        max-height: 200px;
+        overflow-y: auto;
+        
+        &__item {
+          padding: 8px 12px;
+          &--focused {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: rgba(0, 0, 0, 0.95);
+          }
+        }
+      }
+    }
+    ```
+    
+    **✨ Novos Estilos Glass Theme (a implementar):**
+    ```scss
+    // NOVO - Glass Theme para mentions dropdown
+    .mentions-input {
+      &__highlighter {
+        line-height: 1.4;
+        padding: 8px 12px;
+      }
+
+      &__suggestions {
+        // Glass Effect baseado no glass-theme.css
+        background: rgba(var(--glass-bg-rgb), 0.85) !important;
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px; // Consistente com modais glass
+        box-shadow: var(--glass-shadow);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100020; // Acima de todos os elementos
+        
+        // Scroll glass theme
+        &::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          border-radius: 4px;
+          background: linear-gradient(
+            180deg,
+            rgba(59, 130, 246, 0.45),
+            rgba(29, 78, 216, 0.45)
+          );
+        }
+
+        &__item {
+          padding: 8px 12px;
+          color: var(--text-secondary);
+          transition: all 0.2s ease;
+          
+          &--focused {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--text-primary);
+            border-radius: 8px;
+            margin: 2px 4px;
+          }
+        }
+      }
+    }
+    ```
+    
+    **⚠️ VARIÁVEIS CSS NECESSÁRIAS:**
+    As variáveis já existem em `glass-theme.css`:
+    - `--glass-bg-rgb: 14, 17, 23`
+    - `--glass-border: rgba(255, 255, 255, 0.06)`
+    - `--glass-shadow: 0 14px 34px rgba(0, 0, 0, 0.55)`
+    - `--text-primary: #e6edf3`
+    - `--text-secondary: rgba(230, 237, 243, 0.75)`
+    
+    **🔧 IMPLEMENTAÇÃO:**
+    1. **Substituir** os estilos atuais em `styles.module.scss` (linhas 85-101)
+    2. **Aplicar** os novos estilos glass theme
+    3. **Testar** que o dropdown aparece com o efeito glass correto
 7.  **Lógica de Submissão:** **IMPLEMENTAR NOVA LÓGICA:**
     - **Modificar** a saga `createCard` para processar `userIds` e `labelIds`.
     - **Implementar** sistema para despachar as ações `addUserToCard` e `addLabelToCard` após a criação.
@@ -255,31 +411,99 @@ const handleLabelAdd = (id, display, startPos, endPos) => {
 - **Teste 3:** Selecionar um utilizador e uma etiqueta. Os textos das menções devem desaparecer.
 - **Teste 4:** **Suporte de Utilizadores:** Testar com utilizadores que têm apenas `name`, apenas `username`, e ambos os campos.
 - **Teste 5:** **Tema Glass Effect:** Verificar se o dropdown de sugestões tem o tema glass effect aplicado (fundo translúcido com blur, bordas glass, sombras).
-- **Teste 6:** Clicar em "Adicionar Cartão".
-- **Teste 7:** Verificar se o cartão foi criado com o título correto (sem as menções) e se o utilizador e a etiqueta selecionados foram corretamente associados a ele.
-- **Teste 8:** Adicionar um cartão sem menções para garantir que o fluxo normal não foi afetado.
-- **Teste 9:** **Verificar que a edição de cartões NÃO foi afetada** - abrir um cartão existente e verificar que o campo de título funciona normalmente (sem menções).
-- **Teste 10:** **Verificar funcionalidades existentes de edição:**
+- **Teste 6:** **Posicionamento dos Previews:** 
+  - Labels devem aparecer no topo, alinhados à esquerda
+  - Utilizadores devem aparecer no topo, alinhados à direita (float: right)
+  - Campo de texto deve ficar por baixo dos previews
+  - Layout deve ser idêntico aos cartões normais do Planka
+- **Teste 7:** Clicar em "Adicionar Cartão".
+- **Teste 8:** Verificar se o cartão foi criado com o título correto (sem as menções) e se o utilizador e a etiqueta selecionados foram corretamente associados a ele.
+- **Teste 9:** Adicionar um cartão sem menções para garantir que o fluxo normal não foi afetado.
+- **Teste 10:** **Verificar que a edição de cartões NÃO foi afetada** - abrir um cartão existente e verificar que o campo de título funciona normalmente (sem menções).
+- **Teste 11:** **Verificar funcionalidades existentes de edição:**
   - Clicar no botão "Membros" no modal de edição - deve funcionar normalmente
   - Clicar no botão "Etiquetas" no modal de edição - deve funcionar normalmente
   - Adicionar/remover utilizadores via edição - deve funcionar normalmente
   - Adicionar/remover etiquetas via edição - deve funcionar normalmente
-- **Teste 11:** **Verificar sintonia entre criação e edição:**
+- **Teste 12:** **Verificar sintonia entre criação e edição:**
   - Criar um cartão com menções `@user` e `#label`
   - Abrir o cartão criado e verificar que os utilizadores/etiquetas aparecem nos botões de edição
   - Adicionar mais utilizadores/etiquetas via edição
   - Verificar que tudo aparece consistentemente no cartão
+
+### **🔬 TESTES DE EDGE CASES (CRÍTICOS):**
+- **Teste Edge 1:** **Caracteres Especiais:** Digitar `@@`, `##`, `@#`, `#@` - dropdown deve aparecer apenas no último caractere
+- **Teste Edge 2:** **Performance:** Criar quadro com 50+ utilizadores e 20+ labels - dropdown deve aparecer rapidamente
+- **Teste Edge 3:** **Texto Longo:** Digitar título com 1000+ caracteres incluindo menções - deve funcionar normalmente
+- **Teste Edge 4:** **Múltiplas Menções:** `@user1 @user2 #label1 #label2` no mesmo título - todas devem ser processadas
+- **Teste Edge 5:** **Cancellation:** Digitar `@` e depois ESC - dropdown deve desaparecer sem adicionar nada
+- **Teste Edge 6:** **Keyboard Navigation:** Usar setas para navegar dropdown, Enter para selecionar
+- **Teste Edge 7:** **Mobile/Touch:** Testar em dispositivo móvel ou simulador - touch deve funcionar
+- **Teste Edge 8:** **Utilizadores Duplicados:** Tentar adicionar o mesmo utilizador duas vezes - deve aparecer apenas uma vez
+- **Teste Edge 9:** **Conflito Drag & Drop:** Arrastar arquivo sobre o campo enquanto dropdown está aberto
+- **Teste Edge 10:** **Concorrência:** Abrir várias abas e criar cartões simultaneamente
+
+### **🎯 TESTES DE INTEGRAÇÃO ESPECÍFICOS:**
+- **Teste Int 1:** **Boards com Diferentes Configurações:** Testar em board sem utilizadores, board sem labels
+- **Teste Int 2:** **Permissões:** Testar com utilizador com permissões limitadas
+- **Teste Int 3:** **Browser Compatibility:** Chrome, Firefox, Safari, Edge
+- **Teste Int 4:** **Network Issues:** Simular rede lenta durante criação de cartão
+- **Teste Int 5:** **Undo/Redo:** Testar Ctrl+Z no campo de texto com menções
 ---
 
-### Passo 4: Adição de Logs para Debugging
+### Passo 4: Estratégia de Logs para Debugging (EXPANDIDA)
 
-- **Ação:** Adicionar `console.log` para monitorizar o fluxo de dados em pontos-chave.
-- **Nota:** Os logs devem ser mantidos no código até que a funcionalidade seja validada e aprovada pelo utilizador.
-- **Pontos de Log:**
-  - `AddCard.jsx`: Logar os dados carregados do Redux.
-  - `onAdd` callback: Logar o item selecionado e a ação a ser despachada.
-  - **Vantagem:** Como estamos a reutilizar as ações existentes, os logs já existentes nas sagas e entry-actions ajudarão no debugging.
-  - **Nota:** `NameField.jsx` **NÃO será modificado** - sem logs necessários.
+**⚠️ NOTA:** Os logs devem ser mantidos no código até que a funcionalidade seja validada e aprovada pelo utilizador [[memory:9198107]].
+
+#### **📊 LOGS ESTRATÉGICOS OBRIGATÓRIOS:**
+
+**1. 🏗️ Logs de Inicialização:**
+```javascript
+console.log('🚀 AddCard: Dados Redux carregados:', {
+  boardMemberships: boardMemberships.length,
+  labels: labels.length,
+  usersData: usersData.length,
+  labelsData: labelsData.length
+});
+```
+
+**2. 💬 Logs do Sistema de Mentions:**
+```javascript
+console.log('🔍 Dropdown apareceu:', { trigger, query, suggestions: data.length });
+console.log('✅ Item selecionado:', { type: trigger, id, display, position: {startPos, endPos} });
+console.log('🧹 Texto limpo:', { antes: oldValue, depois: newPlainTextValue });
+```
+
+**3. 🎨 Logs dos Previews:**
+```javascript
+console.log('👥 Utilizadores preview atualizados:', usersToAdd);
+console.log('🏷️ Labels preview atualizados:', labelsToAdd);
+console.log('🔄 Render preview triggered:', { usersCount: usersToAdd.length, labelsCount: labelsToAdd.length });
+```
+
+**4. 🚀 Logs de Submissão:**
+```javascript
+console.log('📤 Submissão iniciada:', { 
+  cardName: cleanData.name, 
+  usersToAdd: usersToAdd.length, 
+  labelsToAdd: labelsToAdd.length 
+});
+console.log('⚡ Saga createCard chamada:', { cardData: cleanData, userIds: usersToAdd, labelIds: labelsToAdd });
+```
+
+**5. 🐛 Logs de Debugging Críticos:**
+```javascript
+console.log('⚠️ Dropdown z-index check:', window.getComputedStyle(dropdownElement).zIndex);
+console.log('🔧 useForm integration:', { formValue: data.name, mentionsValue: newPlainTextValue });
+console.log('🎯 Performance check - render time:', performance.now() - renderStart);
+```
+
+#### **📍 LOCALIZAÇÃO DOS LOGS:**
+- **Inicialização:** No `useEffect` que carrega dados Redux
+- **Mentions:** Nos callbacks `onAdd`, `onChange`, e `renderSuggestion`
+- **Previews:** No render dos componentes de preview
+- **Submissão:** Na função `submit` e antes de chamar `onCreate`
+- **Performance:** Em componentes que renderizam listas grandes
 
 ### Passo 5: Pontos de Atenção e Erros Comuns a Evitar
 
@@ -319,9 +543,11 @@ const handleFieldChange = useCallback(
   [setData]
 );
 
-// Para integração com useForm existente:
+// Para integração com useForm existente (SIMPLIFICADO):
 const handleMentionsChange = (event, newValue, newPlainTextValue, mentions) => {
-  // Usar newPlainTextValue para o valor limpo (sem markup)
+  console.log('🔄 MentionsInput changed:', { newPlainTextValue, mentions });
+  
+  // 1. Atualizar campo de texto (simples)
   handleFieldChange({
     target: {
       name: 'name',
@@ -329,20 +555,69 @@ const handleMentionsChange = (event, newValue, newPlainTextValue, mentions) => {
     }
   });
   
-  // Processar mentions se necessário
-  mentions.forEach(mention => {
-    if (mention.trigger === '@') {
-      // Adicionar utilizador
-    } else if (mention.trigger === '#') {
-      // Adicionar etiqueta
-    }
-  });
+  // 2. Processar apenas mentions NOVAS (evitar duplicatas)
+  // NOTA: Lógica de onAdd já cuida da adição - aqui só sincronizamos
 };
+
+// Callbacks separados e simples:
+const handleUserAdd = useCallback((id, display) => {
+  console.log('👥 Utilizador adicionado:', { id, display });
+  setUsersToAdd(prev => prev.includes(id) ? prev : [...prev, id]);
+}, []);
+
+const handleLabelAdd = useCallback((id, display) => {
+  console.log('🏷️ Label adicionada:', { id, display });
+  setLabelsToAdd(prev => prev.includes(id) ? prev : [...prev, id]);
+}, []);
 ```
 
-### Passo 6: Verificação Manual (Utilizador)
+### Passo 6: Estratégia de Rollback e Contingência
+
+#### **🚨 PLANO DE CONTINGÊNCIA (OBRIGATÓRIO):**
+
+**1. 💾 Checkpoints de Backup:**
+- **Antes Fase 1:** `git stash push -m "backup-antes-mentions-feature"`
+- **Após Fase 2:** `git commit -m "estrutura-basica-previews"`
+- **Após Fase 4:** `git commit -m "mentions-funcional-sem-styling"`
+- **Antes Saga:** `git commit -m "antes-modificacao-saga"`
+
+**2. 🔄 Estratégias de Rollback Rápido:**
+```bash
+# Se algo correr mal durante implementação:
+git stash  # Guarda trabalho atual
+git reset --hard HEAD~1  # Volta ao último checkpoint
+
+# Se problema for só CSS:
+git checkout HEAD -- src/styles.module.scss
+git checkout HEAD -- src/components/cards/AddCard/AddCard.module.scss
+
+# Se problema for só no componente:
+git checkout HEAD -- src/components/cards/AddCard/AddCard.jsx
+```
+
+**3. 🛡️ Proteções Durante Implementação:**
+- **Nunca modificar** ações Redux existentes (`addUserToCurrentCard`, etc.)
+- **Nunca tocar** em `NameField.jsx` (edição de cartões)
+- **Testar cada checkpoint** antes de continuar
+- **Manter funcionalidade existente** sempre funcional
+
+**4. 🚩 Sinais de Alerta (PARAR IMEDIATAMENTE):**
+- Sistema de criação de cartões normais para de funcionar
+- Modal de edição de cartões fica quebrado
+- Drag & drop de ficheiros para de funcionar
+- Performance geral do board degradada significativamente
+- Console com mais de 10 erros por operação
+
+**5. 📞 Plano B (Se Implementação Falhar):**
+- **Opção 1:** Implementar apenas previews (sem mentions)
+- **Opção 2:** Implementar apenas mentions (sem previews)
+- **Opção 3:** Usar modal simples em vez de inline mentions
+- **Opção 4:** Adiar feature e investigar alternativas
+
+### Passo 7: Verificação Manual (Utilizador)
 - **Ação:** O utilizador irá testar a funcionalidade manualmente para garantir que todos os requisitos foram cumpridos.
-- **Resultado Esperado:** A funcionalidade de menções funciona como esperado na criação e edição de cartões.
+- **Resultado Esperado:** A funcionalidade de menções funciona como esperado na criação de cartões.
+- **⚠️ ROLLBACK:** Se qualquer teste falhar criticamente, usar estratégia de rollback apropriada.
 
 ## 📋 **RESUMO DO QUE PRECISA SER IMPLEMENTADO**
 
@@ -359,9 +634,49 @@ const handleMentionsChange = (event, newValue, newPlainTextValue, mentions) => {
    - Modificar lógica de submissão
    - Aplicar tema glass effect
 
-2. **Saga createCard:**
-   - Adicionar lógica para processar `userIds` e `labelIds`
-   - Implementar despacho de ações após criação
+2. **Saga createCard (ESPECIFICAÇÃO DETALHADA):**
+   
+   **📍 Localização:** `client/src/sagas/cards.js` - função `createCard`
+   
+   **🔧 Modificação Necessária:**
+   ```javascript
+   // ANTES (atual):
+   function* createCard(data) {
+     const card = yield call(api.createCard, data);
+     // ... resto da lógica
+   }
+   
+   // DEPOIS (com mentions):
+   function* createCard(data, userIds = [], labelIds = []) {
+     console.log('⚡ createCard saga:', { data, userIds, labelIds });
+     
+     // 1. Criar cartão normalmente
+     const card = yield call(api.createCard, data);
+     
+     // 2. Adicionar utilizadores (se existirem)
+     if (userIds.length > 0) {
+       for (const userId of userIds) {
+         console.log('👥 Adicionando user ao cartão:', { cardId: card.id, userId });
+         yield put(entryActions.addUserToCard(card.id, userId));
+       }
+     }
+     
+     // 3. Adicionar labels (se existirem)
+     if (labelIds.length > 0) {
+       for (const labelId of labelIds) {
+         console.log('🏷️ Adicionando label ao cartão:', { cardId: card.id, labelId });
+         yield put(entryActions.addLabelToCard(card.id, labelId));
+       }
+     }
+     
+     // ... resto da lógica original
+   }
+   ```
+   
+   **⚠️ IMPORTANTE:** 
+   - Usar ações `addUserToCard` e `addLabelToCard` (NÃO as de currentCard)
+   - Manter toda a lógica original da saga
+   - Apenas ADICIONAR a nova funcionalidade no final
 
 ### ❌ **NÃO será implementado:**
 - **NameField.jsx (edição):** Manterá o sistema atual sem modificações
@@ -384,3 +699,115 @@ const handleMentionsChange = (event, newValue, newPlainTextValue, mentions) => {
 - ✅ **Utilizadores/etiquetas adicionados via edição** devem aparecer normalmente nos cartões
 - ✅ **Sistema de preview** deve ser consistente entre criação e edição
 - ✅ **Ações Redux** devem funcionar identicamente para ambos os fluxos
+
+---
+
+## 🎯 **ESPECIFICAÇÃO TÉCNICA EXATA: POSICIONAMENTO DOS PREVIEWS**
+
+### 📍 **Localização no AddCard.jsx (Linha 264-274):**
+
+**ESTRUTURA ATUAL:**
+```jsx
+<div className={classNames(
+  styles.fieldWrapper,
+  isDragOver && styles.fieldWrapperDragOver,
+  isProcessing && styles.fieldWrapperProcessing
+)} ...>
+  <TextArea ... />  // ← Campo de texto atual
+  {/* overlays de drag e processing */}
+</div>
+```
+
+**ESTRUTURA NOVA (com previews):**
+```jsx
+<div className={classNames(
+  styles.fieldWrapper,
+  isDragOver && styles.fieldWrapperDragOver,
+  isProcessing && styles.fieldWrapperProcessing
+)} ...>
+  
+  {/* 🏷️ LABELS PREVIEW - TOPO ESQUERDA */}
+  {labelsToAdd.length > 0 && (
+    <div className={styles.previewLabels}>
+      {labelsToAdd.map(labelId => (
+        <span key={labelId} className={classNames(styles.previewAttachment, styles.previewAttachmentLeft)}>
+          <LabelChip id={labelId} size="tiny" />
+        </span>
+      ))}
+    </div>
+  )}
+  
+  {/* 👥 USERS PREVIEW - TOPO DIREITA */}
+  {usersToAdd.length > 0 && (
+    <div className={classNames(styles.previewAttachments, styles.previewAttachmentsRight)}>
+      {usersToAdd.map(userId => (
+        <span key={userId} className={classNames(styles.previewAttachment, styles.previewAttachmentRight)}>
+          <UserAvatar id={userId} size="small" />
+        </span>
+      ))}
+    </div>
+  )}
+  
+  <MentionsInput ... />  // ← Campo de texto (substituído)
+  {/* overlays de drag e processing */}
+</div>
+```
+
+### 🎨 **Layout Visual Final:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ [Label1] [Label2] [Label3]              [👤] [👤] [👤]    │ ← Previews
+│                                                             │
+│ Digite o título do cartão...                                │ ← Campo MentionsInput
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**⚠️ IMPORTAÇÕES NECESSÁRIAS:**
+- `{ MentionsInput, Mention }` de `'react-mentions'`
+- `LabelChip` de `'../../../components/ui/'`
+- `UserAvatar` de `'../../../components/ui/'`
+- `classNames` (já importado)
+- `useCallback` de `'react'` (para callbacks otimizados)
+- `useMemo` de `'react'` (para otimização de listas)
+- Seletores Redux: `selectors.selectMembershipsForCurrentBoard`, `selectors.selectLabelsForCurrentBoard`
+
+**⚠️ ORDEM DE IMPLEMENTAÇÃO CORRIGIDA (COM CHECKPOINTS):**
+
+### **🔧 FASE 1: PREPARAÇÃO E BACKUP**
+1. **Backup:** Criar branch ou `git stash` do estado atual
+2. **Importações:** Adicionar todas as importações necessárias (`MentionsInput`, `Mention`, etc.)
+3. **✅ CHECKPOINT 1:** Verificar que projeto ainda compila
+
+### **🏗️ FASE 2: ESTRUTURA BÁSICA**
+4. **Estados:** Adicionar `usersToAdd` e `labelsToAdd` no estado local
+5. **CSS Previews:** Adicionar classes CSS de preview ao `AddCard.module.scss`
+6. **HTML Previews:** Implementar HTML de previews (vazios inicialmente)
+7. **✅ CHECKPOINT 2:** Verificar que previews aparecem vazios e layout não quebrou
+
+### **🔌 FASE 3: FUNCIONALIDADE BÁSICA**
+8. **MentionsInput Básico:** Substituir `TextArea` por `MentionsInput` (sem mentions ainda)
+9. **Integração useForm:** Garantir que campo continua a funcionar como texto normal
+10. **✅ CHECKPOINT 3:** Verificar que campo de texto funciona normalmente
+
+### **💬 FASE 4: SISTEMA DE MENTIONS**
+11. **Dados Redux:** Conectar utilizadores e labels do Redux
+12. **Mentions Config:** Adicionar triggers, data, callbacks básicos
+13. **Dropdown Básico:** Verificar que dropdown aparece (sem estilo glass ainda)
+14. **✅ CHECKPOINT 4:** Verificar que dropdown de mentions aparece e funciona
+
+### **🎨 FASE 5: LÓGICA DE PREVIEWS**
+15. **Callbacks onAdd:** Implementar adição de items aos arrays
+16. **Limpeza de Texto:** Implementar remoção de texto de menção
+17. **Rendering Previews:** Conectar arrays aos componentes de preview
+18. **✅ CHECKPOINT 5:** Verificar que previews funcionam completamente
+
+### **✨ FASE 6: POLIMENTO E ESTILO**
+19. **Glass Theme:** Aplicar estilos glass theme ao dropdown
+20. **Otimizações:** Adicionar `useMemo` e `useCallback` onde necessário
+21. **✅ CHECKPOINT 6:** Verificar tema glass e performance
+
+### **🚀 FASE 7: INTEGRAÇÃO FINAL**
+22. **Saga Modification:** Modificar saga `createCard` para processar arrays
+23. **Testes Finais:** Executar todos os testes manuais
+24. **✅ CHECKPOINT FINAL:** Validação completa da funcionalidade
