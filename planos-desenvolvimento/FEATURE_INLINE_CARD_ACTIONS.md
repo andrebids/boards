@@ -2,19 +2,19 @@
 
 ## 1. Visão Geral
 
-**Objetivo:** Implementar um sistema de autocompletar para etiquetas e utilizadores diretamente no campo de título do cartão, tanto na criação como na edição. Ao digitar `@` ou `#`, o utilizador poderá selecionar um membro ou etiqueta para adicionar ao cartão, e o texto da menção será removido do título, mantendo-o limpo.
+**Objetivo:** Implementar um sistema de autocompletar para etiquetas e utilizadores diretamente no campo de título do cartão **APENAS durante a criação** (não na edição). Ao digitar `@` ou `#`, o utilizador poderá selecionar um membro ou etiqueta para adicionar ao cartão, e o texto da menção será removido do título, mantendo-o limpo.
 
 **Tecnologia-chave:** Utilizar a biblioteca `react-mentions`, que já está em uso na secção de comentários, para garantir consistência visual e funcional.
 
 **Funcionalidades:**
 - **Autocompletar de Utilizadores:** Ao digitar `@` no título, um dropdown com os membros do quadro deve aparecer.
 - **Autocompletar de Etiquetas:** Ao digitar `#`, um dropdown com as etiquetas do quadro deve ser apresentado.
-- **Adição Múltipla:** Permitir a adição de vários utilizadores e várias etiquetas no mesmo fluxo de criação/edição.
+- **Adição Múltipla:** Permitir a adição de vários utilizadores e várias etiquetas no mesmo fluxo de criação.
 - **Limpeza Automática:** Após selecionar um utilizador ou etiqueta, o texto da menção (ex: `@andre` ou `#bug`) deve ser removido automaticamente do campo de título.
 - **Preview Visual:** Mostrar previews dos utilizadores e etiquetas adicionados na mesma posição e com as mesmas classes CSS que aparecem no cartão final, mantendo total consistência visual.
 - **Suporte Completo de Utilizadores:** Funcionar tanto com nome (`user.name`) como com nome de utilizador (`user.username`), usando `user.name || user.username` como display.
 - **Consistência de UI:** O design deve ser minimalista e integrado, e o dropdown de sugestões deve ser idêntico ao da secção de comentários.
-- **Âmbito:** A funcionalidade será implementada no campo de título do modal de edição do cartão (`NameField.jsx`) e no campo de criação rápida de cartão na lista (`AddCard.jsx`).
+- **Âmbito:** A funcionalidade será implementada **APENAS** no campo de criação rápida de cartão na lista (`AddCard.jsx`). **NÃO será implementada** no modal de edição do cartão (`NameField.jsx`).
 
 ## ⚠️ **STATUS ATUAL - ANÁLISE REAL**
 
@@ -26,11 +26,11 @@
 - Sagas para adicionar utilizadores/etiquetas a cartões existentes
 
 ### ❌ **O que NÃO está implementado (contrário ao que estava documentado):**
-- `NameField.jsx` ainda usa apenas `TextareaAutosize` - **sem `MentionsInput`**
 - `AddCard.jsx` **não tem** sistema de preview de utilizadores/etiquetas
 - **Não existe** `usersToAdd` e `labelsToAdd` no estado local do `AddCard.jsx`
 - Saga `createCard` **não tem** lógica para processar utilizadores/etiquetas durante a criação
-- **Não existe** sistema de preview visual nos campos de título
+- **Não existe** sistema de preview visual no campo de criação de cartões
+- **Nota:** `NameField.jsx` (edição) **NÃO será modificado** - funcionalidade apenas para criação
 
 ### ⚠️ **CONFLITOS IDENTIFICADOS COM A IMPLEMENTAÇÃO DO PLANKA:**
 
@@ -128,10 +128,10 @@ import { MentionsInput, Mention } from 'react-mentions';
   - `<Mention trigger="@" ... />` para utilizadores.
   - `<Mention trigger="#" ... />` para etiquetas.
 
-- **Lógica de Adição (`onAdd`):** **REUTILIZAR AS FUNCIONALIDADES EXISTENTES:**
-  1. **Para Edição de Cartão (`NameField.jsx`):** Usar diretamente `entryActions.addUserToCurrentCard(userId)` e `entryActions.addLabelToCurrentCard(labelId)` - estas ações já existem e funcionam imediatamente.
-  2. **Para Criação de Cartão (`AddCard.jsx`):** **IMPLEMENTAR NOVO SISTEMA** com `usersToAdd` e `labelsToAdd` no estado local, que serão processados após a criação do cartão.
-  3. **Limpeza do Texto:** Após selecionar um item, remover automaticamente o texto da menção do campo de título.
+- **Lógica de Adição (`onAdd`):** **IMPLEMENTAR APENAS PARA CRIAÇÃO:**
+  1. **Para Criação de Cartão (`AddCard.jsx`):** **IMPLEMENTAR NOVO SISTEMA** com `usersToAdd` e `labelsToAdd` no estado local, que serão processados após a criação do cartão.
+  2. **Limpeza do Texto:** Após selecionar um item, remover automaticamente o texto da menção do campo de título.
+  3. **Nota:** Edição de cartões (`NameField.jsx`) **NÃO será modificada** - funcionalidade apenas para criação.
 
 - **Vantagens desta Abordagem:**
   - **Consistência:** Usa exatamente as mesmas ações e fluxos que já existem no sistema.
@@ -205,55 +205,10 @@ const handleLabelAdd = (id, display, startPos, endPos) => {
 ## 3. Plano de Implementação Detalhado
 
 ### Passo 1: Preparação e Limpeza
-- **Ação:** Verificar que os ficheiros `NameField.jsx` e `AddCard.jsx` estão limpos e prontos para implementação.
+- **Ação:** Verificar que o ficheiro `AddCard.jsx` está limpo e pronto para implementação.
+- **Nota:** `NameField.jsx` (edição) **NÃO será modificado** - funcionalidade apenas para criação.
 
-### Passo 2: Implementação no Modal de Edição (`NameField.jsx`)
-
-1.  **Estado Local:** Manter o estado existente para o nome do cartão.
-    - O `value` e `setValue` já existem e funcionam com o `useField`.
-2.  **Substituição do Input:** **IMPLEMENTAR** - Trocar o `TextareaAutosize` pelo `MentionsInput` configurado.
-    - O `value` do input será ligado ao estado existente.
-    - O `onChange` será adaptado para funcionar com o `useField` existente.
-3.  **Fontes de Dados:** **IMPLEMENTAR** - Carregar utilizadores e etiquetas do Redux.
-4.  **Estrutura de Dados dos Utilizadores:** **IMPLEMENTAR - GARANTIR SUPORTE COMPLETO:**
-    - **Display:** Usar `user.name || user.username` para mostrar o nome completo ou username como fallback.
-    - **Dados do Mention:** Incluir tanto `name` como `username` para permitir busca por ambos.
-    - **Renderização:** Mostrar nome principal e username secundário (se diferente) no dropdown.
-5.  **Implementar `onAdd` - REUTILIZAR FUNCIONALIDADES EXISTENTES:**
-    - **Para Utilizadores:** Usar `entryActions.addUserToCurrentCard(userId)` - ação já existente e funcional.
-    - **Para Etiquetas:** Usar `entryActions.addLabelToCurrentCard(labelId)` - ação já existente e funcional.
-    - **Limpeza do Texto:** Após o dispatch, remover automaticamente o texto da menção do campo.
-6.  **Preview Visual:** **IMPLEMENTAR - Adicionar preview dos utilizadores e etiquetas:**
-    - **Estado Local:** Adicionar estados `usersToPreview` e `labelsToPreview` para controlar os previews.
-    - **Posicionamento:** Usar as mesmas classes CSS do `StoryContent.module.scss`:
-      - Utilizadores: `styles.attachments`, `styles.attachmentsRight`, `styles.attachment`, `styles.attachmentRight`
-      - Etiquetas: `styles.labels`, `styles.attachment`, `styles.attachmentLeft`
-    - **Componentes:** Usar `UserAvatar` (size="small") e `LabelChip` (size="tiny") como no cartão final.
-    - **Sincronização:** Atualizar os previews quando utilizadores/etiquetas são adicionados via menções.
-7.  **Estilização:** Aplicar as classes de CSS existentes ao `MentionsInput` para manter a aparência original.
-8.  **Tema Glass Effect:** **IMPLEMENTAR - Aplicar o tema glass effect ao dropdown:**
-    - **Base:** Usar o sistema de estilos já existente em `mentions-input-style.js` e `styles.module.scss`.
-    - **Glass Effect:** Aplicar o tema glass effect do `glass-modal.css`:
-      - Background: `rgba(14, 17, 23, 0.75)` com `backdrop-filter: blur(16px)`
-      - Border: `1px solid rgba(255, 255, 255, 0.08)`
-      - Box-shadow: `0 14px 34px rgba(0, 0, 0, 0.55)`
-      - Border-radius: `16px` para consistência
-    - **Z-index:** Manter `z-index: 100020` para aparecer por cima de todos os elementos.
-
----
-### **Pausa para Testes ⏸️: Verificação da Edição de Cartões**
-**Objetivo:** Validar a funcionalidade no modal de edição antes de prosseguir.
-- **Teste 1:** Abrir um cartão para editar. O layout do modal deve estar intacto.
-- **Teste 2:** Digitar `@` no título. A lista de utilizadores deve aparecer e estar **visível** (não por baixo de outros elementos).
-- **Teste 3:** Selecionar um utilizador. O utilizador deve ser imediatamente adicionado ao cartão e o texto `@nome` deve desaparecer do título.
-- **Teste 4:** Repetir os testes 2 e 3 com `#` para etiquetas.
-- **Teste 5:** **NOVO - Suporte de Utilizadores:** Testar com utilizadores que têm apenas `name`, apenas `username`, e ambos os campos.
-- **Teste 6:** **NOVO - Preview Visual:** Verificar se os previews dos utilizadores e etiquetas aparecem na mesma posição e com o mesmo estilo que no cartão final.
-- **Teste 7:** **NOVO - Tema Glass Effect:** Verificar se o dropdown de sugestões tem o tema glass effect aplicado (fundo translúcido com blur, bordas glass, sombras).
-- **Teste 8:** Verificar se a edição normal do título (sem menções) continua a funcionar como esperado.
----
-
-### Passo 3: Implementação na Criação de Cartão (`AddCard.jsx`)
+### Passo 2: Implementação na Criação de Cartão (`AddCard.jsx`)
 
 1.  **Estado Local:** **IMPLEMENTAR NOVO SISTEMA:**
     - **Criar** `usersToAdd` e `labelsToAdd` no estado local.
@@ -285,6 +240,12 @@ const handleLabelAdd = (id, display, startPos, endPos) => {
 7.  **Lógica de Submissão:** **IMPLEMENTAR NOVA LÓGICA:**
     - **Modificar** a saga `createCard` para processar `userIds` e `labelIds`.
     - **Implementar** sistema para despachar as ações `addUserToCard` e `addLabelToCard` após a criação.
+    - **⚠️ IMPORTANTE:** Usar as **mesmas ações Redux** que o sistema de edição usa, garantindo total compatibilidade.
+
+8.  **Compatibilidade com Sistema Existente:**
+    - **Garantir** que as ações `addUserToCurrentCard` e `addLabelToCurrentCard` continuem funcionando normalmente.
+    - **Manter** os popups de seleção de utilizadores/etiquetas no modal de edição funcionais.
+    - **Sincronizar** o estado entre criação (menções) e edição (popups) para consistência total.
 
 ---
 ### **Pausa para Testes ⏸️: Verificação da Criação de Cartões**
@@ -292,11 +253,22 @@ const handleLabelAdd = (id, display, startPos, endPos) => {
 - **Teste 1:** O layout da coluna e do formulário de criação deve estar intacto.
 - **Teste 2:** Digitar um título com `@`. A lista de utilizadores deve aparecer e estar **visível**.
 - **Teste 3:** Selecionar um utilizador e uma etiqueta. Os textos das menções devem desaparecer.
-- **Teste 4:** **NOVO - Suporte de Utilizadores:** Testar com utilizadores que têm apenas `name`, apenas `username`, e ambos os campos.
-- **Teste 5:** **NOVO - Tema Glass Effect:** Verificar se o dropdown de sugestões tem o tema glass effect aplicado (fundo translúcido com blur, bordas glass, sombras).
+- **Teste 4:** **Suporte de Utilizadores:** Testar com utilizadores que têm apenas `name`, apenas `username`, e ambos os campos.
+- **Teste 5:** **Tema Glass Effect:** Verificar se o dropdown de sugestões tem o tema glass effect aplicado (fundo translúcido com blur, bordas glass, sombras).
 - **Teste 6:** Clicar em "Adicionar Cartão".
 - **Teste 7:** Verificar se o cartão foi criado com o título correto (sem as menções) e se o utilizador e a etiqueta selecionados foram corretamente associados a ele.
 - **Teste 8:** Adicionar um cartão sem menções para garantir que o fluxo normal não foi afetado.
+- **Teste 9:** **Verificar que a edição de cartões NÃO foi afetada** - abrir um cartão existente e verificar que o campo de título funciona normalmente (sem menções).
+- **Teste 10:** **Verificar funcionalidades existentes de edição:**
+  - Clicar no botão "Membros" no modal de edição - deve funcionar normalmente
+  - Clicar no botão "Etiquetas" no modal de edição - deve funcionar normalmente
+  - Adicionar/remover utilizadores via edição - deve funcionar normalmente
+  - Adicionar/remover etiquetas via edição - deve funcionar normalmente
+- **Teste 11:** **Verificar sintonia entre criação e edição:**
+  - Criar um cartão com menções `@user` e `#label`
+  - Abrir o cartão criado e verificar que os utilizadores/etiquetas aparecem nos botões de edição
+  - Adicionar mais utilizadores/etiquetas via edição
+  - Verificar que tudo aparece consistentemente no cartão
 ---
 
 ### Passo 4: Adição de Logs para Debugging
@@ -304,9 +276,10 @@ const handleLabelAdd = (id, display, startPos, endPos) => {
 - **Ação:** Adicionar `console.log` para monitorizar o fluxo de dados em pontos-chave.
 - **Nota:** Os logs devem ser mantidos no código até que a funcionalidade seja validada e aprovada pelo utilizador.
 - **Pontos de Log:**
-  - `NameField.jsx` e `AddCard.jsx`: Logar os dados carregados do Redux.
+  - `AddCard.jsx`: Logar os dados carregados do Redux.
   - `onAdd` callback: Logar o item selecionado e a ação a ser despachada.
   - **Vantagem:** Como estamos a reutilizar as ações existentes, os logs já existentes nas sagas e entry-actions ajudarão no debugging.
+  - **Nota:** `NameField.jsx` **NÃO será modificado** - sem logs necessários.
 
 ### Passo 5: Pontos de Atenção e Erros Comuns a Evitar
 
@@ -325,6 +298,13 @@ const handleLabelAdd = (id, display, startPos, endPos) => {
 - **Z-index:** As sugestões podem ficar por baixo de outros elementos. Verificar z-index do dropdown.
 - **Performance:** Para muitos utilizadores/etiquetas, considerar implementar busca assíncrona com função `data`.
 - **Acessibilidade:** Usar `a11ySuggestionsListLabel` para melhor suporte a screen readers.
+
+#### ⚠️ **COMPATIBILIDADE COM SISTEMA EXISTENTE:**
+
+- **Não modificar ações Redux existentes:** As ações `addUserToCurrentCard`, `addLabelToCurrentCard`, etc. devem continuar funcionando exatamente como antes.
+- **Manter consistência de dados:** Os utilizadores/etiquetas adicionados via menções devem usar as mesmas estruturas de dados que o sistema de edição.
+- **Não quebrar popups existentes:** Os popups de seleção de utilizadores/etiquetas no modal de edição devem continuar funcionando normalmente.
+- **Sincronização de estado:** Garantir que as mudanças feitas via criação (menções) e edição (popups) sejam refletidas consistentemente no Redux e na UI.
 
 #### 📝 **Exemplo de Integração com `useForm` (baseado na implementação real do Planka):**
 
@@ -371,21 +351,36 @@ const handleMentionsChange = (event, newValue, newPlainTextValue, mentions) => {
 - Ações `addUserToCurrentCard` e `addLabelToCurrentCard`
 - Sagas para adicionar utilizadores/etiquetas a cartões existentes
 
-### 🔨 **Precisa ser implementado:**
-1. **NameField.jsx:**
-   - Substituir `TextareaAutosize` por `MentionsInput`
-   - Implementar carregamento de dados do Redux
-   - Implementar `onAdd` callbacks
-   - Implementar preview visual
-   - Aplicar tema glass effect
-
-2. **AddCard.jsx:**
+### 🔨 **Precisa ser implementado (APENAS para criação):**
+1. **AddCard.jsx:**
    - Implementar `usersToAdd` e `labelsToAdd` no estado
    - Substituir `TextareaAutosize` por `MentionsInput`
    - Implementar sistema de preview
    - Modificar lógica de submissão
    - Aplicar tema glass effect
 
-3. **Saga createCard:**
+2. **Saga createCard:**
    - Adicionar lógica para processar `userIds` e `labelIds`
    - Implementar despacho de ações após criação
+
+### ❌ **NÃO será implementado:**
+- **NameField.jsx (edição):** Manterá o sistema atual sem modificações
+- **Modal de edição:** Não terá funcionalidade de menções
+
+### ✅ **FUNCIONALIDADES EXISTENTES QUE DEVEM CONTINUAR A FUNCIONAR:**
+
+**1. Adicionar Utilizadores a Cartões Existentes:**
+- ✅ **Botão "Membros" no modal de edição** - deve continuar a funcionar normalmente
+- ✅ **Ações `addUserToCurrentCard` e `removeUserFromCurrentCard`** - devem continuar funcionais
+- ✅ **Sistema de popup de seleção de utilizadores** - deve manter toda a funcionalidade
+
+**2. Adicionar Etiquetas a Cartões Existentes:**
+- ✅ **Botão "Etiquetas" no modal de edição** - deve continuar a funcionar normalmente
+- ✅ **Ações `addLabelToCurrentCard` e `removeLabelFromCurrentCard`** - devem continuar funcionais
+- ✅ **Sistema de popup de seleção de etiquetas** - deve manter toda a funcionalidade
+
+**3. Compatibilidade e Sintonia:**
+- ✅ **Cartões criados com menções** devem ter os mesmos utilizadores/etiquetas que aparecem nos botões de edição
+- ✅ **Utilizadores/etiquetas adicionados via edição** devem aparecer normalmente nos cartões
+- ✅ **Sistema de preview** deve ser consistente entre criação e edição
+- ✅ **Ações Redux** devem funcionar identicamente para ambos os fluxos
