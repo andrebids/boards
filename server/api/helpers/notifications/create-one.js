@@ -450,8 +450,19 @@ module.exports = {
       values.actionId = values.action.id;
     }
 
+    // Garantir que os dados da notificação incluem informações do cartão
+    const notificationData = {
+      ...values.data,
+      card: {
+        id: values.card.id,
+        name: values.card.name,
+        boardId: values.card.boardId,
+      },
+    };
+
     const notification = await Notification.qm.createOne({
       ...values,
+      data: notificationData,
       creatorUserId: values.creatorUser.id,
       boardId: values.card.boardId,
       cardId: values.card.id,

@@ -55,15 +55,15 @@ const Item = React.memo(({ id, onClose }) => {
         })
       : creatorUser.name;
 
-  const cardName = card ? card.name : notification.data.card.name;
+  const cardName = card ? card.name : (notification.data.card ? notification.data.card.name : 'Card');
 
   let contentNode;
   switch (notification.type) {
     case NotificationTypes.MOVE_CARD: {
-      const { fromList, toList } = notification.data;
+      const { fromList, toList } = notification.data || {};
 
-      const fromListName = fromList.name || t(`common.${fromList.type}`);
-      const toListName = toList.name || t(`common.${toList.type}`);
+      const fromListName = fromList?.name || t(`common.${fromList?.type || 'list'}`);
+      const toListName = toList?.name || t(`common.${toList?.type || 'list'}`);
 
       contentNode = (
         <Trans
@@ -94,7 +94,7 @@ const Item = React.memo(({ id, onClose }) => {
     }
     case NotificationTypes.COMMENT_CARD: {
       const commentText = truncate(
-        formatTextWithMentions(notification.data.text)
+        formatTextWithMentions(notification.data.text || '')
       );
 
       contentNode = (
@@ -142,7 +142,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     case NotificationTypes.MENTION_IN_COMMENT: {
       const commentText = truncate(
-        formatTextWithMentions(notification.data.text)
+        formatTextWithMentions(notification.data.text || '')
       );
 
       contentNode = (
