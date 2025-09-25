@@ -702,7 +702,7 @@
   .headerButton {
     background: none;
     box-shadow: none;
-    color: #798d99;
+    color: #6b7280; /* Cor mais escura para fundo glass claro */
     line-height: 32px;
     margin: 0;
     opacity: 0;
@@ -713,20 +713,20 @@
     width: 32px;
 
     &:hover {
-      background: rgba(9, 30, 66, 0.13);
-      color: #516b7a;
+      background: rgba(0, 0, 0, 0.1);
+      color: #374151;
     }
   }
 
   .headerIcon {
-    color: #798d99;
+    color: #6b7280; /* Cor mais escura para fundo glass claro */
     position: absolute;
     right: 8px;
     top: 10px;
   }
 
   .headerName {
-    color: #17394d;
+    color: #1f2937; /* Texto escuro para fundo glass claro */
     font-weight: bold;
     line-height: 20px;
     max-height: 256px;
@@ -748,8 +748,14 @@
   }
 
   .outerWrapper {
-    background: #dfe3e6;
-    border-radius: 3px;
+    /* Glass effect MUITO sutil - apenas gradiente e sombras */
+    background: 
+      linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 198px);
