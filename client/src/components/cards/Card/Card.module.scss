@@ -65,12 +65,14 @@
     &:before {
       content: '';
       position: absolute;
-      inset: 0; /* único traço claro visível */
+      inset: 0;
       z-index: 0;
       pointer-events: none;
       border-radius: inherit;
       border: 1px solid rgba(255, 255, 255, 0.18);
       background: transparent;
+      /* Remover borda esquerda que causa a linha vertical */
+      border-left: none;
     }
 
     /* Optional distortion/shine layer */
@@ -102,6 +104,8 @@
       
       &:before {
         border-color: rgba(255, 255, 255, 0.22);
+        /* Manter a remoção da borda esquerda no hover também */
+        border-left: none;
       }
     }
   }
