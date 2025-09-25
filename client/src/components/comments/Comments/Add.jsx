@@ -146,7 +146,7 @@ const Add = React.memo(() => {
           placeholder={t('common.writeComment')}
           maxLength={1048576}
           rows={isOpened ? 3 : 1}
-          className="mentions-input"
+          className="mentions-input-comments"
           style={{
             control: {
               minHeight: isOpened ? '79px' : '37px',

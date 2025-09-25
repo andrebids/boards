@@ -18,20 +18,24 @@ const handleCardsUpdate = (cards, activities) => ({
   },
 });
 
-const createCard = (listId, data, autoOpen) => ({
+const createCard = (listId, data, autoOpen, userIds = [], labelIds = []) => ({
   type: EntryActionTypes.CARD_CREATE,
   payload: {
     listId,
     data,
     autoOpen,
+    userIds,
+    labelIds,
   },
 });
 
-const createCardInCurrentList = (data, autoOpen) => ({
+const createCardInCurrentList = (data, autoOpen, userIds = [], labelIds = []) => ({
   type: EntryActionTypes.CARD_IN_CURRENT_LIST_CREATE,
   payload: {
     data,
     autoOpen,
+    userIds,
+    labelIds,
   },
 });
 

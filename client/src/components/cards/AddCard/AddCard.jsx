@@ -3,12 +3,13 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
+import { Mention, MentionsInput } from 'react-mentions';
 import { Button, Form, Icon, TextArea } from 'semantic-ui-react';
 import {
   useClickAwayListener,
@@ -24,6 +25,8 @@ import { isModifierKeyPressed } from '../../../utils/event-helpers';
 import { CardTypeIcons } from '../../../constants/Icons';
 import { processSupportedFiles } from '../../../utils/file-helpers';
 import SelectCardTypeStep from '../SelectCardTypeStep';
+import UserAvatar from '../../users/UserAvatar';
+import LabelChip from '../../labels/LabelChip';
 
 import styles from './AddCard.module.scss';
 
@@ -37,6 +40,10 @@ const AddCard = React.memo(
       defaultCardType: defaultType,
       limitCardTypesToDefaultOne: limitTypesToDefaultOne,
     } = useSelector(selectors.selectCurrentBoard);
+
+    // Dados Redux para mentions
+    const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
+    const labels = useSelector(selectors.selectLabelsForCurrentBoard);
 
     const [t] = useTranslation();
     const prevDefaultType = usePrevious(defaultType);
@@ -54,9 +61,161 @@ const AddCard = React.memo(
     const [isDragOver, setIsDragOver] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const [nameFieldRef, handleNameFieldRef] = useNestedRef();
+    // Estados para mentions (utilizadores e etiquetas a adicionar)
+    const [usersToAdd, setUsersToAdd] = useState([]);
+    const [labelsToAdd, setLabelsToAdd] = useState([]);
+
+    // Preparação de dados para mentions usando useMemo para otimização
+    const usersData = useMemo(() => {
+      if (!boardMemberships?.length) return [];
+      return boardMemberships.map(({ user }) => ({
+        id: user.id,
+        display: user.username || user.name, // Username primeiro (consistência com Planka)
+      }));
+    }, [boardMemberships]);
+
+    const labelsData = useMemo(() => {
+      if (!labels?.length) return [];
+      return labels.map(label => ({
+        id: label.id,
+        display: label.name,
+        color: label.color
+      }));
+    }, [labels]);
+
+
+    const nameFieldRef = useRef(null);
+    const nameMentionsRef = useRef(null);
+    const nameInputRef = useRef(null);
     const [submitButtonRef, handleSubmitButtonRef] = useNestedRef();
     const [selectTypeButtonRef, handleSelectTypeButtonRef] = useNestedRef();
+
+    // Callbacks para mentions
+    const handleUserAdd = useCallback((id, display, startPos, endPos) => {
+      console.log('👥 Utilizador adicionado:', { id, display, position: {startPos, endPos} });
+      
+      // Adicionar utilizador ao array (evitar duplicatas)
+      setUsersToAdd(prev => prev.includes(id) ? prev : [...prev, id]);
+      
+      // Limpar texto da menção do campo
+      const currentValue = data.name || '';
+      const beforeMention = currentValue.substring(0, startPos);
+      const afterMention = currentValue.substring(endPos);
+      const newValue = beforeMention + afterMention;
+      
+      console.log('🧹 Texto limpo:', { antes: currentValue, depois: newValue });
+      
+      // Atualizar campo com texto limpo
+      setData(prevData => ({
+        ...prevData,
+        name: newValue.trim()
+      }));
+      
+    }, [data.name, setData]);
+
+    // Força remoção de limitações de altura no dropdown (apenas quando necessário)
+    useEffect(() => {
+      if (!isOpened) return; // Só executar quando o AddCard está aberto
+
+      const forceDropdownHeight = () => {
+        const dropdowns = document.querySelectorAll('.mentions-input__suggestions');
+        
+        dropdowns.forEach((dropdown) => {
+          // Verificar se já foi processado
+          if (dropdown.dataset.heightFixed === 'true') return;
+          
+          // Estilos para garantir visibilidade total
+          const styles = {
+            maxHeight: 'none',
+            height: 'auto',
+            overflow: 'visible',
+            overflowY: 'visible',
+            position: 'fixed',
+            zIndex: '100020',
+            minWidth: '300px',
+            maxWidth: '400px',
+          };
+
+          // Aplicar estilos
+          Object.entries(styles).forEach(([property, value]) => {
+            dropdown.style.setProperty(property, value, 'important');
+          });
+
+          // Marcar como processado
+          dropdown.dataset.heightFixed = 'true';
+        });
+      };
+
+      // Observer apenas quando componente está aberto
+      const observer = new MutationObserver((mutations) => {
+        let shouldCheck = false;
+        mutations.forEach(mutation => {
+          if (mutation.addedNodes.length > 0) {
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeType === 1 && 
+                  node.classList?.contains('mentions-input__suggestions')) {
+                shouldCheck = true;
+              }
+            });
+          }
+        });
+        
+        if (shouldCheck) {
+          setTimeout(forceDropdownHeight, 0);
+        }
+      });
+
+      observer.observe(document.body, { 
+        childList: true, 
+        subtree: true 
+      });
+
+      return () => observer.disconnect();
+    }, [isOpened]);
+
+    
+    const handleLabelAdd = useCallback((id, display, startPos, endPos) => {
+      console.log('🏷️ Label adicionada:', { id, display, position: {startPos, endPos} });
+      
+      // Adicionar label ao array (evitar duplicatas)
+      setLabelsToAdd(prev => prev.includes(id) ? prev : [...prev, id]);
+      
+      // Limpar texto da menção do campo
+      const currentValue = data.name || '';
+      const beforeMention = currentValue.substring(0, startPos);
+      const afterMention = currentValue.substring(endPos);
+      const newValue = beforeMention + afterMention;
+      
+      console.log('🧹 Texto limpo:', { antes: currentValue, depois: newValue });
+      
+      // Atualizar campo com texto limpo
+      setData(prevData => ({
+        ...prevData,
+        name: newValue.trim()
+      }));
+      
+    }, [data.name, setData]);
+
+    // Funções de renderização de sugestões
+    const suggestionRenderer = useCallback(
+      (entry, search, highlightedDisplay) => (
+        <div className={styles.suggestion}>
+          <UserAvatar id={entry.id} size="tiny" />
+          {highlightedDisplay}
+        </div>
+      ),
+      []
+    );
+
+    const renderLabelSuggestion = useCallback(
+      (entry, search, highlightedDisplay) => (
+        <div className={styles.suggestion}>
+          <LabelChip id={entry.id} size="tiny" />
+          {highlightedDisplay}
+        </div>
+      ),
+      []
+    );
 
     const submit = useCallback(
       autoOpen => {
@@ -67,16 +226,32 @@ const AddCard = React.memo(
         };
 
         if (!cleanData.name) {
-          nameFieldRef.current.select();
+          if (nameInputRef.current) {
+            nameInputRef.current.focus();
+          }
           return;
         }
 
-        onCreate(cleanData, autoOpen);
+        // Log de submissão para debugging
+        console.log('📤 Submissão iniciada:', { 
+          cardName: cleanData.name, 
+          usersToAdd: usersToAdd.length, 
+          labelsToAdd: labelsToAdd.length 
+        });
+        console.log('⚡ Saga createCard chamada:', { cardData: cleanData, userIds: usersToAdd, labelIds: labelsToAdd });
 
+        onCreate(cleanData, autoOpen, usersToAdd, labelsToAdd);
+
+        // Limpar estado do formulário e arrays de mentions
         setData({
           ...DEFAULT_DATA,
           type: defaultType,
         });
+        
+        setUsersToAdd([]);
+        setLabelsToAdd([]);
+        
+        console.log('🧹 Estado limpo após submissão');
 
         if (autoOpen) {
           onClose();
@@ -91,7 +266,8 @@ const AddCard = React.memo(
         data,
         setData,
         focusNameField,
-        nameFieldRef,
+        usersToAdd,
+        labelsToAdd,
       ]
     );
 
@@ -129,8 +305,10 @@ const AddCard = React.memo(
 
     const handleSelectTypeClose = useCallback(() => {
       deactivateClosable();
-      nameFieldRef.current.focus();
-    }, [deactivateClosable, nameFieldRef]);
+      if (nameInputRef.current) {
+        nameInputRef.current.focus();
+      }
+    }, [deactivateClosable]);
 
     const handleAwayClick = useCallback(() => {
       if (!isOpened || isClosableActiveRef.current) {
@@ -141,8 +319,10 @@ const AddCard = React.memo(
     }, [isOpened, onClose, isClosableActiveRef]);
 
     const handleClickAwayCancel = useCallback(() => {
-      nameFieldRef.current.focus();
-    }, [nameFieldRef]);
+      if (nameInputRef.current) {
+        nameInputRef.current.focus();
+      }
+    }, []);
 
     const clickAwayProps = useClickAwayListener(
       [nameFieldRef, submitButtonRef, selectTypeButtonRef],
@@ -233,10 +413,10 @@ const AddCard = React.memo(
     );
 
     useEffect(() => {
-      if (isOpened) {
-        nameFieldRef.current.focus();
+      if (isOpened && nameInputRef.current) {
+        nameInputRef.current.focus();
       }
-    }, [isOpened, nameFieldRef]);
+    }, [isOpened]);
 
     useEffect(() => {
       if (!isOpened && defaultType !== prevDefaultType) {
@@ -248,13 +428,16 @@ const AddCard = React.memo(
     }, [isOpened, defaultType, prevDefaultType, setData]);
 
     useDidUpdate(() => {
-      nameFieldRef.current.focus();
+      if (nameInputRef.current) {
+        nameInputRef.current.focus();
+      }
     }, [focusNameFieldState]);
 
     const SelectCardTypePopup = usePopup(SelectCardTypeStep, {
       onOpen: activateClosable,
       onClose: handleSelectTypeClose,
     });
+
 
     return (
       <Form
@@ -272,28 +455,131 @@ const AddCard = React.memo(
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <TextArea
-            {...clickAwayProps}
-            ref={handleNameFieldRef}
-            as={TextareaAutosize}
-            name="name"
-            value={data.name}
-            placeholder={
-              isDragOver
-                ? t('common.dropFilesHere')
-                : t('common.enterCardTitle')
-            }
-            maxLength={1024}
-            minRows={3}
-            spellCheck={false}
-            className={classNames(
-              styles.field,
-              isProcessing && styles.fieldProcessing
-            )}
-            onKeyDown={handleFieldKeyDown}
-            onChange={handleFieldChange}
-            disabled={isProcessing}
-          />
+          {/* 🏷️ LABELS PREVIEW - TOPO ESQUERDA */}
+          {labelsToAdd.length > 0 && (
+            <div className={styles.previewLabels}>
+              {labelsToAdd.map((labelId, index) => (
+                  <span 
+                    key={labelId} 
+                    className={classNames(styles.previewAttachment, styles.previewAttachmentLeft)}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                    onClick={() => {
+                      setLabelsToAdd(prev => prev.filter(id => id !== labelId));
+                    }}
+                    title="Clique para remover"
+                  >
+                    <LabelChip id={labelId} size="tiny" />
+                  </span>
+                ))}
+            </div>
+          )}
+
+          {/* 👥 USERS PREVIEW - TOPO DIREITA */}
+          {usersToAdd.length > 0 && (
+            <div className={classNames(styles.previewAttachments, styles.previewAttachmentsRight)}>
+              {usersToAdd.map((userId, index) => (
+                  <span 
+                    key={userId} 
+                    className={classNames(styles.previewAttachment, styles.previewAttachmentRight)}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                    onClick={() => {
+                      setUsersToAdd(prev => prev.filter(id => id !== userId));
+                    }}
+                    title="Clique para remover"
+                  >
+                    <UserAvatar id={userId} size="small" />
+                  </span>
+                ))}
+            </div>
+          )}
+
+          <div {...clickAwayProps} ref={nameFieldRef}>
+            <MentionsInput
+              allowSpaceInQuery
+              allowSuggestionsAboveCursor
+              forceSuggestionsAboveCursor={false}
+              suggestionsPortalHost={document.body}
+              ref={nameMentionsRef}
+              inputRef={nameInputRef}
+              value={data.name}
+              placeholder={
+                isDragOver
+                  ? t('common.dropFilesHere')
+                  : t('common.enterCardTitle')
+              }
+              maxLength={1024}
+              className={classNames(
+                "mentions-input", // ← OBRIGATÓRIO para CSS global funcionar
+                styles.field,
+                isProcessing && styles.fieldProcessing
+              )}
+              style={{
+                control: {
+                  minHeight: '32px', // Aumentado de 24px para 32px
+                  background: 'transparent',
+                  border: 'none',
+                  boxShadow: 'none',
+                  color: '#f3f4f6',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  lineHeight: '1.6', // Aumentado para melhor espaçamento
+                  padding: '4px 0', // Adicionado padding vertical
+                },
+                highlighter: {
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#f3f4f6',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  lineHeight: '1.6', // Aumentado para melhor espaçamento
+                  minHeight: '32px', // Aumentado de 24px para 32px
+                  padding: '4px 0', // Adicionado padding vertical
+                },
+                input: {
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#f3f4f6',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  lineHeight: '1.6', // Aumentado para melhor espaçamento
+                  minHeight: '28px', // Altura mínima para o input
+                  outline: 'none',
+                  padding: '4px 0', // Adicionado padding vertical
+                },
+                suggestions: {
+                  maxHeight: '80vh', // Forçar altura grande no dropdown
+                  overflowY: 'auto',
+                },
+              }}
+              onKeyDown={handleFieldKeyDown}
+              onChange={(event, newValue, newPlainTextValue) => {
+                setData(prevData => ({
+                  ...prevData,
+                  name: newPlainTextValue
+                }));
+              }}
+              disabled={isProcessing}
+            >
+              <Mention
+                trigger="@"
+                appendSpaceOnAdd
+                data={usersData}
+                displayTransform={(_, display) => `@${display}`}
+                renderSuggestion={suggestionRenderer}
+                onAdd={handleUserAdd}
+                className={styles.mention}
+              />
+              <Mention
+                trigger="#"
+                appendSpaceOnAdd
+                data={labelsData}
+                displayTransform={(_, display) => `#${display}`}
+                renderSuggestion={renderLabelSuggestion}
+                onAdd={handleLabelAdd}
+                className={styles.mention}
+              />
+            </MentionsInput>
+          </div>
           {isDragOver && (
             <div className={styles.dragOverlay}>
               <Icon name="upload" size="large" />

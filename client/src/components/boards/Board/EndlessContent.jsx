@@ -26,8 +26,9 @@ const EndlessContent = React.memo(() => {
   }, [dispatch]);
 
   const handleCardCreate = useCallback(
-    (data, autoOpen) => {
-      dispatch(entryActions.createCardInCurrentList(data, autoOpen));
+    (data, autoOpen, userIds = [], labelIds = []) => {
+      console.log('🔥 EndlessContent handleCardCreate chamado:', { data, autoOpen, userIds, labelIds });
+      dispatch(entryActions.createCardInCurrentList(data, autoOpen, userIds, labelIds));
     },
     [dispatch]
   );

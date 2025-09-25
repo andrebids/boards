@@ -77,26 +77,205 @@
     }
 
     .mentions-input {
+      &__control {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: #f3f4f6 !important;
+        font-family: inherit !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        line-height: 1.6 !important; // Aumentado para melhor espaçamento
+        min-height: 32px !important; // Aumentado de 20px para 32px
+        padding: 4px 0 !important; // Adicionado padding vertical
+        
+        &:focus {
+          outline: none !important;
+          font-weight: 700 !important;
+        }
+      }
+      
+      &__input {
+        background: transparent !important;
+        color: #f3f4f6 !important;
+        border: none !important;
+        outline: none !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        
+        &::placeholder {
+          color: #9ca3af !important;
+          font-weight: 500 !important;
+        }
+        
+        &:focus {
+          font-weight: 700 !important;
+        }
+      }
+      
       &__highlighter {
-        line-height: 1.4;
-        padding: 8px 12px;
+        line-height: 1.6; // Aumentado para melhor espaçamento
+        padding: 4px 0; // Adicionado padding vertical
+        background: transparent !important;
+        border: none !important;
+        color: #f3f4f6 !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        min-height: 32px !important; // Aumentado de 20px para 32px
+        
+        mark {
+          background: rgba(59, 130, 246, 0.3) !important;
+          color: #ffffff !important;
+          font-weight: 700 !important;
+          border-radius: 4px;
+          padding: 2px 4px; // Aumentado padding das menções
+        }
       }
 
       &__suggestions {
-        border: 1px solid #d4d4d5;
-        border-radius: 3px;
-        box-shadow: 0 8px 16px -4px rgba(9, 45, 66, 0.25),
-          0 0 0 1px rgba(9, 45, 66, 0.08);
-        max-height: 200px;
-        overflow-y: auto;
+        // Enhanced Glass Effect com animações
+        background: rgba(14, 17, 23, 0.9) !important;
+        -webkit-backdrop-filter: blur(24px);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        box-shadow: 
+          0 20px 40px rgba(0, 0, 0, 0.6),
+          0 8px 16px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        max-height: none !important; // Remover completamente limitação de altura
+        height: auto !important; // Altura automática
+        overflow: visible !important; // Mostrar tudo sem limitações
+        overflow-y: visible !important; // Scroll removido
+        z-index: 100020 !important;
+        margin-top: 8px;
+        padding: 8px;
+        position: fixed !important; // Posição fixa
+        min-width: 300px !important; // Largura mínima
+        max-width: 400px !important; // Largura máxima
+        
+        // Smooth entrance animation
+        animation: dropdownSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        transform-origin: top;
+        
+        // Enhanced scroll styling
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        &::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 3px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          border-radius: 3px;
+          background: linear-gradient(
+            180deg,
+            rgba(59, 130, 246, 0.6),
+            rgba(29, 78, 216, 0.6)
+          );
+          
+          &:hover {
+            background: linear-gradient(
+              180deg,
+              rgba(59, 130, 246, 0.8),
+              rgba(29, 78, 216, 0.8)
+            );
+          }
+        }
+        
+        // Gradient overlay for depth
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, 
+            transparent 0%, 
+            rgba(255, 255, 255, 0.2) 50%, 
+            transparent 100%);
+          z-index: 1;
+        }
 
         &__item {
-          padding: 8px 12px;
-
-          &--focused {
-            background-color: rgba(0, 0, 0, 0.05);
-            color: rgba(0, 0, 0, 0.95);
+          padding: 12px 16px;
+          color: rgba(230, 237, 243, 0.85);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 10px;
+          margin: 2px 0;
+          position: relative;
+          cursor: pointer;
+          
+          // Entry animation
+          animation: itemSlideIn 0.15s ease-out;
+          animation-fill-mode: both;
+          
+          // Staggered animation for multiple items
+          &:nth-child(1) { animation-delay: 0ms; }
+          &:nth-child(2) { animation-delay: 20ms; }
+          &:nth-child(3) { animation-delay: 40ms; }
+          &:nth-child(4) { animation-delay: 60ms; }
+          &:nth-child(5) { animation-delay: 80ms; }
+          
+          // Subtle hover effect
+          &:hover {
+            background: rgba(59, 130, 246, 0.08);
+            color: #ffffff;
+            transform: translateX(2px);
           }
+          
+          &--focused {
+            background: rgba(59, 130, 246, 0.2);
+            color: #ffffff;
+            border-radius: 10px;
+            margin: 2px 0;
+            transform: translateX(4px);
+            box-shadow: 
+              0 4px 12px rgba(59, 130, 246, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+              
+            // Glow effect when focused
+            &::after {
+              content: '';
+              position: absolute;
+              left: -2px;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 3px;
+              height: 60%;
+              background: linear-gradient(
+                180deg,
+                rgba(59, 130, 246, 1),
+                rgba(29, 78, 216, 1)
+              );
+              border-radius: 2px;
+            }
+          }
+        }
+        
+        @keyframes itemSlideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      }
+      
+      @keyframes dropdownSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
         }
       }
     }
@@ -1060,6 +1239,146 @@
   [class*="_task_"] [class*="_text_"] {
     color: #17394d !important; /* cor escura para texto de tasks */
   }
+}
+
+// Classes específicas para mentions nos comentários (para evitar conflito com AddCard)
+:global(.mentions-input-comments__control) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #1f2937 !important; // Texto escuro
+  font-family: inherit !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1.6 !important;
+  min-height: 32px !important;
+  padding: 4px 0 !important;
+  
+  &:focus {
+    outline: none !important;
+    font-weight: 700 !important;
+  }
+}
+
+:global(.mentions-input-comments__input) {
+  background: transparent !important;
+  color: #1f2937 !important; // Texto escuro
+  border: none !important;
+  outline: none !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  
+  &::placeholder {
+    color: #6b7280 !important; // Placeholder escuro
+    font-weight: 500 !important;
+  }
+  
+  &:focus {
+    font-weight: 700 !important;
+    color: #1f2937 !important; // Texto escuro ao focar
+  }
+}
+
+:global(.mentions-input-comments__highlighter) {
+  line-height: 1.6;
+  padding: 4px 0 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #1f2937 !important; // Texto escuro
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  min-height: 32px !important;
+  
+  mark {
+    background: rgba(59, 130, 246, 0.3) !important;
+    color: #1f2937 !important; // Texto escuro nas mentions
+    font-weight: 700 !important;
+    border-radius: 4px;
+    padding: 2px 4px;
+  }
+}
+
+:global(.mentions-input-comments__suggestions) {
+  // Glass Effect ESPECÍFICO para comentários (dentro de modais)
+  background: rgba(14, 17, 23, 0.9) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  box-shadow: 
+    0 10px 20px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  max-height: 250px !important; // Limitado para comentários (dentro do modal)
+  overflow-y: auto !important; // Com scroll para comentários
+  z-index: 10008 !important; // Abaixo do modal mas acima de outros elementos
+  margin-top: 8px !important;
+  padding: 8px !important;
+  position: absolute !important; // Posição absoluta para comentários
+  min-width: 300px !important;
+  max-width: 400px !important;
+  
+  // Smooth entrance animation
+  animation: dropdownSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transform-origin: top !important;
+  
+  // Enhanced scroll styling
+  &::-webkit-scrollbar {
+    width: 6px !important;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 3px !important;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    border-radius: 3px !important;
+    background: linear-gradient(
+      180deg,
+      rgba(59, 130, 246, 0.6),
+      rgba(29, 78, 216, 0.6)
+    ) !important;
+    
+    &:hover {
+      background: linear-gradient(
+        180deg,
+        rgba(59, 130, 246, 0.8),
+        rgba(29, 78, 216, 0.8)
+      ) !important;
+    }
+  }
+}
+
+:global(.mentions-input-comments__suggestions__item) {
+  padding: 12px 16px !important;
+  color: rgba(230, 237, 243, 0.85) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 10px !important;
+  margin: 2px 0 !important;
+  position: relative !important;
+  cursor: pointer !important;
+  
+  // Entry animation
+  animation: itemSlideIn 0.15s ease-out !important;
+  animation-fill-mode: both !important;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 0.08) !important;
+    color: #ffffff !important;
+    transform: translateX(2px) !important;
+  }
+}
+
+:global(.mentions-input-comments__suggestions__item--focused) {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  margin: 2px 0 !important;
+  transform: translateX(4px) !important;
+  box-shadow: 
+    0 4px 12px rgba(59, 130, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
 
 :global(body), :global(#app) {

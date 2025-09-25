@@ -20,13 +20,13 @@ export default function* cardsWatchers() {
     ),
     takeEvery(
       EntryActionTypes.CARD_CREATE,
-      ({ payload: { listId, data, autoOpen } }) =>
-        services.createCard(listId, data, autoOpen)
+      ({ payload: { listId, data, autoOpen, userIds = [], labelIds = [] } }) =>
+        services.createCard(listId, data, autoOpen, userIds, labelIds)
     ),
     takeEvery(
       EntryActionTypes.CARD_IN_CURRENT_LIST_CREATE,
-      ({ payload: { data, autoOpen } }) =>
-        services.createCardInCurrentList(data, autoOpen)
+      ({ payload: { data, autoOpen, userIds = [], labelIds = [] } }) =>
+        services.createCardInCurrentList(data, autoOpen, userIds, labelIds)
     ),
     takeEvery(
       EntryActionTypes.CARD_IN_FIRST_FINITE_LIST_CREATE,

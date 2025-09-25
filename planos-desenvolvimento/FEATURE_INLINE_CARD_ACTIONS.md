@@ -54,6 +54,20 @@
 - **Documentação original:** Apenas `useRef`
 - **✅ CORREÇÃO:** Seguir padrão do Planka para compatibilidade
 
+**5. 🚨 DESCOBERTA CRÍTICA - ClassName do MentionsInput:**
+- **Comentários (funcionam):** `className="mentions-input"` (classe global)
+- **AddCard (não funcionava):** `className={styles.field}` (CSS modules apenas)
+- **✅ SOLUÇÃO ENCONTRADA:** AddCard deve usar AMBAS as classes:
+  ```jsx
+  className={classNames(
+    "mentions-input", // ← OBRIGATÓRIO para CSS global funcionar
+    styles.field,     // ← CSS modules local
+    isProcessing && styles.fieldProcessing
+  )}
+  ```
+- **⚠️ PROBLEMA:** O CSS global `.mentions-input__suggestions` só se aplica quando a classe base `mentions-input` está presente
+- **🔧 SOLUÇÃO FINAL:** Usar `data-attributes` + JavaScript para isolamento perfeito entre AddCard e Comentários
+
 ## 2. Estratégia Central com `react-mentions`
 
 O núcleo da implementação será um componente configurado `MentionsInput` que será reutilizado, **aproveitando as funcionalidades já existentes** para adicionar utilizadores e etiquetas aos cartões.
@@ -141,6 +155,233 @@ import { MentionsInput, Mention } from 'react-mentions';
   - **Consistência:** Usa exatamente as mesmas ações e fluxos que já existem no sistema.
   - **Manutenibilidade:** Não duplica lógica, aproveita o que já está testado e funcional.
   - **Simplicidade:** Menos código para manter e menos pontos de falha.
+
+### 🎨 **DESCOBERTA FINAL: Solução Completa para Glass Effect Isolado**
+
+**⚠️ PROBLEMA IDENTIFICADO:** Conseguir aplicar glass effect apenas no AddCard sem afetar comentários era extremamente complexo devido à estrutura do react-mentions.
+
+**✅ SOLUÇÃO IMPLEMENTADA COM SUCESSO:**
+
+#### **🔍 Passos da Solução Final (TESTADA E FUNCIONANDO):**
+
+**Passo 1: Corrigir className no AddCard.jsx**
+```jsx
+// ANTES (não funcionava):
+className={classNames(styles.field, isProcessing && styles.fieldProcessing)}
+
+// DEPOIS (funciona):
+className={classNames(
+  "mentions-input", // ← CRÍTICO: classe global obrigatória
+  styles.field,     // ← CSS modules local
+  isProcessing && styles.fieldProcessing
+)}
+```
+
+**Passo 2: Adicionar identificador único ao AddCard**
+```jsx
+<div {...clickAwayProps} ref={nameFieldRef} 
+     className={styles.mentionsWrapper} 
+     data-mentions-context="add-card">  // ← Identificador único
+```
+
+**Passo 3: JavaScript para isolamento automático**
+```jsx
+useEffect(() => {
+  const observer = new MutationObserver(() => {
+    const dropdowns = document.querySelectorAll('.mentions-input__suggestions');
+    dropdowns.forEach(dropdown => {
+      const isInAddCard = dropdown.closest('[data-mentions-context="add-card"]');
+      if (isInAddCard) {
+        dropdown.setAttribute('data-add-card-dropdown', 'true');
+        // Marca também os itens
+        const items = dropdown.querySelectorAll('.mentions-input__suggestions__item');
+        items.forEach(item => item.classList.add('suggestions-item-add-card'));
+      }
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}, []);
+```
+
+**Passo 4: CSS isolado com exclusões**
+```scss
+// CSS para comentários (exclui AddCard):
+.mentions-input {
+  &__suggestions:not([data-add-card-dropdown="true"]) {
+    // Estilo original dos comentários
+  }
+  &__item:not(.suggestions-item-add-card) {
+    // Estilo original dos comentários
+  }
+}
+
+// CSS exclusivo para AddCard:
+[data-mentions-context="add-card"] .mentions-input__suggestions,
+.mentions-input__suggestions[data-add-card-dropdown="true"] {
+  // Glass effect especial para AddCard
+  background: rgba(14, 17, 23, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  // ... estilos únicos
+}
+```
+
+#### **🎯 Resultado Final:**
+- ✅ **AddCard:** Glass theme específico e diferenciado
+- ✅ **Comentários:** Tema original preservado sem alterações
+- ✅ **Isolamento Total:** Zero interferência entre contextos
+- ✅ **Auto-aplicação:** Funciona automaticamente via JavaScript Observer
+
+#### **🔍 Análise da Implementação Original (ATUALIZADA):**
+
+**1. Diferença entre Comentários vs Criação de Cartão:**
+- **Comentários:** Usam `className="mentions-input"` (classe global)
+- **AddCard:** DEVE usar `className="mentions-input"` + classes locais (DESCOBERTA CRÍTICA)
+
+**2. Estrutura Correta do MentionsInput:**
+```jsx
+// AddCard.jsx - IMPLEMENTAÇÃO CORRETA
+<MentionsInput
+  allowSpaceInQuery
+  allowSuggestionsAboveCursor
+  ref={nameMentionsRef}
+  inputRef={nameInputRef}
+  value={data.name}
+  placeholder={t('common.enterCardTitle')}
+  maxLength={1024}
+  className="mentions-input"  // ← CHAVE: Classe global (não CSS modules)
+  style={{
+    control: {
+      minHeight: '32px',  // ← Apenas estilos básicos necessários
+    },
+  }}
+>
+  <Mention
+    trigger="@"
+    appendSpaceOnAdd
+    data={usersData}
+    displayTransform={(_, display) => `@${display}`}
+    renderSuggestion={suggestionRenderer}
+    onAdd={handleUserAdd}
+    // ← SEM className aqui (diferente dos comentários)
+  />
+  <Mention
+    trigger="#"
+    appendSpaceOnAdd
+    data={labelsData}
+    displayTransform={(_, display) => `#${display}`}
+    renderSuggestion={renderLabelSuggestion}
+    onAdd={handleLabelAdd}
+    // ← SEM className aqui
+  />
+</MentionsInput>
+```
+
+#### **3. CSS Global para Glass Effect (styles.module.scss):**
+
+**Estratégia de Seletores com Máxima Especificidade:**
+```scss
+// Seletores múltiplos para garantir aplicação
+[class*="mentions-input__suggestions"],
+.mentions-input__suggestions,
+div[class*="mentions-input__suggestions"],
+html .mentions-input__suggestions,
+body .mentions-input__suggestions,
+#app .mentions-input__suggestions {
+  // Glass Effect Moderno
+  background: rgba(14, 17, 23, 0.95) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  -moz-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.7) !important,
+    0 8px 16px rgba(0, 0, 0, 0.5) !important,
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  z-index: 100020 !important;
+  padding: 12px !important;
+  margin-top: 8px !important;
+  max-height: 250px !important;
+  overflow-y: auto !important;
+  color: rgba(230, 237, 243, 0.9) !important;
+}
+
+// Itens do dropdown
+[class*="mentions-input__suggestions__item"],
+.mentions-input__suggestions__item,
+div[class*="mentions-input__suggestions__item"],
+html .mentions-input__suggestions__item,
+body .mentions-input__suggestions__item,
+#app .mentions-input__suggestions__item {
+  background: transparent !important;
+  color: rgba(230, 237, 243, 0.85) !important;
+  padding: 12px 16px !important;
+  border-radius: 10px !important;
+  margin: 2px 0 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 0.12) !important;
+    color: #ffffff !important;
+  }
+}
+
+// Estado focused
+[class*="mentions-input__suggestions__item--focused"],
+.mentions-input__suggestions__item--focused,
+div[class*="mentions-input__suggestions__item--focused"],
+html .mentions-input__suggestions__item--focused,
+body .mentions-input__suggestions__item--focused,
+#app .mentions-input__suggestions__item--focused {
+  background: rgba(59, 130, 246, 0.25) !important;
+  color: #ffffff !important;
+  box-shadow: 
+    0 4px 12px rgba(59, 130, 246, 0.3) !important,
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+```
+
+#### **4. JavaScript Backup (Opcional - AddCard.jsx):**
+
+**Para garantir aplicação em casos extremos:**
+```jsx
+// Force glass effect via JavaScript (backup)
+useEffect(() => {
+  const applyGlassEffect = () => {
+    const dropdowns = document.querySelectorAll('.mentions-input__suggestions');
+    dropdowns.forEach(dropdown => {
+      dropdown.style.cssText = `
+        background: rgba(14, 17, 23, 0.95) !important;
+        backdrop-filter: blur(24px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 16px !important;
+        // ... outros estilos
+      `;
+    });
+  };
+
+  const observer = new MutationObserver(() => applyGlassEffect());
+  observer.observe(document.body, { childList: true, subtree: true });
+  applyGlassEffect();
+
+  return () => observer.disconnect();
+}, []);
+```
+
+#### **5. Pontos Críticos para Sucesso:**
+
+**✅ O que FUNCIONA:**
+- Usar `className="mentions-input"` (classe global)
+- CSS com múltiplos seletores e `!important`
+- Estrutura idêntica aos comentários (que já funcionam)
+
+**❌ O que NÃO funciona:**
+- `className={styles.field}` (CSS modules)
+- Estilos inline complexos no `MentionsInput`
+- Seletores CSS sem especificidade suficiente
+
+**🎯 Resultado:** Dropdown com glass effect moderno apenas na criação de cartão, sem afetar comentários.
 
 ### 🎨 **Estilização e Temas**
 
@@ -699,6 +940,40 @@ git checkout HEAD -- src/components/cards/AddCard/AddCard.jsx
 - ✅ **Utilizadores/etiquetas adicionados via edição** devem aparecer normalmente nos cartões
 - ✅ **Sistema de preview** deve ser consistente entre criação e edição
 - ✅ **Ações Redux** devem funcionar identicamente para ambos os fluxos
+
+---
+
+## ✅ **APIS CORRETAS DESCOBERTAS DURANTE IMPLEMENTAÇÃO**
+
+### 🔧 **APIs Funcionais (Testadas e Aprovadas):**
+
+**Para Utilizadores:**
+```javascript
+// Action
+yield put(actions.addUserToCard(userId, cardId, false));
+
+// API Call  
+const membership = yield call(request, api.createCardMembership, cardId, { userId });
+
+// Success
+yield put(actions.addUserToCard.success(membership.item));
+```
+
+**Para Etiquetas:**
+```javascript
+// Action
+yield put(actions.addLabelToCard(labelId, cardId));
+
+// API Call
+const cardLabel = yield call(request, api.createCardLabel, cardId, { labelId });
+
+// Success
+yield put(actions.addLabelToCard.success(cardLabel.item));
+```
+
+### ❌ **APIs que NÃO existem (evitar):**
+- ~~`actions.createCardMembership`~~ → Use `actions.addUserToCard`
+- ~~`api.addLabelToCard`~~ → Use `api.createCardLabel`
 
 ---
 

@@ -79,8 +79,9 @@ const List = React.memo(({ id, index }) => {
   const cardsWrapperRef = useRef(null);
 
   const handleCardCreate = useCallback(
-    (data, autoOpen) => {
-      dispatch(entryActions.createCard(id, data, autoOpen));
+    (data, autoOpen, userIds = [], labelIds = []) => {
+      console.log('🔥 List.jsx handleCardCreate:', { data, autoOpen, userIds, labelIds });
+      dispatch(entryActions.createCard(id, data, autoOpen, userIds, labelIds));
     },
     [id, dispatch]
   );

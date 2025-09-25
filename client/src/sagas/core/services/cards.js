@@ -129,7 +129,7 @@ export function* handleCardsUpdate(cards, activities) {
   yield put(actions.handleCardsUpdate(cards, activities));
 }
 
-export function* createCard(listId, data, autoOpen) {
+export function* createCard(listId, data, autoOpen, userIds = [], labelIds = []) {
   const localId = yield call(createLocalId);
   const list = yield select(selectors.selectListById, listId);
 
@@ -182,6 +182,40 @@ export function* createCard(listId, data, autoOpen) {
 
   yield put(actions.createCard.success(localId, card));
 
+  // Adicionar utilizadores ao cartão (se especificados)
+  if (userIds.length > 0) {
+    console.log('👥 Adicionando utilizadores ao cartão:', { cardId: card.id, userIds });
+    for (const userId of userIds) {
+      console.log('👥 Adicionando utilizador:', { cardId: card.id, userId });
+      try {
+        yield put(actions.addUserToCard(userId, card.id, false));
+        const membership = yield call(request, api.createCardMembership, card.id, { userId });
+        yield put(actions.addUserToCard.success(membership.item));
+        console.log('✅ Utilizador adicionado com sucesso:', { cardId: card.id, userId });
+      } catch (error) {
+        yield put(actions.addUserToCard.failure(userId, card.id, error));
+        console.error('❌ Erro ao adicionar utilizador:', { cardId: card.id, userId, error });
+      }
+    }
+  }
+
+  // Adicionar etiquetas ao cartão (se especificadas)
+  if (labelIds.length > 0) {
+    console.log('🏷️ Adicionando etiquetas ao cartão:', { cardId: card.id, labelIds });
+    for (const labelId of labelIds) {
+      console.log('🏷️ Adicionando etiqueta:', { cardId: card.id, labelId });
+      try {
+        yield put(actions.addLabelToCard(labelId, card.id));
+        const cardLabel = yield call(request, api.createCardLabel, card.id, { labelId });
+        yield put(actions.addLabelToCard.success(cardLabel.item));
+        console.log('✅ Etiqueta adicionada com sucesso:', { cardId: card.id, labelId });
+      } catch (error) {
+        yield put(actions.addLabelToCard.failure(labelId, card.id, error));
+        console.error('❌ Erro ao adicionar etiqueta:', { cardId: card.id, labelId, error });
+      }
+    }
+  }
+
   if (
     watchForCreateCardActionTask &&
     watchForCreateCardActionTask.isRunning()
@@ -190,16 +224,16 @@ export function* createCard(listId, data, autoOpen) {
   }
 }
 
-export function* createCardInCurrentList(data, autoOpen) {
+export function* createCardInCurrentList(data, autoOpen, userIds = [], labelIds = []) {
   const currentListId = yield select(selectors.selectCurrentListId);
 
-  yield call(createCard, currentListId, data, autoOpen);
+  yield call(createCard, currentListId, data, autoOpen, userIds, labelIds);
 }
 
-export function* createCardInFirstFiniteList(data, autoOpen) {
+export function* createCardInFirstFiniteList(data, autoOpen, userIds = [], labelIds = []) {
   const firstFiniteListId = yield select(selectors.selectFirstFiniteListId);
 
-  yield call(createCard, firstFiniteListId, data, autoOpen);
+  yield call(createCard, firstFiniteListId, data, autoOpen, userIds, labelIds);
 }
 
 export function* createCardWithAttachment(listId, cardData, attachmentFile) {
