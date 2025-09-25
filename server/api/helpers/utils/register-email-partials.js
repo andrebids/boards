@@ -21,7 +21,6 @@ module.exports = {
             const name = path.basename(file, '.hbs');
             const content = fs.readFileSync(path.join(partialsDir, file), 'utf8');
             Handlebars.registerPartial(name, content);
-            sails.log.info(`✅ Partial registado: ${name}`);
           });
         }
       } else {
@@ -39,14 +38,12 @@ module.exports = {
             const name = path.basename(file, '.hbs');
             const content = fs.readFileSync(path.join(typesDir, file), 'utf8');
             Handlebars.registerPartial(name, content);
-            sails.log.info(`✅ Partial de tipo registado: ${name}`);
           });
         }
       } else {
         sails.log.warn('⚠️ Diretório de tipos não encontrado:', typesDir);
       }
       
-      sails.log.info('✅ Sistema de partials de email inicializado com sucesso');
       return true;
       
     } catch (error) {

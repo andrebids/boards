@@ -10,7 +10,6 @@ module.exports = function(sails) {
         try {
           // Registar partials de email quando o ORM estiver carregado
           await sails.helpers.utils.registerEmailPartials();
-          sails.log.info('✅ Hook de templates de email inicializado com sucesso');
           cb();
         } catch (error) {
           sails.log.error('❌ Erro ao inicializar hook de templates de email:', error);
