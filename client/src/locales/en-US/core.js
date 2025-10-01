@@ -470,6 +470,7 @@ export default {
       unsubscribe: 'Unsubscribe',
       uploadNewAvatar: 'Upload new avatar',
       uploadNewImage: 'Upload new image',
+      noLabelsCreatedYet: 'No labels created yet',
     },
   },
 };

@@ -263,9 +263,9 @@ i18n.loadCoreLocale = async (language = i18n.resolvedLanguage) => {
       // Verificar se as traduções foram carregadas corretamente
       console.log('Verificando traduções carregadas:');
       console.log('boardActions_title:', i18n.t('common.boardActions_title'));
-      console.log('expandPanel:', i18n.t('action.expandPanel'));
-      console.log('collapsePanel:', i18n.t('action.collapsePanel'));
-      console.log('openActivityHistory:', i18n.t('action.openActivityHistory'));
+      console.log('expandPanel:', i18n.t('common.expandPanel'));
+      console.log('collapsePanel:', i18n.t('common.collapsePanel'));
+      console.log('openActivityHistory:', i18n.t('common.openActivityHistory'));
 
       return;
     } catch (error) {

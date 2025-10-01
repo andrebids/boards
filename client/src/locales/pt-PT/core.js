@@ -695,6 +695,10 @@ export default {
       globalNotificationsActiveTitle: 'Sistema de Notificações Globais Ativo',
       globalNotificationsActiveDescription:
         'Todas as notificações são enviadas centralmente através do endereço de e-mail <strong>{{email}}</strong>. Não é necessária qualquer configuração adicional por parte do utilizador.',
+      expandPanel: 'Expandir painel',
+      collapsePanel: 'Recolher painel',
+      openActivityHistory: 'Abrir histórico de atividades',
+      noLabelsCreatedYet: 'Nenhuma etiqueta criada ainda',
     },
 
     action: {
@@ -817,9 +821,6 @@ export default {
       unsubscribe: 'Cancelar inscrição',
       uploadNewAvatar: 'Enviar novo avatar',
       uploadNewImage: 'Enviar nova imagem',
-      expandPanel: 'Expandir painel',
-      collapsePanel: 'Recolher painel',
-      openActivityHistory: 'Abrir histórico de atividades',
     },
   },
 };

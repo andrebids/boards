@@ -420,10 +420,7 @@
     border-radius: 6px;
     transition: all 0.15s ease;
     
-    // Hover effect
-    &:hover {
-      // Background removido - usar apenas animação
-    }
+    // Hover effect removido - usar apenas animação
     
     // Smooth entry animation
     animation: suggestionSlideIn 0.2s ease-out;
@@ -438,5 +435,26 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Estilos para placeholder quando não há labels */
+  .suggestionPlaceholder {
+    opacity: 0.6;
+    font-style: italic;
+    color: #9ca3af;
+    cursor: not-allowed !important;
+    user-select: none;
+    background-color: rgba(156, 163, 175, 0.05) !important;
+    
+    &:hover {
+      background-color: rgba(156, 163, 175, 0.08) !important;
+      opacity: 0.6;
+    }
+  }
+
+  .placeholderText {
+    margin-left: 8px;
+    font-size: 13px;
+    user-select: none;
   }
 }

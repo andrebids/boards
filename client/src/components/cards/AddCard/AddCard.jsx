@@ -75,13 +75,23 @@ const AddCard = React.memo(
     }, [boardMemberships]);
 
     const labelsData = useMemo(() => {
-      if (!labels?.length) return [];
+      if (!labels?.length) {
+        return [{
+          id: 'no-labels',
+          display: t('common.noLabelsCreatedYet'),
+          color: 'gray',
+          isPlaceholder: true,
+          disabled: true
+        }];
+      }
       return labels.map(label => ({
         id: label.id,
         display: label.name,
-        color: label.color
+        color: label.color,
+        isPlaceholder: false,
+        disabled: false
       }));
-    }, [labels]);
+    }, [labels, t]);
 
 
     const nameFieldRef = useRef(null);
@@ -92,8 +102,6 @@ const AddCard = React.memo(
 
     // Callbacks para mentions
     const handleUserAdd = useCallback((id, display, startPos, endPos) => {
-      console.log('👥 Utilizador adicionado:', { id, display, position: {startPos, endPos} });
-      
       // Adicionar utilizador ao array (evitar duplicatas)
       setUsersToAdd(prev => prev.includes(id) ? prev : [...prev, id]);
       
@@ -102,8 +110,6 @@ const AddCard = React.memo(
       const beforeMention = currentValue.substring(0, startPos);
       const afterMention = currentValue.substring(endPos);
       const newValue = beforeMention + afterMention;
-      
-      console.log('🧹 Texto limpo:', { antes: currentValue, depois: newValue });
       
       // Atualizar campo com texto limpo
       setData(prevData => ({
@@ -175,7 +181,22 @@ const AddCard = React.memo(
 
     
     const handleLabelAdd = useCallback((id, display, startPos, endPos) => {
-      console.log('🏷️ Label adicionada:', { id, display, position: {startPos, endPos} });
+      // Se é um placeholder (sem labels criadas), limpar o # mas não adicionar label
+      if (id === 'no-labels') {
+        // Limpar o # do campo
+        const currentValue = data.name || '';
+        const beforeMention = currentValue.substring(0, startPos);
+        const afterMention = currentValue.substring(endPos);
+        const newValue = beforeMention + afterMention;
+        
+        setData(prevData => ({
+          ...prevData,
+          name: newValue.trim()
+        }));
+        
+        // Não adicionar label - apenas limpar texto
+        return;
+      }
       
       // Adicionar label ao array (evitar duplicatas)
       setLabelsToAdd(prev => prev.includes(id) ? prev : [...prev, id]);
@@ -186,15 +207,13 @@ const AddCard = React.memo(
       const afterMention = currentValue.substring(endPos);
       const newValue = beforeMention + afterMention;
       
-      console.log('🧹 Texto limpo:', { antes: currentValue, depois: newValue });
-      
       // Atualizar campo com texto limpo
       setData(prevData => ({
         ...prevData,
         name: newValue.trim()
       }));
       
-    }, [data.name, setData]);
+    }, [data.name, setData, labelsToAdd]);
 
     // Funções de renderização de sugestões
     const suggestionRenderer = useCallback(
@@ -208,12 +227,38 @@ const AddCard = React.memo(
     );
 
     const renderLabelSuggestion = useCallback(
-      (entry, search, highlightedDisplay) => (
-        <div className={styles.suggestion}>
-          <LabelChip id={entry.id} size="tiny" />
-          {highlightedDisplay}
-        </div>
-      ),
+      (entry, search, highlightedDisplay) => {
+        // Se é um placeholder (sem labels criadas), mostrar mensagem especial
+        if (entry.isPlaceholder) {
+          return (
+            <div 
+              className={classNames(styles.suggestion, styles.suggestionPlaceholder)}
+              onMouseDown={(e) => {
+                // Prevenir seleção do placeholder
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onClick={(e) => {
+                // Prevenir seleção do placeholder
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              <Icon name="info circle" size="small" />
+              <span className={styles.placeholderText}>
+                {entry.display}
+              </span>
+            </div>
+          );
+        }
+        
+        // Comportamento normal para labels reais
+        return (
+          <div className={styles.suggestion}>
+            <LabelChip id={entry.id} size="tiny" />
+          </div>
+        );
+      },
       []
     );
 
@@ -232,14 +277,6 @@ const AddCard = React.memo(
           return;
         }
 
-        // Log de submissão para debugging
-        console.log('📤 Submissão iniciada:', { 
-          cardName: cleanData.name, 
-          usersToAdd: usersToAdd.length, 
-          labelsToAdd: labelsToAdd.length 
-        });
-        console.log('⚡ Saga createCard chamada:', { cardData: cleanData, userIds: usersToAdd, labelIds: labelsToAdd });
-
         onCreate(cleanData, autoOpen, usersToAdd, labelsToAdd);
 
         // Limpar estado do formulário e arrays de mentions
@@ -250,8 +287,6 @@ const AddCard = React.memo(
         
         setUsersToAdd([]);
         setLabelsToAdd([]);
-        
-        console.log('🧹 Estado limpo após submissão');
 
         if (autoOpen) {
           onClose();
@@ -356,15 +391,10 @@ const AddCard = React.memo(
         e.preventDefault();
         setIsDragOver(false);
 
-        console.log('📁 Drag & Drop ativado!');
         const files = Array.from(e.dataTransfer.files);
-        console.log('📁 Arquivos arrastados:', files);
-
         const processedFiles = processSupportedFiles(files);
-        console.log('✅ Arquivos processados:', processedFiles);
 
         if (processedFiles.length === 0) {
-          console.log('❌ Nenhum arquivo válido encontrado');
           return;
         }
 
@@ -378,27 +408,10 @@ const AddCard = React.memo(
               type: defaultType, // Sempre usar o tipo padrão do board para consistência
             };
 
-            console.log('🎴 Criando card:', cardData);
-            console.log(
-              '📄 Tipo de arquivo:',
-              fileData.isImage ? 'Imagem (capa)' : 'Anexo'
-            );
-            console.log('📄 Arquivo:', fileData.file);
-            console.log(
-              '📄 Nome do arquivo:',
-              fileData.file ? fileData.file.name : 'undefined'
-            );
-            console.log(
-              '📄 Tamanho do arquivo:',
-              fileData.file ? fileData.file.size : 'undefined'
-            );
-
             // Usar a action createCardWithAttachment para criar card com anexo
             if (onCreateWithAttachment) {
-              console.log('📎 Usando createCardWithAttachment');
               onCreateWithAttachment(cardData, fileData.file);
             } else {
-              console.log('📝 Usando createCard normal');
               onCreate(cardData, false);
             }
           }
@@ -406,7 +419,6 @@ const AddCard = React.memo(
           console.error('❌ Erro ao processar arquivos:', error);
         } finally {
           setIsProcessing(false);
-          console.log('✅ Processamento finalizado');
         }
       },
       [data.name, defaultType, onCreate, onCreateWithAttachment]
