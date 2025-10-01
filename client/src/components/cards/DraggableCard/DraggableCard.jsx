@@ -4,6 +4,7 @@
  */
 
 import React, { useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
@@ -34,17 +35,26 @@ const DraggableCard = React.memo(({ id, index, className, ...props }) => {
       index={index}
       isDragDisabled={!card.isPersisted || !canDrag}
     >
-      {({ innerRef, draggableProps, dragHandleProps }) => (
-        <div
-          {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
-          {...dragHandleProps} // eslint-disable-line react/jsx-props-no-spreading
-          ref={innerRef}
-          className={classNames(styles.wrapper, className)}
-        >
-          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-          <Card {...props} id={id} />
-        </div>
-      )}
+      {({ innerRef, draggableProps, dragHandleProps }, snapshot) => {
+        const child = (
+          <div
+            {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
+            {...dragHandleProps} // eslint-disable-line react/jsx-props-no-spreading
+            ref={innerRef}
+            className={classNames(styles.wrapper, className)}
+          >
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <Card {...props} id={id} />
+          </div>
+        );
+
+        // Durante o drag, move o elemento para o body via Portal
+        if (snapshot.isDragging) {
+          return ReactDOM.createPortal(child, document.body);
+        }
+
+        return child;
+      }}
     </Draggable>
   );
 });
