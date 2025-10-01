@@ -526,12 +526,28 @@
 ### **🔴 PAUSA 1 - Após Migração de Base de Dados**
 **Comando de Verificação:**
 ```bash
-# Executar migração
-npm run db:migrate
+# Executar migração no container Docker (SOLUÇÃO CORRETA para Windows)
+docker exec boards-server npm run db:migrate
+
+# Após a migração, reiniciar o servidor para carregar as alterações
+docker restart boards-server
+
+# Alternativa (se estiver no diretório planka-personalizado):
+# docker-compose exec planka npm run db:migrate
 ```
+**Saída Esperada:**
+```
+Batch 2 run: 1 migrations
+```
+
 **Teste Manual:**
 - Verificar se as colunas `progress_bar_enabled` e `progress_bar_percentage` foram criadas
 - Confirmar valores padrão (false, 0)
+
+**⚠️ IMPORTANTE (Windows/PowerShell):**
+- Usar `docker exec <container-name>` em vez de `docker-compose exec`
+- O nome do container pode ser diferente (verificar com `docker ps`)
+- Não usar `&&` no PowerShell, usar `;` em vez disso
 
 ### **🟡 PAUSA 2 - Após API Backend**
 **Comando de Verificação:**

@@ -14,4 +14,66 @@
     font-weight: bold;
     padding-bottom: 6px;
   }
+
+  /* Estilo escuro para inputs (Semantic UI) dentro do wrapper com .field */
+  .field :global(.ui.input) {
+    width: 100%;
+  }
+
+  .field :global(.ui.input > input) {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #f5f7fa !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  /* Caso .field esteja no mesmo elemento do wrapper .ui.input */
+  :global(.ui.input).field > input {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #f5f7fa !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .field :global(.ui.input > input::placeholder) {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  :global(.ui.input).field > input::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .field :global(.ui.input > input:focus) {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    outline: none !important;
+  }
+
+  :global(.ui.input).field > input:focus {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    outline: none !important;
+  }
+
+  /* Estilo escuro para textarea (pode ser o próprio elemento com a classe .field) */
+  textarea.field,
+  .field :global(textarea) {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #f5f7fa !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    width: 100% !important;
+  }
+
+  textarea.field::placeholder,
+  .field :global(textarea::placeholder) {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  textarea.field:focus,
+  .field :global(textarea:focus) {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    outline: none !important;
+  }
 }

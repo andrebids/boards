@@ -5,6 +5,7 @@
 
 import { dequal } from 'dequal';
 import React, { useCallback, useMemo } from 'react';
+import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button, Form, Input } from 'semantic-ui-react';
@@ -29,12 +30,16 @@ const EditInformation = React.memo(() => {
   const defaultData = useMemo(
     () => ({
       name: board.name,
+      progressBarEnabled: board.progressBarEnabled || false,
+      progressBarPercentage: board.progressBarPercentage || 0,
     }),
-    [board.name]
+    [board.name, board.progressBarEnabled, board.progressBarPercentage]
   );
 
   const [data, handleFieldChange] = useForm(() => ({
     name: '',
+    progressBarEnabled: false,
+    progressBarPercentage: 0,
     ...defaultData,
   }));
 
@@ -42,6 +47,8 @@ const EditInformation = React.memo(() => {
     () => ({
       ...data,
       name: data.name.trim(),
+      progressBarEnabled: data.progressBarEnabled,
+      progressBarPercentage: parseInt(data.progressBarPercentage, 10) || 0,
     }),
     [data]
   );
@@ -54,21 +61,58 @@ const EditInformation = React.memo(() => {
       return;
     }
 
+    if (cleanData.progressBarEnabled) {
+      const percentage = parseInt(cleanData.progressBarPercentage, 10);
+      if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+        return;
+      }
+    }
+
     dispatch(entryActions.updateBoard(boardId, cleanData));
   }, [boardId, dispatch, cleanData, nameFieldRef]);
 
   return (
     <Form onSubmit={handleSubmit}>
       <div className={styles.text}>{t('common.title')}</div>
-      <Input
-        fluid
-        ref={handleNameFieldRef}
-        name="name"
-        value={data.name}
-        maxLength={128}
-        className={styles.field}
-        onChange={handleFieldChange}
-      />
+      <div className={classNames(styles.field, styles.darkInput)}>
+        <Input
+          fluid
+          ref={handleNameFieldRef}
+          name="name"
+          value={data.name}
+          maxLength={128}
+          onChange={handleFieldChange}
+        />
+      </div>
+      
+      <Form.Field>
+        <label>{t('common.progressBar')}</label>
+        <Form.Checkbox
+          toggle
+          checked={data.progressBarEnabled}
+          label={t('common.enableProgressBar')}
+          name="progressBarEnabled"
+          onChange={handleFieldChange}
+        />
+      </Form.Field>
+      
+      {data.progressBarEnabled && (
+        <Form.Field className={styles.darkInput}>
+          <label>{t('common.progressPercentage')}</label>
+          <Input
+            type="number"
+            min="0"
+            max="100"
+            name="progressBarPercentage"
+            value={data.progressBarPercentage}
+            onChange={handleFieldChange}
+            labelPosition="right"
+            label="%"
+            fluid
+          />
+        </Form.Field>
+      )}
+      
       <Button
         positive
         disabled={dequal(cleanData, defaultData)}

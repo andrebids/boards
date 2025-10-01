@@ -61,6 +61,18 @@ module.exports = {
       defaultsTo: false,
       columnName: 'always_display_card_creator',
     },
+    progressBarEnabled: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'progress_bar_enabled',
+    },
+    progressBarPercentage: {
+      type: 'number',
+      defaultsTo: 0,
+      max: 100,
+      min: 0,
+      columnName: 'progress_bar_percentage',
+    },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗

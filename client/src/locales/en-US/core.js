@@ -250,6 +250,9 @@ export default {
       pressPasteShortcutToAddAttachmentFromClipboard:
         'Tip: press Ctrl-V (Cmd-V on Mac) to add an attachment from the clipboard.',
       private: 'Private',
+      progressBar: 'Progress Bar',
+      enableProgressBar: 'Enable progress bar',
+      progressPercentage: 'Progress percentage',
       project: 'Project',
       projectNotFound_title: 'Project Not Found',
       projectOwner: 'Project owner',
@@ -456,6 +459,8 @@ export default {
       restoreToList: 'Restore to {{list}}',
       returnToBoard: 'Return to board',
       save: 'Save',
+      expandPanel: 'Expand panel',
+      openActivityHistory: 'Open activity history',
       showActive: 'Show active',
       showAllAttachments: 'Show all attachments ({{hidden}} hidden)',
       showCardsWithThisUser: 'Show cards with this user',

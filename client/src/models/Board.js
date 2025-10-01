@@ -31,6 +31,12 @@ export default class extends BaseModel {
     defaultCardType: attr(),
     limitCardTypesToDefaultOne: attr(),
     alwaysDisplayCardCreator: attr(),
+    progressBarEnabled: attr({
+      getDefault: () => false,
+    }),
+    progressBarPercentage: attr({
+      getDefault: () => 0,
+    }),
     context: attr(),
     view: attr(),
     search: attr(),

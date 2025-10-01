@@ -514,6 +514,9 @@ export default {
       pressPasteShortcutToAddAttachmentFromClipboard:
         'Dica: pressione Ctrl-V (Cmd-V no Mac) para adicionar um anexo da área de transferência.',
       private: 'Privado',
+      progressBar: 'Barra de Progresso',
+      enableProgressBar: 'Ativar barra de progresso',
+      progressPercentage: 'Percentagem de progresso',
       project: 'Projeto',
       projectNotFound_title: 'Projeto não encontrado',
       projectOwner: 'Proprietário do projeto',
@@ -807,6 +810,8 @@ export default {
       restoreToList: 'Restaurar para {{list}}',
       returnToBoard: 'Voltar ao quadro',
       save: 'Salvar',
+      expandPanel: 'Expandir painel',
+      openActivityHistory: 'Abrir histórico de atividades',
       showActive: 'Mostrar ativos',
       showAllAttachments: 'Mostrar todos os anexos ({{hidden}} ocultos)',
       showCardsWithThisUser: 'Mostrar cartões com este utilizador',

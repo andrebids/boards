@@ -42,6 +42,14 @@ module.exports = {
     alwaysDisplayCardCreator: {
       type: 'boolean',
     },
+    progressBarEnabled: {
+      type: 'boolean',
+    },
+    progressBarPercentage: {
+      type: 'number',
+      min: 0,
+      max: 100,
+    },
     isSubscribed: {
       type: 'boolean',
     },
@@ -79,6 +87,8 @@ module.exports = {
         'defaultCardType',
         'limitCardTypesToDefaultOne',
         'alwaysDisplayCardCreator',
+        'progressBarEnabled',
+        'progressBarPercentage',
       );
     }
     if (isBoardMember) {
@@ -96,6 +106,8 @@ module.exports = {
       'defaultCardType',
       'limitCardTypesToDefaultOne',
       'alwaysDisplayCardCreator',
+      'progressBarEnabled',
+      'progressBarPercentage',
       'isSubscribed',
     ]);
 

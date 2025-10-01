@@ -49,6 +49,7 @@ const Item = React.memo(({ id, index }) => {
     dispatch(entryActions.openBoardSettingsModal(id));
   }, [id, dispatch]);
 
+
   return (
     <Draggable
       draggableId={id}
@@ -77,6 +78,21 @@ const Item = React.memo(({ id, index }) => {
                     </span>
                   )}
                   <span className={styles.name}>{board.name}</span>
+                  
+                  {board.progressBarEnabled && board.progressBarPercentage !== undefined && (
+                    <div className={styles.progressBarContainer}>
+                      <div className={styles.progressBar}>
+                        <div 
+                          className={styles.progressFill}
+                          style={{ width: `${board.progressBarPercentage}%` }}
+                          aria-label={`Progresso: ${board.progressBarPercentage}%`}
+                        />
+                      </div>
+                      <span className={styles.progressText}>
+                        {board.progressBarPercentage}%
+                      </span>
+                    </div>
+                  )}
                 </Link>
                 {canEdit && (
                   <Button
