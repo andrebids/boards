@@ -135,11 +135,13 @@ const StoryContent = React.memo(({ cardId }) => {
               <span
                 className={classNames(
                   styles.attachment,
-                  styles.attachmentLeft,
-                  styles.notification
+                  styles.attachmentLeft
                 )}
               >
-                {notificationsTotal}
+                <span className={styles.attachmentContent}>
+                  <Icon name="bell" />
+                  {notificationsTotal}
+                </span>
               </span>
             )}
             {listName && (
