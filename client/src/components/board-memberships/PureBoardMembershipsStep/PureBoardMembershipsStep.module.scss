@@ -26,29 +26,42 @@
 
   .menu {
     margin: 8px auto 0;
-    max-height: 60vh;
+    max-height: 300px; // Limite fixo para garantir scrollbar
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll !important; // Sempre mostrar scroll
     width: 100%;
-    color: #e6edf3; /* garantir contraste do texto */
+    color: #e6edf3;
 
-    @supports (-moz-appearance: none) {
-      scrollbar-color: rgba(0, 0, 0, 0.32) transparent;
-      scrollbar-width: thin;
-    }
-
+    // Scrollbar personalizada - bem visível
     &::-webkit-scrollbar {
-      width: 9px;
+      width: 12px !important;
     }
 
     &::-webkit-scrollbar-track {
-      background: transparent;
+      background: rgba(0, 0, 0, 0.3) !important;
+      border-radius: 6px;
+      margin: 4px 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     &::-webkit-scrollbar-thumb {
-      background-clip: padding-box;
-      border-left: 0.25em transparent solid;
-      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.2) !important;
+      border-radius: 6px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      }
+      
+      &:active {
+        background: rgba(255, 255, 255, 0.4) !important;
+      }
     }
+    
+    // Firefox
+    scrollbar-width: auto !important;
+    scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.3) !important;
   }
 }

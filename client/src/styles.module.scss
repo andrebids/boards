@@ -49,6 +49,140 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
+  // ===== TEMA LIQUID GLASS PARA DROPDOWNS SEMANTIC UI =====
+  
+  // Dropdown principal
+  .ui.fluid.selection.dropdown,
+  .ui.selection.dropdown {
+    background: rgba(14, 17, 23, 0.45) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    color: #e6edf3 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease !important;
+    
+    // Texto do dropdown
+    > .text {
+      color: #e6edf3 !important;
+    }
+    
+    // Placeholder
+    > .default.text {
+      color: rgba(226, 232, 240, 0.5) !important;
+    }
+    
+    // Ícone dropdown
+    > .dropdown.icon {
+      color: rgba(226, 232, 240, 0.7) !important;
+    }
+    
+    // Estado hover
+    &:hover {
+      background: rgba(22, 28, 39, 0.6) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    // Estado focus/ativo
+    &.active,
+    &:focus,
+    &.visible {
+      background: rgba(22, 28, 39, 0.6) !important;
+      border-color: rgba(59, 130, 246, 0.5) !important;
+      box-shadow: 
+        0 0 0 2px rgba(59, 130, 246, 0.25),
+        0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+  }
+  
+  // Menu do dropdown
+  .ui.fluid.selection.dropdown .menu,
+  .ui.selection.dropdown .menu.visible,
+  .ui.dropdown .menu.transition.visible {
+    background: rgba(14, 17, 23, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 
+      0 8px 24px rgba(0, 0, 0, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    margin-top: 4px !important;
+    max-height: 200px !important;
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+    
+    // Scrollbar personalizada com tema liquid glass
+    &::-webkit-scrollbar {
+      width: 12px !important;
+      display: block !important;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3) !important;
+      border-radius: 6px;
+      margin: 4px 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2) !important;
+      border-radius: 6px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      }
+      
+      &:active {
+        background: rgba(255, 255, 255, 0.4) !important;
+      }
+    }
+    
+    // Suporte para Firefox
+    scrollbar-width: auto !important;
+    scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.3) !important;
+    
+    // Itens do menu
+    > .item {
+      color: rgba(226, 232, 240, 0.9) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+      padding: 10px 12px !important;
+      transition: all 0.15s ease !important;
+      
+      &:first-child {
+        border-top: none !important;
+      }
+      
+      // Estado hover
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #ffffff !important;
+      }
+      
+      // Item ativo/selecionado
+      &.selected,
+      &.active {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3) inset !important;
+      }
+      
+      // Item desabilitado
+      &.disabled {
+        color: rgba(226, 232, 240, 0.3) !important;
+        opacity: 0.5 !important;
+      }
+    }
+  }
+
   #app {
     background: #202936;
     overflow-x: auto;
