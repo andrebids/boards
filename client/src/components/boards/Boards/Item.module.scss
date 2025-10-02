@@ -32,6 +32,12 @@
     width: 100%;
   }
 
+  .headerContent {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .name {
     color: rgba(255, 255, 255, 0.72);
     display: block;
@@ -41,23 +47,99 @@
     transition: color 200ms cubic-bezier(0.2, 0, 0, 1);
   }
 
-  .notifications {
-    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); // Mudado de vermelho para azul
-    border: none;
-    border-radius: 3px;
+  .notificationBadge {
+    background: #60a5fa;
+    border-radius: 50%;
     color: #fff;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 10px;
-    line-height: 18px;
-    margin-right: 6px;
-    outline: none;
-    padding: 0px 6px;
-    transition: background 0.3s ease;
-    vertical-align: text-bottom;
+    font-weight: 700;
+    height: 18px;
+    width: 18px;
+    line-height: 1;
+    text-align: center;
+    padding: 0 0 2px 0;
+    flex-shrink: 0;
+    position: relative;
+    box-sizing: border-box;
     box-shadow: 
-      0 2px 6px rgba(96, 165, 250, 0.4),
-      0 1px 2px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2); // Adicionado sombra azul
+      0 0 15px rgba(96, 165, 250, 0.7),
+      0 0 30px rgba(96, 165, 250, 0.3),
+      0 2px 6px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    animation: notificationPulse 2s ease-in-out infinite;
+    
+    /* Efeito de brilho mais visível */
+    &::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      background: radial-gradient(circle, 
+        rgba(96, 165, 250, 0.6) 0%, 
+        rgba(147, 197, 253, 0.4) 50%, 
+        rgba(96, 165, 250, 0.2) 100%);
+      border-radius: 50%;
+      z-index: -1;
+      opacity: 0.8;
+      filter: blur(6px);
+      animation: glowPulse 2s ease-in-out infinite;
+    }
+    
+    /* Efeito de ping animado */
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      background: #60a5fa;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: notificationPing 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+      z-index: -2;
+    }
+  }
+
+  @keyframes notificationPulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 
+        0 0 15px rgba(96, 165, 250, 0.7),
+        0 0 30px rgba(96, 165, 250, 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 
+        0 0 20px rgba(96, 165, 250, 0.9),
+        0 0 40px rgba(96, 165, 250, 0.5),
+        0 3px 8px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes notificationPing {
+    75%, 100% {
+      transform: translate(-50%, -50%) scale(1.8);
+      opacity: 0;
+    }
   }
 
   .tab {

@@ -72,12 +72,14 @@ const Item = React.memo(({ id, index }) => {
                   title={board.name}
                   className={styles.link}
                 >
-                  {notificationsTotal > 0 && (
-                    <span className={styles.notifications}>
-                      {notificationsTotal}
-                    </span>
-                  )}
-                  <span className={styles.name}>{board.name}</span>
+                  <div className={styles.headerContent}>
+                    <span className={styles.name}>{board.name}</span>
+                    {notificationsTotal > 0 && (
+                      <span className={styles.notificationBadge}>
+                        {notificationsTotal}
+                      </span>
+                    )}
+                  </div>
                   
                   {board.progressBarEnabled && board.progressBarPercentage !== undefined && (
                     <div className={styles.progressBarContainer}>
