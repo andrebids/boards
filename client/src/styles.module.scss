@@ -163,19 +163,28 @@
         position: fixed !important;
         min-width: 300px !important;
         max-width: 400px !important;
+        max-height: 400px !important;
+        height: auto !important;
+        overflow-y: auto !important;
         isolation: isolate;
-        overflow: hidden;
         
-        // Pseudo-elemento para profundidade
-        &::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 16px;
-          -webkit-backdrop-filter: blur(14px);
-          backdrop-filter: blur(14px);
-          z-index: -1;
-          pointer-events: none;
+        // Scrollbar personalizada
+        &::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        &::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 8px;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
         }
         
         // Animação de entrada suave
@@ -1247,7 +1256,8 @@
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 16px !important;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35) !important;
-  max-height: 250px !important;
+  max-height: 300px !important;
+  height: auto !important;
   overflow-y: auto !important;
   z-index: 10008 !important;
   margin-top: 8px !important;
@@ -1256,15 +1266,23 @@
   min-width: 300px !important;
   max-width: 400px !important;
   
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 16px;
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    z-index: -1;
-    pointer-events: none;
+  // Scrollbar personalizada
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
   }
 }
 

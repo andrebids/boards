@@ -151,6 +151,10 @@ const Add = React.memo(() => {
             control: {
               minHeight: isOpened ? '79px' : '37px',
             },
+            suggestions: {
+              maxHeight: '300px',
+              overflowY: 'auto',
+            },
           }}
           onFocus={handleFieldFocus}
           onChange={handleFieldChange}

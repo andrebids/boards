@@ -130,12 +130,12 @@ const AddCard = React.memo(
           // Verificar se já foi processado
           if (dropdown.dataset.heightFixed === 'true') return;
           
-          // Estilos para garantir visibilidade total
+          // Estilos para garantir visibilidade com scroll
           const styles = {
-            maxHeight: 'none',
+            maxHeight: '400px',
             height: 'auto',
-            overflow: 'visible',
-            overflowY: 'visible',
+            overflowX: 'hidden',
+            overflowY: 'auto',
             position: 'fixed',
             zIndex: '100020',
             minWidth: '300px',
@@ -559,7 +559,8 @@ const AddCard = React.memo(
                   padding: '4px 0', // Adicionado padding vertical
                 },
                 suggestions: {
-                  maxHeight: '80vh', // Forçar altura grande no dropdown
+                  maxHeight: '400px',
+                  height: 'auto',
                   overflowY: 'auto',
                 },
               }}

@@ -142,6 +142,10 @@ const Edit = React.memo(({ commentId, onClose }) => {
             control: {
               minHeight: '79px',
             },
+            suggestions: {
+              maxHeight: '300px',
+              overflowY: 'auto',
+            },
           }}
           onChange={handleFieldChange}
           onKeyDown={handleFieldKeyDown}
