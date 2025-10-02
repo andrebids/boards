@@ -99,17 +99,25 @@ const EditInformation = React.memo(() => {
       {data.progressBarEnabled && (
         <Form.Field className={styles.darkInput}>
           <label>{t('common.progressPercentage')}</label>
-          <Input
-            type="number"
-            min="0"
-            max="100"
-            name="progressBarPercentage"
-            value={data.progressBarPercentage}
-            onChange={handleFieldChange}
-            labelPosition="right"
-            label="%"
-            fluid
-          />
+          <div className={styles.sliderRow}>
+            <input
+              className={styles.slider}
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              name="progressBarPercentage"
+              value={data.progressBarPercentage}
+              onChange={(e) =>
+                handleFieldChange(e, {
+                  type: 'range',
+                  name: 'progressBarPercentage',
+                  value: e.target.value,
+                })
+              }
+            />
+            <div className={styles.sliderValue}>{data.progressBarPercentage}%</div>
+          </div>
         </Form.Field>
       )}
       
