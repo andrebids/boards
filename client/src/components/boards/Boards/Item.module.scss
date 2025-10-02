@@ -183,23 +183,23 @@
     background:
       linear-gradient(
         to top,
-        rgba(255, 255, 255, 0.16) 0%,
-        rgba(255, 255, 255, 0.08) 40%,
+        rgba(255, 255, 255, 0.10) 0%,
+        rgba(255, 255, 255, 0.05) 40%,
         rgba(255, 255, 255, 0) 70%
       ),
-      rgba(0, 0, 0, 0.26);
-    border-color: rgba(255, 255, 255, 0.2);
+      rgba(0, 0, 0, 0.12);
+    border-color: rgba(255, 255, 255, 0.14);
 
     &:hover {
       background:
         linear-gradient(
           to top,
-          rgba(255, 255, 255, 0.2) 0%,
-          rgba(255, 255, 255, 0.1) 40%,
+          rgba(255, 255, 255, 0.12) 0%,
+          rgba(255, 255, 255, 0.06) 40%,
           rgba(255, 255, 255, 0) 70%
         ),
-        rgba(0, 0, 0, 0.3);
-      border-color: rgba(255, 255, 255, 0.24);
+        rgba(0, 0, 0, 0.16);
+      border-color: rgba(255, 255, 255, 0.16);
     }
 
     .name {
