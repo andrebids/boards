@@ -168,7 +168,13 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     default:
+      console.log('Unknown notification type:', notification.type, notification);
       contentNode = null;
+  }
+
+  // Não renderizar notificações sem conteúdo
+  if (!contentNode) {
+    return null;
   }
 
   return (
