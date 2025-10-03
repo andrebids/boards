@@ -156,26 +156,13 @@ const Filters = React.memo(() => {
           onUserSelect={handleUserSelect}
           onUserDeselect={handleUserDeselect}
         >
-          <button type="button" className={styles.filterButton}>
-            <span
-              className={styles.filterTitle}
-            >{`${t('common.members')}:`}</span>
-            {userIds.length === 0 && (
-              <span className={styles.filterLabel}>{t('common.all')}</span>
-            )}
-          </button>
-        </BoardMembershipsPopup>
-        {userIds.length === 0 && withCurrentUserSelector && (
-          <button
-            type="button"
-            className={styles.filterButton}
-            onClick={handleCurrentUserSelect}
-          >
+          <button type="button" className={styles.filterButtonClickable}>
             <span className={styles.filterLabel}>
-              <Icon fitted name="target" className={styles.filterLabelIcon} />
+              {userIds.length === 0 ? t('common.members') : `${t('common.members')} (${userIds.length})`}
+              <Icon name="chevron down" className={styles.dropdownIcon} />
             </span>
           </button>
-        )}
+        </BoardMembershipsPopup>
         {userIds.map(userId => (
           <span key={userId} className={styles.filterItem}>
             <UserAvatar id={userId} size="tiny" onClick={handleUserClick} />
@@ -189,13 +176,11 @@ const Filters = React.memo(() => {
           onSelect={handleLabelSelect}
           onDeselect={handleLabelDeselect}
         >
-          <button type="button" className={styles.filterButton}>
-            <span
-              className={styles.filterTitle}
-            >{`${t('common.labels')}:`}</span>
-            {labelIds.length === 0 && (
-              <span className={styles.filterLabel}>{t('common.all')}</span>
-            )}
+          <button type="button" className={styles.filterButtonClickable}>
+            <span className={styles.filterLabel}>
+              {labelIds.length === 0 ? t('common.labels') : `${t('common.labels')} (${labelIds.length})`}
+              <Icon name="chevron down" className={styles.dropdownIcon} />
+            </span>
           </button>
         </LabelsPopup>
         {labelIds.map(labelId => (

@@ -22,6 +22,28 @@
     }
   }
 
+  .filterButtonClickable {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    outline: none;
+    padding: 0;
+    transition: transform 0.1s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:not(:first-of-type) {
+      margin-left: 6px;
+    }
+  }
+
   .filterItem {
     display: inline-block;
     font-size: 0;
@@ -43,6 +65,12 @@
     &:hover {
       background: rgba(0, 0, 0, 0.32);
     }
+  }
+
+  .dropdownIcon {
+    margin-left: 6px;
+    opacity: 0.8;
+    font-size: 10px;
   }
 
   .filterLabelIcon {
