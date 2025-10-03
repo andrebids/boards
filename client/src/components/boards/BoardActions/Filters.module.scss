@@ -4,6 +4,14 @@
  */
 
 :global(#app) {
+  .filtersLabel {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+
   .filter {
     margin-right: 10px;
     z-index: 1; // Z-index baixo para não sobrepor modais

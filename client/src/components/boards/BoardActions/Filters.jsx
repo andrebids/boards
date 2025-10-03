@@ -149,6 +149,7 @@ const Filters = React.memo(() => {
 
   return (
     <>
+      <span className={styles.filtersLabel}>Filtros:</span>
       <span className={styles.filter}>
         <BoardMembershipsPopup
           currentUserIds={userIds}
