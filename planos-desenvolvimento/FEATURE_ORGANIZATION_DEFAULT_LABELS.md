@@ -2,10 +2,34 @@
 
 ## 📋 Informações do Plano
 **Data:** 02/10/2025  
-**Versão:** 2.0 (Corrigido e Consolidado)  
+**Versão:** 2.1 (Com Pausas e Logs de Debug)  
 **Tempo Estimado:** 5-7 horas  
 **Complexidade:** 🟡 Média  
 **Status:** ✅ Pronto para Implementação
+
+## 🔍 Sistema de Validação e Feedback
+
+**Este plano inclui:**
+- ⏸️ **3 Pausas Estratégicas** para testes incrementais:
+  - **PAUSA 1:** Validar Migration + Model + Query Methods
+  - **PAUSA 2:** Validar Backend Completo (Controllers + Helpers + Hook)
+  - **PAUSA 3:** Validar Frontend Completo (Redux + UI)
+- 🔍 **Logs de Debug** em todos os pontos críticos:
+  - Backend: `console.log` + `sails.log` com prefixos `[MIGRATION]`, `[QM]`, `[CONTROLLER]`, `[HELPER]`, `[HOOK]`
+  - Frontend: `console.log` com prefixos `[SAGA]`, `[ACTION]`, `[REDUCER]`
+- ✅ **Checkpoints de Validação** com comandos curl e verificações visuais
+- 📊 **Logs Esperados** documentados para cada teste
+- 💬 **Pontos de Feedback** antes de avançar para próxima fase
+
+**⚠️ IMPORTANTE:** NÃO remover os logs de console até aprovação final [[memory:9198107]]
+
+**🎯 Fluxo de Implementação:**
+```
+1. Backend: Migration → Model → Query Methods  [PAUSA 1] 
+2. Backend: Controllers → Helpers → Hook       [PAUSA 2]
+3. Frontend: Redux → UI → Testes               [PAUSA 3]
+4. Aprovação Final → Remover Logs
+```
 
 ---
 
@@ -106,6 +130,8 @@ client/src/
  */
 
 exports.up = async (knex) => {
+  console.log('🔵 [MIGRATION] Iniciando criação da tabela organization_default_label...');
+  
   // Criar tabela organization_default_label
   await knex.schema.createTable('organization_default_label', (table) => {
     /* Columns */
@@ -130,17 +156,60 @@ exports.up = async (knex) => {
     { name: 'Precisa Trabalho', color: 'bright-yellow', description: 'Item precisa de mais trabalho', position: 4 },
   ];
 
+  console.log('🔵 [MIGRATION] Inserindo 4 labels padrão (seed)...');
   await knex('organization_default_label').insert(defaultLabels);
+  console.log('✅ [MIGRATION] Migration completa! Tabela + índices + seeds criados.');
 };
 
 exports.down = async (knex) => {
+  console.log('🔴 [MIGRATION] Revertendo: removendo tabela organization_default_label...');
   await knex.schema.dropTableIfExists('organization_default_label');
+  console.log('✅ [MIGRATION] Rollback completo.');
 };
 ```
 
 **⚠️ Nota Importante:** 
 - Cores usam nomes do Planka (`Label.COLORS`), não HEX
 - Nomes das cores: 'berry-red', 'sunny-grass', 'summer-sky', etc.
+
+---
+
+## ⏸️ PAUSA 1: Validar Migration + Model
+
+**📊 O que foi feito até aqui:**
+- ✅ Criada migração `20251002000000_add_organization_default_labels.js`
+- ✅ Tabela `organization_default_label` com 4 seeds
+
+**🔍 Como validar:**
+```bash
+# 1. Correr migration
+cd planka-personalizado/server
+npm run db:migrate
+
+# 2. Verificar logs esperados
+# Deves ver:
+# 🔵 [MIGRATION] Iniciando criação da tabela organization_default_label...
+# 🔵 [MIGRATION] Inserindo 4 labels padrão (seed)...
+# ✅ [MIGRATION] Migration completa! Tabela + índices + seeds criados.
+
+# 3. Verificar na BD (via psql ou docker exec)
+docker exec -it planka-db psql -U planka -d planka -c "SELECT * FROM organization_default_label;"
+
+# 4. Verificar seed data
+# Deves ver: 4 rows com "Aprovado", "Rejeitado", "Em Revisão", "Precisa Trabalho"
+```
+
+**✅ Checklist de Validação:**
+- [ ] Migration executou sem erros
+- [ ] Logs aparecem no console
+- [ ] Tabela existe na BD
+- [ ] 4 labels padrão inseridos
+- [ ] Cores são nomes (não HEX)
+
+**💬 Feedback:** 
+Valida a migration e depois avança para criar o Model.
+
+---
 
 ### 1.2 Modelo Sails.js
 
@@ -213,24 +282,31 @@ module.exports = {
 
 module.exports = {
   getAll: async () => {
+    console.log('🔵 [QM] OrganizationDefaultLabel.getAll()');
     const records = await sails.models.organizationdefaultlabel
       .find()
       .sort('position ASC');
+    console.log(`✅ [QM] Encontrados ${records.length} labels padrão`);
     return records;
   },
 
   getOneById: async (id) => {
+    console.log(`🔵 [QM] OrganizationDefaultLabel.getOneById(${id})`);
     const record = await sails.models.organizationdefaultlabel.findOne({ id });
+    console.log(`✅ [QM] Label ${record ? 'encontrado' : 'não encontrado'}`);
     return record || null;
   },
 
   getOneByName: async (name) => {
+    console.log(`🔵 [QM] OrganizationDefaultLabel.getOneByName("${name}")`);
     const records = await sails.models.organizationdefaultlabel.find();
     const record = records.find(r => r.name.toLowerCase() === name.toLowerCase());
+    console.log(`✅ [QM] Label "${name}" ${record ? 'existe' : 'não existe'}`);
     return record || null;
   },
 
   createOne: async (values) => {
+    console.log('🔵 [QM] OrganizationDefaultLabel.createOne()', values);
     // Validar unicidade (case-insensitive)
     const existing = await module.exports.getOneByName(values.name);
     if (existing) {
@@ -238,12 +314,13 @@ module.exports = {
     }
 
     const record = await sails.models.organizationdefaultlabel.create(values).fetch();
-    
+    console.log(`✅ [QM] Label criado: "${record.name}" (${record.color})`);
     sails.log.info(`[ORG_DEFAULT_LABELS] Created: ${record.name} (${record.color})`);
     return record;
   },
 
   updateOne: async (id, values) => {
+    console.log(`🔵 [QM] OrganizationDefaultLabel.updateOne(${id})`, values);
     // Se mudar nome, validar unicidade
     if (values.name) {
       const existing = await module.exports.getOneByName(values.name);
@@ -257,6 +334,7 @@ module.exports = {
       .set({ ...values, updatedAt: new Date() });
     
     if (record) {
+      console.log(`✅ [QM] Label atualizado: "${record.name}"`);
       sails.log.info(`[ORG_DEFAULT_LABELS] Updated: ${record.name} (ID: ${id})`);
     }
     
@@ -264,9 +342,11 @@ module.exports = {
   },
 
   deleteOne: async (id) => {
+    console.log(`🔵 [QM] OrganizationDefaultLabel.deleteOne(${id})`);
     const record = await sails.models.organizationdefaultlabel.destroyOne({ id });
     
     if (record) {
+      console.log(`✅ [QM] Label eliminado: "${record.name}"`);
       sails.log.info(`[ORG_DEFAULT_LABELS] Deleted: ${record.name} (ID: ${id})`);
     }
     
@@ -274,6 +354,7 @@ module.exports = {
   },
 
   reorder: async (orderArray) => {
+    console.log('🔵 [QM] OrganizationDefaultLabel.reorder()', `${orderArray.length} items`);
     // orderArray: [{ id, position }, ...]
     await sails.getDatastore().transaction(async (db) => {
       for (const item of orderArray) {
@@ -284,6 +365,7 @@ module.exports = {
       }
     });
 
+    console.log(`✅ [QM] ${orderArray.length} labels reordenados`);
     sails.log.info(`[ORG_DEFAULT_LABELS] Reordered ${orderArray.length} labels`);
   },
 };
@@ -339,15 +421,19 @@ module.exports = {
   },
 
   async fn() {
+    console.log('🔵 [CONTROLLER] GET /api/organization-default-labels/list');
     const { currentUser } = this.req;
 
+    console.log(`🔵 [CONTROLLER] User: ${currentUser.name} (${currentUser.email})`);
     // ✅ Corrigido: Usar helper de permissões
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
+      console.log('🔴 [CONTROLLER] Acesso negado: utilizador não é Admin/ProjectOwner');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     const labels = await sails.models.organizationdefaultlabel.qm.getAll();
 
+    console.log(`✅ [CONTROLLER] A retornar ${labels.length} labels`);
     return {
       items: labels,
     };
@@ -408,9 +494,11 @@ module.exports = {
   },
 
   async fn(inputs) {
+    console.log('🔵 [CONTROLLER] POST /api/organization-default-labels/create', inputs);
     const { currentUser } = this.req;
 
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
+      console.log('🔴 [CONTROLLER] Acesso negado');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
@@ -422,6 +510,8 @@ module.exports = {
         position: inputs.position,
       });
 
+      console.log(`✅ [CONTROLLER] Label criado: "${label.name}" (ID: ${label.id})`);
+
       // ✅ Broadcast para admins
       const admins = await User.find({
         or: [
@@ -430,6 +520,7 @@ module.exports = {
         ],
       });
 
+      console.log(`🔵 [CONTROLLER] A fazer broadcast para ${admins.length} admins/owners`);
       admins.forEach((admin) => {
         sails.sockets.broadcast(
           `user:${admin.id}`,
@@ -440,6 +531,7 @@ module.exports = {
 
       return { item: label };
     } catch (error) {
+      console.log('🔴 [CONTROLLER] Erro ao criar label:', error.message);
       if (error.message.includes('already exists')) {
         throw Errors.LABEL_ALREADY_EXISTS;
       }
@@ -509,9 +601,11 @@ module.exports = {
   },
 
   async fn(inputs) {
+    console.log('🔵 [CONTROLLER] PATCH /api/organization-default-labels/update', inputs);
     const { currentUser } = this.req;
 
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
+      console.log('🔴 [CONTROLLER] Acesso negado');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
@@ -525,8 +619,12 @@ module.exports = {
       const label = await sails.models.organizationdefaultlabel.qm.updateOne(inputs.id, values);
 
       if (!label) {
+        console.log(`🔴 [CONTROLLER] Label ${inputs.id} não encontrado`);
         throw Errors.LABEL_NOT_FOUND;
       }
+
+      console.log(`✅ [CONTROLLER] Label ${inputs.id} atualizado`);
+
 
       // Broadcast para admins
       const admins = await User.find({
@@ -734,17 +832,22 @@ module.exports = {
   },
 
   async fn(inputs) {
+    console.log('🔵 [CONTROLLER] POST /api/organization-default-labels/bulk-apply');
+    console.log(`🔵 [CONTROLLER] Projects: ${inputs.projectIds.length}, Mode: ${inputs.overwriteMode}`);
     const { currentUser } = this.req;
 
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
+      console.log('🔴 [CONTROLLER] Acesso negado');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     const defaultLabels = await sails.models.organizationdefaultlabel.qm.getAll();
+    console.log(`🔵 [CONTROLLER] A aplicar ${defaultLabels.length} labels padrão`);
     const results = [];
 
     // Processar cada projeto
     for (const projectId of inputs.projectIds) {
+      console.log(`🔵 [CONTROLLER] Processando project ${projectId}...`);
       try {
         const result = await sails.helpers.organizationDefaultLabels.applyToBoards.with({
           projectId,
@@ -752,12 +855,14 @@ module.exports = {
           overwriteMode: inputs.overwriteMode,
         });
         
+        console.log(`✅ [CONTROLLER] Project ${projectId}: ${result.boardsProcessed} boards, ${result.labelsCreated} labels criados`);
         results.push({
           projectId,
           success: true,
           ...result,
         });
       } catch (error) {
+        console.log(`🔴 [CONTROLLER] Erro no project ${projectId}:`, error.message);
         sails.log.error(`[ORG_DEFAULT_LABELS] Error applying to project ${projectId}:`, error);
         results.push({
           projectId,
@@ -767,6 +872,7 @@ module.exports = {
       }
     }
 
+    console.log(`✅ [CONTROLLER] Bulk apply concluído: ${results.filter(r => r.success).length}/${results.length} projetos`);
     sails.log.info(`[ORG_DEFAULT_LABELS] Bulk apply completed. Processed ${results.length} projects`);
 
     return {
@@ -815,11 +921,14 @@ module.exports = {
 
   async fn(inputs) {
     const { projectId, defaultLabels, overwriteMode } = inputs;
+    console.log(`🔵 [HELPER] applyToBoards: project ${projectId}, mode: ${overwriteMode}`);
 
     // ✅ Buscar BOARDS do projeto (labels pertencem a boards, não projects)
     const boards = await sails.models.board.find({ projectId });
+    console.log(`🔵 [HELPER] Encontrados ${boards.length} boards no project ${projectId}`);
     
     if (boards.length === 0) {
+      console.log(`⚠️ [HELPER] Project ${projectId} não tem boards, a saltar`);
       return {
         boardsProcessed: 0,
         labelsCreated: 0,
@@ -834,12 +943,15 @@ module.exports = {
 
     // Aplicar a cada board do projeto
     for (const board of boards) {
+      console.log(`🔵 [HELPER] A processar board ${board.id} ("${board.name}")...`);
       const result = await applyLabelsToBoard(board.id, defaultLabels, overwriteMode);
+      console.log(`✅ [HELPER] Board ${board.id}: ${result.created} criados, ${result.skipped} saltados, ${result.renamed} renomeados`);
       totalCreated += result.created;
       totalSkipped += result.skipped;
       totalRenamed += result.renamed;
     }
 
+    console.log(`✅ [HELPER] Project ${projectId} completo: ${totalCreated} criados, ${totalSkipped} saltados, ${totalRenamed} renomeados`);
     sails.log.info(
       `[ORG_DEFAULT_LABELS] Applied to project ${projectId}: ` +
       `${totalCreated} created, ${totalSkipped} skipped, ${totalRenamed} renamed`
@@ -931,9 +1043,11 @@ const { board, boardMembership, lists } = await Board.qm.createOne(...);
 // ========================================
 if (process.env.PLANKA_FEATURE_ORG_DEFAULT_LABELS === 'true') {
   try {
+    console.log(`🔵 [HOOK] Novo board criado (${board.id}), a verificar default labels...`);
     const defaultLabels = await sails.models.organizationdefaultlabel.qm.getAll();
     
     if (defaultLabels.length > 0) {
+      console.log(`🔵 [HOOK] A aplicar ${defaultLabels.length} default labels ao board ${board.id}`);
       // Criar labels no novo board
       for (const defaultLabel of defaultLabels) {
         await sails.models.label.create({
@@ -944,14 +1058,20 @@ if (process.env.PLANKA_FEATURE_ORG_DEFAULT_LABELS === 'true') {
         });
       }
       
+      console.log(`✅ [HOOK] ${defaultLabels.length} default labels aplicados ao board ${board.id}`);
       sails.log.info(
         `[ORG_DEFAULT_LABELS] Applied ${defaultLabels.length} default labels to board ${board.id}`
       );
+    } else {
+      console.log(`⚠️ [HOOK] Nenhum default label configurado`);
     }
   } catch (error) {
+    console.log(`🔴 [HOOK] Erro ao aplicar default labels:`, error.message);
     sails.log.error('[ORG_DEFAULT_LABELS] Error applying default labels:', error);
     // Não falhar a criação do board por causa disto
   }
+} else {
+  console.log(`⚠️ [HOOK] Feature PLANKA_FEATURE_ORG_DEFAULT_LABELS desativada`);
 }
 // ========================================
 
@@ -979,47 +1099,79 @@ if (inputs.import && inputs.import.type === Board.ImportTypes.TRELLO) {
 
 ---
 
-## 🔴 PAUSA 1 - Verificação do Backend
+## ⏸️ PAUSA 2: Validar Backend Completo
 
-**Comandos:**
+**📊 O que foi feito até aqui:**
+- ✅ Migration + Model + Query Methods (PAUSA 1)
+- ✅ Controllers (list, create, update, delete, reorder, bulk-apply)
+- ✅ Helper `applyToBoards` + Hook em `boards/create-one.js`
+- ✅ Rotas configuradas
+
+**🔍 Testes de Validação:**
+
+### Teste 1: Listar Labels Padrão (Seeds)
 ```bash
-# 1. Executar migração
-docker exec boards-server npm run db:migrate
-
-# 2. Reiniciar servidor
-docker restart boards-server
-
-# 3. Verificar logs
-docker logs boards-server | grep "ORG_DEFAULT_LABELS"
-
-# 4. Testar API (listar labels)
 curl http://localhost:1337/api/organization-default-labels \
   -H "Authorization: Bearer <ADMIN_TOKEN>"
-
-# 5. Criar novo board e verificar se labels são aplicadas
-# (criar via interface ou API)
+```
+**Logs esperados:**
+```
+🔵 [CONTROLLER] GET /api/organization-default-labels/list
+🔵 [QM] OrganizationDefaultLabel.getAll()
+✅ [QM] Encontrados 4 labels padrão
+✅ [CONTROLLER] A retornar 4 labels
 ```
 
-**Resultado Esperado:**
-```json
-{
-  "items": [
-    {
-      "id": 1,
-      "name": "Aprovado",
-      "color": "sunny-grass",
-      "description": "Item aprovado",
-      "position": 1
-    },
-    // ... mais 3 labels
-  ]
-}
+### Teste 2: Criar Label Novo
+```bash
+curl -X POST http://localhost:1337/api/organization-default-labels \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Urgente", "color": "berry-red", "description": "Item urgente", "position": 5}'
+```
+**Logs esperados:**
+```
+🔵 [CONTROLLER] POST /api/organization-default-labels/create
+🔵 [QM] OrganizationDefaultLabel.createOne()
+✅ [QM] Label criado: "Urgente" (berry-red)
+✅ [CONTROLLER] Label criado: "Urgente" (ID: 5)
 ```
 
-**Checklist:**
-- [ ] Migração executou sem erros
-- [ ] 4 labels padrão criadas
-- [ ] API responde para admin/project owner
+### Teste 3: Criar Board Novo (Aplicação Automática) - **TESTE CRÍTICO**
+```bash
+# Via UI: Projects → Board → "Create Board"
+```
+**Logs esperados:**
+```
+🔵 [HOOK] Novo board criado (ID), a verificar default labels...
+🔵 [QM] OrganizationDefaultLabel.getAll()
+🔵 [HOOK] A aplicar 5 default labels ao board ID
+✅ [HOOK] 5 default labels aplicados ao board ID
+```
+
+### Teste 4: Bulk Apply (Opcional)
+```bash
+curl -X POST http://localhost:1337/api/organization-default-labels/bulk-apply \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"projectIds": [1], "overwriteMode": "skip"}'
+```
+**Logs esperados:**
+```
+🔵 [CONTROLLER] POST /api/organization-default-labels/bulk-apply
+🔵 [HELPER] applyToBoards: project 1, mode: skip
+✅ [CONTROLLER] Bulk apply concluído: 1/1 projetos
+```
+
+**✅ Checklist de Validação:**
+- [ ] Endpoint `list` funciona e mostra logs
+- [ ] Endpoint `create` cria labels com logs corretos
+- [ ] **Criar board novo aplica labels automaticamente** (CRÍTICO!)
+- [ ] Logs aparecem em todos os pontos (QM, CONTROLLER, HELPER, HOOK)
+- [ ] Feature flag `PLANKA_FEATURE_ORG_DEFAULT_LABELS=false` desativa feature
+
+**💬 Feedback:**  
+Confirma que **todos os logs aparecem** e que o **Teste 3 (aplicação automática) funciona**. Depois avança para Frontend.
 - [ ] API retorna 403 para utilizadores normais
 - [ ] Novo board criado recebe as 4 labels automaticamente
 
@@ -1257,61 +1409,74 @@ import actions from '../actions';
 import ActionTypes from '../constants/ActionTypes';
 
 function* fetchOrganizationDefaultLabels() {
+  console.log('🔵 [SAGA] Fetching organization default labels...');
   try {
     const response = yield call(api.fetchOrganizationDefaultLabels);
+    console.log(`✅ [SAGA] Fetched ${response.items.length} organization default labels`);
     yield put(actions.fetchOrganizationDefaultLabels.success(response.items));
   } catch (error) {
+    console.error('🔴 [SAGA] Error fetching organization default labels:', error);
     yield put(actions.fetchOrganizationDefaultLabels.failure(error));
   }
 }
 
 function* createOrganizationDefaultLabel(action) {
+  console.log('🔵 [SAGA] Creating organization default label...', action.payload.data);
   try {
     const response = yield call(api.createOrganizationDefaultLabel, action.payload.data);
+    console.log(`✅ [SAGA] Organization default label created: "${response.item.name}"`);
     yield put(actions.createOrganizationDefaultLabel.success(response.item));
   } catch (error) {
-    console.error('Error creating organization default label:', error);
+    console.error('🔴 [SAGA] Error creating organization default label:', error);
   }
 }
 
 function* updateOrganizationDefaultLabel(action) {
+  console.log('🔵 [SAGA] Updating organization default label...', action.payload);
   try {
     const response = yield call(
       api.updateOrganizationDefaultLabel,
       action.payload.id,
       action.payload.data
     );
+    console.log(`✅ [SAGA] Organization default label updated (ID: ${action.payload.id})`);
     yield put(actions.updateOrganizationDefaultLabel.success(response.item));
   } catch (error) {
-    console.error('Error updating organization default label:', error);
+    console.error('🔴 [SAGA] Error updating organization default label:', error);
   }
 }
 
 function* deleteOrganizationDefaultLabel(action) {
+  console.log(`🔵 [SAGA] Deleting organization default label (ID: ${action.payload.id})...`);
   try {
     const response = yield call(api.deleteOrganizationDefaultLabel, action.payload.id);
+    console.log(`✅ [SAGA] Organization default label deleted (ID: ${action.payload.id})`);
     yield put(actions.deleteOrganizationDefaultLabel.success(response.item));
   } catch (error) {
-    console.error('Error deleting organization default label:', error);
+    console.error('🔴 [SAGA] Error deleting organization default label:', error);
   }
 }
 
 function* reorderOrganizationDefaultLabels(action) {
+  console.log('🔵 [SAGA] Reordering organization default labels...', `${action.payload.order.length} items`);
   try {
     const response = yield call(api.reorderOrganizationDefaultLabels, action.payload.order);
+    console.log(`✅ [SAGA] Labels reordered successfully`);
     yield put(actions.reorderOrganizationDefaultLabels.success(response.items));
   } catch (error) {
-    console.error('Error reordering organization default labels:', error);
+    console.error('🔴 [SAGA] Error reordering organization default labels:', error);
   }
 }
 
 function* bulkApplyOrganizationDefaultLabels(action) {
+  console.log('🔵 [SAGA] Bulk applying organization default labels...', action.payload);
   try {
     const response = yield call(
       api.bulkApplyOrganizationDefaultLabels,
       action.payload.projectIds,
       action.payload.overwriteMode
     );
+    console.log(`✅ [SAGA] Bulk apply completed: ${response.summary.successful}/${response.summary.total} projects successful`);
     yield put(
       actions.bulkApplyOrganizationDefaultLabels.success(
         response.results,
@@ -1319,7 +1484,7 @@ function* bulkApplyOrganizationDefaultLabels(action) {
       )
     );
   } catch (error) {
-    console.error('Error bulk applying organization default labels:', error);
+    console.error('🔴 [SAGA] Error bulk applying organization default labels:', error);
   }
 }
 
@@ -2021,51 +2186,112 @@ optional: 'optional',
 
 ---
 
-## 🟢 PAUSA 2 - Verificação do Frontend
+## ⏸️ PAUSA 3: Validar Frontend Completo
 
-**Testes Manuais:**
+**📊 O que foi feito até aqui:**
+- ✅ Backend completo e testado (PAUSA 1 + 2)
+- ✅ Redux actions, selectors, sagas
+- ✅ Componentes UI (DefaultLabelsPane, BulkApplyModal, etc.)
+- ✅ Tab no AdministrationModal
 
-1. **Aceder ao Modal:**
-   - Login como ADMIN ou PROJECT_OWNER
-   - Clicar no botão de administração no header
-   - Verificar que tab "Etiquetas Padrão" aparece
-   - Clicar na tab
+**🔍 Testes de Validação:**
 
-2. **CRUD de Etiquetas:**
-   - Clicar "Adicionar Etiqueta"
-   - Preencher nome, escolher cor (dropdown com cores do Planka)
-   - Verificar que etiqueta aparece na lista
-   - Editar etiqueta (mudar cor)
-   - Reordenar etiquetas (drag & drop)
-   - Eliminar etiqueta
+### Teste 1: Abrir Tab "Etiquetas Padrão"
+**Passos:**
+1. Login como ADMIN ou PROJECT_OWNER
+2. Clicar no botão de administração no header
+3. Verificar que tab "Etiquetas Padrão" aparece
+4. Clicar na tab
 
-3. **Criar Novo Board:**
-   - Criar um novo board
-   - Abrir board
-   - Verificar que as 4 etiquetas padrão foram aplicadas automaticamente
+**Logs esperados (Browser Console - F12):**
+```
+🔵 [SAGA] Fetching organization default labels...
+🔵 [ACTION] ORGANIZATION_DEFAULT_LABELS_FETCH_REQUESTED
+✅ [SAGA] Fetched 4 organization default labels
+```
 
-4. **Bulk Apply:**
-   - Voltar ao modal de administração
-   - Clicar "Aplicar a Projetos Existentes"
-   - Selecionar alguns projetos
-   - Escolher modo "Ignorar etiquetas duplicadas"
-   - Confirmar
-   - Verificar que labels foram adicionadas aos boards dos projetos
+### Teste 2: Criar Etiqueta Nova
+**Passos:**
+1. Clicar "Adicionar Etiqueta"
+2. Preencher: Nome="Bloqueado", Cor="berry-red", Descrição="Item bloqueado"
+3. Clicar "Salvar"
 
-5. **Permissões:**
-   - Login como utilizador normal (não admin nem project owner)
-   - Verificar que botão de administração NÃO aparece
+**Logs esperados (Browser Console):**
+```
+🔵 [SAGA] Creating organization default label...
+🔵 [ACTION] ORGANIZATION_DEFAULT_LABEL_CREATE_REQUESTED
+✅ [SAGA] Organization default label created: "Bloqueado"
+✅ [REDUCER] Label added to state (ID: X)
+```
 
-**Checklist:**
+### Teste 3: Criar Board Novo e Verificar Labels
+**Passos:**
+1. Ir a Projects → qualquer projeto
+2. Criar novo board: "Test Board"
+3. Abrir board
+4. Verificar que aparecem **5 etiquetas** (4 seeds + "Bloqueado")
+
+**Logs esperados (Backend - docker logs):**
+```
+🔵 [HOOK] Novo board criado (ID), a verificar default labels...
+🔵 [HOOK] A aplicar 5 default labels ao board ID
+✅ [HOOK] 5 default labels aplicados ao board ID
+```
+
+### Teste 4: Bulk Apply
+**Passos:**
+1. Voltar ao modal de administração → tab "Etiquetas Padrão"
+2. Clicar "Aplicar a Projetos Existentes"
+3. Selecionar 1 projeto
+4. Escolher modo "Ignorar etiquetas duplicadas"
+5. Clicar "Aplicar"
+
+**Logs esperados (Browser Console):**
+```
+🔵 [SAGA] Bulk applying organization default labels...
+🔵 [ACTION] ORGANIZATION_DEFAULT_LABELS_BULK_APPLY_REQUESTED
+✅ [SAGA] Bulk apply completed: 1/1 projects successful
+```
+
+**Logs esperados (Backend):**
+```
+🔵 [CONTROLLER] POST /api/organization-default-labels/bulk-apply
+🔵 [HELPER] applyToBoards: project 1, mode: skip
+✅ [CONTROLLER] Bulk apply concluído: 1/1 projetos
+```
+
+### Teste 5: Drag & Drop (Reordenar)
+**Passos:**
+1. Na lista de etiquetas, arrastar "Bloqueado" para primeira posição
+
+**Logs esperados (Browser Console):**
+```
+🔵 [SAGA] Reordering organization default labels...
+🔵 [ACTION] ORGANIZATION_DEFAULT_LABELS_REORDER_REQUESTED
+✅ [SAGA] Labels reordered successfully
+```
+
+### Teste 6: Permissões (Utilizador Normal)
+**Passos:**
+1. Logout
+2. Login como utilizador normal (não admin nem project owner)
+3. Verificar que botão de administração **NÃO aparece** no header
+
+**✅ Checklist de Validação:**
 - [ ] Tab "Etiquetas Padrão" aparece no AdministrationModal
-- [ ] Dropdown de cores mostra cores do Planka (não HEX)
-- [ ] Criar etiqueta funciona
+- [ ] Dropdown de cores mostra cores do Planka (não HEX livre)
+- [ ] Criar etiqueta funciona + logs aparecem (browser + backend)
 - [ ] Editar etiqueta funciona
-- [ ] Drag & drop funciona
+- [ ] Drag & drop funciona + logs aparecem
 - [ ] Eliminar etiqueta funciona
-- [ ] Novos boards recebem labels automaticamente
-- [ ] Bulk apply funciona
+- [ ] **Novos boards recebem labels automaticamente** (CRÍTICO!)
+- [ ] Bulk apply funciona + logs aparecem (browser + backend)
 - [ ] Utilizadores não-admin não têm acesso
+- [ ] Todos os logs aparecem no browser console (F12)
+- [ ] Todos os logs aparecem no backend (`docker logs boards-server | tail -50`)
+
+**💬 Feedback:**  
+Testa **todos os 6 cenários** e confirma que os logs aparecem no browser E no backend. O Teste 3 é crítico!
 
 ---
 
