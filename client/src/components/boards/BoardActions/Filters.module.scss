@@ -48,9 +48,14 @@
     display: inline-block;
     font-size: 0;
     line-height: 0;
-    margin-right: 4px;
+    margin-left: -6px;
+    margin-right: 0;
     max-width: 190px;
     vertical-align: top;
+    
+    &:first-of-type {
+      margin-left: 8px;
+    }
   }
 
   .filterLabel {
