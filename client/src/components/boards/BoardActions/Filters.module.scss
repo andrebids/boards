@@ -111,7 +111,19 @@
     }
 
     input {
+      color: rgba(255, 255, 255, 0.5) !important;
       font-size: 13px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    i.icon {
+      color: rgba(255, 255, 255, 0.7) !important;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
     }
   }
 
