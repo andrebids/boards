@@ -309,7 +309,7 @@ export default {
       areYouSureYouWantToDeleteThisBackgroundImage:
         'Tem certeza de que deseja excluir esta imagem de fundo?',
       areYouSureYouWantToDeleteThisBoard:
-        'Tem certeza de que deseja excluir este quadro?',
+        'Tem certeza de que deseja apagar este quadro?',
       areYouSureYouWantToDeleteThisCard:
         'Tem certeza de que deseja excluir este cartão?',
       areYouSureYouWantToDeleteThisCardForever:
@@ -327,7 +327,7 @@ export default {
       areYouSureYouWantToDeleteThisNotificationService:
         'Tem certeza de que deseja excluir este serviço de notificação?',
       areYouSureYouWantToDeleteThisProject:
-        'Tem certeza de que deseja excluir este projeto?',
+        'Tem certeza de que deseja apagar este projeto?',
       areYouSureYouWantToDeleteThisTask:
         'Tem certeza de que deseja excluir esta tarefa?',
       areYouSureYouWantToDeleteThisTaskList:
@@ -408,10 +408,10 @@ export default {
       defaultCardType_title: 'Tipo de Cartão Padrão',
       defaultView_title: 'Vista Padrão',
       deleteAllBoardsToBeAbleToDeleteThisProject:
-        'Elimine todos os quadros para poder eliminar este projeto',
+        'Elimine todos os quadros para poder apagar este projeto',
       deleteAttachment_title: 'Excluir Anexo',
       deleteBackgroundImage_title: 'Excluir Imagem de Fundo',
-      deleteBoard_title: 'Excluir Quadro',
+      deleteBoard_title: 'Apagar Quadro',
       deleteCardForever_title: 'Excluir Cartão Permanentemente',
       deleteCard_title: 'Excluir Cartão',
       deleteComment_title: 'Excluir Comentário',
@@ -420,7 +420,7 @@ export default {
       deleteLabel_title: 'Excluir Rótulo',
       deleteList_title: 'Excluir Lista',
       deleteNotificationService_title: 'Excluir Serviço de Notificação',
-      deleteProject_title: 'Excluir Projeto',
+      deleteProject_title: 'Apagar Projeto',
       deleteTaskList_title: 'Excluir Lista de Tarefas',
       deleteTask_title: 'Excluir Tarefa',
       deleteUser_title: 'Eliminar Utilizador',
@@ -758,8 +758,8 @@ export default {
       deleteAttachment: 'Excluir anexo',
       deleteAvatar: 'Excluir avatar',
       deleteBackgroundImage: 'Excluir imagem de fundo',
-      deleteBoard: 'Excluir quadro',
-      deleteBoard_title: 'Excluir Quadro',
+      deleteBoard: 'Apagar quadro',
+      deleteBoard_title: 'Apagar Quadro',
       deleteCard: 'Excluir cartão',
       deleteCardForever: 'Excluir cartão permanentemente',
       deleteCard_title: 'Excluir Cartão',
@@ -772,8 +772,8 @@ export default {
       deleteList: 'Excluir lista',
       deleteList_title: 'Excluir lista',
       deleteNotificationService: 'Excluir serviço de notificação',
-      deleteProject: 'Excluir projeto',
-      deleteProject_title: 'Excluir Projeto',
+      deleteProject: 'Apagar projeto',
+      deleteProject_title: 'Apagar Projeto',
       deleteTask: 'Excluir tarefa',
       deleteTaskList: 'Excluir lista de tarefas',
       deleteTask_title: 'Excluir Tarefa',

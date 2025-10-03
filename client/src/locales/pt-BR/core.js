@@ -33,7 +33,7 @@ export default {
       areYouSureYouWantToDeleteThisAttachment:
         'Tem certeza de que deseja excluir este anexo?',
       areYouSureYouWantToDeleteThisBoard:
-        'Tem certeza de que deseja excluir este quadro?',
+        'Tem certeza de que deseja apagar este quadro?',
       areYouSureYouWantToDeleteThisCard:
         'Tem certeza de que deseja excluir este cartão?',
       areYouSureYouWantToDeleteThisComment:
@@ -43,7 +43,7 @@ export default {
       areYouSureYouWantToDeleteThisList:
         'Tem certeza de que deseja excluir esta lista?',
       areYouSureYouWantToDeleteThisProject:
-        'Tem certeza de que deseja excluir este projeto?',
+        'Tem certeza de que deseja apagar este projeto?',
       areYouSureYouWantToDeleteThisTask:
         'Tem certeza de que deseja excluir esta tarefa?',
       areYouSureYouWantToDeleteThisUser:
@@ -77,12 +77,12 @@ export default {
       dangerZone_title: 'Zona de Perigo',
       date: 'Data',
       deleteAttachment_title: 'Excluir Anexo',
-      deleteBoard_title: 'Excluir Quadro',
+      deleteBoard_title: 'Apagar Quadro',
       deleteCard_title: 'Excluir Cartão',
       deleteComment_title: 'Excluir Comentário',
       deleteLabel_title: 'Excluir Rótulo',
       deleteList_title: 'Excluir Lista',
-      deleteProject_title: 'Excluir Projeto',
+      deleteProject_title: 'Apagar Projeto',
       deleteTask_title: 'Excluir Tarefa',
       deleteUser_title: 'Excluir Usuário',
       description: 'Descrição',
@@ -214,15 +214,15 @@ export default {
       delete: 'Excluir',
       deleteAttachment: 'Excluir anexo',
       deleteAvatar: 'Excluir avatar',
-      deleteBoard: 'Excluir quadro',
+      deleteBoard: 'Apagar quadro',
       deleteCard: 'Excluir cartão',
       deleteCard_title: 'Excluir Cartão',
       deleteComment: 'Excluir comentário',
       deleteLabel: 'Excluir rótulo',
       deleteList: 'Excluir lista',
       deleteList_title: 'Excluir Lista',
-      deleteProject: 'Excluir projeto',
-      deleteProject_title: 'Excluir Projeto',
+      deleteProject: 'Apagar projeto',
+      deleteProject_title: 'Apagar Projeto',
       deleteTask: 'Excluir tarefa',
       deleteTask_title: 'Excluir Tarefa',
       deleteUser: 'Excluir usuário',
