@@ -1,0 +1,310 @@
+/* Selecionar o modal Semantic UI com a classe label-form-modal */
+:global(.ui.modal.glass.label-form-modal) {
+  max-width: 420px !important;
+  /* Aplicar liquid glass ao modal inteiro */
+  background: rgba(14, 17, 23, 0.75) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55) !important;
+  overflow: hidden !important;
+}
+
+:global(.ui.modal.glass.label-form-modal) > :global(.header) {
+  /* integrar o header no painel vidro - remover fundo próprio */
+  background: transparent !important;
+  color: #ffffff !important;
+  border-bottom: none !important;
+  padding: 24px 24px 8px 24px !important;
+  font-size: 1.25em !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
+  /* Remover border-radius do header já que o modal pai tem */
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  margin: 0 !important;
+}
+
+:global(.ui.modal.glass.label-form-modal) > :global(.content) {
+  padding: 16px 24px 24px 24px !important;
+  /* Remover estilos próprios - herdar do modal pai */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  /* remover todos os border-radius */
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+:global(.ui.modal.glass.label-form-modal) > :global(.actions) {
+  /* remover fundo próprio - herdar do modal pai */
+  background: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 16px 24px !important;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  /* Remover border-radius já que o modal pai cuida disso */
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.field {
+  margin-bottom: 18px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.label {
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  font-size: 0.95em;
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.input {
+  :global(input) {
+    /* Liquid glass effect para o input */
+    background: rgba(22, 28, 39, 0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 13px 16px !important;
+    font-size: 0.98em !important;
+    font-weight: 400 !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 
+      inset 0 1px 2px rgba(0, 0, 0, 0.1),
+      0 2px 6px rgba(0, 0, 0, 0.12) !important;
+    letter-spacing: 0.01em;
+
+    &:hover {
+      background: rgba(22, 28, 39, 0.7) !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.1),
+        0 3px 10px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    &:focus {
+      background: rgba(22, 28, 39, 0.8) !important;
+      border-color: rgba(59, 130, 246, 0.6) !important;
+      box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.1),
+        0 0 0 3px rgba(59, 130, 246, 0.15),
+        0 4px 14px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+    }
+
+    &::placeholder {
+      color: rgba(230, 237, 243, 0.4) !important;
+      font-weight: 300 !important;
+    }
+  }
+}
+
+/* Seletor adicional para garantir que funciona com Semantic UI */
+:global(.ui.modal.glass.label-form-modal) {
+  :global(.ui.input > input) {
+    background: rgba(22, 28, 39, 0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 13px 16px !important;
+    font-size: 0.98em !important;
+    font-weight: 400 !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 
+      inset 0 1px 2px rgba(0, 0, 0, 0.1),
+      0 2px 6px rgba(0, 0, 0, 0.12) !important;
+    letter-spacing: 0.01em;
+
+    &:hover {
+      background: rgba(22, 28, 39, 0.7) !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.1),
+        0 3px 10px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    &:focus {
+      background: rgba(22, 28, 39, 0.8) !important;
+      border-color: rgba(59, 130, 246, 0.6) !important;
+      box-shadow: 
+        inset 0 1px 2px rgba(0, 0, 0, 0.1),
+        0 0 0 3px rgba(59, 130, 246, 0.15),
+        0 4px 14px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+    }
+
+    &::placeholder {
+      color: rgba(230, 237, 243, 0.4) !important;
+      font-weight: 300 !important;
+    }
+  }
+}
+
+.error {
+  color: #fca5a5;
+  font-size: 0.88em;
+  margin-top: 6px;
+  font-weight: 500;
+  padding: 8px 12px;
+  background: rgba(220, 38, 38, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.1);
+  letter-spacing: 0.01em;
+}
+
+.colorPreviewBox {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  letter-spacing: 0.05em;
+}
+
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.colorButton {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+
+  &:hover {
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.38);
+    z-index: 10;
+  }
+
+  &:active {
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  &.selected {
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    transform: scale(1.08);
+    z-index: 20;
+
+    /* anel glass com brilho e distorção sutil */
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: inherit;
+      background: radial-gradient(
+        circle at 50% 50%,
+        rgba(255, 255, 255, 0.45) 0%,
+        rgba(59, 130, 246, 0.35) 50%,
+        rgba(59, 130, 246, 0.0) 70%
+      );
+      filter: blur(6px);
+      pointer-events: none;
+      opacity: 0.85;
+      animation: glassPulse 1.4s ease-in-out infinite;
+    }
+
+    /* checkmark clássico com leve transparência */
+    &::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 1.2em;
+      font-weight: 700;
+      /* menos gaussian/glow para um look mais clean */
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 3px rgba(255, 255, 255, 0.15);
+    }
+
+    /* auréola externa sutil */
+    box-shadow:
+      0 0 0 4px rgba(59, 130, 246, 0.28),
+      0 10px 18px rgba(0, 0, 0, 0.38);
+  }
+}
+
+@keyframes glassPulse {
+  0%, 100% { opacity: 0.65; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.03); }
+}
+
+.cancelButton {
+  background: rgba(55, 65, 81, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: rgba(230, 237, 243, 0.9) !important;
+  backdrop-filter: blur(8px);
+  border-radius: 8px !important;
+  padding: 11px 24px !important;
+  transition: all 0.2s ease;
+  font-weight: 500 !important;
+  font-size: 0.98em !important;
+
+  &:hover {
+    background: rgba(75, 85, 99, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    transform: translateY(-1px);
+  }
+}
+
+.submitButton {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.75), rgba(37, 99, 235, 0.85)) !important;
+  border: 1px solid rgba(59, 130, 246, 0.6) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(8px);
+  border-radius: 8px !important;
+  padding: 11px 28px !important;
+  transition: all 0.2s ease;
+  font-weight: 500 !important;
+  font-size: 0.98em !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25) !important;
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 1)) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4) !important;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}

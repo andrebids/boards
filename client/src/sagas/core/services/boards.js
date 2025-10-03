@@ -11,7 +11,7 @@ import request from '../request';
 import selectors from '../../../selectors';
 import actions from '../../../actions';
 import api from '../../../api';
-import { createLocalId } from '../../../utils/local-id';
+import { createLocalId, isLocalId } from '../../../utils/local-id';
 import ActionTypes from '../../../constants/ActionTypes';
 import ModalTypes from '../../../constants/ModalTypes';
 
@@ -89,6 +89,12 @@ export function* handleBoardCreate(board, boardMemberships, requestId) {
 }
 
 export function* fetchBoard(id) {
+  // Não tentar fazer fetch de IDs locais
+  if (isLocalId(id)) {
+    console.warn(`⚠️ [fetchBoard] Ignorando fetch de ID local: ${id}`);
+    return;
+  }
+
   yield put(actions.fetchBoard(id));
 
   let board;
@@ -154,6 +160,12 @@ export function* fetchBoard(id) {
 }
 
 export function* updateBoard(id, data) {
+  // Não tentar fazer update de IDs locais
+  if (isLocalId(id)) {
+    console.warn(`⚠️ [updateBoard] Ignorando update de ID local: ${id}`);
+    return;
+  }
+
   yield put(actions.updateBoard(id, data));
 
   let board;
@@ -178,6 +190,12 @@ export function* handleBoardUpdate(board) {
 }
 
 export function* moveBoard(id, index) {
+  // Não tentar mover boards com IDs locais
+  if (isLocalId(id)) {
+    console.warn(`⚠️ [moveBoard] Ignorando move de ID local: ${id}`);
+    return;
+  }
+
   const { projectId } = yield select(selectors.selectBoardById, id);
   const position = yield select(
     selectors.selectNextBoardPosition,

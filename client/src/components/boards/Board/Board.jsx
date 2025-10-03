@@ -37,6 +37,7 @@ const Board = React.memo(() => {
 
         break;
       default:
+        Content = KanbanContent; // Fallback para Kanban
     }
   }
 
@@ -51,6 +52,12 @@ const Board = React.memo(() => {
         break;
       default:
     }
+  }
+
+  // Verificar se Content está definido antes de renderizar
+  if (!Content) {
+    console.error('Board Content component is undefined', { board, view: board.view, context: board.context });
+    return null;
   }
 
   return (

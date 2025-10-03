@@ -179,6 +179,14 @@ module.exports.routes = {
   'POST /api/notification-services/:id/test': 'notification-services/test',
   'DELETE /api/notification-services/:id': 'notification-services/delete',
 
+  // Organization Default Labels (Admin/ProjectOwner only)
+  'GET /api/organization-default-labels': 'organization-default-labels/list',
+  'POST /api/organization-default-labels': 'organization-default-labels/create',
+  'PATCH /api/organization-default-labels/:id': 'organization-default-labels/update',
+  'DELETE /api/organization-default-labels/:id': 'organization-default-labels/delete',
+  'POST /api/organization-default-labels/reorder': 'organization-default-labels/reorder',
+  'POST /api/organization-default-labels/bulk-apply': 'organization-default-labels/bulk-apply',
+
   'GET /preloaded-favicons/*': {
     fn: staticDirServer('/preloaded-favicons', () =>
       path.join(

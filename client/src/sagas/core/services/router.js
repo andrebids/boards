@@ -12,6 +12,7 @@ import selectors from '../../../selectors';
 import actions from '../../../actions';
 import api from '../../../api';
 import { getAccessToken } from '../../../utils/access-token-storage';
+import { isLocalId } from '../../../utils/local-id';
 import mergeRecords from '../../../utils/merge-records';
 import ActionTypes from '../../../constants/ActionTypes';
 import Paths from '../../../constants/Paths';
@@ -116,7 +117,8 @@ export function* handleLocationChange() {
       if (currentBoard) {
         ({ id: currentBoardId } = currentBoard);
 
-        if (currentBoard.isFetching === null) {
+        // Não tentar fazer fetch se o board tem ID local (ainda não foi persistido)
+        if (currentBoard.isFetching === null && !isLocalId(currentBoard.id)) {
           yield put(actions.handleLocationChange.fetchBoard(currentBoard.id));
 
           try {

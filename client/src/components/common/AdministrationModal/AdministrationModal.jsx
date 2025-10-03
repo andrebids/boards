@@ -12,6 +12,7 @@ import { Modal, Tab } from 'semantic-ui-react';
 import entryActions from '../../../entry-actions';
 import { useClosableModal } from '../../../hooks';
 import UsersPane from './UsersPane';
+import DefaultLabelsPane from './DefaultLabelsPane';
 
 import styles from './AdministrationModal.module.scss';
 
@@ -37,14 +38,19 @@ const AdministrationModal = React.memo(() => {
       }),
       render: () => <UsersPane />,
     },
+    {
+      menuItem: t('common.defaultLabels', 'Etiquetas Padrão'),
+      render: () => <DefaultLabelsPane />,
+    },
   ];
 
   const isUsersPaneActive = activeTabIndex === 0;
+  const isDefaultLabelsActive = activeTabIndex === 1;
 
   return (
     <ClosableModal
       closeIcon
-      size={isUsersPaneActive ? 'large' : 'small'}
+      size={isUsersPaneActive || isDefaultLabelsActive ? 'large' : 'small'}
       centered={false}
       className={classNames(isUsersPaneActive && styles.wrapperUsers)}
       onClose={handleClose}

@@ -84,6 +84,39 @@ module.exports = {
       },
     );
 
+    // ========================================
+    // APLICAR DEFAULT LABELS (Feature)
+    // ========================================
+    try {
+      console.log(`🔵 [HOOK] Novo board criado (${board.id}), a verificar default labels...`);
+      const defaultLabels = await sails.models.organizationdefaultlabel.qm.getAll();
+      
+      if (defaultLabels.length > 0) {
+        console.log(`🔵 [HOOK] A aplicar ${defaultLabels.length} default labels ao board ${board.id}`);
+        // Criar labels no novo board
+        for (const defaultLabel of defaultLabels) {
+          await sails.models.label.create({
+            boardId: board.id,
+            name: defaultLabel.name,
+            color: defaultLabel.color,
+            position: defaultLabel.position,
+          });
+        }
+        
+        console.log(`✅ [HOOK] ${defaultLabels.length} default labels aplicados ao board ${board.id}`);
+        sails.log.info(
+          `[ORG_DEFAULT_LABELS] Applied ${defaultLabels.length} default labels to board ${board.id}`
+        );
+      } else {
+        console.log(`⚠️ [HOOK] Nenhum default label configurado`);
+      }
+    } catch (error) {
+      console.log(`🔴 [HOOK] Erro ao aplicar default labels:`, error.message);
+      sails.log.error('[ORG_DEFAULT_LABELS] Error applying default labels:', error);
+      // Não falhar a criação do board por causa disto
+    }
+    // ========================================
+
     if (inputs.import && inputs.import.type === Board.ImportTypes.TRELLO) {
       await sails.helpers.boards.importFromTrello(board, lists, inputs.import.board);
     }

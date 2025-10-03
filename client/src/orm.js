@@ -21,6 +21,7 @@ import {
   List,
   Notification,
   NotificationService,
+  OrganizationDefaultLabel,
   Project,
   ProjectManager,
   Task,
@@ -52,7 +53,8 @@ orm.register(
   Comment,
   Activity,
   Notification,
-  NotificationService
+  NotificationService,
+  OrganizationDefaultLabel
 );
 
 export default orm;

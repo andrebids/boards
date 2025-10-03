@@ -23,6 +23,7 @@ import Comment from './Comment';
 import Activity from './Activity';
 import Notification from './Notification';
 import NotificationService from './NotificationService';
+import OrganizationDefaultLabel from './OrganizationDefaultLabel';
 
 export {
   User,
@@ -45,4 +46,5 @@ export {
   Activity,
   Notification,
   NotificationService,
+  OrganizationDefaultLabel,
 };
