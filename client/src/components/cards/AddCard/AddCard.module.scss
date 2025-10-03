@@ -291,48 +291,6 @@
     z-index: 2;
     position: relative;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 8px;
-    padding: 2px;
-    
-    // Hover effects
-    &:hover {
-      transform: scale(1.05) translateY(-2px);
-      filter: brightness(1.1);
-      
-      // Subtle glow effect
-      &::after {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: rgba(239, 68, 68, 0.2);
-        border-radius: 10px;
-        z-index: -1;
-        animation: glowPulse 0.3s ease-out;
-      }
-    }
-    
-    &:active {
-      transform: scale(0.98);
-    }
-  }
-  
-  @keyframes glowPulse {
-    0% {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.02);
-    }
-    100% {
-      opacity: 0.7;
-      transform: scale(1);
-    }
   }
 
   @keyframes slideInFade {
@@ -371,10 +329,25 @@
     margin-bottom: 8px;
     display: flex;
     flex-direction: row-reverse;
-    gap: 4px;
+    gap: 0;
     
     // Smooth container animation
     animation: previewContainerSlideIn 0.4s ease-out;
+    
+    // Sobreposição dos avatares (todos devem sobrepor)
+    .previewAttachmentRight {
+      margin-left: -4px; // Menos sobreposição = mais espaço visível entre avatares
+      position: relative;
+      
+      // Z-index invertido: primeiro filho (último adicionado, mais à direita) tem maior z-index
+      // Isto faz com que o avatar da direita fique por cima dos outros, como no ProjectContent
+      &:nth-child(1) { z-index: 10; }
+      &:nth-child(2) { z-index: 9; }
+      &:nth-child(3) { z-index: 8; }
+      &:nth-child(4) { z-index: 7; }
+      &:nth-child(5) { z-index: 6; }
+      &:nth-child(n+6) { z-index: 5; }
+    }
   }
 
   .previewLabels {
@@ -419,11 +392,37 @@
     padding: 2px 0;
     border-radius: 6px;
     transition: all 0.15s ease;
-    
-    // Hover effect removido - usar apenas animação
+    position: relative;
     
     // Smooth entry animation
     animation: suggestionSlideIn 0.2s ease-out;
+  }
+  
+  .suggestionText {
+    flex: 1;
+    min-width: 0; // Permite truncar texto se necessário
+  }
+  
+  .suggestionCheck {
+    color: #10b981 !important; // Verde para indicar sucesso
+    margin-left: auto;
+    flex-shrink: 0;
+    animation: checkmarkBounce 0.3s ease-out;
+    font-weight: bold;
+  }
+  
+  @keyframes checkmarkBounce {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) rotate(-45deg);
+    }
+    50% {
+      transform: scale(1.2) rotate(5deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
   }
   
   @keyframes suggestionSlideIn {

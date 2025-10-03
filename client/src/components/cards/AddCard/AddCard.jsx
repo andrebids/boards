@@ -64,6 +64,7 @@ const AddCard = React.memo(
     // Estados para mentions (utilizadores e etiquetas a adicionar)
     const [usersToAdd, setUsersToAdd] = useState([]);
     const [labelsToAdd, setLabelsToAdd] = useState([]);
+    const [keepMentionOpen, setKeepMentionOpen] = useState(false);
 
     // Preparação de dados para mentions usando useMemo para otimização
     const usersData = useMemo(() => {
@@ -102,8 +103,16 @@ const AddCard = React.memo(
 
     // Callbacks para mentions
     const handleUserAdd = useCallback((id, display, startPos, endPos) => {
-      // Adicionar utilizador ao array (evitar duplicatas)
-      setUsersToAdd(prev => prev.includes(id) ? prev : [...prev, id]);
+      // Se o utilizador já está adicionado, remover; caso contrário, adicionar
+      setUsersToAdd(prev => {
+        if (prev.includes(id)) {
+          // Remover se já existe
+          return prev.filter(userId => userId !== id);
+        } else {
+          // Adicionar se não existe
+          return [...prev, id];
+        }
+      });
       
       // Limpar texto da menção do campo
       const currentValue = data.name || '';
@@ -117,7 +126,31 @@ const AddCard = React.memo(
         name: newValue.trim()
       }));
       
+      // Marcar que queremos manter o mention aberto
+      setKeepMentionOpen(true);
+      
     }, [data.name, setData]);
+
+    // Efeito para reabrir o dropdown após adicionar um utilizador
+    useEffect(() => {
+      if (keepMentionOpen && isOpened) {
+        setTimeout(() => {
+          setData(prevData => ({
+            ...prevData,
+            name: (prevData.name || '').trim() + (prevData.name && prevData.name.trim() ? ' @' : '@')
+          }));
+          
+          setKeepMentionOpen(false);
+          
+          // Focus no input
+          setTimeout(() => {
+            if (nameInputRef.current) {
+              nameInputRef.current.focus();
+            }
+          }, 100);
+        }, 100);
+      }
+    }, [keepMentionOpen, isOpened, setData]);
 
     // Força remoção de limitações de altura no dropdown (apenas quando necessário)
     useEffect(() => {
@@ -198,8 +231,16 @@ const AddCard = React.memo(
         return;
       }
       
-      // Adicionar label ao array (evitar duplicatas)
-      setLabelsToAdd(prev => prev.includes(id) ? prev : [...prev, id]);
+      // Se a label já está adicionada, remover; caso contrário, adicionar
+      setLabelsToAdd(prev => {
+        if (prev.includes(id)) {
+          // Remover se já existe
+          return prev.filter(labelId => labelId !== id);
+        } else {
+          // Adicionar se não existe
+          return [...prev, id];
+        }
+      });
       
       // Limpar texto da menção do campo
       const currentValue = data.name || '';
@@ -213,17 +254,27 @@ const AddCard = React.memo(
         name: newValue.trim()
       }));
       
-    }, [data.name, setData, labelsToAdd]);
+    }, [data.name, setData]);
 
     // Funções de renderização de sugestões
     const suggestionRenderer = useCallback(
-      (entry, search, highlightedDisplay) => (
-        <div className={styles.suggestion}>
-          <UserAvatar id={entry.id} size="tiny" />
-          {highlightedDisplay}
-        </div>
-      ),
-      []
+      (entry, search, highlightedDisplay) => {
+        const isAdded = usersToAdd.includes(entry.id);
+        return (
+          <div className={styles.suggestion}>
+            <UserAvatar id={entry.id} size="tiny" />
+            <span className={styles.suggestionText}>{highlightedDisplay}</span>
+            {isAdded && (
+              <Icon 
+                name="check" 
+                className={styles.suggestionCheck}
+                size="small"
+              />
+            )}
+          </div>
+        );
+      },
+      [usersToAdd]
     );
 
     const renderLabelSuggestion = useCallback(
@@ -469,13 +520,15 @@ const AddCard = React.memo(
         >
           {/* 🏷️ LABELS PREVIEW - TOPO ESQUERDA */}
           {labelsToAdd.length > 0 && (
-            <div className={styles.previewLabels}>
+            <div {...clickAwayProps} className={styles.previewLabels}>
               {labelsToAdd.map((labelId, index) => (
                   <span 
                     key={labelId} 
                     className={classNames(styles.previewAttachment, styles.previewAttachmentLeft)}
                     style={{ animationDelay: `${index * 100}ms` }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       setLabelsToAdd(prev => prev.filter(id => id !== labelId));
                     }}
                     title="Clique para remover"
@@ -488,13 +541,15 @@ const AddCard = React.memo(
 
           {/* 👥 USERS PREVIEW - TOPO DIREITA */}
           {usersToAdd.length > 0 && (
-            <div className={classNames(styles.previewAttachments, styles.previewAttachmentsRight)}>
+            <div {...clickAwayProps} className={classNames(styles.previewAttachments, styles.previewAttachmentsRight)}>
               {usersToAdd.map((userId, index) => (
                   <span 
                     key={userId} 
                     className={classNames(styles.previewAttachment, styles.previewAttachmentRight)}
                     style={{ animationDelay: `${index * 100}ms` }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       setUsersToAdd(prev => prev.filter(id => id !== userId));
                     }}
                     title="Clique para remover"
