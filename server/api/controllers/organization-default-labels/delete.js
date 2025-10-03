@@ -52,20 +52,10 @@ module.exports = {
     // Auditoria: registar eliminação
     sails.log.warn(`[AUDIT] User ${currentUser.email} (${currentUser.id}) deleted default label "${label.name}" (${label.id})`);
 
-    // Broadcast para admins
-    const admins = await User.find({
-      or: [
-        { role: User.Roles.ADMIN },
-        { role: User.Roles.PROJECT_OWNER },
-      ],
-    });
-
-    admins.forEach((admin) => {
-      sails.sockets.broadcast(
-        `user:${admin.id}`,
-        'organizationDefaultLabelDelete',
-        { item: label }
-      );
+    // Broadcast para admins (otimizado)
+    await sails.helpers.organizationDefaultLabels.broadcastToAdmins({
+      event: 'organizationDefaultLabelDelete',
+      data: { item: label },
     });
 
     return { item: label };

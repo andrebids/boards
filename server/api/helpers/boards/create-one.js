@@ -85,7 +85,7 @@ module.exports = {
     );
 
     // ========================================
-    // APLICAR DEFAULT LABELS (Feature)
+    // APLICAR DEFAULT LABELS (Feature) - Otimizado
     // ========================================
     try {
       console.log(`🔵 [HOOK] Novo board criado (${board.id}), a verificar default labels...`);
@@ -93,15 +93,16 @@ module.exports = {
       
       if (defaultLabels.length > 0) {
         console.log(`🔵 [HOOK] A aplicar ${defaultLabels.length} default labels ao board ${board.id}`);
-        // Criar labels no novo board
-        for (const defaultLabel of defaultLabels) {
-          await sails.models.label.create({
-            boardId: board.id,
-            name: defaultLabel.name,
-            color: defaultLabel.color,
-            position: defaultLabel.position,
-          });
-        }
+        
+        // Criar todos os labels de uma vez (bulk insert - muito mais rápido)
+        const labelsToCreate = defaultLabels.map(defaultLabel => ({
+          boardId: board.id,
+          name: defaultLabel.name,
+          color: defaultLabel.color,
+          position: defaultLabel.position,
+        }));
+        
+        await sails.models.label.createEach(labelsToCreate);
         
         console.log(`✅ [HOOK] ${defaultLabels.length} default labels aplicados ao board ${board.id}`);
         sails.log.info(

@@ -45,16 +45,10 @@ module.exports = {
 
     console.log(`✅ [CONTROLLER] ${inputs.order.length} labels reordenados`);
 
-    // Broadcast para admins e project owners
-    const allUsers = await User.find();
-    const admins = allUsers.filter(user => sails.helpers.users.isAdminOrProjectOwner(user));
-
-    admins.forEach((admin) => {
-      sails.sockets.broadcast(
-        `user:${admin.id}`,
-        'organizationDefaultLabelsReorder',
-        { items: labels }
-      );
+    // Broadcast para admins (otimizado)
+    await sails.helpers.organizationDefaultLabels.broadcastToAdmins({
+      event: 'organizationDefaultLabelsReorder',
+      data: { items: labels },
     });
 
     return { items: labels };

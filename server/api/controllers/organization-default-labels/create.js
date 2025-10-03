@@ -85,22 +85,13 @@ module.exports = {
       // Auditoria: registar criação
       sails.log.info(`[AUDIT] User ${currentUser.email} (${currentUser.id}) created default label "${label.name}" (${label.id})`);
 
-      // Broadcast para admins
-      const admins = await User.find({
-        or: [
-          { role: User.Roles.ADMIN },
-          { role: User.Roles.PROJECT_OWNER },
-        ],
+      // Broadcast para admins (otimizado)
+      const adminCount = await sails.helpers.organizationDefaultLabels.broadcastToAdmins({
+        event: 'organizationDefaultLabelCreate',
+        data: { item: label },
       });
 
-      console.log(`🔵 [CONTROLLER] A fazer broadcast para ${admins.length} admins/owners`);
-      admins.forEach((admin) => {
-        sails.sockets.broadcast(
-          `user:${admin.id}`,
-          'organizationDefaultLabelCreate',
-          { item: label }
-        );
-      });
+      console.log(`🔵 [CONTROLLER] Broadcast enviado para ${adminCount} admins/owners`);
 
       return { item: label };
     } catch (error) {

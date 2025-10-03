@@ -83,20 +83,10 @@ module.exports = {
 
       console.log(`✅ [CONTROLLER] Label ${inputs.id} atualizado`);
 
-      // Broadcast para admins
-      const admins = await User.find({
-        or: [
-          { role: User.Roles.ADMIN },
-          { role: User.Roles.PROJECT_OWNER },
-        ],
-      });
-
-      admins.forEach((admin) => {
-        sails.sockets.broadcast(
-          `user:${admin.id}`,
-          'organizationDefaultLabelUpdate',
-          { item: label }
-        );
+      // Broadcast para admins (otimizado)
+      await sails.helpers.organizationDefaultLabels.broadcastToAdmins({
+        event: 'organizationDefaultLabelUpdate',
+        data: { item: label },
       });
 
       return { item: label };
