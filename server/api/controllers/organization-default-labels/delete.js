@@ -32,23 +32,18 @@ module.exports = {
   },
 
   async fn(inputs) {
-    console.log(`🔵 [CONTROLLER] DELETE /api/organization-default-labels/${inputs.id}`);
     const { currentUser } = this.req;
 
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
-      console.log('🔴 [CONTROLLER] Acesso negado');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     const label = await sails.models.organizationdefaultlabel.qm.deleteOne(inputs.id);
 
     if (!label) {
-      console.log(`🔴 [CONTROLLER] Label ${inputs.id} não encontrado`);
       throw Errors.LABEL_NOT_FOUND;
     }
 
-    console.log(`✅ [CONTROLLER] Label ${inputs.id} eliminado`);
-    
     // Auditoria: registar eliminação
     sails.log.warn(`[AUDIT] User ${currentUser.email} (${currentUser.id}) deleted default label "${label.name}" (${label.id})`);
 

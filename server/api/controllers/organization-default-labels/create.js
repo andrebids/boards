@@ -49,18 +49,15 @@ module.exports = {
   },
 
   async fn(inputs) {
-    console.log('🔵 [CONTROLLER] POST /api/organization-default-labels/create', inputs);
     const { currentUser } = this.req;
 
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
-      console.log('🔴 [CONTROLLER] Acesso negado');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     // Verificar limite de etiquetas
     const existingLabels = await sails.models.organizationdefaultlabel.qm.getAll();
     if (existingLabels.length >= MAX_DEFAULT_LABELS) {
-      console.log(`🔴 [CONTROLLER] Limite de ${MAX_DEFAULT_LABELS} etiquetas atingido`);
       throw Errors.TOO_MANY_LABELS;
     }
 
@@ -80,22 +77,17 @@ module.exports = {
         position: inputs.position,
       });
 
-      console.log(`✅ [CONTROLLER] Label criado: "${label.name}" (ID: ${label.id})`);
-      
       // Auditoria: registar criação
       sails.log.info(`[AUDIT] User ${currentUser.email} (${currentUser.id}) created default label "${label.name}" (${label.id})`);
 
       // Broadcast para admins (otimizado)
-      const adminCount = await sails.helpers.organizationDefaultLabels.broadcastToAdmins(
+      await sails.helpers.organizationDefaultLabels.broadcastToAdmins(
         'organizationDefaultLabelCreate',
         { item: label }
       );
 
-      console.log(`🔵 [CONTROLLER] Broadcast enviado para ${adminCount} admins/owners`);
-
       return { item: label };
     } catch (error) {
-      console.log('🔴 [CONTROLLER] Erro ao criar label:', error.message);
       if (error.message.includes('already exists')) {
         throw Errors.LABEL_ALREADY_EXISTS;
       }

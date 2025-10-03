@@ -31,19 +31,15 @@ module.exports = {
   },
 
   async fn(inputs) {
-    console.log('🔵 [CONTROLLER] POST /api/organization-default-labels/reorder');
     const { currentUser } = this.req;
 
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
-      console.log('🔴 [CONTROLLER] Acesso negado');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     await sails.models.organizationdefaultlabel.qm.reorder(inputs.order);
 
     const labels = await sails.models.organizationdefaultlabel.qm.getAll();
-
-    console.log(`✅ [CONTROLLER] ${inputs.order.length} labels reordenados`);
 
     // Broadcast para admins (otimizado)
     await sails.helpers.organizationDefaultLabels.broadcastToAdmins(

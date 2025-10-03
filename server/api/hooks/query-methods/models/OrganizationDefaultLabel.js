@@ -19,11 +19,8 @@ function isCacheValid() {
 
 module.exports = {
   getAll: async (useCache = true) => {
-    console.log('🔵 [QM] OrganizationDefaultLabel.getAll()');
-    
     // Usar cache se disponível e válido
     if (useCache && isCacheValid()) {
-      console.log(`✅ [QM] Retornando ${labelsCache.length} labels do CACHE`);
       return labelsCache;
     }
     
@@ -35,27 +32,21 @@ module.exports = {
     labelsCache = records;
     cacheTimestamp = Date.now();
     
-    console.log(`✅ [QM] Encontrados ${records.length} labels padrão (cache atualizado)`);
     return records;
   },
 
   getOneById: async (id) => {
-    console.log(`🔵 [QM] OrganizationDefaultLabel.getOneById(${id})`);
     const record = await sails.models.organizationdefaultlabel.findOne({ id });
-    console.log(`✅ [QM] Label ${record ? 'encontrado' : 'não encontrado'}`);
     return record || null;
   },
 
   getOneByName: async (name) => {
-    console.log(`🔵 [QM] OrganizationDefaultLabel.getOneByName("${name}")`);
     const records = await sails.models.organizationdefaultlabel.find();
     const record = records.find(r => r.name.toLowerCase() === name.toLowerCase());
-    console.log(`✅ [QM] Label "${name}" ${record ? 'existe' : 'não existe'}`);
     return record || null;
   },
 
   createOne: async (values) => {
-    console.log('🔵 [QM] OrganizationDefaultLabel.createOne()', values);
     // Validar unicidade (case-insensitive)
     const existing = await module.exports.getOneByName(values.name);
     if (existing) {
@@ -64,13 +55,11 @@ module.exports = {
 
     const record = await sails.models.organizationdefaultlabel.create(values).fetch();
     clearCache(); // Limpar cache após criação
-    console.log(`✅ [QM] Label criado: "${record.name}" (${record.color})`);
     sails.log.info(`[ORG_DEFAULT_LABELS] Created: ${record.name} (${record.color})`);
     return record;
   },
 
   updateOne: async (id, values) => {
-    console.log(`🔵 [QM] OrganizationDefaultLabel.updateOne(${id})`, values);
     // Se mudar nome, validar unicidade
     if (values.name) {
       const existing = await module.exports.getOneByName(values.name);
@@ -85,7 +74,6 @@ module.exports = {
     
     if (record) {
       clearCache(); // Limpar cache após atualização
-      console.log(`✅ [QM] Label atualizado: "${record.name}"`);
       sails.log.info(`[ORG_DEFAULT_LABELS] Updated: ${record.name} (ID: ${id})`);
     }
     
@@ -93,13 +81,10 @@ module.exports = {
   },
 
   deleteOne: async (id) => {
-    console.log(`🔵 [QM] OrganizationDefaultLabel.deleteOne(${id})`);
-    
     const record = await sails.models.organizationdefaultlabel.destroyOne({ id });
     
     if (record) {
       clearCache(); // Limpar cache após eliminação
-      console.log(`✅ [QM] Label eliminado: "${record.name}"`);
       sails.log.info(`[ORG_DEFAULT_LABELS] Deleted: ${record.name} (ID: ${id})`);
     }
     
@@ -107,7 +92,6 @@ module.exports = {
   },
 
   reorder: async (orderArray) => {
-    console.log('🔵 [QM] OrganizationDefaultLabel.reorder()', `${orderArray.length} items`);
     // orderArray: [{ id, position }, ...]
     await sails.getDatastore().transaction(async (db) => {
       for (const item of orderArray) {
@@ -119,7 +103,6 @@ module.exports = {
     });
 
     clearCache(); // Limpar cache após reordenação
-    console.log(`✅ [QM] ${orderArray.length} labels reordenados`);
     sails.log.info(`[ORG_DEFAULT_LABELS] Reordered ${orderArray.length} labels`);
   },
   

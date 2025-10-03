@@ -50,11 +50,9 @@ module.exports = {
   },
 
   async fn(inputs) {
-    console.log('🔵 [CONTROLLER] PATCH /api/organization-default-labels/update', inputs);
     const { currentUser } = this.req;
 
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
-      console.log('🔴 [CONTROLLER] Acesso negado');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
@@ -77,11 +75,8 @@ module.exports = {
       const label = await sails.models.organizationdefaultlabel.qm.updateOne(inputs.id, values);
 
       if (!label) {
-        console.log(`🔴 [CONTROLLER] Label ${inputs.id} não encontrado`);
         throw Errors.LABEL_NOT_FOUND;
       }
-
-      console.log(`✅ [CONTROLLER] Label ${inputs.id} atualizado`);
 
       // Broadcast para admins (otimizado)
       await sails.helpers.organizationDefaultLabels.broadcastToAdmins(

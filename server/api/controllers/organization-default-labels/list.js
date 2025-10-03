@@ -19,19 +19,15 @@ module.exports = {
   },
 
   async fn() {
-    console.log('🔵 [CONTROLLER] GET /api/organization-default-labels/list');
     const { currentUser } = this.req;
 
-    console.log(`🔵 [CONTROLLER] User: ${currentUser.name} (${currentUser.email}) Role: ${currentUser.role}`);
     // Verificar se é Admin ou ProjectOwner
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
-      console.log('🔴 [CONTROLLER] Acesso negado: utilizador não é Admin/ProjectOwner');
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     const labels = await sails.models.organizationdefaultlabel.qm.getAll();
 
-    console.log(`✅ [CONTROLLER] A retornar ${labels.length} labels`);
     return {
       items: labels,
     };
