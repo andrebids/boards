@@ -3,10 +3,10 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon, Label } from 'semantic-ui-react';
+import { Button, Icon, Label, Modal } from 'semantic-ui-react';
 
 import styles from './DefaultLabelItem.module.scss';
 import globalStyles from '../../../../styles.module.scss';
@@ -24,24 +24,28 @@ const toBackgroundClassName = (colorValue) => {
 
 const DefaultLabelItem = React.memo(({ label, onEdit, onDelete }) => {
   const [t] = useTranslation();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleEdit = useCallback(() => {
     onEdit(label);
   }, [label, onEdit]);
 
-  const handleDelete = useCallback(() => {
-    const confirmMessage = t(
-      'common.areYouSureYouWantToDeleteThisDefaultLabel',
-      `Tem certeza que deseja eliminar a etiqueta padrão "${label.name}"?\n\nEsta ação não afetará etiquetas já criadas nos boards, mas esta etiqueta não será mais adicionada automaticamente aos novos boards.`
-    );
-    
-    if (window.confirm(confirmMessage)) {
-      onDelete(label.id);
-    }
-  }, [label.id, label.name, onDelete, t]);
+  const handleDeleteClick = useCallback(() => {
+    setIsConfirmOpen(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    onDelete(label.id);
+    setIsConfirmOpen(false);
+  }, [label.id, onDelete]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setIsConfirmOpen(false);
+  }, []);
 
   return (
-    <div className={styles.wrapper}>
+    <>
+      <div className={styles.wrapper}>
       <div className={styles.labelPreview}>
         <Label className={toBackgroundClassName(label.color)} size="large">
           {label.name}
@@ -66,13 +70,42 @@ const DefaultLabelItem = React.memo(({ label, onEdit, onDelete }) => {
           icon
           size="small"
           className={styles.deleteButton}
-          onClick={handleDelete}
+          onClick={handleDeleteClick}
           title={t('action.delete', 'Eliminar')}
         >
           <Icon name="trash" />
         </Button>
       </div>
-    </div>
+      </div>
+
+      <Modal
+        open={isConfirmOpen}
+        onClose={handleDeleteCancel}
+        size="small"
+        className={styles.confirmModal}
+      >
+        <Modal.Header>
+          {t('common.deleteDefaultLabel', 'Eliminar Etiqueta Padrão')}
+        </Modal.Header>
+        <Modal.Content>
+          <p>
+            {t('common.areYouSureYouWantToDeleteThisDefaultLabel', { name: label.name })}
+          </p>
+          <p>
+            {t('common.deleteDefaultLabelWarning')}
+          </p>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={handleDeleteCancel}>
+            {t('action.cancel', 'Cancelar')}
+          </Button>
+          <Button negative onClick={handleDeleteConfirm}>
+            <Icon name="trash" />
+            {t('action.delete', 'Eliminar')}
+          </Button>
+        </Modal.Actions>
+      </Modal>
+    </>
   );
 });
 

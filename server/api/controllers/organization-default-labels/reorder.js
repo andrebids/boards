@@ -46,10 +46,10 @@ module.exports = {
     console.log(`✅ [CONTROLLER] ${inputs.order.length} labels reordenados`);
 
     // Broadcast para admins (otimizado)
-    await sails.helpers.organizationDefaultLabels.broadcastToAdmins({
-      event: 'organizationDefaultLabelsReorder',
-      data: { items: labels },
-    });
+    await sails.helpers.organizationDefaultLabels.broadcastToAdmins(
+      'organizationDefaultLabelsReorder',
+      { items: labels }
+    );
 
     return { items: labels };
   },

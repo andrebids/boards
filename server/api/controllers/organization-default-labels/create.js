@@ -86,10 +86,10 @@ module.exports = {
       sails.log.info(`[AUDIT] User ${currentUser.email} (${currentUser.id}) created default label "${label.name}" (${label.id})`);
 
       // Broadcast para admins (otimizado)
-      const adminCount = await sails.helpers.organizationDefaultLabels.broadcastToAdmins({
-        event: 'organizationDefaultLabelCreate',
-        data: { item: label },
-      });
+      const adminCount = await sails.helpers.organizationDefaultLabels.broadcastToAdmins(
+        'organizationDefaultLabelCreate',
+        { item: label }
+      );
 
       console.log(`🔵 [CONTROLLER] Broadcast enviado para ${adminCount} admins/owners`);
 

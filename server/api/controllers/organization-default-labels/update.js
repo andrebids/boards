@@ -84,10 +84,10 @@ module.exports = {
       console.log(`✅ [CONTROLLER] Label ${inputs.id} atualizado`);
 
       // Broadcast para admins (otimizado)
-      await sails.helpers.organizationDefaultLabels.broadcastToAdmins({
-        event: 'organizationDefaultLabelUpdate',
-        data: { item: label },
-      });
+      await sails.helpers.organizationDefaultLabels.broadcastToAdmins(
+        'organizationDefaultLabelUpdate',
+        { item: label }
+      );
 
       return { item: label };
     } catch (error) {

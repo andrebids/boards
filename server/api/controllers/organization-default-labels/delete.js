@@ -53,10 +53,10 @@ module.exports = {
     sails.log.warn(`[AUDIT] User ${currentUser.email} (${currentUser.id}) deleted default label "${label.name}" (${label.id})`);
 
     // Broadcast para admins (otimizado)
-    await sails.helpers.organizationDefaultLabels.broadcastToAdmins({
-      event: 'organizationDefaultLabelDelete',
-      data: { item: label },
-    });
+    await sails.helpers.organizationDefaultLabels.broadcastToAdmins(
+      'organizationDefaultLabelDelete',
+      { item: label }
+    );
 
     return { item: label };
   },
