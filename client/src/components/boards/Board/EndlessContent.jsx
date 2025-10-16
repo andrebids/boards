@@ -52,6 +52,8 @@ const EndlessContent = React.memo(() => {
 
       break;
     default:
+      // Força sempre a view Kanban quando outras views são removidas
+      View = null;
   }
 
   return <View {...viewProps} />; // eslint-disable-line react/jsx-props-no-spreading
