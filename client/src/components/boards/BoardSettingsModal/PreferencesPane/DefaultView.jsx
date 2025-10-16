@@ -45,7 +45,7 @@ const DefaultView = React.memo(() => {
 
   return (
     <Menu secondary vertical className={styles.menu}>
-      {[BoardViews.KANBAN, BoardViews.GRID, BoardViews.LIST].map(view => (
+      {[BoardViews.KANBAN].map(view => (
         <Menu.Item
           key={view}
           value={view}

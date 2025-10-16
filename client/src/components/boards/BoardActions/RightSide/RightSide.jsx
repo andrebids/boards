@@ -38,7 +38,7 @@ const RightSide = React.memo(() => {
 
   const ActionsPopup = usePopup(ActionsStep, { variantClass: 'glass' });
 
-  const views = [BoardViews.GRID, BoardViews.LIST];
+  const views = [];
   if (board.context === BoardContexts.BOARD) {
     views.unshift(BoardViews.KANBAN);
   }
