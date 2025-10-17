@@ -48,9 +48,8 @@ const UserAvatar = React.memo(
   ({ id, size, isDisabled, withCreatorIndicator, className, onClick }) => {
     const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
 
-    const user = useSelector(state => selectUserById(state, id));
-
-    const [t] = useTranslation();
+  const user = useSelector(state => selectUserById(state, id));
+  const [t] = useTranslation();
 
     const contentNode = (
       <span

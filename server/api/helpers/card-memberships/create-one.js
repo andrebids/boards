@@ -44,14 +44,32 @@ module.exports = {
         cardId: values.card.id,
         userId: values.user.id,
       });
+      sails.log.info('🔍 [DIAGNÓSTICO_AVATARES] Helper - CardMembership criada:', {
+        cardId: cardMembership.cardId,
+        userId: cardMembership.userId,
+        cardMembershipId: cardMembership.id,
+      });
     } catch (error) {
       if (error.code === 'E_UNIQUE') {
+        sails.log.warn('🔍 [DIAGNÓSTICO_AVATARES] Helper - User já é membro do card:', {
+          cardId: values.card.id,
+          userId: values.user.id,
+        });
         throw 'userAlreadyCardMember';
       }
 
       throw error;
     }
 
+    sails.log.info('🔍 [DIAGNÓSTICO_AVATARES] Helper - Enviando broadcast WebSocket:', {
+      room: `board:${inputs.board.id}`,
+      event: 'cardMembershipCreate',
+      cardMembershipData: {
+        id: cardMembership.id,
+        cardId: cardMembership.cardId,
+        userId: cardMembership.userId,
+      },
+    });
     sails.sockets.broadcast(
       `board:${inputs.board.id}`,
       'cardMembershipCreate',

@@ -161,6 +161,14 @@ const createSocketEventsChannel = () =>
     });
 
     const handleUserToCardAdd = ({ item }) => {
+      try {
+        console.log('🔍 [DIAGNÓSTICO_AVATARES] WebSocket - cardMembershipCreate recebido:', {
+          cardId: item?.cardId,
+          userId: item?.userId,
+        });
+      } catch (error) {
+        // Ignorar erro de log
+      }
       emit(entryActions.handleUserToCardAdd(item));
     };
 

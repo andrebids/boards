@@ -62,7 +62,10 @@ export const makeSelectUserIdsByCardId = () =>
         return cardModel;
       }
 
-      return cardModel.users.toRefArray().map(user => user.id);
+      const users = cardModel.users.toRefArray();
+      const userIds = users.map(user => user.id);
+
+      return userIds;
     }
   );
 

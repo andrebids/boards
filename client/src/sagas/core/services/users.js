@@ -365,6 +365,16 @@ export function* handleUserDelete(user) {
 export function* addUserToCard(id, cardId) {
   const currentUserId = yield select(selectors.selectCurrentUserId);
 
+  try {
+    console.log('🔍 [DIAGNÓSTICO_AVATARES] Saga - Iniciando addUserToCard:', {
+      userId: id,
+      cardId,
+      isCurrent: id === currentUserId,
+    });
+  } catch (error) {
+    // Ignorar erro de log
+  }
+
   yield put(actions.addUserToCard(id, cardId, id === currentUserId));
 
   let cardMembership;
@@ -377,7 +387,25 @@ export function* addUserToCard(id, cardId) {
         userId: id,
       }
     ));
+    try {
+      console.log('🔍 [DIAGNÓSTICO_AVATARES] Saga - addUserToCard sucesso:', {
+        cardMembershipId: cardMembership?.id,
+        cardId: cardMembership?.cardId,
+        userId: cardMembership?.userId,
+      });
+    } catch (logError) {
+      // Ignorar erro de log
+    }
   } catch (error) {
+    try {
+      console.error('🔍 [DIAGNÓSTICO_AVATARES] Saga - addUserToCard erro:', {
+        userId: id,
+        cardId,
+        errorMessage: error?.message,
+      });
+    } catch (logError) {
+      // Ignorar erro de log
+    }
     yield put(actions.addUserToCard.failure(id, cardId, error));
     return;
   }
@@ -398,6 +426,14 @@ export function* addCurrentUserToCurrentCard() {
 }
 
 export function* handleUserToCardAdd(cardMembership) {
+  try {
+    console.log('🔍 [DIAGNÓSTICO_AVATARES] Saga - handleUserToCardAdd processando:', {
+      cardId: cardMembership?.cardId,
+      userId: cardMembership?.userId,
+    });
+  } catch (error) {
+    // Ignorar erro de log
+  }
   yield put(actions.handleUserToCardAdd(cardMembership));
 }
 

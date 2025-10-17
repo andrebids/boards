@@ -14,6 +14,7 @@ import markdownToText from '../../../utils/markdown-to-text';
 import { BoardViews, ListTypes } from '../../../constants/Enums';
 import LabelChip from '../../labels/LabelChip';
 import CustomFieldValueChip from '../../custom-field-values/CustomFieldValueChip';
+import UserAvatar from '../../users/UserAvatar';
 
 import styles from './StoryContent.module.scss';
 
@@ -45,6 +46,11 @@ const StoryContent = React.memo(({ cardId }) => {
     []
   );
 
+  const selectUserIdsByCardId = useMemo(
+    () => selectors.makeSelectUserIdsByCardId(),
+    []
+  );
+
   const card = useSelector(state => selectCardById(state, cardId));
   const list = useSelector(state => selectListById(state, card.listId));
   const labelIds = useSelector(state => selectLabelIdsByCardId(state, cardId));
@@ -59,6 +65,8 @@ const StoryContent = React.memo(({ cardId }) => {
   const notificationsTotal = useSelector(state =>
     selectNotificationsTotalByCardId(state, cardId)
   );
+
+  const userIds = useSelector(state => selectUserIdsByCardId(state, cardId));
 
   const listName = useSelector(state => {
     if (!list.name) {
@@ -129,7 +137,7 @@ const StoryContent = React.memo(({ cardId }) => {
         {card.description && (
           <div className={styles.descriptionText}>{descriptionText}</div>
         )}
-        {(attachmentsTotal > 0 || notificationsTotal > 0 || listName) && (
+        {(attachmentsTotal > 0 || notificationsTotal > 0 || listName || userIds.length > 0) && (
           <span className={styles.attachments}>
             {notificationsTotal > 0 && (
               <span
@@ -163,6 +171,25 @@ const StoryContent = React.memo(({ cardId }) => {
                   {attachmentsTotal}
                 </span>
               </span>
+            )}
+            {userIds.length > 0 && (
+              <>
+                {userIds.map((userId) => (
+                  <span
+                    key={userId}
+                    className={classNames(
+                      styles.attachment,
+                      styles.attachmentRight
+                    )}
+                  >
+                    <UserAvatar
+                      id={userId}
+                      size="small"
+                      className={undefined}
+                    />
+                  </span>
+                ))}
+              </>
             )}
           </span>
         )}

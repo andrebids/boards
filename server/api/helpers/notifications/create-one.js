@@ -13,16 +13,16 @@ const generateInitials = (name) => {
   if (!name || typeof name !== 'string') {
     return 'U';
   }
-  
+
   const words = name.trim().split(/\s+/);
   if (words.length === 0) {
     return 'U';
   }
-  
+
   if (words.length === 1) {
     return words[0].charAt(0).toUpperCase();
   }
-  
+
   // Primeira letra do primeiro nome + primeira letra do último nome
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 };
@@ -30,17 +30,17 @@ const generateInitials = (name) => {
 // Função para gerar URLs dinâmicas
 const generateUrl = (path = '') => {
   const baseUrl = sails.config.custom?.baseUrl;
-  
+
   if (!baseUrl) {
     console.warn('⚠️ BASE_URL não configurada, usando localhost como fallback');
     return `http://localhost:3000${path}`;
   }
-  
+
   // Remove barra final do baseUrl se existir
   const cleanBaseUrl = baseUrl.replace(/\/$/, '');
   // Adiciona barra inicial ao path se não existir
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  
+
   return `${cleanBaseUrl}${cleanPath}`;
 };
 
@@ -184,21 +184,21 @@ const buildAndSendNotifications = async (services, board, card, notification, ac
   if (EMAIL_TEMPLATES_ENABLED) {
     try {
       const notifiableUser = inputs.notifiableUser;
-      
+
       // Verificar se algum serviço usa formato HTML
       const hasHtmlService = services.some(service => service.format === 'html');
-      
+
       if (hasHtmlService) {
         // Gerar HTML dos templates apenas se houver serviços HTML
         const templateHtml = await buildAndSendEmailWithTemplates(board, card, notification, actorUser, notifiableUser, t, inputs);
-        
+
         // Criar body com HTML dos templates
         const bodyByFormat = buildBodyByFormat(board, card, notification, actorUser, t);
         const bodyWithTemplates = {
           ...bodyByFormat,
           html: templateHtml // Substituir HTML padrão pelos templates
         };
-        
+
         await sails.helpers.utils.sendNotifications(
           services,
           buildTitle(notification, t),
@@ -251,14 +251,14 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
   const project = inputs.project || board.project;
   const currentList = inputs.list || card.list;
   const listName = currentList ? sails.helpers.lists.makeName(currentList) : 'Lista';
-  
+
   // Dados específicos por tipo de notificação
   const getNotificationSpecificData = (notification, actorUser, t, card, currentList) => {
     switch (notification?.type) {
       case Notification.Types.MOVE_CARD: {
-        const fromListName = notification?.data?.fromList ? 
+        const fromListName = notification?.data?.fromList ?
           sails.helpers.lists.makeName(notification.data.fromList) : 'Lista Origem';
-        const toListName = notification?.data?.toList ? 
+        const toListName = notification?.data?.toList ?
           sails.helpers.lists.makeName(notification.data.toList) : 'Lista Destino';
         return {
           from_list: escapeHtml(fromListName),
@@ -311,7 +311,7 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
         return {};
     }
   };
-  
+
   const templateData = {
     actor_name: escapeHtml(actorUser?.name || 'Utilizador'),
     actor_initials: generateInitials(actorUser?.name || 'Utilizador'),
@@ -329,16 +329,16 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
     current_year: new Date().getFullYear(),
     notification_type: notification?.type || '',
     show_due_date_in_header: notification?.type !== 'SET_DUE_DATE',
-    
+
     // Null-safe
-    comment_excerpt: notification?.data?.text ? 
-      escapeHtml(notification.data.text.substring(0, 100) + '...') : 
+    comment_excerpt: notification?.data?.text ?
+      escapeHtml(notification.data.text.substring(0, 100) + '...') :
       'Sem comentário',
-    due_date: card?.dueDate ? 
-      new Date(card.dueDate).toLocaleDateString('pt-PT') : 
+    due_date: card?.dueDate ?
+      new Date(card.dueDate).toLocaleDateString('pt-PT') :
       'Sem prazo',
-    
-    
+
+
     // Dados específicos do tipo
     ...getNotificationSpecificData(notification, actorUser, t, card, currentList),
   };
@@ -496,8 +496,13 @@ module.exports = {
       user: values.creatorUser,
     });
 
-    sails.log.debug(
-      `[GLOBAL_NOTIFICATIONS] A processar notificação do tipo "${notification.type}" para o utilizador ID: ${notification.userId}`,
+    sails.log.info(
+      `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Notificação criada:`, {
+        notificationId: notification.id,
+        type: notification.type,
+        userId: notification.userId,
+        cardId: values.card.id,
+      }
     );
 
     // --- LÓGICA DE ENVIO DE NOTIFICAÇÕES ---
@@ -513,11 +518,29 @@ module.exports = {
     const notificationServices = await NotificationService.qm.getByUserId(notification.userId);
     const smtpIsEnabled = sails.hooks.smtp.isEnabled();
 
+    sails.log.info(
+      `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Status dos mecanismos de envio:`, {
+        notificationType: notification.type,
+        isInEmailNotifiableTypes: EMAIL_NOTIFIABLE_TYPES.includes(notification.type),
+        globalNotificationsEnabled,
+        notificationServicesCount: notificationServices.length,
+        smtpIsEnabled,
+      }
+    );
+
     // Verificar se algum mecanismo de envio de e-mail está ativo
     if (globalNotificationsEnabled || notificationServices.length > 0 || smtpIsEnabled) {
       // E verificar também se o tipo de notificação é um dos permitidos para e-mail
       if (EMAIL_NOTIFIABLE_TYPES.includes(notification.type)) {
         const notifiableUser = values.user || (await User.qm.getOneById(notification.userId));
+        sails.log.info(
+          `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] User notificável encontrado:`, {
+            userId: notifiableUser.id,
+            userEmail: notifiableUser.email,
+            userName: notifiableUser.name,
+          }
+        );
+
         const t = sails.helpers.utils.makeTranslator(notifiableUser.language);
         const emailHtml = await buildAndSendEmailWithTemplates(
           inputs.board,
@@ -541,7 +564,7 @@ module.exports = {
         // PRIORIDADE 1: Notificações Globais
         if (globalNotificationsEnabled) {
           sails.log.info(
-            `[GLOBAL_NOTIFICATIONS] A tentar envio global para "${notifiableUser.email}"...`,
+            `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Tentando envio via Nodemailer para "${notifiableUser.email}"...`,
           );
           try {
             await sails.helpers.utils.sendGlobalNotification.with({
@@ -550,15 +573,30 @@ module.exports = {
               html: emailHtml,
               data: emailData,
             });
+            sails.log.info(
+              `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] ✅ Email enviado com sucesso para "${notifiableUser.email}"`,
+            );
           } catch (error) {
-            sails.log.error(`[GLOBAL_NOTIFICATIONS] Falha no envio global.`, error);
+            sails.log.error(`🔍 [DIAGNÓSTICO_EMAIL_NOTIF] ❌ Falha no envio do email:`, {
+              to: notifiableUser.email,
+              error: error.message,
+              stack: error.stack,
+            });
           }
+        } else {
+          sails.log.info(
+            `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Notificações globais desativadas, não enviando email`,
+          );
         }
       } else {
         sails.log.info(
-          `[NOTIFICATIONS] Envio de e-mail ignorado para o tipo de notificação "${notification.type}" pois não está na lista de e-mails permitidos.`,
+          `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Tipo "${notification.type}" não está na lista EMAIL_NOTIFIABLE_TYPES, não enviando email`,
         );
       }
+    } else {
+      sails.log.info(
+        `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Nenhum mecanismo de envio está ativo, não enviando email`,
+      );
     }
 
     return notification;
@@ -587,7 +625,7 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
 
   // Gerar URL específica baseada no tipo de notificação
   let specificUrl = cardUrl; // Fallback para o cartão geral
-  
+
   if (notification.type === 'COMMENT_CARD' || notification.type === 'MENTION_IN_COMMENT') {
     // Para comentários, tentar levar diretamente ao comentário específico
     if (notification.data?.commentId) {
@@ -605,7 +643,7 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
 
   // Gerar texto específico do botão CTA baseado no tipo de notificação
   let ctaButtonText = t('email:viewCard'); // Fallback padrão
-  
+
   if (notification.type === 'COMMENT_CARD' || notification.type === 'MENTION_IN_COMMENT') {
     ctaButtonText = t('email:viewComment');
   } else if (notification.type === 'CREATE_TASK' || notification.type === 'COMPLETE_TASK') {
@@ -629,7 +667,7 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     card_id: card.id,
     card_url: specificUrl,
     cta_button_text: ctaButtonText,
-    
+
     // Traduções para labels e descrições
     email_label_comment: t('email:label:comment'),
     email_label_moved: t('email:label:moved'),
@@ -649,7 +687,7 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     email_action_createTask: t('email:action:createTask'),
     email_action_completeTask: t('email:action:completeTask'),
     email_dueDate: t('email:dueDate'),
-    
+
     // Traduções para descrições
     email_description_addedMember: t('email:description:addedMember'),
     email_description_dueDateChanged: t('email:description:dueDateChanged'),

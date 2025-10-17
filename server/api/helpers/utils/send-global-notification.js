@@ -17,9 +17,14 @@ module.exports = {
   async fn(inputs) {
     // Verificar se notificações globais estão ativas
     if (!sails.config.custom.globalNotifications?.enabled) {
-      sails.log.info('❕ [GLOBAL_NOTIFICATIONS] Sistema desativado, a saltar envio.');
+      sails.log.info('🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Sistema de notificações globais desativado, a saltar envio.');
       return;
     }
+
+    sails.log.info('🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Iniciando sendGlobalNotification:', {
+      to: inputs.to,
+      subject: inputs.subject,
+    });
 
     const config = sails.config.custom.globalNotifications.nodemailer;
 

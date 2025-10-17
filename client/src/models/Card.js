@@ -145,11 +145,15 @@ export default class extends BaseModel {
       case ActionTypes.USER_TO_CARD_ADD__SUCCESS:
       case ActionTypes.USER_TO_CARD_ADD_HANDLE:
         try {
-          Card.withId(payload.cardMembership.cardId).users.add(
-            payload.cardMembership.userId
-          );
-        } catch {
-          /* empty */
+          const cardModel = Card.withId(payload.cardMembership.cardId);
+          const userIds = cardModel.users.toRefArray().map(u => u.id);
+
+          // Só adicionar se o user ainda não estiver no card
+          if (!userIds.includes(payload.cardMembership.userId)) {
+            cardModel.users.add(payload.cardMembership.userId);
+          }
+        } catch (error) {
+          // Ignorar erro silenciosamente
         }
 
         break;

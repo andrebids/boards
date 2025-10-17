@@ -43,7 +43,9 @@ export const makeSelectUserById = () =>
         return userModel;
       }
 
-      return userModel.ref;
+      const userData = userModel.ref;
+
+      return userData;
     }
   );
 

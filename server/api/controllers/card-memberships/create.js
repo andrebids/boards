@@ -50,6 +50,12 @@ module.exports = {
   async fn(inputs) {
     const { currentUser } = this.req;
 
+    sails.log.info('🔍 [DIAGNÓSTICO_AVATARES] Controller - Pedido recebido para adicionar member ao card:', {
+      cardId: inputs.cardId,
+      userId: inputs.userId,
+      actorUserId: currentUser.id,
+    });
+
     const { card, list, board, project } = await sails.helpers.cards
       .getPathToProjectById(inputs.cardId)
       .intercept('pathNotFound', () => Errors.CARD_NOT_FOUND);

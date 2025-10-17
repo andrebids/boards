@@ -184,17 +184,41 @@ export function* createCard(listId, data, autoOpen, userIds = [], labelIds = [])
 
   // Adicionar utilizadores ao cartão (se especificados)
   if (userIds.length > 0) {
-    console.log('👥 Adicionando utilizadores ao cartão:', { cardId: card.id, userIds });
+    try {
+      console.log('🔍 [DIAGNÓSTICO_AVATARES] Saga - Adicionando utilizadores ao cartão:', { cardId: card.id, userIds });
+    } catch (logError) {
+      // Ignorar erro de log
+    }
     for (const userId of userIds) {
-      console.log('👥 Adicionando utilizador:', { cardId: card.id, userId });
+      try {
+        console.log('🔍 [DIAGNÓSTICO_AVATARES] Saga - Adicionando utilizador:', { cardId: card.id, userId });
+      } catch (logError) {
+        // Ignorar erro de log
+      }
       try {
         yield put(actions.addUserToCard(userId, card.id, false));
         const membership = yield call(request, api.createCardMembership, card.id, { userId });
         yield put(actions.addUserToCard.success(membership.item));
-        console.log('✅ Utilizador adicionado com sucesso:', { cardId: card.id, userId });
+        try {
+          console.log('🔍 [DIAGNÓSTICO_AVATARES] Saga - Utilizador adicionado com sucesso:', {
+            cardId: card.id,
+            userId,
+            membershipId: membership.item?.id,
+          });
+        } catch (logError) {
+          // Ignorar erro de log
+        }
       } catch (error) {
         yield put(actions.addUserToCard.failure(userId, card.id, error));
-        console.error('❌ Erro ao adicionar utilizador:', { cardId: card.id, userId, error });
+        try {
+          console.error('🔍 [DIAGNÓSTICO_AVATARES] Saga - Erro ao adicionar utilizador:', {
+            cardId: card.id,
+            userId,
+            errorMessage: error?.message,
+          });
+        } catch (logError) {
+          // Ignorar erro de log
+        }
       }
     }
   }
