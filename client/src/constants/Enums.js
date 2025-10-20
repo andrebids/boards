@@ -124,3 +124,8 @@ export const NotificationServiceFormats = {
   MARKDOWN: 'markdown',
   HTML: 'html',
 };
+
+export const MentionPlaceholders = {
+  NO_LABELS: 'no-labels',
+  NO_USERS: 'no-users',
+};

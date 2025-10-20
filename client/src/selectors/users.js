@@ -172,7 +172,7 @@ export const selectFilteredProjctIdsByGroupForCurrentUser = createSelector(
 
     return managerProjectModels.reduce(
       (result, projectModel) => {
-        const group = projectModel.ownerProjectManager
+        const group = projectModel.ownerProjectManagerId
           ? ProjectGroups.MY_OWN
           : ProjectGroups.TEAM;
 

@@ -23,6 +23,8 @@ import selectors from '../../../selectors';
 import { useClosable, useForm, useNestedRef } from '../../../hooks';
 import { isModifierKeyPressed } from '../../../utils/event-helpers';
 import { CardTypeIcons } from '../../../constants/Icons';
+import { MentionPlaceholders } from '../../../constants/Enums';
+import MentionTriggers from '../../../constants/MentionTriggers';
 import { processSupportedFiles } from '../../../utils/file-helpers';
 import SelectCardTypeStep from '../SelectCardTypeStep';
 import UserAvatar from '../../users/UserAvatar';
@@ -78,7 +80,7 @@ const AddCard = React.memo(
     const labelsData = useMemo(() => {
       if (!labels?.length) {
         return [{
-          id: 'no-labels',
+          id: MentionPlaceholders.NO_LABELS,
           display: t('common.noLabelsCreatedYet'),
           color: 'gray',
           isPlaceholder: true,
@@ -113,22 +115,22 @@ const AddCard = React.memo(
           return [...prev, id];
         }
       });
-      
+
       // Limpar texto da menção do campo
       const currentValue = data.name || '';
       const beforeMention = currentValue.substring(0, startPos);
       const afterMention = currentValue.substring(endPos);
       const newValue = beforeMention + afterMention;
-      
+
       // Atualizar campo com texto limpo
       setData(prevData => ({
         ...prevData,
         name: newValue.trim()
       }));
-      
+
       // Marcar que queremos manter o mention aberto
       setKeepMentionOpen(true);
-      
+
     }, [data.name, setData]);
 
     // Efeito para reabrir o dropdown após adicionar um utilizador
@@ -139,9 +141,9 @@ const AddCard = React.memo(
             ...prevData,
             name: (prevData.name || '').trim() + (prevData.name && prevData.name.trim() ? ' @' : '@')
           }));
-          
+
           setKeepMentionOpen(false);
-          
+
           // Focus no input
           setTimeout(() => {
             if (nameInputRef.current) {
@@ -158,11 +160,11 @@ const AddCard = React.memo(
 
       const forceDropdownHeight = () => {
         const dropdowns = document.querySelectorAll('.mentions-input__suggestions');
-        
+
         dropdowns.forEach((dropdown) => {
           // Verificar se já foi processado
           if (dropdown.dataset.heightFixed === 'true') return;
-          
+
           // Estilos para garantir visibilidade com scroll
           const styles = {
             maxHeight: '400px',
@@ -191,46 +193,46 @@ const AddCard = React.memo(
         mutations.forEach(mutation => {
           if (mutation.addedNodes.length > 0) {
             mutation.addedNodes.forEach(node => {
-              if (node.nodeType === 1 && 
+              if (node.nodeType === 1 &&
                   node.classList?.contains('mentions-input__suggestions')) {
                 shouldCheck = true;
               }
             });
           }
         });
-        
+
         if (shouldCheck) {
           setTimeout(forceDropdownHeight, 0);
         }
       });
 
-      observer.observe(document.body, { 
-        childList: true, 
-        subtree: true 
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
       });
 
       return () => observer.disconnect();
     }, [isOpened]);
 
-    
+
     const handleLabelAdd = useCallback((id, display, startPos, endPos) => {
       // Se é um placeholder (sem labels criadas), limpar o # mas não adicionar label
-      if (id === 'no-labels') {
+      if (id === MentionPlaceholders.NO_LABELS) {
         // Limpar o # do campo
         const currentValue = data.name || '';
         const beforeMention = currentValue.substring(0, startPos);
         const afterMention = currentValue.substring(endPos);
         const newValue = beforeMention + afterMention;
-        
+
         setData(prevData => ({
           ...prevData,
           name: newValue.trim()
         }));
-        
+
         // Não adicionar label - apenas limpar texto
         return;
       }
-      
+
       // Se a label já está adicionada, remover; caso contrário, adicionar
       setLabelsToAdd(prev => {
         if (prev.includes(id)) {
@@ -241,19 +243,19 @@ const AddCard = React.memo(
           return [...prev, id];
         }
       });
-      
+
       // Limpar texto da menção do campo
       const currentValue = data.name || '';
       const beforeMention = currentValue.substring(0, startPos);
       const afterMention = currentValue.substring(endPos);
       const newValue = beforeMention + afterMention;
-      
+
       // Atualizar campo com texto limpo
       setData(prevData => ({
         ...prevData,
         name: newValue.trim()
       }));
-      
+
     }, [data.name, setData]);
 
     // Funções de renderização de sugestões
@@ -265,8 +267,8 @@ const AddCard = React.memo(
             <UserAvatar id={entry.id} size="tiny" />
             <span className={styles.suggestionText}>{highlightedDisplay}</span>
             {isAdded && (
-              <Icon 
-                name="check" 
+              <Icon
+                name="check"
                 className={styles.suggestionCheck}
                 size="small"
               />
@@ -282,7 +284,7 @@ const AddCard = React.memo(
         // Se é um placeholder (sem labels criadas), mostrar mensagem especial
         if (entry.isPlaceholder) {
           return (
-            <div 
+            <div
               className={classNames(styles.suggestion, styles.suggestionPlaceholder)}
               onMouseDown={(e) => {
                 // Prevenir seleção do placeholder
@@ -302,7 +304,7 @@ const AddCard = React.memo(
             </div>
           );
         }
-        
+
         // Comportamento normal para labels reais
         return (
           <div className={styles.suggestion}>
@@ -335,7 +337,7 @@ const AddCard = React.memo(
           ...DEFAULT_DATA,
           type: defaultType,
         });
-        
+
         setUsersToAdd([]);
         setLabelsToAdd([]);
 
@@ -522,8 +524,8 @@ const AddCard = React.memo(
           {labelsToAdd.length > 0 && (
             <div {...clickAwayProps} className={styles.previewLabels}>
               {labelsToAdd.map((labelId, index) => (
-                  <span 
-                    key={labelId} 
+                  <span
+                    key={labelId}
                     className={classNames(styles.previewAttachment, styles.previewAttachmentLeft)}
                     style={{ animationDelay: `${index * 100}ms` }}
                     onClick={(e) => {
@@ -543,8 +545,8 @@ const AddCard = React.memo(
           {usersToAdd.length > 0 && (
             <div {...clickAwayProps} className={classNames(styles.previewAttachments, styles.previewAttachmentsRight)}>
               {usersToAdd.map((userId, index) => (
-                  <span 
-                    key={userId} 
+                  <span
+                    key={userId}
                     className={classNames(styles.previewAttachment, styles.previewAttachmentRight)}
                     style={{ animationDelay: `${index * 100}ms` }}
                     onClick={(e) => {
@@ -629,7 +631,7 @@ const AddCard = React.memo(
               disabled={isProcessing}
             >
               <Mention
-                trigger="@"
+                trigger={MentionTriggers.USER}
                 appendSpaceOnAdd
                 data={usersData}
                 displayTransform={(_, display) => `@${display}`}
@@ -638,7 +640,7 @@ const AddCard = React.memo(
                 className={styles.mention}
               />
               <Mention
-                trigger="#"
+                trigger={MentionTriggers.LABEL}
                 appendSpaceOnAdd
                 data={labelsData}
                 displayTransform={(_, display) => `#${display}`}
