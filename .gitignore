@@ -13,8 +13,9 @@ yarn.lock
 
 # Chart dependencies
 **/charts/*.tgz
-backups/planka_backup_20250802_172342.sql
-backups/planka_backup_20250802_190505.sql
+
+# Backups da base de dados (ignorar todos)
+backups/
 
 # Environment variables
 .env
