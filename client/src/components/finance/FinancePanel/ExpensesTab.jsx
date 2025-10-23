@@ -539,7 +539,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
             <div className={styles.tableHeader}>
               <div className={styles.headerCell}>{t('finance.date', { defaultValue: 'Data' })}</div>
               <div className={styles.headerCell}>{t('finance.category', { defaultValue: 'Categoria' })}</div>
-              <div className={styles.headerCell}>{t('finance.description', { defaultValue: 'Descrição' })}</div>
+              <div className={`${styles.headerCell} ${styles.descriptionHeader}`}>{t('finance.description', { defaultValue: 'Descrição' })}</div>
               <div className={styles.headerCell}>{t('finance.value', { defaultValue: 'Valor' })}</div>
               <div className={`${styles.headerCell} ${styles.actionsHeader}`}>
                 {t('common.actions', { defaultValue: 'Ações' })}

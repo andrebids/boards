@@ -388,7 +388,7 @@
 
 .filtersBarMain {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 12px 20px;
   gap: 16px;
@@ -411,10 +411,12 @@
   align-items: center;
   gap: 16px;
   flex: 1;
+  justify-content: flex-end;
   
   @media (max-width: 768px) {
     width: 100%;
     flex-wrap: wrap;
+    justify-content: center;
   }
 }
 
@@ -888,6 +890,10 @@
   text-align: center !important;
 }
 
+.descriptionHeader {
+  text-align: left !important;
+}
+
 // ============================================
 // Table Body
 // ============================================
@@ -932,7 +938,7 @@
   font-size: 0.95rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
-  text-align: center !important;
+  text-align: center;
   
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   
@@ -948,11 +954,19 @@
 }
 
 .descriptionCell {
-  text-align: center;
+  text-align: left !important;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 300px;
+}
+
+.tableRow .tableCell.descriptionCell {
+  text-align: left !important;
+}
+
+.tableBody .tableRow .tableCell.descriptionCell {
+  text-align: left !important;
 }
 
 .actionsCell {
@@ -1012,11 +1026,21 @@
     color: rgba(255, 255, 255, 0.6) !important;
     transition: all 0.15s ease;
     
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    // Usar a abordagem padrão do Semantic UI para centralização
+    display: inline-block !important;
     line-height: 1 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    
+    // Remover posicionamento absoluto que pode causar desalinhamento
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    
+    // Garantir que o ícone ocupe o espaço central
+    width: 100% !important;
+    height: 100% !important;
   }
   
   &:hover {
