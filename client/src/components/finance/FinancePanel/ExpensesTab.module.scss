@@ -923,8 +923,8 @@
 }
 
 .descriptionHeader {
-  text-align: left !important;
-  justify-content: flex-start;
+  text-align: center !important;
+  justify-content: center;
 }
 
 .valueHeader {
@@ -996,8 +996,8 @@
 }
 
 .descriptionCell {
-  text-align: left !important;
-  justify-content: flex-start;
+  text-align: center !important;
+  justify-content: center;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -1006,11 +1006,11 @@
 }
 
 .tableRow .tableCell.descriptionCell {
-  text-align: left !important;
+  text-align: center !important;
 }
 
 .tableBody .tableRow .tableCell.descriptionCell {
-  text-align: left !important;
+  text-align: center !important;
 }
 
 .actionsCell {
@@ -1020,12 +1020,6 @@
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  width: 100% !important;
-  
-  // Força o alinhamento central mesmo com flex
-  & > * {
-    margin: 0 auto;
-  }
 }
 
 // ============================================
@@ -1037,82 +1031,72 @@
   gap: 8px;
   justify-content: center !important;
   align-items: center !important;
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 auto !important;
+  margin: 0 !important;
 }
 
 .actionButton {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   position: relative;
   
   cursor: pointer;
-  transition: all 0.15s ease;
-  
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  transition: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18);
   
   i.icon {
     margin: 0 !important;
     padding: 0 !important;
-    font-size: 12px !important;
-    color: rgba(255, 255, 255, 0.6) !important;
-    transition: all 0.15s ease;
-    
-    // Usar a abordagem padrão do Semantic UI para centralização
-    display: inline-block !important;
-    line-height: 1 !important;
-    text-align: center !important;
-    vertical-align: middle !important;
-    
-    // Remover posicionamento absoluto que pode causar desalinhamento
-    position: static !important;
-    top: auto !important;
-    left: auto !important;
-    transform: none !important;
-  
-    // Centralizar o glifo do ícone dentro do botão
-    width: auto !important;
-    height: auto !important;
-    display: flex !important;
+    font-size: 14px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    transition: color 0.15s ease;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    line-height: 1 !important;
   }
   
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.30);
     
     i.icon {
-      color: rgba(255, 255, 255, 0.9) !important;
+      color: rgba(255, 255, 255, 1) !important;
     }
   }
   
+  &:focus-visible {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 0 0 3px rgba(59, 130, 246, 0.22);
+  }
+  
   &:active {
-    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.12);
   }
 }
 
 .deleteButton {
   &:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.22);
+    border-color: rgba(239, 68, 68, 0.5);
     
     i.icon {
-      color: rgba(255, 220, 220, 0.95) !important;
+      color: rgba(255, 230, 230, 1) !important;
     }
+  }
+  
+  &:focus-visible {
+    border-color: rgba(239, 68, 68, 0.65);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 0 0 3px rgba(239, 68, 68, 0.24);
   }
 }
 

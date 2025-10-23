@@ -492,8 +492,6 @@ const ExpensesTab = React.memo(({ projectId }) => {
                       value={startDate}
                       className={styles.field}
                       onChange={handleStartDateChange}
-                      icon="calendar outline"
-                      iconPosition="right"
                       style={{ colorScheme: 'dark' }}
                     />
                     <span className={styles.dateSeparator}>até</span>
@@ -502,8 +500,6 @@ const ExpensesTab = React.memo(({ projectId }) => {
                       value={endDate}
                       className={styles.field}
                       onChange={handleEndDateChange}
-                      icon="calendar outline"
-                      iconPosition="right"
                       style={{ colorScheme: 'dark' }}
                     />
                   </div>
@@ -630,6 +626,8 @@ const ExpensesTab = React.memo(({ projectId }) => {
                         <button
                           className={styles.actionButton}
                           onClick={() => handleEditExpense(expense)}
+                          type="button"
+                          aria-label={t('common.edit', { defaultValue: 'Editar' })}
                           title={t('common.edit', { defaultValue: 'Editar' })}
                         >
                           <Icon name="edit outline" />
@@ -637,6 +635,8 @@ const ExpensesTab = React.memo(({ projectId }) => {
                         <button
                           className={`${styles.actionButton} ${styles.deleteButton}`}
                           onClick={() => handleDeleteExpense(expense.id)}
+                          type="button"
+                          aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
                           title={t('common.delete', { defaultValue: 'Eliminar' })}
                         >
                           <Icon name="trash alternate outline" />
@@ -666,6 +666,8 @@ const ExpensesTab = React.memo(({ projectId }) => {
                         <button
                           className={styles.actionButton}
                           onClick={() => handleEditExpense(expense)}
+                          type="button"
+                          aria-label={t('common.edit', { defaultValue: 'Editar' })}
                           title={t('common.edit', { defaultValue: 'Editar' })}
                         >
                           <Icon name="edit outline" />
@@ -673,6 +675,8 @@ const ExpensesTab = React.memo(({ projectId }) => {
                         <button
                           className={`${styles.actionButton} ${styles.deleteButton}`}
                           onClick={() => handleDeleteExpense(expense.id)}
+                          type="button"
+                          aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
                           title={t('common.delete', { defaultValue: 'Eliminar' })}
                         >
                           <Icon name="trash alternate outline" />
