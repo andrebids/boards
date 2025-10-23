@@ -40,10 +40,11 @@ module.exports = {
       throw Errors.PROJECT_NOT_FOUND;
     }
 
-    // Verificar se user tem permissão
-    const hasAccess = await sails.helpers.finance.isMemberOrManager(project.id, currentUser.id);
+    // Verificar se user tem permissão (apenas Finance Members ou Admins Globais)
+    const isFinanceMember = await sails.helpers.finance.isMember(project.id, currentUser.id);
+    const isAdmin = currentUser.role === User.Roles.ADMIN;
 
-    if (!hasAccess) {
+    if (!isFinanceMember && !isAdmin) {
       throw Errors.NOT_FINANCE_MEMBER;
     }
 

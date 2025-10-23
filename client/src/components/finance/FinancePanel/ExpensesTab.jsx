@@ -32,6 +32,47 @@ const ExpensesTab = React.memo(({ projectId }) => {
     description: '',
     value: '',
   });
+  // Debug/stacking helpers
+  const [activeDropdownRowId, setActiveDropdownRowId] = useState(null);
+  const inlineDropdownRefs = useRef({});
+
+  // Helper: log stacking context info for an element and its ancestors
+  const logStackingContext = useCallback((el, label = 'el') => {
+    try {
+      if (!el) {
+        console.log('[Finance][stacking] no element for', label);
+        return;
+      }
+      const lines = [];
+      let node = el;
+      let depth = 0;
+      while (node && depth < 12) {
+        const cs = window.getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        lines.push({
+          depth,
+          tag: node.tagName?.toLowerCase(),
+          classes: node.className,
+          id: node.id,
+          position: cs.position,
+          zIndex: cs.zIndex,
+          transform: cs.transform,
+          filter: cs.filter,
+          backdropFilter: cs.backdropFilter,
+          opacity: cs.opacity,
+          mixBlendMode: cs.mixBlendMode,
+          isolation: cs.isolation,
+          overflow: `${cs.overflow}/${cs.overflowX}/${cs.overflowY}`,
+          rect: { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.width), h: Math.round(rect.height) },
+        });
+        node = node.parentElement;
+        depth += 1;
+      }
+      console.table(lines);
+    } catch (e) {
+      console.log('[Finance][stacking] error', e);
+    }
+  }, []);
   
   // Estados para o formulário inline
   const [formData, setFormData] = useState(() => {
@@ -184,6 +225,33 @@ const ExpensesTab = React.memo(({ projectId }) => {
     setInlineEditingRowId(null);
     setInlineEditingData({ date: '', category: '', description: '', value: '' });
   }, [dispatch, inlineEditingData, t]);
+
+  // Dropdown open/close handlers for inline row dropdowns
+  const handleInlineDropdownOpen = useCallback((expenseId) => {
+    setActiveDropdownRowId(expenseId);
+    // Log stacking info for the dropdown menu and relevant ancestors
+    requestAnimationFrame(() => {
+      const root = inlineDropdownRefs.current[expenseId];
+      // Verificar se root existe e é um elemento DOM válido
+      if (root && root.querySelector && typeof root.querySelector === 'function') {
+        const menu = root.querySelector('.menu');
+        console.log('[Finance] Dropdown opened on row', expenseId);
+        logStackingContext(menu, 'dropdown.menu');
+        // Also log row, header and glass container for context
+        const row = root.closest(`.${styles.tableRow}`);
+        const header = document.querySelector(`.${styles.tableHeader}`);
+        const glass = document.querySelector(`.${styles.glassContainer}`);
+        logStackingContext(row, 'tableRow');
+        logStackingContext(header, 'tableHeader');
+        logStackingContext(glass, 'glassContainer');
+      }
+    });
+  }, [logStackingContext, styles.tableRow, styles.tableHeader, styles.glassContainer]);
+
+  const handleInlineDropdownClose = useCallback(() => {
+    setActiveDropdownRowId(null);
+    console.log('[Finance] Dropdown closed');
+  }, []);
 
   // Handlers para filtros
   const handleClearFilters = useCallback(() => {
@@ -572,7 +640,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
               {expenses.map((expense) => (
                 <div key={expense.id}>
                   {/* Desktop Table Row */}
-                  <div className={styles.tableRow}>
+                  <div className={`${styles.tableRow} ${activeDropdownRowId === expense.id ? styles.rowRaised : ''}`}>
                     <div className={styles.tableCell}>
                       {inlineEditingRowId === expense.id ? (
                         <Input
@@ -598,6 +666,9 @@ const ExpensesTab = React.memo(({ projectId }) => {
                           additionLabel={t('finance.addCategory', { defaultValue: 'Adicionar: ' })}
                           onAddItem={(_, { value }) => handleInlineChange('category', value)}
                           className={styles.inlineDropdown}
+                          onOpen={() => handleInlineDropdownOpen(expense.id)}
+                          onClose={handleInlineDropdownClose}
+                          ref={(el) => { inlineDropdownRefs.current[expense.id] = el; }}
                         />
                       ) : (
                         <>{expense.category}</>

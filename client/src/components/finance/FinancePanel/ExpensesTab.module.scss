@@ -974,6 +974,11 @@
   }
 }
 
+// Quando um dropdown desta linha estiver aberto, eleva a linha toda
+.rowRaised {
+  z-index: 10010;
+}
+
 .tableCell {
   padding: 16px 20px;
   font-size: 0.95rem;
@@ -1110,6 +1115,17 @@
   
   &:active {
     background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Apenas o botão de aprovar (ícone check) em verde */
+.actionButton {
+  i.icon.check {
+    color: #21ba45 !important; /* Semantic UI green */
+  }
+
+  &:hover i.icon.check {
+    color: #1e9e3f !important;
   }
 }
 

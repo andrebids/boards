@@ -133,6 +133,8 @@
     max-height: 200px !important;
     overflow-y: scroll !important;
     overflow-x: hidden !important;
+    // Garante que os menus abrem acima de tabelas/conteúdos
+    z-index: 10020 !important;
     
     // Scrollbar personalizada com tema liquid glass
     &::-webkit-scrollbar {
@@ -202,6 +204,18 @@
   }
 
   #app {
+    // Dropdowns globais (fora de modais) devem ficar acima do conteúdo
+    .ui.dropdown .menu,
+    .ui.dropdown .menu.visible,
+    .ui.dropdown .menu.transition.visible {
+      z-index: 10020 !important;
+    }
+
+    // O próprio dropdown quando ativo também recebe uma camada superior
+    .ui.selection.dropdown.active,
+    .ui.dropdown.active {
+      z-index: 10021 !important;
+    }
     background: #202936;
     overflow-x: auto;
 
