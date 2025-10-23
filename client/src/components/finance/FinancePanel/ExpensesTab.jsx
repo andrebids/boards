@@ -23,11 +23,19 @@ const ExpensesTab = React.memo(({ projectId }) => {
   const [editingExpense, setEditingExpense] = useState(null);
   
   // Estados para o formulário inline
-  const [formData, setFormData] = useState({
-    category: '',
-    description: '',
-    value: '',
-    date: '',
+  const [formData, setFormData] = useState(() => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('pt-PT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    return {
+      category: '',
+      description: '',
+      value: '',
+      date: formattedDate, // Pré-define a data atual no formato dd/mm/yyyy
+    };
   });
   
   // Estados para filtros
@@ -66,21 +74,33 @@ const ExpensesTab = React.memo(({ projectId }) => {
     }
 
     // Limpar formulário após submissão
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('pt-PT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
     setFormData({
       category: '',
       description: '',
       value: '',
-      date: '',
+      date: formattedDate, // Pré-define a data atual no formato dd/mm/yyyy
     });
     setEditingExpense(null);
   }, [formData, editingExpense, projectId, dispatch]);
 
   const handleClearForm = useCallback(() => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('pt-PT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
     setFormData({
       category: '',
       description: '',
       value: '',
-      date: '',
+      date: formattedDate, // Pré-define a data atual no formato dd/mm/yyyy
     });
     setEditingExpense(null);
   }, []);
@@ -330,8 +350,9 @@ const ExpensesTab = React.memo(({ projectId }) => {
               <Form.Field required>
                 <label className="glass-label">{t('finance.date', { defaultValue: 'Data' })}</label>
                 <Input
-                  type="date"
+                  type="text"
                   value={formData.date}
+                  placeholder="dd/mm/yyyy"
                   className={styles.field}
                   onChange={(e) => handleFormChange('date', e.target.value)}
                 />
@@ -528,35 +549,74 @@ const ExpensesTab = React.memo(({ projectId }) => {
             {/* Table Body */}
             <div className={styles.tableBody}>
               {expenses.map((expense) => (
-                <div key={expense.id} className={styles.tableRow}>
-                  <div className={styles.tableCell}>
-                    {formatDate(expense.date)}
+                <div key={expense.id}>
+                  {/* Desktop Table Row */}
+                  <div className={styles.tableRow}>
+                    <div className={styles.tableCell}>
+                      {formatDate(expense.date)}
+                    </div>
+                    <div className={styles.tableCell}>
+                      {expense.category}
+                    </div>
+                    <div className={`${styles.tableCell} ${styles.descriptionCell}`}>
+                      {expense.description}
+                    </div>
+                    <div className={`${styles.tableCell} ${styles.valueCell}`}>
+                      {formatCurrency(expense.value)}
+                    </div>
+                    <div className={`${styles.tableCell} ${styles.actionsCell}`}>
+                      <div className={styles.actionButtons}>
+                        <button
+                          className={styles.actionButton}
+                          onClick={() => handleEditExpense(expense)}
+                          title={t('common.edit', { defaultValue: 'Editar' })}
+                        >
+                          <Icon name="edit outline" />
+                        </button>
+                        <button
+                          className={`${styles.actionButton} ${styles.deleteButton}`}
+                          onClick={() => handleDeleteExpense(expense.id)}
+                          title={t('common.delete', { defaultValue: 'Eliminar' })}
+                        >
+                          <Icon name="trash alternate outline" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className={styles.tableCell}>
-                    {expense.category}
-                  </div>
-                  <div className={`${styles.tableCell} ${styles.descriptionCell}`}>
-                    {expense.description}
-                  </div>
-                  <div className={`${styles.tableCell} ${styles.valueCell}`}>
-                    {formatCurrency(expense.value)}
-                  </div>
-                  <div className={`${styles.tableCell} ${styles.actionsCell}`}>
-                    <div className={styles.actionButtons}>
-                      <button
-                        className={styles.actionButton}
-                        onClick={() => handleEditExpense(expense)}
-                        title={t('common.edit', { defaultValue: 'Editar' })}
-                      >
-                        <Icon name="edit outline" />
-                      </button>
-                      <button
-                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                        onClick={() => handleDeleteExpense(expense.id)}
-                        title={t('common.delete', { defaultValue: 'Eliminar' })}
-                      >
-                        <Icon name="trash alternate outline" />
-                      </button>
+                  
+                  {/* Mobile Card */}
+                  <div className={styles.mobileCard}>
+                    <div className={styles.cardHeader}>
+                      <div className={styles.cardDate}>
+                        {formatDate(expense.date)}
+                      </div>
+                      <div className={styles.cardValue}>
+                        {formatCurrency(expense.value)}
+                      </div>
+                    </div>
+                    <div className={styles.cardBody}>
+                      <div className={styles.cardCategory}>
+                        {expense.category}
+                      </div>
+                      <div className={styles.cardDescription}>
+                        {expense.description}
+                      </div>
+                      <div className={styles.cardActions}>
+                        <button
+                          className={styles.actionButton}
+                          onClick={() => handleEditExpense(expense)}
+                          title={t('common.edit', { defaultValue: 'Editar' })}
+                        >
+                          <Icon name="edit outline" />
+                        </button>
+                        <button
+                          className={`${styles.actionButton} ${styles.deleteButton}`}
+                          onClick={() => handleDeleteExpense(expense.id)}
+                          title={t('common.delete', { defaultValue: 'Eliminar' })}
+                        >
+                          <Icon name="trash alternate outline" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -574,6 +634,18 @@ const ExpensesTab = React.memo(({ projectId }) => {
                 <strong>{formatCurrency(calculateTotal())}</strong>
               </div>
               <div className={styles.totalCell}></div>
+            </div>
+            
+            {/* Mobile Total Card */}
+            <div className={styles.mobileCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.cardDate}>
+                  <strong>{t('finance.total', { defaultValue: 'Total' })}</strong>
+                </div>
+                <div className={styles.cardValue}>
+                  <strong>{formatCurrency(calculateTotal())}</strong>
+                </div>
+              </div>
             </div>
           </div>
         )}

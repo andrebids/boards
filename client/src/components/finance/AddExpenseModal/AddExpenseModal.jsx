@@ -20,15 +20,19 @@ const AddExpenseModal = React.memo(({ projectId, expense, onClose }) => {
   const [t] = useTranslation();
   const [ClosableModal] = useClosableModal();
 
-  const [formData, setFormData] = useState({
-    category: '',
-    description: '',
-    value: '',
-    date: '',
+  const [formData, setFormData] = useState(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return {
+      category: '',
+      description: '',
+      value: '',
+      date: today, // Pré-define a data atual
+    };
   });
 
   useEffect(() => {
     if (expense) {
+      // Se está a editar uma despesa existente, carrega os dados da despesa
       setFormData({
         category: expense.category || '',
         description: expense.description || '',
@@ -36,7 +40,7 @@ const AddExpenseModal = React.memo(({ projectId, expense, onClose }) => {
         date: expense.date || '',
       });
     } else {
-      // Set today's date as default
+      // Para nova despesa, garante que a data atual está definida
       const today = new Date().toISOString().split('T')[0];
       setFormData((prev) => ({ ...prev, date: today }));
     }
@@ -86,6 +90,7 @@ const AddExpenseModal = React.memo(({ projectId, expense, onClose }) => {
             <Input
               type="date"
               value={formData.date}
+              defaultValue={formData.date}
               className={styles.field}
               onChange={(e) => handleChange('date', e.target.value)}
             />

@@ -30,7 +30,11 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
   const [t] = useTranslation();
 
   const [data, handleFieldChange, setData] = useForm(() => {
-    const date = defaultValue || new Date().setHours(12, 0, 0, 0);
+    const date = defaultValue || (() => {
+      const now = new Date();
+      now.setHours(12, 0, 0, 0);
+      return now;
+    })();
 
     return {
       date: t('format:date', {
@@ -56,11 +60,17 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
     });
 
     if (Number.isNaN(date.getTime())) {
+      // Se não há defaultValue, retornar data atual para o calendário
+      if (!defaultValue) {
+        const now = new Date();
+        now.setHours(12, 0, 0, 0);
+        return now;
+      }
       return null;
     }
 
     return date;
-  }, [data.date, t]);
+  }, [data.date, t, defaultValue]);
 
   const handleSubmit = useCallback(() => {
     if (!nullableDate) {
