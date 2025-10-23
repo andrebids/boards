@@ -368,7 +368,8 @@
     0 8px 32px rgba(0, 0, 0, 0.12),
     inset 0 1px 1px rgba(255, 255, 255, 0.3);
   
-  overflow: hidden;
+  // Permitir dropdowns e popups ultrapassarem os limites do container
+  overflow: visible;
   height: fit-content;
   display: flex;
   flex-direction: column;
@@ -852,6 +853,7 @@
   );
   flex: 0 0 auto;
   overflow-y: visible;
+  overflow-x: visible;
   height: auto;
   min-height: auto;
 }
@@ -957,6 +959,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   
   transition: all 0.2s ease-in-out;
+  position: relative; // para z-index surtir efeito nos filhos
   
   &:hover {
     background: linear-gradient(
@@ -993,6 +996,32 @@
   justify-content: flex-end;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.inlineInput:global(.ui.input) > input {
+  background: rgba(14, 17, 23, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+  width: 110px;
+  text-align: right;
+}
+
+.inlineDropdown:global(.ui.selection.dropdown) {
+  background: rgba(14, 17, 23, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  min-width: 160px;
+  z-index: 5;
+}
+
+// Aumentar o z-index do menu flutuante do Semantic UI dentro desta área
+:global(#app) {
+  .ui.dropdown .menu.visible {
+    z-index: 10020; // garantir que fica acima da tabela e do vidro
+  }
 }
 
 .descriptionCell {

@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,8 @@ import actions from '../../../actions';
 import { EXPENSE_CATEGORIES } from '../../../constants/ExpenseCategories';
 
 import styles from './ExpensesTab.module.scss';
+import FilterBar from './filters/FilterBar';
+import FilterDrawer from './filters/FilterDrawer';
 
 const ExpensesTab = React.memo(({ projectId }) => {
   const dispatch = useDispatch();
@@ -21,6 +23,15 @@ const ExpensesTab = React.memo(({ projectId }) => {
 
   const allExpenses = useSelector(selectors.selectExpenses);
   const [editingExpense, setEditingExpense] = useState(null);
+  const formContainerRef = useRef(null);
+  // Inline editing state for table rows
+  const [inlineEditingRowId, setInlineEditingRowId] = useState(null);
+  const [inlineEditingData, setInlineEditingData] = useState({
+    date: '',
+    category: '',
+    description: '',
+    value: '',
+  });
   
   // Estados para o formulário inline
   const [formData, setFormData] = useState(() => {
@@ -94,6 +105,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
   }, []);
 
   const handleEditExpense = useCallback((expense) => {
+    console.log('[Finance] Edit expense click', expense);
     setEditingExpense(expense);
     // Converter data do formato ISO para o formato do input date
     let dateValue = '';
@@ -109,6 +121,15 @@ const ExpensesTab = React.memo(({ projectId }) => {
       value: expense.value?.toString() || '',
       date: dateValue,
     });
+
+    // Trazer o formulário para a vista para deixar claro que está em modo de edição
+    if (formContainerRef.current) {
+      try {
+        formContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) {
+        // fallback silencioso
+      }
+    }
   }, []);
 
   const handleDeleteExpense = useCallback(
@@ -119,6 +140,50 @@ const ExpensesTab = React.memo(({ projectId }) => {
     },
     [dispatch, t],
   );
+
+  // Inline edit handlers
+  const handleInlineEditStart = useCallback((expense) => {
+    console.log('[Finance] Inline edit start', expense);
+    setInlineEditingRowId(expense.id);
+    let dateValue = '';
+    if (expense.date) {
+      const d = new Date(expense.date);
+      if (!isNaN(d.getTime())) {
+        dateValue = d.toISOString().split('T')[0];
+      }
+    }
+    setInlineEditingData({
+      date: dateValue,
+      category: expense.category || '',
+      description: expense.description || '',
+      value:
+        typeof expense.value === 'number'
+          ? expense.value.toString()
+          : (expense.value || '').toString(),
+    });
+  }, []);
+
+  const handleInlineChange = useCallback((field, value) => {
+    setInlineEditingData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleInlineApprove = useCallback((expense) => {
+    const nextValue = parseFloat(inlineEditingData.value);
+    if (Number.isNaN(nextValue)) {
+      alert(t('finance.valueInvalid', { defaultValue: 'Valor inválido' }));
+      return;
+    }
+    const payload = {
+      date: inlineEditingData.date,
+      category: inlineEditingData.category,
+      description: inlineEditingData.description || '-',
+      value: nextValue,
+    };
+    console.log('[Finance] Inline approve', { id: expense.id, ...payload });
+    dispatch(actions.updateExpense(expense.id, payload));
+    setInlineEditingRowId(null);
+    setInlineEditingData({ date: '', category: '', description: '', value: '' });
+  }, [dispatch, inlineEditingData, t]);
 
   // Handlers para filtros
   const handleClearFilters = useCallback(() => {
@@ -341,7 +406,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
       <div className={styles.mainContent}>
         {/* Left column - Form */}
         <div className={styles.formColumn}>
-          <div className={styles.formContainer}>
+          <div className={styles.formContainer} ref={formContainerRef}>
             <h4 className={styles.formTitle}>
               {editingExpense 
                 ? t('finance.editExpense', { defaultValue: 'Editar Despesa' })
@@ -423,167 +488,66 @@ const ExpensesTab = React.memo(({ projectId }) => {
         <div className={styles.tableColumn}>
           {/* Main glass container */}
       <div className={styles.glassContainer}>
-        {/* Nova Barra de Filtros Redesenhada */}
-        <div className={styles.filtersBarContainer}>
-          {/* Barra Principal */}
-          <div className={styles.filtersBarMain}>
-            <div className={styles.filtersBarLeft}>
-              <button 
-                className={styles.filtersToggleButton}
-                onClick={handleToggleFilters}
-              >
-                <Icon name="filter" />
-                Filtros
-                {activeFiltersCount > 0 && (
-                  <span className={styles.filterCount}>{activeFiltersCount}</span>
-                )}
-                <Icon name={isFiltersOpen ? "chevron up" : "chevron down"} />
-              </button>
-              
-              {/* Ordenação movida para dentro do dropdown de filtros */}
-            </div>
-            
-            <div className={styles.filtersBarRight}>
-              {(startDate || endDate || category) && (
-                <div className={styles.resultsBadge}>
-                  {expenses.length} / {allExpenses?.length || 0}
-                </div>
-              )}
-              
-              {activeFiltersCount > 0 && (
-                <button className={styles.clearButton} onClick={handleClearFilters}>
-                  <Icon name="redo" />
-                  Limpar
-                </button>
-              )}
-            </div>
-          </div>
-          
-          {/* Dropdown de Filtros Avançados */}
-          {isFiltersOpen && (
-            <div className={styles.filtersDropdown}>
-              <div className={styles.filtersGrid}>
-                {/* Período - Filtros Rápidos */}
-                <div className={styles.filterSection}>
-                  <label className={styles.filterSectionLabel}>
-                    <Icon name="calendar" /> Período Rápido
-                  </label>
-                  <div className={styles.quickFiltersGrid}>
-                    <button className={styles.quickFilterBtn} onClick={handleFilterThisMonth}>
-                      Este Mês
-                    </button>
-                    <button className={styles.quickFilterBtn} onClick={handleFilterThisYear}>
-                      Este Ano
-                    </button>
-                    <button className={styles.quickFilterBtn} onClick={handleFilterCustom}>
-                      Personalizado
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Intervalo de Datas */}
-                <div className={styles.filterSection}>
-                  <label className={styles.filterSectionLabel}>
-                    <Icon name="calendar outline" /> Intervalo de Datas
-                  </label>
-                  <div className={styles.dateRangeInputs}>
-                    <Input
-                      type="date"
-                      value={startDate}
-                      className={styles.field}
-                      onChange={handleStartDateChange}
-                      style={{ colorScheme: 'dark' }}
-                    />
-                    <span className={styles.dateSeparator}>até</span>
-                    <Input
-                      type="date"
-                      value={endDate}
-                      className={styles.field}
-                      onChange={handleEndDateChange}
-                      style={{ colorScheme: 'dark' }}
-                    />
-                  </div>
-                </div>
-                
-                {/* Mês e Ano */}
-                <div className={styles.filterSection}>
-                  <label className={styles.filterSectionLabel}>
-                    <Icon name="calendar check" /> Mês/Ano Específico
-                  </label>
-                  <div className={styles.monthYearInputs}>
-                    <Dropdown
-                      placeholder="Mês"
-                      selection
-                      options={monthOptions}
-                      value={selectedMonth || null}
-                      className={styles.field}
-                      onChange={(_, { value }) => {
-                        setSelectedMonth(value);
-                        if (value && selectedYear) {
-                          const year = parseInt(selectedYear);
-                          const month = parseInt(value);
-                          const firstDay = new Date(year, month - 1, 1);
-                          const lastDay = new Date(year, month, 0);
-                          setStartDate(firstDay.toISOString().split('T')[0]);
-                          setEndDate(lastDay.toISOString().split('T')[0]);
-                        }
-                      }}
-                    />
-                    <Dropdown
-                      placeholder="Ano"
-                      selection
-                      options={yearOptions}
-                      value={selectedYear || null}
-                      className={styles.field}
-                      onChange={(_, { value }) => {
-                        setSelectedYear(value);
-                        if (value && selectedMonth) {
-                          const year = parseInt(value);
-                          const month = parseInt(selectedMonth);
-                          const firstDay = new Date(year, month - 1, 1);
-                          const lastDay = new Date(year, month, 0);
-                          setStartDate(firstDay.toISOString().split('T')[0]);
-                          setEndDate(lastDay.toISOString().split('T')[0]);
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-                
-                {/* Categoria */}
-                <div className={styles.filterSection}>
-                  <label className={styles.filterSectionLabel}>
-                    <Icon name="tag" /> Categoria
-                  </label>
-                  <Dropdown
-                    placeholder="Todas"
-                    selection
-                    clearable
-                    search
-                    options={EXPENSE_CATEGORIES}
-                    value={category || null}
-                    className={styles.field}
-                    onChange={(_, { value }) => setCategory(value)}
-                  />
-                </div>
+        {/* Nova Barra de Filtros (com Drawer) */}
+        {(() => {
+          const filters = {
+            startDate,
+            endDate,
+            month: selectedMonth,
+            year: selectedYear,
+            categoryId: category || 'all',
+            sort: sortBy,
+          };
+          const resultsText = (startDate || endDate || category || selectedMonth || selectedYear)
+            ? `${expenses.length} / ${allExpenses?.length || 0}`
+            : '';
+          const handleRemoveChip = (key) => {
+            switch (key) {
+              case 'range':
+                setStartDate('');
+                setEndDate('');
+                break;
+              case 'monthYear':
+                setSelectedMonth('');
+                setSelectedYear('');
+                break;
+              case 'category':
+                setCategory('');
+                break;
+              default:
+                break;
+            }
+          };
+          const handleChangeFromDrawer = (next) => {
+            setStartDate(next.startDate || '');
+            setEndDate(next.endDate || '');
+            setSelectedMonth(next.month || '');
+            setSelectedYear(next.year || '');
+            setCategory(next.categoryId === 'all' ? '' : (next.categoryId || ''));
+            setSortBy(next.sort || 'data-recente');
+          };
 
-                {/* Ordenação */}
-                <div className={styles.filterSection}>
-                  <label className={styles.filterSectionLabel}>
-                    <Icon name="sort" /> {t('finance.sortBy', { defaultValue: 'Ordenação' })}
-                  </label>
-                  <Dropdown
-                    selection
-                    options={sortOptions}
-                    value={sortBy}
-                    className={styles.field}
-                    onChange={(_, { value }) => setSortBy(value)}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+          return (
+            <>
+              <FilterBar
+                filters={filters}
+                resultsText={resultsText}
+                onOpen={handleToggleFilters}
+                onClear={handleClearFilters}
+                onRemoveChip={handleRemoveChip}
+              />
+              <FilterDrawer
+                open={isFiltersOpen}
+                onClose={() => setIsFiltersOpen(false)}
+                value={filters}
+                onChange={handleChangeFromDrawer}
+                onApply={handleChangeFromDrawer}
+                categoryOptions={EXPENSE_CATEGORIES}
+                sortOptions={sortOptions}
+              />
+            </>
+          );
+        })()}
 
         {/* Expenses table */}
         {expenses.length === 0 ? (
@@ -610,28 +574,83 @@ const ExpensesTab = React.memo(({ projectId }) => {
                   {/* Desktop Table Row */}
                   <div className={styles.tableRow}>
                     <div className={styles.tableCell}>
-                      {formatDate(expense.date)}
+                      {inlineEditingRowId === expense.id ? (
+                        <Input
+                          type="date"
+                          value={inlineEditingData.date}
+                          onChange={(e) => handleInlineChange('date', e.target.value)}
+                          className={styles.inlineInput}
+                          style={{ colorScheme: 'dark' }}
+                        />
+                      ) : (
+                        <>{formatDate(expense.date)}</>
+                      )}
                     </div>
                     <div className={styles.tableCell}>
-                      {expense.category}
+                      {inlineEditingRowId === expense.id ? (
+                        <Dropdown
+                          selection
+                          search
+                          options={EXPENSE_CATEGORIES}
+                          value={inlineEditingData.category}
+                          onChange={(_, { value }) => handleInlineChange('category', value)}
+                          allowAdditions
+                          additionLabel={t('finance.addCategory', { defaultValue: 'Adicionar: ' })}
+                          onAddItem={(_, { value }) => handleInlineChange('category', value)}
+                          className={styles.inlineDropdown}
+                        />
+                      ) : (
+                        <>{expense.category}</>
+                      )}
                     </div>
                     <div className={`${styles.tableCell} ${styles.descriptionCell}`}>
-                      {expense.description}
+                      {inlineEditingRowId === expense.id ? (
+                        <Input
+                          type="text"
+                          value={inlineEditingData.description}
+                          onChange={(e) => handleInlineChange('description', e.target.value)}
+                          className={styles.inlineInput}
+                        />
+                      ) : (
+                        <>{expense.description}</>
+                      )}
                     </div>
                     <div className={`${styles.tableCell} ${styles.valueCell}`}>
-                      {formatCurrency(expense.value)}
+                      {inlineEditingRowId === expense.id ? (
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={inlineEditingData.value}
+                          onChange={(e) => handleInlineChange('value', e.target.value)}
+                          className={styles.inlineInput}
+                        />
+                      ) : (
+                        <>{formatCurrency(expense.value)}</>
+                      )}
                     </div>
                     <div className={`${styles.tableCell} ${styles.actionsCell}`}>
                       <div className={styles.actionButtons}>
-                        <button
-                          className={styles.actionButton}
-                          onClick={() => handleEditExpense(expense)}
-                          type="button"
-                          aria-label={t('common.edit', { defaultValue: 'Editar' })}
-                          title={t('common.edit', { defaultValue: 'Editar' })}
-                        >
-                          <Icon name="edit outline" />
-                        </button>
+                        {inlineEditingRowId === expense.id ? (
+                          <button
+                            className={styles.actionButton}
+                            onClick={() => handleInlineApprove(expense)}
+                            type="button"
+                            aria-label={t('common.approve', { defaultValue: 'Aprovar' })}
+                            title={t('common.approve', { defaultValue: 'Aprovar' })}
+                          >
+                            <Icon name="check" />
+                          </button>
+                        ) : (
+                          <button
+                            className={styles.actionButton}
+                            onClick={() => handleInlineEditStart(expense)}
+                            type="button"
+                            aria-label={t('common.edit', { defaultValue: 'Editar' })}
+                            title={t('common.edit', { defaultValue: 'Editar' })}
+                          >
+                            <Icon name="edit outline" />
+                          </button>
+                        )}
                         <button
                           className={`${styles.actionButton} ${styles.deleteButton}`}
                           onClick={() => handleDeleteExpense(expense.id)}

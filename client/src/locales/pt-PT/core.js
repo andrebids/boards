@@ -708,6 +708,7 @@ export default {
       withoutBaseGroup: 'Sem grupo base',
       writeComment: 'Escreva um comentário...',
       video: 'Vídeo',
+      loading: 'A carregar...',
       loadingVideoPreview: 'A carregar pré-visualização do vídeo...',
       noVideoPreviewAvailable: 'Nenhuma pré-visualização disponível',
       errorLoadingVideoPreview: 'Erro ao carregar pré-visualização',

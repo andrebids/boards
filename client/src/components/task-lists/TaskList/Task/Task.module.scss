@@ -48,6 +48,16 @@
     height: 100%;
   }
 
+  /* Make the Semantic UI checkbox checkmark green when checked, only in task list */
+  .checkbox {
+    :global(.ui.checkbox) {
+      input:checked ~ label:after,
+      input:checked ~ .box:after {
+        color: #21ba45; /* semantic-ui green */
+      }
+    }
+  }
+
   .contentHoverable:hover {
     background: rgba(9, 30, 66, 0.04);
 
