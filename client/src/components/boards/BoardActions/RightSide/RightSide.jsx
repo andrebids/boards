@@ -36,7 +36,19 @@ const RightSide = React.memo(() => {
     dispatch(entryActions.toggleTimelinePanel());
   }, [dispatch]);
 
+  const handleFinanceClick = useCallback(() => {
+    // Alternar entre KANBAN e FINANCE
+    const newView = board.view === BoardViews.FINANCE ? BoardViews.KANBAN : BoardViews.FINANCE;
+    dispatch(entryActions.updateViewInCurrentBoard(newView));
+  }, [board.view, dispatch]);
+
   const ActionsPopup = usePopup(ActionsStep, { variantClass: 'glass' });
+
+  // Verificar se user é finance member (TODO: implementar selector adequado)
+  // Por enquanto, mostrar apenas para project managers
+  const isProjectManager = useSelector(state =>
+    selectors.selectIsCurrentUserManagerForCurrentProject(state),
+  );
 
   const views = [];
   if (board.context === BoardContexts.BOARD) {
@@ -61,6 +73,18 @@ const RightSide = React.memo(() => {
           ))}
         </div>
       </div>
+      {isProjectManager && (
+        <div className={styles.action}>
+          <button
+            type="button"
+            className={`${styles.button} ${board.view === BoardViews.FINANCE ? styles.active : ''}`}
+            onClick={handleFinanceClick}
+            aria-label={t('finance.title', { defaultValue: 'Painel Financeiro' })}
+          >
+            <Icon fitted name="euro" />
+          </button>
+        </div>
+      )}
       <div className={styles.action}>
         <button
           type="button"

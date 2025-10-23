@@ -27,13 +27,11 @@ module.exports = {
     createdAt: {
       type: 'ref',
       columnType: 'timestamptz',
-      autoCreatedAt: true,
       columnName: 'created_at',
     },
     updatedAt: {
       type: 'ref',
       columnType: 'timestamptz',
-      autoUpdatedAt: true,
       columnName: 'updated_at',
     },
   },

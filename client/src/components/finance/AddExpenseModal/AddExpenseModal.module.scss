@@ -1,0 +1,197 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field:global(.ui.input) > input,
+  textarea.field {
+    /* Enhanced Liquid glass effect para inputs */
+    background: rgba(18, 24, 36, 0.45) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    font-size: 0.98em !important;
+    font-weight: 400 !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 
+      inset 0 1px 3px rgba(0, 0, 0, 0.15),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.03),
+      0 3px 8px rgba(0, 0, 0, 0.16),
+      0 1px 2px rgba(0, 0, 0, 0.08) !important;
+    letter-spacing: 0.01em;
+    position: relative;
+
+    &:hover {
+      background: rgba(18, 24, 36, 0.55) !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+      backdrop-filter: blur(24px) saturate(200%) !important;
+      -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+      box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        0 2px 4px rgba(0, 0, 0, 0.1) !important;
+      transform: translateY(-1px);
+    }
+
+    &:focus {
+      background: rgba(18, 24, 36, 0.65) !important;
+      border-color: rgba(59, 130, 246, 0.5) !important;
+      backdrop-filter: blur(28px) saturate(200%) !important;
+      -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+      box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+        0 0 0 2px rgba(59, 130, 246, 0.08),
+        0 4px 12px rgba(59, 130, 246, 0.15),
+        0 2px 6px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+      transform: translateY(-1px);
+    }
+
+    &::placeholder {
+      color: rgba(230, 237, 243, 0.35) !important;
+      font-weight: 300 !important;
+    }
+  }
+
+  /* Estilos para dropdowns */
+  .field:global(.ui.selection.dropdown) {
+    background: rgba(18, 24, 36, 0.45) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    font-size: 0.98em !important;
+    font-weight: 400 !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 
+      inset 0 1px 3px rgba(0, 0, 0, 0.15),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.03),
+      0 3px 8px rgba(0, 0, 0, 0.16),
+      0 1px 2px rgba(0, 0, 0, 0.08) !important;
+
+    &:hover {
+      background: rgba(18, 24, 36, 0.55) !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+      backdrop-filter: blur(24px) saturate(200%) !important;
+      -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+      box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        0 2px 4px rgba(0, 0, 0, 0.1) !important;
+      transform: translateY(-1px);
+    }
+
+    &:focus {
+      background: rgba(18, 24, 36, 0.65) !important;
+      border-color: rgba(59, 130, 246, 0.5) !important;
+      backdrop-filter: blur(28px) saturate(200%) !important;
+      -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+      box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+        0 0 0 2px rgba(59, 130, 246, 0.08),
+        0 4px 12px rgba(59, 130, 246, 0.15),
+        0 2px 6px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+      transform: translateY(-1px);
+    }
+  }
+
+  /* Estilos para os botões do footer */
+  .ui.button {
+    background: rgba(18, 24, 36, 0.45) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    font-size: 0.98em !important;
+    font-weight: 500 !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 
+      inset 0 1px 3px rgba(0, 0, 0, 0.15),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.03),
+      0 3px 8px rgba(0, 0, 0, 0.16),
+      0 1px 2px rgba(0, 0, 0, 0.08) !important;
+    letter-spacing: 0.01em;
+    position: relative;
+
+    &:hover {
+      background: rgba(18, 24, 36, 0.55) !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+      backdrop-filter: blur(24px) saturate(200%) !important;
+      -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+      box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        0 2px 4px rgba(0, 0, 0, 0.1) !important;
+      transform: translateY(-1px);
+    }
+
+    &:focus {
+      background: rgba(18, 24, 36, 0.65) !important;
+      border-color: rgba(59, 130, 246, 0.5) !important;
+      backdrop-filter: blur(28px) saturate(200%) !important;
+      -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+      box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+        0 0 0 2px rgba(59, 130, 246, 0.08),
+        0 4px 12px rgba(59, 130, 246, 0.15),
+        0 2px 6px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+      transform: translateY(-1px);
+    }
+  }
+
+  /* Botão primário (Guardar) com cor especial */
+  .ui.primary.button {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.75), rgba(37, 99, 235, 0.85)) !important;
+    border: 1px solid rgba(59, 130, 246, 0.6) !important;
+    color: #ffffff !important;
+    box-shadow: 
+      inset 0 1px 3px rgba(0, 0, 0, 0.15),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.03),
+      0 3px 8px rgba(59, 130, 246, 0.25),
+      0 1px 2px rgba(0, 0, 0, 0.08) !important;
+
+    &:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 1)) !important;
+      border-color: rgba(59, 130, 246, 0.8) !important;
+      box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+        0 4px 16px rgba(59, 130, 246, 0.4),
+        0 2px 4px rgba(0, 0, 0, 0.1) !important;
+      transform: translateY(-1px);
+    }
+
+    &:focus {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 1)) !important;
+      border-color: rgba(59, 130, 246, 0.8) !important;
+      box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.15),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+        0 0 0 2px rgba(59, 130, 246, 0.08),
+        0 4px 16px rgba(59, 130, 246, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+      transform: translateY(-1px);
+    }
+  }
+}

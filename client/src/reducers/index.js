@@ -14,6 +14,7 @@ import core from './core';
 import ui from './ui';
 import sidebar from './sidebarReducer';
 import timelinePanel from './timelinePanelReducer';
+import finance from './finance';
 
 export default combineReducers({
   router,
@@ -25,4 +26,5 @@ export default combineReducers({
   ui,
   sidebar,
   timelinePanel,
+  finance,
 });

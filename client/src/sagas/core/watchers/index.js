@@ -28,6 +28,7 @@ import activities from './activities';
 import notifications from './notifications';
 import notificationServices from './notification-services';
 import organizationDefaultLabels from './organization-default-labels';
+import finance from '../../../sagas/finance';
 
 export default [
   router,
@@ -55,4 +56,5 @@ export default [
   notifications,
   notificationServices,
   organizationDefaultLabels,
+  finance,
 ];

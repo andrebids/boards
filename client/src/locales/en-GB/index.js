@@ -1,8 +1,11 @@
+import merge from 'lodash/merge';
+
 import login from './login';
+import finance from './finance';
 
 export default {
   language: 'en-GB',
   country: 'gb',
   name: 'English',
-  embeddedLocale: login,
+  embeddedLocale: merge(login, finance),
 };

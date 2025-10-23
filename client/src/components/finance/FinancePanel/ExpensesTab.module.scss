@@ -1,0 +1,821 @@
+// ============================================
+// iOS Liquid Glass Aesthetic - Expenses Tab
+// ============================================
+
+.wrapper {
+  padding: 20px;
+}
+
+// ============================================
+// Header Section
+// ============================================
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    letter-spacing: 0.3px;
+  }
+}
+
+.addButton {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.6) 0%,
+    rgba(37, 99, 235, 0.5) 100%
+  ) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 12px !important;
+  
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 600 !important;
+  padding: 10px 20px !important;
+  
+  box-shadow: 
+    0 4px 12px rgba(59, 130, 246, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+    
+    transition: all 0.2s ease !important;
+    
+    &:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.7) 0%,
+      rgba(37, 99, 235, 0.6) 100%
+    ) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 
+      0 6px 16px rgba(59, 130, 246, 0.2),
+      inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+  }
+}
+
+// ============================================
+// Main Glass Container
+// ============================================
+
+.glassContainer {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  
+  overflow: hidden;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+// ============================================
+// Filters Bar Container
+// ============================================
+
+.filtersBarContainer {
+  margin-bottom: 0;
+}
+
+// ============================================
+// Main Filters Bar (Always Visible)
+// ============================================
+
+.filtersBarMain {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  gap: 16px;
+  
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  
+  min-height: 50px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.filtersBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+.filtersBarRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+// ============================================
+// Filters Toggle Button
+// ============================================
+
+.filtersToggleButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 600;
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  i.icon {
+    margin: 0 !important;
+    font-size: 0.875rem !important;
+  }
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.filterCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  
+  background: rgba(59, 130, 246, 0.8);
+  border-radius: 10px;
+  
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+// ============================================
+// Inline Quick Sort
+// ============================================
+
+.quickSortWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  i.icon {
+    margin: 0 !important;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem !important;
+  }
+}
+
+.inlineSort {
+  padding: 8px 16px;
+  min-width: 140px;
+  
+  // Estilo glassmorphic como o popup "Filtrar por Membros"
+  background: rgba(14, 17, 23, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  
+  color: #e6edf3;
+  font-size: 0.85rem;
+  font-weight: 500;
+  
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  
+  &:hover {
+    background: rgba(14, 17, 23, 0.85);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    transform: translateY(-1px);
+  }
+  
+  &:focus {
+    outline: none;
+    background: rgba(14, 17, 23, 0.9);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 
+      0 12px 32px rgba(0, 0, 0, 0.45),
+      0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  option {
+    background: rgba(14, 17, 23, 0.95);
+    color: #e6edf3;
+    padding: 8px 12px;
+  }
+}
+
+// ============================================
+// Results Badge
+// ============================================
+
+.resultsBadge {
+  padding: 6px 14px;
+  
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+// ============================================
+// Clear Button (Compact)
+// ============================================
+
+.clearButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.8rem;
+  font-weight: 600;
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  i.icon {
+    margin: 0 !important;
+    font-size: 0.8rem !important;
+  }
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+  
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+// ============================================
+// Filters Dropdown (Expandable)
+// ============================================
+
+.filtersDropdown {
+  padding: 20px;
+  
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+  
+  animation: slideDown 0.25s ease-out;
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ============================================
+// Filters Grid
+// ============================================
+
+.filtersGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.filterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filterSectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.7);
+  
+  i.icon {
+    margin: 0 !important;
+    font-size: 0.875rem !important;
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+// ============================================
+// Quick Filters Grid
+// ============================================
+
+.quickFiltersGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.quickFilterBtn {
+  padding: 10px 12px;
+  
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+  
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// ============================================
+// Date Range Inputs
+// ============================================
+
+.dateRangeInputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dateInput {
+  flex: 1;
+  padding: 10px 14px;
+  
+  // Estilo glassmorphic consistente
+  background: rgba(14, 17, 23, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  
+  color: #e6edf3;
+  font-size: 0.85rem;
+  font-weight: 500;
+  
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  
+  &:focus {
+    outline: none;
+    background: rgba(14, 17, 23, 0.85);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 
+      0 6px 20px rgba(0, 0, 0, 0.35),
+      0 0 0 2px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.2);
+    cursor: pointer;
+    opacity: 0.8;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.dateSeparator {
+  color: rgba(230, 237, 243, 0.6);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+// ============================================
+// Month/Year Inputs
+// ============================================
+
+.monthYearInputs {
+  display: flex;
+  gap: 10px;
+}
+
+.filterSelect {
+  flex: 1;
+  padding: 10px 14px;
+  
+  // Estilo glassmorphic consistente
+  background: rgba(14, 17, 23, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  
+  color: #e6edf3;
+  font-size: 0.85rem;
+  font-weight: 500;
+  
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  
+  &:hover {
+    background: rgba(14, 17, 23, 0.8);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    transform: translateY(-1px);
+  }
+  
+  &:focus {
+    outline: none;
+    background: rgba(14, 17, 23, 0.85);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 
+      0 6px 20px rgba(0, 0, 0, 0.35),
+      0 0 0 2px rgba(59, 130, 246, 0.1);
+  }
+  
+  option {
+    background: rgba(14, 17, 23, 0.95);
+    color: #e6edf3;
+    padding: 8px 12px;
+  }
+}
+
+
+
+// ============================================
+// Table Section
+// ============================================
+
+.tableSection {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.01) 0%,
+    transparent 100%
+  );
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 40px;
+  margin: 20px;
+  
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  font-weight: 500;
+  
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+// ============================================
+// Table Header
+// ============================================
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 120px 140px 300px 90px 70px;
+  gap: 0;
+  
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.headerCell {
+  padding: 16px 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center !important;
+  
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.actionsHeader {
+  text-align: center !important;
+}
+
+// ============================================
+// Table Body
+// ============================================
+
+.tableBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 120px 140px 300px 90px 70px;
+  gap: 0;
+  
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.tableCell {
+  padding: 16px 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center !important;
+  
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.valueCell {
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.descriptionCell {
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
+.actionsCell {
+  text-align: center !important;
+  padding: 16px 20px;
+  min-height: 60px;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  
+  // Força o alinhamento central mesmo com flex
+  & > * {
+    margin: 0 auto;
+  }
+}
+
+// ============================================
+// Action Buttons
+// ============================================
+
+.actionButtons {
+  display: flex !important;
+  gap: 8px;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 auto !important;
+}
+
+.actionButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  
+  cursor: pointer;
+  transition: all 0.15s ease;
+  
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  
+  i.icon {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 12px !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    transition: all 0.15s ease;
+    
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1 !important;
+  }
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    
+    i.icon {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.deleteButton {
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    
+    i.icon {
+      color: rgba(255, 220, 220, 0.95) !important;
+    }
+  }
+}
+
+// ============================================
+// Total Row
+// ============================================
+
+.totalRow {
+  display: grid;
+  grid-template-columns: 120px 140px 300px 90px 70px;
+  gap: 0;
+  
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.totalCell {
+  padding: 18px 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  
+  &:last-child {
+    border-right: none;
+  }
+}
+
+
+
+// ============================================
+// Responsive Design
+// ============================================
+
+@media (max-width: 768px) {
+  .quickFiltersButtons {
+    flex-direction: column;
+    
+    .quickFilterButton {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  
+  .monthYearSelectors {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .selectorGroup {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .quickFilterButton {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}

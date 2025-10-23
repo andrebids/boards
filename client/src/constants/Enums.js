@@ -51,6 +51,7 @@ export const BoardViews = {
   KANBAN: 'kanban',
   GRID: 'grid',
   LIST: 'list',
+  FINANCE: 'finance',
 };
 
 export const BoardContexts = {

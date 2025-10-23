@@ -187,6 +187,17 @@ module.exports.routes = {
   'POST /api/organization-default-labels/reorder': 'organization-default-labels/reorder',
   'POST /api/organization-default-labels/bulk-apply': 'organization-default-labels/bulk-apply',
 
+  // Finance Panel
+  'GET /api/projects/:id/finance': 'finance/get-config',
+  'PATCH /api/projects/:id/finance': 'finance/update-config',
+  'POST /api/projects/:projectId/finance-members': 'finance-members/create',
+  'DELETE /api/finance-members/:id': 'finance-members/delete',
+  'GET /api/projects/:id/expenses': 'expenses/index',
+  'POST /api/projects/:projectId/expenses': 'expenses/create',
+  'PATCH /api/expenses/:id': 'expenses/update',
+  'DELETE /api/expenses/:id': 'expenses/delete',
+  'GET /api/projects/:id/expenses/stats': 'expenses/stats',
+
   'GET /preloaded-favicons/*': {
     fn: staticDirServer('/preloaded-favicons', () =>
       path.join(

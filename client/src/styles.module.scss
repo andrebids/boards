@@ -49,6 +49,24 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
+  // ===== CLASSES GLASS REUTILIZÁVEIS PARA FORMULÁRIOS =====
+  // Nota: Estilos para inputs já existem em lib/custom-ui/styles.css
+  // Usar classes existentes: .ui.input > input já tem estilos glass
+  
+  .glass-label {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    font-size: 0.95em;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .glass-field {
+    margin-bottom: 14px;
+  }
+
   // ===== TEMA LIQUID GLASS PARA DROPDOWNS SEMANTIC UI =====
   
   // Dropdown principal

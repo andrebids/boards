@@ -1,0 +1,36 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tabMenu {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+  margin-bottom: 20px !important;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
