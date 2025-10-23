@@ -7,11 +7,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon } from 'semantic-ui-react';
+import { Button, Icon, Form, Input, TextArea, Dropdown } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
 import actions from '../../../actions';
-import AddExpenseModal from '../AddExpenseModal';
 import { EXPENSE_CATEGORIES } from '../../../constants/ExpenseCategories';
 
 import styles from './ExpensesTab.module.scss';
@@ -21,8 +20,15 @@ const ExpensesTab = React.memo(({ projectId }) => {
   const [t] = useTranslation();
 
   const allExpenses = useSelector(selectors.selectExpenses);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
+  
+  // Estados para o formulário inline
+  const [formData, setFormData] = useState({
+    category: '',
+    description: '',
+    value: '',
+    date: '',
+  });
   
   // Estados para filtros
   const [startDate, setStartDate] = useState('');
@@ -36,14 +42,57 @@ const ExpensesTab = React.memo(({ projectId }) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
-  const handleAddExpense = useCallback(() => {
+  // Handlers para o formulário inline
+  const handleFormChange = useCallback((field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleFormSubmit = useCallback(() => {
+    const data = {
+      category: formData.category,
+      description: formData.description || '-',
+      value: parseFloat(formData.value),
+      date: formData.date,
+      status: 'pending',
+    };
+
+    console.log('Submitting expense:', data);
+    console.log('Project ID:', projectId);
+
+    if (editingExpense) {
+      dispatch(actions.updateExpense(editingExpense.id, data));
+    } else {
+      dispatch(actions.createExpense(projectId, data));
+    }
+
+    // Limpar formulário após submissão
+    setFormData({
+      category: '',
+      description: '',
+      value: '',
+      date: '',
+    });
     setEditingExpense(null);
-    setIsAddModalOpen(true);
+  }, [formData, editingExpense, projectId, dispatch]);
+
+  const handleClearForm = useCallback(() => {
+    setFormData({
+      category: '',
+      description: '',
+      value: '',
+      date: '',
+    });
+    setEditingExpense(null);
   }, []);
 
   const handleEditExpense = useCallback((expense) => {
     setEditingExpense(expense);
-    setIsAddModalOpen(true);
+    setFormData({
+      category: expense.category || '',
+      description: expense.description || '',
+      value: expense.value?.toString() || '',
+      date: expense.date || '',
+    });
   }, []);
 
   const handleDeleteExpense = useCallback(
@@ -54,11 +103,6 @@ const ExpensesTab = React.memo(({ projectId }) => {
     },
     [dispatch, t],
   );
-
-  const handleModalClose = useCallback(() => {
-    setIsAddModalOpen(false);
-    setEditingExpense(null);
-  }, []);
 
   // Handlers para filtros
   const handleClearFilters = useCallback(() => {
@@ -260,18 +304,98 @@ const ExpensesTab = React.memo(({ projectId }) => {
     }, 0);
   }, [expenses]);
 
+  // Validação do formulário
+  const isFormValid = formData.category && formData.value && formData.date;
+
   return (
     <div className={styles.wrapper}>
-      {/* Header with title and add button */}
+      {/* Header with title */}
       <div className={styles.header}>
         <h3>{t('finance.expenses', { defaultValue: 'Despesas' })}</h3>
-        <Button primary onClick={handleAddExpense} className={styles.addButton}>
-          <Icon name="plus" />
-          {t('finance.addExpense', { defaultValue: 'Adicionar Despesa' })}
-        </Button>
       </div>
 
-      {/* Main glass container */}
+      {/* Main content with two columns */}
+      <div className={styles.mainContent}>
+        {/* Left column - Form */}
+        <div className={styles.formColumn}>
+          <div className={styles.formContainer}>
+            <h4 className={styles.formTitle}>
+              {editingExpense 
+                ? t('finance.editExpense', { defaultValue: 'Editar Despesa' })
+                : t('finance.addExpense', { defaultValue: 'Adicionar Despesa' })
+              }
+            </h4>
+            
+            <Form>
+              <Form.Field required>
+                <label className="glass-label">{t('finance.date', { defaultValue: 'Data' })}</label>
+                <Input
+                  type="date"
+                  value={formData.date}
+                  className={styles.field}
+                  onChange={(e) => handleFormChange('date', e.target.value)}
+                />
+              </Form.Field>
+
+              <Form.Field required>
+                <label className="glass-label">{t('finance.category', { defaultValue: 'Categoria' })}</label>
+                <Dropdown
+                  placeholder={t('finance.selectCategory', {
+                    defaultValue: 'Selecionar categoria',
+                  })}
+                  fluid
+                  selection
+                  search
+                  options={EXPENSE_CATEGORIES}
+                  value={formData.category}
+                  className={styles.field}
+                  onChange={(_, { value }) => handleFormChange('category', value)}
+                  allowAdditions
+                  additionLabel={t('finance.addCategory', { defaultValue: 'Adicionar: ' })}
+                  onAddItem={(_, { value }) => handleFormChange('category', value)}
+                />
+              </Form.Field>
+
+              <Form.Field>
+                <label className="glass-label">{t('finance.description', { defaultValue: 'Descrição' })}</label>
+                <TextArea
+                  rows={3}
+                  value={formData.description}
+                  className={styles.field}
+                  onChange={(e) => handleFormChange('description', e.target.value)}
+                  placeholder={t('finance.descriptionPlaceholder', {
+                    defaultValue: 'Descrição da despesa...',
+                  })}
+                />
+              </Form.Field>
+
+              <Form.Field required>
+                <label className="glass-label">{t('finance.value', { defaultValue: 'Valor (EUR)' })}</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={formData.value}
+                  className={styles.field}
+                  onChange={(e) => handleFormChange('value', e.target.value)}
+                  placeholder="0.00"
+                />
+              </Form.Field>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+                <Button onClick={handleClearForm}>
+                  {t('common.cancel', { defaultValue: 'Limpar' })}
+                </Button>
+                <Button primary onClick={handleFormSubmit} disabled={!isFormValid}>
+                  {t('common.save', { defaultValue: 'Guardar' })}
+                </Button>
+              </div>
+            </Form>
+          </div>
+        </div>
+
+        {/* Right column - Table */}
+        <div className={styles.tableColumn}>
+          {/* Main glass container */}
       <div className={styles.glassContainer}>
         {/* Nova Barra de Filtros Redesenhada */}
         <div className={styles.filtersBarContainer}>
@@ -454,14 +578,8 @@ const ExpensesTab = React.memo(({ projectId }) => {
           </div>
         )}
       </div>
-
-      {isAddModalOpen && (
-        <AddExpenseModal
-          projectId={projectId}
-          expense={editingExpense}
-          onClose={handleModalClose}
-        />
-      )}
+        </div>
+      </div>
     </div>
   );
 });
