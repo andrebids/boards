@@ -32,12 +32,12 @@ module.exports = {
       required: true,
     },
     value: {
-      type: 'number',
+      type: 'ref',
       columnType: 'decimal(12,2)',
       required: true,
     },
     date: {
-      type: 'string',
+      type: 'ref',
       columnType: 'date',
       required: true,
     },

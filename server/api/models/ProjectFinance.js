@@ -17,7 +17,7 @@ module.exports = {
     //  ╩  ╩╚═╩╩ ╩╩ ╩ ╩ ╚╝ ╚═╝╚═╝
 
     budget: {
-      type: 'number',
+      type: 'ref',
       columnType: 'decimal(12,2)',
       defaultsTo: 0.00,
     },

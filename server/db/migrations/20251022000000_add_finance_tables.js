@@ -32,6 +32,7 @@ exports.up = async (knex) => {
     table.bigInteger('project_id').notNullable();
     table.bigInteger('user_id').notNullable();
     table.timestamp('created_at', { useTz: true }).defaultTo(knex.fn.now());
+    table.timestamp('updated_at', { useTz: true }).defaultTo(knex.fn.now());
 
     /* Foreign Keys */
     table.foreign('project_id').references('id').inTable('project').onDelete('CASCADE');

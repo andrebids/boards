@@ -25,16 +25,12 @@ const ExpensesTab = React.memo(({ projectId }) => {
   // Estados para o formulário inline
   const [formData, setFormData] = useState(() => {
     const today = new Date();
-    const formattedDate = today.toLocaleDateString('pt-PT', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    const isoDate = today.toISOString().split('T')[0]; // YYYY-MM-DD para input date
     return {
       category: '',
       description: '',
       value: '',
-      date: formattedDate, // Pré-define a data atual no formato dd/mm/yyyy
+      date: isoDate, // Pré-define a data atual no formato ISO
     };
   });
   
@@ -60,7 +56,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
       category: formData.category,
       description: formData.description || '-',
       value: parseFloat(formData.value),
-      date: formData.date,
+      date: formData.date, // Já está no formato ISO (YYYY-MM-DD)
       status: 'pending',
     };
 
@@ -75,43 +71,43 @@ const ExpensesTab = React.memo(({ projectId }) => {
 
     // Limpar formulário após submissão
     const today = new Date();
-    const formattedDate = today.toLocaleDateString('pt-PT', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    const isoDate = today.toISOString().split('T')[0];
     setFormData({
       category: '',
       description: '',
       value: '',
-      date: formattedDate, // Pré-define a data atual no formato dd/mm/yyyy
+      date: isoDate, // Pré-define a data atual no formato ISO
     });
     setEditingExpense(null);
   }, [formData, editingExpense, projectId, dispatch]);
 
   const handleClearForm = useCallback(() => {
     const today = new Date();
-    const formattedDate = today.toLocaleDateString('pt-PT', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    const isoDate = today.toISOString().split('T')[0];
     setFormData({
       category: '',
       description: '',
       value: '',
-      date: formattedDate, // Pré-define a data atual no formato dd/mm/yyyy
+      date: isoDate, // Pré-define a data atual no formato ISO
     });
     setEditingExpense(null);
   }, []);
 
   const handleEditExpense = useCallback((expense) => {
     setEditingExpense(expense);
+    // Converter data do formato ISO para o formato do input date
+    let dateValue = '';
+    if (expense.date) {
+      const date = new Date(expense.date);
+      if (!isNaN(date.getTime())) {
+        dateValue = date.toISOString().split('T')[0];
+      }
+    }
     setFormData({
       category: expense.category || '',
       description: expense.description || '',
       value: expense.value?.toString() || '',
-      date: expense.date || '',
+      date: dateValue,
     });
   }, []);
 
@@ -310,6 +306,13 @@ const ExpensesTab = React.memo(({ projectId }) => {
     return years;
   }, []);
 
+  const sortOptions = [
+    { key: 'recente', value: 'data-recente', text: t('finance.newestDate', { defaultValue: 'Mais recente' }) },
+    { key: 'antiga', value: 'data-antiga', text: t('finance.oldestDate', { defaultValue: 'Mais antiga' }) },
+    { key: 'alto', value: 'valor-alto', text: t('finance.highestValue', { defaultValue: 'Maior valor' }) },
+    { key: 'baixo', value: 'valor-baixo', text: t('finance.lowestValue', { defaultValue: 'Menor valor' }) },
+  ];
+
   const calculateTotal = useCallback(() => {
     if (!expenses || !Array.isArray(expenses)) {
       return 0;
@@ -350,11 +353,13 @@ const ExpensesTab = React.memo(({ projectId }) => {
               <Form.Field required>
                 <label className="glass-label">{t('finance.date', { defaultValue: 'Data' })}</label>
                 <Input
-                  type="text"
+                  type="date"
                   value={formData.date}
-                  placeholder="dd/mm/yyyy"
                   className={styles.field}
                   onChange={(e) => handleFormChange('date', e.target.value)}
+                  style={{ 
+                    colorScheme: 'dark'
+                  }}
                 />
               </Form.Field>
 
@@ -435,15 +440,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
                 <Icon name={isFiltersOpen ? "chevron up" : "chevron down"} />
               </button>
               
-              <div className={styles.quickSortWrapper}>
-                <Icon name="sort" />
-                <select className={styles.inlineSort} value={sortBy} onChange={handleSortByChange}>
-                  <option value="data-recente">{t('finance.newestDate', { defaultValue: 'Mais recente' })}</option>
-                  <option value="data-antiga">{t('finance.oldestDate', { defaultValue: 'Mais antiga' })}</option>
-                  <option value="valor-alto">{t('finance.highestValue', { defaultValue: 'Maior valor' })}</option>
-                  <option value="valor-baixo">{t('finance.lowestValue', { defaultValue: 'Menor valor' })}</option>
-                </select>
-              </div>
+              {/* Ordenação movida para dentro do dropdown de filtros */}
             </div>
             
             <div className={styles.filtersBarRight}>
@@ -490,9 +487,25 @@ const ExpensesTab = React.memo(({ projectId }) => {
                     <Icon name="calendar outline" /> Intervalo de Datas
                   </label>
                   <div className={styles.dateRangeInputs}>
-                    <input type="date" className={styles.dateInput} value={startDate} onChange={handleStartDateChange} />
+                    <Input
+                      type="date"
+                      value={startDate}
+                      className={styles.field}
+                      onChange={handleStartDateChange}
+                      icon="calendar outline"
+                      iconPosition="right"
+                      style={{ colorScheme: 'dark' }}
+                    />
                     <span className={styles.dateSeparator}>até</span>
-                    <input type="date" className={styles.dateInput} value={endDate} onChange={handleEndDateChange} />
+                    <Input
+                      type="date"
+                      value={endDate}
+                      className={styles.field}
+                      onChange={handleEndDateChange}
+                      icon="calendar outline"
+                      iconPosition="right"
+                      style={{ colorScheme: 'dark' }}
+                    />
                   </div>
                 </div>
                 
@@ -502,14 +515,42 @@ const ExpensesTab = React.memo(({ projectId }) => {
                     <Icon name="calendar check" /> Mês/Ano Específico
                   </label>
                   <div className={styles.monthYearInputs}>
-                    <select className={styles.filterSelect} value={selectedMonth} onChange={handleMonthChange}>
-                      <option value="">Mês</option>
-                      {monthOptions.map(m => <option key={m.value} value={m.value}>{m.text}</option>)}
-                    </select>
-                    <select className={styles.filterSelect} value={selectedYear} onChange={handleYearChange}>
-                      <option value="">Ano</option>
-                      {yearOptions.map(y => <option key={y.value} value={y.value}>{y.text}</option>)}
-                    </select>
+                    <Dropdown
+                      placeholder="Mês"
+                      selection
+                      options={monthOptions}
+                      value={selectedMonth || null}
+                      className={styles.field}
+                      onChange={(_, { value }) => {
+                        setSelectedMonth(value);
+                        if (value && selectedYear) {
+                          const year = parseInt(selectedYear);
+                          const month = parseInt(value);
+                          const firstDay = new Date(year, month - 1, 1);
+                          const lastDay = new Date(year, month, 0);
+                          setStartDate(firstDay.toISOString().split('T')[0]);
+                          setEndDate(lastDay.toISOString().split('T')[0]);
+                        }
+                      }}
+                    />
+                    <Dropdown
+                      placeholder="Ano"
+                      selection
+                      options={yearOptions}
+                      value={selectedYear || null}
+                      className={styles.field}
+                      onChange={(_, { value }) => {
+                        setSelectedYear(value);
+                        if (value && selectedMonth) {
+                          const year = parseInt(value);
+                          const month = parseInt(selectedMonth);
+                          const firstDay = new Date(year, month - 1, 1);
+                          const lastDay = new Date(year, month, 0);
+                          setStartDate(firstDay.toISOString().split('T')[0]);
+                          setEndDate(lastDay.toISOString().split('T')[0]);
+                        }
+                      }}
+                    />
                   </div>
                 </div>
                 
@@ -518,10 +559,30 @@ const ExpensesTab = React.memo(({ projectId }) => {
                   <label className={styles.filterSectionLabel}>
                     <Icon name="tag" /> Categoria
                   </label>
-                  <select className={styles.filterSelect} value={category} onChange={handleCategoryChange}>
-                    <option value="">Todas</option>
-                    {EXPENSE_CATEGORIES.map(cat => <option key={cat.key} value={cat.value}>{cat.text}</option>)}
-                  </select>
+                  <Dropdown
+                    placeholder="Todas"
+                    selection
+                    clearable
+                    search
+                    options={EXPENSE_CATEGORIES}
+                    value={category || null}
+                    className={styles.field}
+                    onChange={(_, { value }) => setCategory(value)}
+                  />
+                </div>
+
+                {/* Ordenação */}
+                <div className={styles.filterSection}>
+                  <label className={styles.filterSectionLabel}>
+                    <Icon name="sort" /> {t('finance.sortBy', { defaultValue: 'Ordenação' })}
+                  </label>
+                  <Dropdown
+                    selection
+                    options={sortOptions}
+                    value={sortBy}
+                    className={styles.field}
+                    onChange={(_, { value }) => setSortBy(value)}
+                  />
                 </div>
               </div>
             </div>
@@ -540,7 +601,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
               <div className={styles.headerCell}>{t('finance.date', { defaultValue: 'Data' })}</div>
               <div className={styles.headerCell}>{t('finance.category', { defaultValue: 'Categoria' })}</div>
               <div className={`${styles.headerCell} ${styles.descriptionHeader}`}>{t('finance.description', { defaultValue: 'Descrição' })}</div>
-              <div className={styles.headerCell}>{t('finance.value', { defaultValue: 'Valor' })}</div>
+              <div className={`${styles.headerCell} ${styles.valueHeader}`}>{t('finance.value', { defaultValue: 'Valor' })}</div>
               <div className={`${styles.headerCell} ${styles.actionsHeader}`}>
                 {t('common.actions', { defaultValue: 'Ações' })}
               </div>
