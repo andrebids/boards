@@ -36,7 +36,23 @@ export default defineConfig({
       interval: 1000
     },
     proxy: {
+      "/api": {
+        target: serverTarget,
+        changeOrigin: true,
+        secure: false
+      },
+      "/socket.io": {
+        target: serverTarget,
+        ws: true,
+        changeOrigin: true,
+        secure: false
+      },
       "/attachments": {
+        target: serverTarget,
+        changeOrigin: true,
+        secure: false
+      },
+      "/expense-attachments": {
         target: serverTarget,
         changeOrigin: true,
         secure: false

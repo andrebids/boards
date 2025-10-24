@@ -3,9 +3,10 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+// Em desenvolvimento, preferir base relativa para permitir envio de cookies e Authorization via proxy do Vite
 const SERVER_BASE_URL =
   import.meta.env.VITE_SERVER_BASE_URL ||
-  (import.meta.env.DEV ? 'http://localhost:1337' : '');
+  (import.meta.env.DEV ? '' : '');
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const ACCESS_TOKEN_VERSION_KEY = 'accessTokenVersion';

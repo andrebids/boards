@@ -10,6 +10,7 @@ const initialState = {
   financeMembers: [],
   expenses: [],
   expenseAttachmentsByExpenseId: {},
+  uploadingAttachmentByExpenseId: {},
   stats: null,
   isLoading: false,
   error: null,
@@ -106,6 +107,17 @@ export default (state = initialState, { type, payload }) => {
         },
       };
     }
+    case ActionTypes.EXPENSE_ATTACHMENT_CREATE: {
+      const expenseId = payload && payload.expenseId;
+      if (!expenseId) return state;
+      return {
+        ...state,
+        uploadingAttachmentByExpenseId: {
+          ...state.uploadingAttachmentByExpenseId,
+          [expenseId]: true,
+        },
+      };
+    }
     case ActionTypes.EXPENSE_ATTACHMENT_CREATE__SUCCESS: {
       const attachment = payload.attachment;
       const list = state.expenseAttachmentsByExpenseId[attachment.expenseId] || [];
@@ -114,6 +126,22 @@ export default (state = initialState, { type, payload }) => {
         expenseAttachmentsByExpenseId: {
           ...state.expenseAttachmentsByExpenseId,
           [attachment.expenseId]: [attachment, ...list],
+        },
+        uploadingAttachmentByExpenseId: {
+          ...state.uploadingAttachmentByExpenseId,
+          [attachment.expenseId]: false,
+        },
+      };
+    }
+    case ActionTypes.EXPENSE_ATTACHMENT_CREATE__FAILURE: {
+      const err = payload && payload.error;
+      const expenseId = err && err.expenseId ? err.expenseId : (payload && payload.expenseId);
+      if (!expenseId) return state;
+      return {
+        ...state,
+        uploadingAttachmentByExpenseId: {
+          ...state.uploadingAttachmentByExpenseId,
+          [expenseId]: false,
         },
       };
     }

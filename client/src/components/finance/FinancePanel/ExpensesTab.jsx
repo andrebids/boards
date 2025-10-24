@@ -7,7 +7,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Icon, Input, Dropdown } from 'semantic-ui-react';
+import { Icon, Input, Dropdown, Modal, Button } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
 import api from '../../../api';
@@ -27,6 +27,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
 
   const allExpenses = useSelector(selectors.selectExpenses);
   const attachmentsByExpense = useSelector((state) => state.finance.expenseAttachmentsByExpenseId);
+  const uploadingByExpense = useSelector((state) => state.finance.uploadingAttachmentByExpenseId || {});
   const [editingExpense, setEditingExpense] = useState(null);
   const formContainerRef = useRef(null);
   // Inline editing state for table rows
@@ -40,6 +41,10 @@ const ExpensesTab = React.memo(({ projectId }) => {
   // Debug/stacking helpers
   const [activeDropdownRowId, setActiveDropdownRowId] = useState(null);
   const inlineDropdownRefs = useRef({});
+
+  // Modal de confirmação para apagar
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [expenseIdToDelete, setExpenseIdToDelete] = useState(null);
 
   // Helper: log stacking context info for an element and its ancestors
   const logStackingContext = useCallback((el, label = 'el') => {
@@ -111,12 +116,24 @@ const ExpensesTab = React.memo(({ projectId }) => {
 
   const handleDeleteExpense = useCallback(
     (expenseId) => {
-      if (window.confirm(t('finance.confirmDelete', { defaultValue: 'Tem a certeza?' }))) {
-        dispatch(actions.deleteExpense(expenseId));
-      }
+      setExpenseIdToDelete(expenseId);
+      setIsDeleteModalOpen(true);
     },
-    [dispatch, t],
+    [],
   );
+
+  const handleDeleteCancel = useCallback(() => {
+    setIsDeleteModalOpen(false);
+    setExpenseIdToDelete(null);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (expenseIdToDelete) {
+      dispatch(actions.deleteExpense(expenseIdToDelete));
+    }
+    setIsDeleteModalOpen(false);
+    setExpenseIdToDelete(null);
+  }, [dispatch, expenseIdToDelete]);
 
   const handleOpenAttachments = useCallback((expense) => {
     // lazy fetch if not loaded
@@ -141,11 +158,17 @@ const ExpensesTab = React.memo(({ projectId }) => {
   }, [dispatch, attachmentsByExpense]);
 
   const handleDownloadAttachment = useCallback((attachment) => {
-    const filename = attachment.data?.filename || attachment.name;
-    const builder = api && api.finance && api.finance.getExpenseAttachmentDownloadUrl;
-    const url = builder
-      ? builder(attachment.id, filename)
-      : `/expense-attachments/${attachment.id}/download/${encodeURIComponent(filename)}`;
+    const filename = (attachment && attachment.data && attachment.data.filename) || attachment.name;
+    const absolute = attachment && attachment.data && attachment.data.url;
+    var url = absolute;
+    if (!url) {
+      var builder = api && api.finance && api.finance.getExpenseAttachmentDownloadUrl;
+      if (builder) {
+        url = builder(attachment.id, filename);
+      } else {
+        url = '/expense-attachments/' + attachment.id + '/download/' + encodeURIComponent(filename);
+      }
+    }
     window.open(url, '_blank');
   }, []);
 
@@ -157,9 +180,11 @@ const ExpensesTab = React.memo(({ projectId }) => {
 
   // Abrir anexo (imagem/PDF) numa nova aba
   const openAttachment = useCallback((attachment) => {
-    const url = `/expense-attachments/${attachment.id}/download/${encodeURIComponent(
-      attachment.data?.filename || attachment.name,
-    )}`;
+    var url = attachment && attachment.data && attachment.data.url;
+    if (!url) {
+      var filename = (attachment && attachment.data && attachment.data.filename) || attachment.name;
+      url = '/expense-attachments/' + attachment.id + '/download/' + encodeURIComponent(filename);
+    }
     window.open(url, '_blank');
   }, []);
 
@@ -534,17 +559,28 @@ const ExpensesTab = React.memo(({ projectId }) => {
                               <div className={`${styles.tableCell} ${styles.thumbCell}`}>
                                 {(() => {
                                   const list = attachmentsByExpense[expense.id];
+                                  const isUploading = !!uploadingByExpense[expense.id];
+                                  if (isUploading && (!list || list.length === 0)) {
+                                    return (
+                                      <div className={styles.uploadingLabel} title={t('finance.uploading', { defaultValue: 'A enviar…' })}>
+                                        <Icon name="spinner" loading /> {t('finance.uploading', { defaultValue: 'A enviar…' })}
+                                      </div>
+                                    );
+                                  }
                                   if (list && list.length > 0) {
                                     const att = list[0];
                                     const hasImage = !!(att.data && att.data.image && att.data.image.thumbnailsExtension);
                                     if (hasImage) {
-                                      const thumbUrl = `/expense-attachments/${att.id}/download/thumbnails/outside-360.${att.data.image.thumbnailsExtension}`;
+                                      var thumbUrl = (att && att.data && att.data.thumbnailUrls && att.data.thumbnailUrls.outside360);
+                                      if (!thumbUrl) {
+                                        thumbUrl = '/expense-attachments/' + att.id + '/download/thumbnails/outside-360.' + att.data.image.thumbnailsExtension;
+                                      }
                                       return (
                                         <img
                                           className={styles.attachmentThumb}
                                           src={thumbUrl}
                                           alt={att.name}
-                                          onClick={() => openAttachment(att)}
+                                          onClick={function () { openAttachment(att); }}
                                         />
                                       );
                                     }
@@ -782,9 +818,29 @@ const ExpensesTab = React.memo(({ projectId }) => {
       </div>
         </div>
       </div>
+    {/* Modal de confirmação para apagar despesa */}
+    <Modal open={isDeleteModalOpen} onClose={handleDeleteCancel} size="small">
+      <Modal.Header>
+        {t('finance.confirmDeleteTitle', { defaultValue: 'Eliminar despesa' })}
+      </Modal.Header>
+      <Modal.Content>
+        <p>{t('finance.confirmDelete', { defaultValue: 'Tem a certeza que quer eliminar esta despesa?' })}</p>
+      </Modal.Content>
+      <Modal.Actions>
+        <Button onClick={handleDeleteCancel}>
+          {t('action.cancel', 'Cancelar')}
+        </Button>
+        <Button negative onClick={handleDeleteConfirm}>
+          <Icon name="trash" />
+          {t('action.delete', 'Eliminar')}
+        </Button>
+      </Modal.Actions>
+    </Modal>
     </div>
   );
 });
+
+// Modal de confirmação global (fora do memo export)
 
 ExpensesTab.propTypes = {
   projectId: PropTypes.string.isRequired,

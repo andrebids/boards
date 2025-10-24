@@ -132,6 +132,45 @@ module.exports = function defineCurrentUserHook(sails) {
             return next();
           },
         },
+        '/expense-attachments/*': {
+          async fn(req, res, next) {
+            const { authorization: authorizationHeader } = req.headers;
+            const { accessToken, httpOnlyToken } = req.cookies;
+
+            // Try Authorization header first (for frontend requests)
+            if (authorizationHeader && TOKEN_PATTERN.test(authorizationHeader)) {
+              const accessTokenFromHeader = authorizationHeader.replace(TOKEN_PATTERN, '');
+              const sessionAndUser = await getSessionAndUser(accessTokenFromHeader, httpOnlyToken);
+
+              if (sessionAndUser) {
+                const { session, user } = sessionAndUser;
+
+                Object.assign(req, {
+                  currentSession: session,
+                  currentUser: user,
+                });
+
+                return next();
+              }
+            }
+
+            // Fallback to cookies (for direct browser requests)
+            if (accessToken) {
+              const sessionAndUser = await getSessionAndUser(accessToken, httpOnlyToken);
+
+              if (sessionAndUser) {
+                const { session, user } = sessionAndUser;
+
+                Object.assign(req, {
+                  currentSession: session,
+                  currentUser: user,
+                });
+              }
+            }
+
+            return next();
+          },
+        },
       },
     },
   };
