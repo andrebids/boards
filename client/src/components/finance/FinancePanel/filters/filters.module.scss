@@ -101,7 +101,7 @@
   background: rgba(0,0,0,0.35);
   display: flex;
   justify-content: flex-end;
-  z-index: 1000;
+  z-index: 10050; // higher than tables and other UI
 }
 
 .drawer {
@@ -116,6 +116,7 @@
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
+  z-index: 10051;
 }
 
 .drawerHeader {

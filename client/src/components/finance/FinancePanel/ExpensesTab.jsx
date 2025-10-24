@@ -556,7 +556,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
         <div className={styles.tableColumn}>
           {/* Main glass container */}
       <div className={styles.glassContainer}>
-        {/* Nova Barra de Filtros (com Drawer) */}
+        {/* Nova Barra de Filtros (com Sidebar que empurra a tabela) */}
         {(() => {
           const filters = {
             startDate,
@@ -596,7 +596,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
           };
 
           return (
-            <>
+            <React.Fragment>
               <FilterBar
                 filters={filters}
                 resultsText={resultsText}
@@ -604,206 +604,213 @@ const ExpensesTab = React.memo(({ projectId }) => {
                 onClear={handleClearFilters}
                 onRemoveChip={handleRemoveChip}
               />
-              <FilterDrawer
-                open={isFiltersOpen}
-                onClose={() => setIsFiltersOpen(false)}
-                value={filters}
-                onChange={handleChangeFromDrawer}
-                onApply={handleChangeFromDrawer}
-                categoryOptions={EXPENSE_CATEGORIES}
-                sortOptions={sortOptions}
-              />
-            </>
+
+              {/* Drawer overlay variant */}
+              {isFiltersOpen && (
+                <FilterDrawer
+                  open={true}
+                  onClose={() => setIsFiltersOpen(false)}
+                  value={filters}
+                  onChange={handleChangeFromDrawer}
+                  onApply={handleChangeFromDrawer}
+                  categoryOptions={EXPENSE_CATEGORIES}
+                  sortOptions={sortOptions}
+                />
+              )}
+
+              {/* Conteúdo da Tabela */}
+              <div>
+                  {/* Expenses table */}
+                  {expenses.length === 0 ? (
+                    <div className={styles.empty}>
+                      {t('finance.noExpenses', { defaultValue: 'Sem despesas registadas.' })}
+                    </div>
+                  ) : (
+                    <div className={styles.tableSection}>
+                      {/* Table Header */}
+                      <div className={styles.tableHeader}>
+                        <div className={styles.headerCell}>{t('finance.date', { defaultValue: 'Data' })}</div>
+                        <div className={styles.headerCell}>{t('finance.category', { defaultValue: 'Categoria' })}</div>
+                        <div className={`${styles.headerCell} ${styles.descriptionHeader}`}>{t('finance.description', { defaultValue: 'Descrição' })}</div>
+                        <div className={`${styles.headerCell} ${styles.valueHeader}`}>{t('finance.value', { defaultValue: 'Valor' })}</div>
+                        <div className={`${styles.headerCell} ${styles.actionsHeader}`}>
+                          {t('common.actions', { defaultValue: 'Ações' })}
+                        </div>
+                      </div>
+
+                      {/* Table Body */}
+                      <div className={styles.tableBody}>
+                        {expenses.map((expense) => (
+                          <div key={expense.id}>
+                            {/* Desktop Table Row */}
+                            <div className={`${styles.tableRow} ${activeDropdownRowId === expense.id ? styles.rowRaised : ''}`}>
+                              <div className={styles.tableCell}>
+                                {inlineEditingRowId === expense.id ? (
+                                  <Input
+                                    type="date"
+                                    value={inlineEditingData.date}
+                                    onChange={(e) => handleInlineChange('date', e.target.value)}
+                                    className={styles.inlineInput}
+                                    style={{ colorScheme: 'dark' }}
+                                  />
+                                ) : (
+                                  <>{formatDate(expense.date)}</>
+                                )}
+                              </div>
+                              <div className={styles.tableCell}>
+                                {inlineEditingRowId === expense.id ? (
+                                  <Dropdown
+                                    selection
+                                    search
+                                    options={EXPENSE_CATEGORIES}
+                                    value={inlineEditingData.category}
+                                    onChange={(_, { value }) => handleInlineChange('category', value)}
+                                    allowAdditions
+                                    additionLabel={t('finance.addCategory', { defaultValue: 'Adicionar: ' })}
+                                    onAddItem={(_, { value }) => handleInlineChange('category', value)}
+                                    className={styles.inlineDropdown}
+                                    onOpen={() => handleInlineDropdownOpen(expense.id)}
+                                    onClose={handleInlineDropdownClose}
+                                    ref={(el) => { inlineDropdownRefs.current[expense.id] = el; }}
+                                  />
+                                ) : (
+                                  <>{expense.category}</>
+                                )}
+                              </div>
+                              <div className={`${styles.tableCell} ${styles.descriptionCell}`}>
+                                {inlineEditingRowId === expense.id ? (
+                                  <Input
+                                    type="text"
+                                    value={inlineEditingData.description}
+                                    onChange={(e) => handleInlineChange('description', e.target.value)}
+                                    className={styles.inlineInput}
+                                  />
+                                ) : (
+                                  <>{expense.description}</>
+                                )}
+                              </div>
+                              <div className={`${styles.tableCell} ${styles.valueCell}`}>
+                                {inlineEditingRowId === expense.id ? (
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={inlineEditingData.value}
+                                    onChange={(e) => handleInlineChange('value', e.target.value)}
+                                    className={styles.inlineInput}
+                                  />
+                                ) : (
+                                  <>{formatCurrency(expense.value)}</>
+                                )}
+                              </div>
+                              <div className={`${styles.tableCell} ${styles.actionsCell}`}>
+                                <div className={styles.actionButtons}>
+                                  {inlineEditingRowId === expense.id ? (
+                                    <button
+                                      className={styles.actionButton}
+                                      onClick={() => handleInlineApprove(expense)}
+                                      type="button"
+                                      aria-label={t('common.approve', { defaultValue: 'Aprovar' })}
+                                      title={t('common.approve', { defaultValue: 'Aprovar' })}
+                                    >
+                                      <Icon name="check" />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className={styles.actionButton}
+                                      onClick={() => handleInlineEditStart(expense)}
+                                      type="button"
+                                      aria-label={t('common.edit', { defaultValue: 'Editar' })}
+                                      title={t('common.edit', { defaultValue: 'Editar' })}
+                                    >
+                                      <Icon name="edit outline" />
+                                    </button>
+                                  )}
+                                  <button
+                                    className={`${styles.actionButton} ${styles.deleteButton}`}
+                                    onClick={() => handleDeleteExpense(expense.id)}
+                                    type="button"
+                                    aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
+                                    title={t('common.delete', { defaultValue: 'Eliminar' })}
+                                  >
+                                    <Icon name="trash alternate outline" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Mobile Card */}
+                            <div className={styles.mobileCard}>
+                              <div className={styles.cardHeader}>
+                                <div className={styles.cardDate}>
+                                  {formatDate(expense.date)}
+                                </div>
+                                <div className={styles.cardValue}>
+                                  {formatCurrency(expense.value)}
+                                </div>
+                              </div>
+                              <div className={styles.cardBody}>
+                                <div className={styles.cardCategory}>
+                                  {expense.category}
+                                </div>
+                                <div className={styles.cardDescription}>
+                                  {expense.description}
+                                </div>
+                                <div className={styles.cardActions}>
+                                  <button
+                                    className={styles.actionButton}
+                                    onClick={() => handleEditExpense(expense)}
+                                    type="button"
+                                    aria-label={t('common.edit', { defaultValue: 'Editar' })}
+                                    title={t('common.edit', { defaultValue: 'Editar' })}
+                                  >
+                                    <Icon name="edit outline" />
+                                  </button>
+                                  <button
+                                    className={`${styles.actionButton} ${styles.deleteButton}`}
+                                    onClick={() => handleDeleteExpense(expense.id)}
+                                    type="button"
+                                    aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
+                                    title={t('common.delete', { defaultValue: 'Eliminar' })}
+                                  >
+                                    <Icon name="trash alternate outline" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Total Row */}
+                      <div className={styles.totalRow}>
+                        <div className={styles.totalCell}></div>
+                        <div className={styles.totalCell}></div>
+                        <div className={styles.totalCell}>
+                          <strong>{t('finance.total', { defaultValue: 'Total' })}</strong>
+                        </div>
+                        <div className={`${styles.totalCell} ${styles.valueCell}`}>
+                          <strong>{formatCurrency(calculateTotal())}</strong>
+                        </div>
+                        <div className={styles.totalCell}></div>
+                      </div>
+                      
+                      {/* Mobile Total Card */}
+                      <div className={styles.mobileCard}>
+                        <div className={styles.cardHeader}>
+                          <div className={styles.cardDate}>
+                            <strong>{t('finance.total', { defaultValue: 'Total' })}</strong>
+                          </div>
+                          <div className={styles.cardValue}>
+                            <strong>{formatCurrency(calculateTotal())}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+            </React.Fragment>
           );
         })()}
-
-        {/* Expenses table */}
-        {expenses.length === 0 ? (
-          <div className={styles.empty}>
-            {t('finance.noExpenses', { defaultValue: 'Sem despesas registadas.' })}
-          </div>
-        ) : (
-          <div className={styles.tableSection}>
-            {/* Table Header */}
-            <div className={styles.tableHeader}>
-              <div className={styles.headerCell}>{t('finance.date', { defaultValue: 'Data' })}</div>
-              <div className={styles.headerCell}>{t('finance.category', { defaultValue: 'Categoria' })}</div>
-              <div className={`${styles.headerCell} ${styles.descriptionHeader}`}>{t('finance.description', { defaultValue: 'Descrição' })}</div>
-              <div className={`${styles.headerCell} ${styles.valueHeader}`}>{t('finance.value', { defaultValue: 'Valor' })}</div>
-              <div className={`${styles.headerCell} ${styles.actionsHeader}`}>
-                {t('common.actions', { defaultValue: 'Ações' })}
-              </div>
-            </div>
-
-            {/* Table Body */}
-            <div className={styles.tableBody}>
-              {expenses.map((expense) => (
-                <div key={expense.id}>
-                  {/* Desktop Table Row */}
-                  <div className={`${styles.tableRow} ${activeDropdownRowId === expense.id ? styles.rowRaised : ''}`}>
-                    <div className={styles.tableCell}>
-                      {inlineEditingRowId === expense.id ? (
-                        <Input
-                          type="date"
-                          value={inlineEditingData.date}
-                          onChange={(e) => handleInlineChange('date', e.target.value)}
-                          className={styles.inlineInput}
-                          style={{ colorScheme: 'dark' }}
-                        />
-                      ) : (
-                        <>{formatDate(expense.date)}</>
-                      )}
-                    </div>
-                    <div className={styles.tableCell}>
-                      {inlineEditingRowId === expense.id ? (
-                        <Dropdown
-                          selection
-                          search
-                          options={EXPENSE_CATEGORIES}
-                          value={inlineEditingData.category}
-                          onChange={(_, { value }) => handleInlineChange('category', value)}
-                          allowAdditions
-                          additionLabel={t('finance.addCategory', { defaultValue: 'Adicionar: ' })}
-                          onAddItem={(_, { value }) => handleInlineChange('category', value)}
-                          className={styles.inlineDropdown}
-                          onOpen={() => handleInlineDropdownOpen(expense.id)}
-                          onClose={handleInlineDropdownClose}
-                          ref={(el) => { inlineDropdownRefs.current[expense.id] = el; }}
-                        />
-                      ) : (
-                        <>{expense.category}</>
-                      )}
-                    </div>
-                    <div className={`${styles.tableCell} ${styles.descriptionCell}`}>
-                      {inlineEditingRowId === expense.id ? (
-                        <Input
-                          type="text"
-                          value={inlineEditingData.description}
-                          onChange={(e) => handleInlineChange('description', e.target.value)}
-                          className={styles.inlineInput}
-                        />
-                      ) : (
-                        <>{expense.description}</>
-                      )}
-                    </div>
-                    <div className={`${styles.tableCell} ${styles.valueCell}`}>
-                      {inlineEditingRowId === expense.id ? (
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={inlineEditingData.value}
-                          onChange={(e) => handleInlineChange('value', e.target.value)}
-                          className={styles.inlineInput}
-                        />
-                      ) : (
-                        <>{formatCurrency(expense.value)}</>
-                      )}
-                    </div>
-                    <div className={`${styles.tableCell} ${styles.actionsCell}`}>
-                      <div className={styles.actionButtons}>
-                        {inlineEditingRowId === expense.id ? (
-                          <button
-                            className={styles.actionButton}
-                            onClick={() => handleInlineApprove(expense)}
-                            type="button"
-                            aria-label={t('common.approve', { defaultValue: 'Aprovar' })}
-                            title={t('common.approve', { defaultValue: 'Aprovar' })}
-                          >
-                            <Icon name="check" />
-                          </button>
-                        ) : (
-                          <button
-                            className={styles.actionButton}
-                            onClick={() => handleInlineEditStart(expense)}
-                            type="button"
-                            aria-label={t('common.edit', { defaultValue: 'Editar' })}
-                            title={t('common.edit', { defaultValue: 'Editar' })}
-                          >
-                            <Icon name="edit outline" />
-                          </button>
-                        )}
-                        <button
-                          className={`${styles.actionButton} ${styles.deleteButton}`}
-                          onClick={() => handleDeleteExpense(expense.id)}
-                          type="button"
-                          aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
-                          title={t('common.delete', { defaultValue: 'Eliminar' })}
-                        >
-                          <Icon name="trash alternate outline" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Mobile Card */}
-                  <div className={styles.mobileCard}>
-                    <div className={styles.cardHeader}>
-                      <div className={styles.cardDate}>
-                        {formatDate(expense.date)}
-                      </div>
-                      <div className={styles.cardValue}>
-                        {formatCurrency(expense.value)}
-                      </div>
-                    </div>
-                    <div className={styles.cardBody}>
-                      <div className={styles.cardCategory}>
-                        {expense.category}
-                      </div>
-                      <div className={styles.cardDescription}>
-                        {expense.description}
-                      </div>
-                      <div className={styles.cardActions}>
-                        <button
-                          className={styles.actionButton}
-                          onClick={() => handleEditExpense(expense)}
-                          type="button"
-                          aria-label={t('common.edit', { defaultValue: 'Editar' })}
-                          title={t('common.edit', { defaultValue: 'Editar' })}
-                        >
-                          <Icon name="edit outline" />
-                        </button>
-                        <button
-                          className={`${styles.actionButton} ${styles.deleteButton}`}
-                          onClick={() => handleDeleteExpense(expense.id)}
-                          type="button"
-                          aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
-                          title={t('common.delete', { defaultValue: 'Eliminar' })}
-                        >
-                          <Icon name="trash alternate outline" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Total Row */}
-            <div className={styles.totalRow}>
-              <div className={styles.totalCell}></div>
-              <div className={styles.totalCell}></div>
-              <div className={styles.totalCell}>
-                <strong>{t('finance.total', { defaultValue: 'Total' })}</strong>
-              </div>
-              <div className={`${styles.totalCell} ${styles.valueCell}`}>
-                <strong>{formatCurrency(calculateTotal())}</strong>
-              </div>
-              <div className={styles.totalCell}></div>
-            </div>
-            
-            {/* Mobile Total Card */}
-            <div className={styles.mobileCard}>
-              <div className={styles.cardHeader}>
-                <div className={styles.cardDate}>
-                  <strong>{t('finance.total', { defaultValue: 'Total' })}</strong>
-                </div>
-                <div className={styles.cardValue}>
-                  <strong>{formatCurrency(calculateTotal())}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
         </div>
       </div>

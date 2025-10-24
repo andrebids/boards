@@ -12,11 +12,96 @@
   }
 }
 
+.topBar {
+  display: flex;
+  align-items: center; // vertical centering for title and dropdown
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
 .addMemberSection {
   display: flex;
   gap: 12px;
   margin-bottom: 24px;
   align-items: center;
+  justify-content: flex-end; // place to the right
+}
+
+// Dropdown sizing and rows
+.optionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+}
+
+.optionName {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.optionCheck {
+  color: #22c55e !important; // green check
+}
+
+// style Semantic UI dropdown menu and items
+:global(.ui.selection.dropdown .menu) {
+  // Increase the visible area significantly (fallback px + viewport cap)
+  max-height: 80vh !important;
+  min-height: 260px !important;
+}
+
+:global(.ui.selection.dropdown .menu > .item) {
+  min-height: 32px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+// Minimal buttons
+.addButton {
+  background: rgba(0, 0, 0, 0.24) !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  transition: background 120ms ease, transform 80ms ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  &:hover { background: rgba(0, 0, 0, 0.32) !important; }
+  &:active { transform: translateY(1px); }
+  &:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
+}
+
+.addMemberDropdown {
+  min-width: 260px; // compact width
+  max-width: 320px;
+}
+
+.iconOnlyDanger {
+  background: transparent !important;
+  color: #de3e3e !important;
+  border: 1px solid rgba(222, 62, 62, 0.25) !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 120ms ease, color 120ms ease !important;
+
+  &:hover { background: rgba(222, 62, 62, 0.08) !important; }
+}
+
+// Normalize the inner Semantic UI icon so it sits perfectly centered
+.iconOnlyDanger :global(i.icon) {
+  margin: 0 !important;
+  line-height: 1 !important;
 }
 
 .empty {
@@ -48,13 +133,24 @@
 
 .note {
   margin-top: 24px;
-  padding: 12px;
-  background: rgba(33, 133, 208, 0.1);
-  border-left: 4px solid #2185d0;
-  border-radius: 4px;
-  color: #333;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: rgba(255, 255, 255, 0.88);
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+// Make the icon readable on dark backgrounds
+.note :global(i.icon) {
+  color: rgba(255, 255, 255, 0.88);
+  opacity: 0.95;
+}
+
+// Text span used in JSX
+.noteText {
+  color: rgba(255, 255, 255, 0.88);
 }
 

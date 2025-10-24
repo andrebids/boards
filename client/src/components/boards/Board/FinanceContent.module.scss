@@ -19,10 +19,37 @@
 }
 
 .tabMenu {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-radius: 8px !important;
-  padding: 8px !important;
-  margin-bottom: 20px !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin-bottom: 8px !important;
+  border: none !important;
+  border-bottom: 0 !important; // remove linha inferior padrão do Tab/Menu
+  box-shadow: none !important; // garante nenhum traço escuro
+
+  // Flat button-like tabs
+  :global(.item) {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    margin-right: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.2px;
+    transition: background 140ms ease, border-color 140ms ease, color 140ms ease !important;
+
+    &::before { display: none !important; }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.16) !important;
+      color: #fff !important;
+    }
+
+    &.active {
+      background: rgba(255, 255, 255, 0.24) !important;
+      color: #fff !important;
+    }
+  }
 }
 
 .loading {

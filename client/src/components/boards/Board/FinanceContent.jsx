@@ -100,8 +100,8 @@ const FinanceContent = React.memo(() => {
         ) : (
           <Tab
             menu={{
-              secondary: true,
-              pointing: true,
+              secondary: false,
+              pointing: false,
               className: styles.tabMenu,
             }}
             panes={panes}

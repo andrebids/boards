@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -26,13 +26,19 @@ const MembersTab = React.memo(({ projectId }) => {
   // Usar todos os usuários ativos do sistema
   const projectUsers = allUsers || [];
 
-  // Helper para obter dados do usuário
-  const getUserById = useCallback(
-    (userId) => {
-      return allUsers.find((user) => user.id === userId);
-    },
-    [allUsers]
+  // Selector para obter qualquer usuário por id (inclui inativos/fora da lista ativa)
+  const selectUserByIdSelector = useMemo(
+    () => selectors.makeSelectUserById(),
+    []
   );
+  const usersById = useSelector(state => {
+    const map = {};
+    for (const m of financeMembers) {
+      const id = typeof m.userId === 'object' ? m.userId.id : m.userId;
+      map[id] = selectUserByIdSelector(state, id);
+    }
+    return map;
+  });
 
   const handleAddMember = useCallback(() => {
     if (selectedUserId) {
@@ -40,6 +46,16 @@ const MembersTab = React.memo(({ projectId }) => {
       setSelectedUserId(null);
     }
   }, [selectedUserId, projectId, dispatch]);
+
+  // When selecting a user in the dropdown, add immediately and clear selection
+  const handleSelectAndAdd = useCallback((_, { value }) => {
+    setSelectedUserId(value);
+    if (value) {
+      dispatch(actions.addFinanceMember(projectId, value));
+      // Clear value to allow adding the same user if removed later
+      setSelectedUserId(null);
+    }
+  }, [dispatch, projectId]);
 
   const handleRemoveMember = useCallback(
     (memberId) => {
@@ -54,35 +70,48 @@ const MembersTab = React.memo(({ projectId }) => {
     [dispatch, t],
   );
 
-  const availableUsers = projectUsers.filter(
-    (user) => !financeMembers.some((member) => member.userId === user.id),
+  // Build list of all users with a check for those already added
+  const memberUserIds = useMemo(
+    () =>
+      financeMembers.map(m => (typeof m.userId === 'object' ? m.userId.id : m.userId)),
+    [financeMembers]
   );
 
-  const userOptions = availableUsers.map((user) => ({
-    key: user.id,
-    text: user.name || user.username,
-    value: user.id,
-  }));
+  const userOptions = useMemo(() => (
+    projectUsers.map((user) => {
+      const isMember = memberUserIds.includes(user.id);
+      return {
+        key: user.id,
+        value: user.id,
+        disabled: isMember,
+        text: user.name || user.username,
+        content: (
+          <div className={styles.optionRow}>
+            <span className={styles.optionName}>{user.name || user.username}</span>
+            {isMember && <Icon name="check" className={styles.optionCheck} />}
+          </div>
+        ),
+      };
+    })
+  ), [projectUsers, memberUserIds]);
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.header}>
-        <h3>{t('finance.members', { defaultValue: 'Membros com Acesso' })}</h3>
-      </div>
+      <div className={styles.topBar}>
+        <div className={styles.header}>
+          <h3>{t('finance.members', { defaultValue: 'Membros com Acesso' })}</h3>
+        </div>
 
-      <div className={styles.addMemberSection}>
-        <Dropdown
-          placeholder={t('finance.selectUser', { defaultValue: 'Selecionar utilizador' })}
-          fluid
-          selection
-          options={userOptions}
-          value={selectedUserId}
-          onChange={(_, { value }) => setSelectedUserId(value)}
-        />
-        <Button primary onClick={handleAddMember} disabled={!selectedUserId}>
-          <Icon name="plus" />
-          {t('finance.addMember', { defaultValue: 'Adicionar' })}
-        </Button>
+        <div className={styles.addMemberSection}>
+          <Dropdown
+            className={styles.addMemberDropdown}
+            placeholder={t('finance.selectUser', { defaultValue: 'Selecionar utilizador' })}
+            selection
+            options={userOptions}
+            value={selectedUserId}
+            onChange={handleSelectAndAdd}
+          />
+        </div>
       </div>
 
       {financeMembers.length === 0 ? (
@@ -97,21 +126,24 @@ const MembersTab = React.memo(({ projectId }) => {
                 <Button
                   icon
                   size="small"
-                  color="red"
+                  className={styles.iconOnlyDanger}
                   onClick={() => handleRemoveMember(member.id)}
                 >
-                  <Icon name="trash" />
+                  <Icon name="trash" fitted />
                 </Button>
               </List.Content>
               <List.Icon name="user" size="large" verticalAlign="middle" />
               <List.Content>
                 <List.Header>
-                  {member.userId === currentUser.id
-                    ? t('finance.you', { defaultValue: 'Você' })
-                    : (() => {
-                        const user = getUserById(member.userId);
-                        return user ? user.name || user.username || user.email : 'Utilizador';
-                      })()}
+                  {(() => {
+                    const memberUserId = typeof member.userId === 'object' ? member.userId.id : member.userId;
+                    if (memberUserId === currentUser.id) {
+                      return t('finance.you', { defaultValue: 'Você' });
+                    }
+                    const embeddedUser = typeof member.userId === 'object' ? member.userId : null;
+                    const user = usersById[memberUserId] || embeddedUser;
+                    return user ? (user.username || user.email || user.name) : 'Utilizador';
+                  })()}
                 </List.Header>
                 <List.Description>
                   {t('finance.addedOn', { defaultValue: 'Adicionado em' })}{' '}
@@ -125,9 +157,11 @@ const MembersTab = React.memo(({ projectId }) => {
 
       <div className={styles.note}>
         <Icon name="info circle" />
-        {t('finance.membersNote', {
-          defaultValue: 'Apenas gestores de projeto podem adicionar ou remover membros.',
-        })}
+        <span className={styles.noteText}>
+          {t('finance.membersNote', {
+            defaultValue: 'Apenas gestores de projeto podem adicionar ou remover membros.',
+          })}
+        </span>
       </div>
     </div>
   );

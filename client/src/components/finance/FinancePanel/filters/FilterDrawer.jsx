@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import { Dropdown, Icon } from 'semantic-ui-react';
 import DateFilterTabs from './DateFilterTabs';
@@ -56,7 +57,9 @@ export default function FilterDrawer({
     set(patch);
   };
 
-  return (
+  const portalTarget = document.getElementById('app') || document.body;
+
+  return createPortal(
     <div className={styles.overlay} role="dialog" aria-modal>
       <div className={styles.drawer}>
         <div className={styles.drawerHeader}>
@@ -113,7 +116,8 @@ export default function FilterDrawer({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    portalTarget
   );
 }
 
