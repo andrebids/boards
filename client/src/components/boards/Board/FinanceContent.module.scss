@@ -34,3 +34,83 @@
   color: #666;
 }
 
+// Estilos para página de acesso negado
+.accessDeniedContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 400px;
+  width: 100%;
+}
+
+.accessDeniedCard {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 48px 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+  animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.lockIcon {
+  color: #e74c3c;
+  margin-bottom: 24px;
+  opacity: 0.9;
+}
+
+.accessDeniedTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+}
+
+.accessDeniedMessage {
+  font-size: 16px;
+  color: #555;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.accessDeniedInfo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(52, 152, 219, 0.1);
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  border-radius: 8px;
+  padding: 16px 20px;
+  text-align: left;
+  
+  i.icon {
+    color: #3498db;
+    font-size: 1.2em;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  
+  span {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+  }
+}
+

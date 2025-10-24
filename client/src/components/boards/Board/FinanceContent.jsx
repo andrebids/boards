@@ -6,7 +6,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Tab } from 'semantic-ui-react';
+import { Tab, Icon } from 'semantic-ui-react';
 
 import actions from '../../../actions';
 import selectors from '../../../selectors';
@@ -21,8 +21,11 @@ const FinanceContent = React.memo(() => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const currentProject = useSelector(selectors.selectCurrentProject);
+  const currentUser = useSelector(selectors.selectCurrentUser);
   const financeConfig = useSelector(selectors.selectFinanceConfig);
   const isLoading = useSelector(selectors.selectFinanceIsLoading);
+  const financeError = useSelector(selectors.selectFinanceError);
+  const canAccessFinance = useSelector(selectors.selectCanCurrentUserAccessFinance);
 
   useEffect(() => {
     if (currentProject) {
@@ -38,6 +41,42 @@ const FinanceContent = React.memo(() => {
 
   if (!currentProject) {
     return null;
+  }
+
+  // Verificar se houve erro de permissão (403)
+  const hasPermissionError = financeError && (
+    financeError.status === 403 || 
+    financeError.message?.includes('forbidden') || 
+    financeError.message?.includes('finance member')
+  );
+
+  // Se não pode acessar e houve erro de permissão, mostrar mensagem de acesso negado
+  if (!canAccessFinance && hasPermissionError) {
+    return (
+      <div className={styles.wrapper}>
+        <div className={styles.accessDeniedContainer}>
+          <div className={styles.accessDeniedCard}>
+            <Icon name="lock" size="huge" className={styles.lockIcon} />
+            <h2 className={styles.accessDeniedTitle}>
+              {t('finance.accessDenied.title', { defaultValue: 'Acesso Negado' })}
+            </h2>
+            <p className={styles.accessDeniedMessage}>
+              {t('finance.accessDenied.message', { 
+                defaultValue: 'Você não tem permissão para acessar as despesas deste projeto.' 
+              })}
+            </p>
+            <div className={styles.accessDeniedInfo}>
+              <Icon name="info circle" />
+              <span>
+                {t('finance.accessDenied.info', { 
+                  defaultValue: 'Apenas administradores, gestores de projeto e membros financeiros autorizados podem visualizar estas informações.' 
+                })}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const panes = [

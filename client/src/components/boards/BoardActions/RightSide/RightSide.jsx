@@ -44,11 +44,9 @@ const RightSide = React.memo(() => {
 
   const ActionsPopup = usePopup(ActionsStep, { variantClass: 'glass' });
 
-  // Verificar se user é finance member (TODO: implementar selector adequado)
-  // Por enquanto, mostrar apenas para project managers
-  const isProjectManager = useSelector(state =>
-    selectors.selectIsCurrentUserManagerForCurrentProject(state),
-  );
+  // Verificar se user tem acesso ao Finance Panel
+  // (Finance Member OU Project Manager OU Admin)
+  const canAccessFinance = useSelector(selectors.selectCanCurrentUserAccessFinance);
 
   const views = [];
   if (board.context === BoardContexts.BOARD) {
@@ -73,7 +71,7 @@ const RightSide = React.memo(() => {
           ))}
         </div>
       </div>
-      {isProjectManager && (
+      {canAccessFinance && (
         <div className={styles.action}>
           <button
             type="button"

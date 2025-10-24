@@ -38,6 +38,11 @@ export default {
       you: 'You',
       addedOn: 'Added on',
       membersNote: 'Only project managers can add or remove members.',
+      accessDenied: {
+        title: 'Access Denied',
+        message: 'You do not have permission to access the expenses for this project.',
+        info: 'Only administrators, project managers, and authorised finance members can view this information.',
+      },
     },
   },
 };

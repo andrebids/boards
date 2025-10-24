@@ -20,11 +20,19 @@ const MembersTab = React.memo(({ projectId }) => {
 
   const financeMembers = useSelector(selectors.selectFinanceMembers);
   const currentUser = useSelector(selectors.selectCurrentUser);
+  const allUsers = useSelector(selectors.selectActiveUsers);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
-  // Note: You'll need to implement a selector to get project users
-  // For now, this is a placeholder
-  const projectUsers = []; // TODO: Implement selector
+  // Usar todos os usuários ativos do sistema
+  const projectUsers = allUsers || [];
+
+  // Helper para obter dados do usuário
+  const getUserById = useCallback(
+    (userId) => {
+      return allUsers.find((user) => user.id === userId);
+    },
+    [allUsers]
+  );
 
   const handleAddMember = useCallback(() => {
     if (selectedUserId) {
@@ -100,8 +108,10 @@ const MembersTab = React.memo(({ projectId }) => {
                 <List.Header>
                   {member.userId === currentUser.id
                     ? t('finance.you', { defaultValue: 'Você' })
-                    : 'Member'}{' '}
-                  {/* TODO: Get user name */}
+                    : (() => {
+                        const user = getUserById(member.userId);
+                        return user ? user.name || user.username || user.email : 'Utilizador';
+                      })()}
                 </List.Header>
                 <List.Description>
                   {t('finance.addedOn', { defaultValue: 'Adicionado em' })}{' '}

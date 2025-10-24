@@ -34,6 +34,11 @@ export default {
       you: 'Você',
       addedOn: 'Adicionado em',
       membersNote: 'Apenas gerentes de projeto podem adicionar ou remover membros.',
+      accessDenied: {
+        title: 'Acesso Negado',
+        message: 'Você não tem permissão para acessar as despesas deste projeto.',
+        info: 'Apenas administradores, gestores de projeto e membros financeiros autorizados podem visualizar estas informações.',
+      },
     },
   },
 };
