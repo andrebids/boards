@@ -86,18 +86,37 @@ export function* createExpense(projectId, data) {
 
 export function* createExpenseWithAttachments(projectId, data, files) {
   try {
+    console.log('[Finance][attachments] create-with-attachments start', {
+      projectId,
+      hasFiles: !!(files && files.length),
+      filesCount: files ? files.length : 0,
+      fileNames: (files || []).map((f) => f && f.name),
+    });
+
     const { item: expense } = yield call(request, api.finance.createExpense, projectId, data);
     yield put(actions.createExpense.success(expense));
 
     if (files && files.length > 0) {
       for (const file of files) {
         try {
-          yield call(request, api.finance.createExpenseAttachment, expense.id, file, file.name);
+          console.log('[Finance][attachments] uploading (create-with-attachments)', {
+            expenseId: expense.id,
+            name: file && file.name,
+            type: file && file.type,
+            size: file && file.size,
+          });
+          // Reuse the attachment saga for consistent logging and success dispatch
+          yield call(createExpenseAttachment, expense.id, file, file.name);
+          console.log('[Finance][attachments] upload success (create-with-attachments)', {
+            expenseId: expense.id,
+            name: file && file.name,
+          });
         } catch (e) {
-          console.error('Attachment upload failed', e);
+          console.error('[Finance][attachments] upload failed (create-with-attachments)', e);
         }
       }
-      // refresh attachments list
+      console.log('[Finance][attachments] fetch after upload', { expenseId: expense.id });
+      // refresh attachments list to ensure the first column updates immediately
       yield call(fetchExpenseAttachments, expense.id);
     }
 

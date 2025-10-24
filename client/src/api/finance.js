@@ -4,6 +4,7 @@
  */
 
 import socket from './socket';
+import http from './http';
 
 /* Finance Config */
 
@@ -43,14 +44,8 @@ const getExpenseStats = (projectId, headers) =>
 const getExpenseAttachments = (expenseId, headers) =>
   socket.get(`/expenses/${expenseId}/attachments`, undefined, headers);
 
-const createExpenseAttachment = (expenseId, file, name, headers) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('name', name || file.name);
-  return socket.post(`/expenses/${expenseId}/attachments`, formData, headers, {
-    isMultipart: true,
-  });
-};
+const createExpenseAttachment = (expenseId, file, name, headers) =>
+  http.post(`/expenses/${expenseId}/attachments`, { name: name || file.name, file }, headers);
 
 const deleteExpenseAttachment = (attachmentId, headers) =>
   socket.delete(`/expense-attachments/${attachmentId}`, undefined, headers);

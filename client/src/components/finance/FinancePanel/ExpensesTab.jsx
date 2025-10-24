@@ -115,15 +115,24 @@ const ExpensesTab = React.memo(({ projectId }) => {
       status: 'pending',
     };
 
-    console.log('Submitting expense:', data);
-    console.log('Project ID:', projectId);
+    console.log('[Finance][form] submitting expense', data);
+    console.log('[Finance][form] projectId', projectId);
+    console.log('[Finance][form] files selected', {
+      count: (formFiles || []).length,
+      names: (formFiles || []).map((f) => f && f.name),
+    });
 
     if (editingExpense) {
       dispatch(actions.updateExpense(editingExpense.id, data));
     } else {
       if (formFiles && formFiles.length > 0) {
+        console.log('[Finance][form] dispatch EXPENSE_CREATE_WITH_ATTACHMENTS', {
+          projectId,
+          filesCount: formFiles.length,
+        });
         dispatch(actions.createExpenseWithAttachments(projectId, data, formFiles));
       } else {
+        console.log('[Finance][form] no files selected, dispatch EXPENSE_CREATE');
         dispatch(actions.createExpense(projectId, data));
       }
     }
@@ -139,7 +148,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
     });
     setFormFiles([]);
     setEditingExpense(null);
-  }, [formData, editingExpense, projectId, dispatch]);
+  }, [formData, formFiles, editingExpense, projectId, dispatch]);
 
   const handleClearForm = useCallback(() => {
     const today = new Date();
@@ -640,8 +649,21 @@ const ExpensesTab = React.memo(({ projectId }) => {
                     className={styles.hiddenFileInput}
                     onChange={(e) => {
                       const files = Array.from(e.target.files || []);
+                      console.log('[Finance][form] file input change', {
+                        selectedCount: files.length,
+                        selectedNames: files.map((f) => f && f.name),
+                        selectedTypes: files.map((f) => f && f.type),
+                        selectedSizes: files.map((f) => f && f.size),
+                      });
                       if (files.length === 0) return;
-                      setFormFiles((prev) => [...prev, ...files]);
+                      setFormFiles((prev) => {
+                        const next = [...prev, ...files];
+                        console.log('[Finance][form] formFiles updated', {
+                          nextCount: next.length,
+                          nextNames: next.map((f) => f && f.name),
+                        });
+                        return next;
+                      });
                       // reset input to allow re-selecting same file name
                       e.target.value = '';
                     }}

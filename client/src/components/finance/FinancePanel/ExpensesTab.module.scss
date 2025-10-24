@@ -1152,6 +1152,7 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.8rem;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .valueCell {
@@ -1230,37 +1231,58 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  
+
   background: rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  
-  display: grid;
-  place-items: center;
+
+  /* Normalize box sizing and remove native button paddings to avoid off-centering */
+  box-sizing: border-box;
+  padding: 0;
+
+  /* Use flex centering to be consistent across browsers */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  
+  line-height: 0; /* prevent baseline offset from affecting centering */
+  vertical-align: middle;
+
   cursor: pointer;
   transition: none;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18);
   
-  i.icon {
+  i.icon,
+  i[class*="icon"] {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     margin: 0 !important;
-    padding: 0 !important;
-    font-size: 14px !important;
-    color: rgba(255, 255, 255, 0.85) !important;
-    transition: color 0.15s ease;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    width: 14px !important;
+    height: 14px !important;
     line-height: 1 !important;
+    font-size: 14px !important;
+    color: rgba(230, 237, 243, 0.92) !important; /* light gray */
+    text-align: center;
+    transition: color 0.15s ease;
+  }
+
+  i.icon::before,
+  i[class*="icon"]::before {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    transform: none !important;
   }
   
   &:hover {
     background: rgba(255, 255, 255, 0.16);
     border-color: rgba(255, 255, 255, 0.30);
     
-    i.icon {
+    i.icon,
+    i[class*="icon"] {
       color: rgba(255, 255, 255, 1) !important;
     }
   }
