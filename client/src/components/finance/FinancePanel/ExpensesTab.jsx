@@ -7,15 +7,19 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon, Form, Input, TextArea, Dropdown } from 'semantic-ui-react';
+import { Icon, Input, Dropdown } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
+import api from '../../../api';
 import actions from '../../../actions';
 import { EXPENSE_CATEGORIES } from '../../../constants/ExpenseCategories';
 
 import styles from './ExpensesTab.module.scss';
 import FilterBar from './filters/FilterBar';
 import FilterDrawer from './filters/FilterDrawer';
+import { formatCurrency, formatDate } from './utils/format';
+import { buildYearOptions, buildSortOptions } from './utils/options';
+import ExpenseForm from './ExpensesTab/Form/ExpenseForm';
 
 const ExpensesTab = React.memo(({ projectId }) => {
   const dispatch = useDispatch();
@@ -75,19 +79,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
     }
   }, []);
   
-  // Estados para o formulário inline
-  const [formData, setFormData] = useState(() => {
-    const today = new Date();
-    const isoDate = today.toISOString().split('T')[0]; // YYYY-MM-DD para input date
-    return {
-      category: '',
-      description: '',
-      value: '',
-      date: isoDate, // Pré-define a data atual no formato ISO
-    };
-  });
-  const [formFiles, setFormFiles] = useState([]);
-  const fileInputRef = useRef(null);
+  // Form gerido pelo componente filho ExpenseForm
   
   // Estados para filtros
   const [startDate, setStartDate] = useState('');
@@ -101,84 +93,11 @@ const ExpensesTab = React.memo(({ projectId }) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
-  // Handlers para o formulário inline
-  const handleFormChange = useCallback((field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  }, []);
-
-  const handleFormSubmit = useCallback(() => {
-    const data = {
-      category: formData.category,
-      description: formData.description || '-',
-      value: parseFloat(formData.value),
-      date: formData.date, // Já está no formato ISO (YYYY-MM-DD)
-      status: 'pending',
-    };
-
-    console.log('[Finance][form] submitting expense', data);
-    console.log('[Finance][form] projectId', projectId);
-    console.log('[Finance][form] files selected', {
-      count: (formFiles || []).length,
-      names: (formFiles || []).map((f) => f && f.name),
-    });
-
-    if (editingExpense) {
-      dispatch(actions.updateExpense(editingExpense.id, data));
-    } else {
-      if (formFiles && formFiles.length > 0) {
-        console.log('[Finance][form] dispatch EXPENSE_CREATE_WITH_ATTACHMENTS', {
-          projectId,
-          filesCount: formFiles.length,
-        });
-        dispatch(actions.createExpenseWithAttachments(projectId, data, formFiles));
-      } else {
-        console.log('[Finance][form] no files selected, dispatch EXPENSE_CREATE');
-        dispatch(actions.createExpense(projectId, data));
-      }
-    }
-
-    // Limpar formulário após submissão
-    const today = new Date();
-    const isoDate = today.toISOString().split('T')[0];
-    setFormData({
-      category: '',
-      description: '',
-      value: '',
-      date: isoDate, // Pré-define a data atual no formato ISO
-    });
-    setFormFiles([]);
-    setEditingExpense(null);
-  }, [formData, formFiles, editingExpense, projectId, dispatch]);
-
-  const handleClearForm = useCallback(() => {
-    const today = new Date();
-    const isoDate = today.toISOString().split('T')[0];
-    setFormData({
-      category: '',
-      description: '',
-      value: '',
-      date: isoDate, // Pré-define a data atual no formato ISO
-    });
-    setEditingExpense(null);
-  }, []);
+  // Handlers do formulário agora residem em ExpenseForm
 
   const handleEditExpense = useCallback((expense) => {
     console.log('[Finance] Edit expense click', expense);
     setEditingExpense(expense);
-    // Converter data do formato ISO para o formato do input date
-    let dateValue = '';
-    if (expense.date) {
-      const date = new Date(expense.date);
-      if (!isNaN(date.getTime())) {
-        dateValue = date.toISOString().split('T')[0];
-      }
-    }
-    setFormData({
-      category: expense.category || '',
-      description: expense.description || '',
-      value: expense.value?.toString() || '',
-      date: dateValue,
-    });
 
     // Trazer o formulário para a vista para deixar claro que está em modo de edição
     if (formContainerRef.current) {
@@ -222,9 +141,11 @@ const ExpensesTab = React.memo(({ projectId }) => {
   }, [dispatch, attachmentsByExpense]);
 
   const handleDownloadAttachment = useCallback((attachment) => {
-    const url = selectors.api.finance.getExpenseAttachmentDownloadUrl
-      ? selectors.api.finance.getExpenseAttachmentDownloadUrl(attachment.id, attachment.data?.filename || attachment.name)
-      : `/expense-attachments/${attachment.id}/download/${encodeURIComponent(attachment.data?.filename || attachment.name)}`;
+    const filename = attachment.data?.filename || attachment.name;
+    const builder = api && api.finance && api.finance.getExpenseAttachmentDownloadUrl;
+    const url = builder
+      ? builder(attachment.id, filename)
+      : `/expense-attachments/${attachment.id}/download/${encodeURIComponent(filename)}`;
     window.open(url, '_blank');
   }, []);
 
@@ -474,48 +395,10 @@ const ExpensesTab = React.memo(({ projectId }) => {
     return filtered;
   }, [allExpenses, startDate, endDate, category, sortBy]);
 
-  const formatCurrency = useCallback((value) => {
-    return new Intl.NumberFormat('pt-PT', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(value);
-  }, []);
-
-  const formatDate = useCallback((dateString) => {
-    return new Date(dateString).toLocaleDateString('pt-PT');
-  }, []);
-
   // Opções para seletores
-  const monthOptions = [
-    { value: '1', text: 'Janeiro' },
-    { value: '2', text: 'Fevereiro' },
-    { value: '3', text: 'Março' },
-    { value: '4', text: 'Abril' },
-    { value: '5', text: 'Maio' },
-    { value: '6', text: 'Junho' },
-    { value: '7', text: 'Julho' },
-    { value: '8', text: 'Agosto' },
-    { value: '9', text: 'Setembro' },
-    { value: '10', text: 'Outubro' },
-    { value: '11', text: 'Novembro' },
-    { value: '12', text: 'Dezembro' },
-  ];
+  const yearOptions = React.useMemo(() => buildYearOptions(), []);
 
-  const yearOptions = React.useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let i = currentYear - 5; i <= currentYear + 1; i++) {
-      years.push({ value: i.toString(), text: i.toString() });
-    }
-    return years;
-  }, []);
-
-  const sortOptions = [
-    { key: 'recente', value: 'data-recente', text: t('finance.newestDate', { defaultValue: 'Mais recente' }) },
-    { key: 'antiga', value: 'data-antiga', text: t('finance.oldestDate', { defaultValue: 'Mais antiga' }) },
-    { key: 'alto', value: 'valor-alto', text: t('finance.highestValue', { defaultValue: 'Maior valor' }) },
-    { key: 'baixo', value: 'valor-baixo', text: t('finance.lowestValue', { defaultValue: 'Menor valor' }) },
-  ];
+  const sortOptions = React.useMemo(() => buildSortOptions(t), [t]);
 
   const calculateTotal = useCallback(() => {
     if (!expenses || !Array.isArray(expenses)) {
@@ -531,8 +414,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
     }, 0);
   }, [expenses]);
 
-  // Validação do formulário
-  const isFormValid = formData.category && formData.value && formData.date;
+  // Validação do formulário movida para ExpenseForm
 
   return (
     <div className={styles.wrapper}>
@@ -545,162 +427,15 @@ const ExpensesTab = React.memo(({ projectId }) => {
       <div className={styles.mainContent}>
         {/* Left column - Form */}
         <div className={styles.formColumn}>
-          <div className={styles.formContainer} ref={formContainerRef}>
-            <h4 className={styles.formTitle}>
-              {editingExpense 
-                ? t('finance.editExpense', { defaultValue: 'Editar Despesa' })
-                : t('finance.addExpense', { defaultValue: 'Adicionar Despesa' })
-              }
-            </h4>
-            
-            <Form>
-              <Form.Field required>
-                <label className="glass-label">{t('finance.date', { defaultValue: 'Data' })}</label>
-                <Input
-                  type="date"
-                  value={formData.date}
-                  className={styles.field}
-                  onChange={(e) => handleFormChange('date', e.target.value)}
-                  style={{ 
-                    colorScheme: 'dark'
-                  }}
-                />
-              </Form.Field>
-
-              <Form.Field required>
-                <label className="glass-label">{t('finance.category', { defaultValue: 'Categoria' })}</label>
-                <Dropdown
-                  placeholder={t('finance.selectCategory', {
-                    defaultValue: 'Selecionar categoria',
-                  })}
-                  fluid
-                  selection
-                  search
-                  options={EXPENSE_CATEGORIES}
-                  value={formData.category}
-                  className={styles.field}
-                  onChange={(_, { value }) => handleFormChange('category', value)}
-                  allowAdditions
-                  additionLabel={t('finance.addCategory', { defaultValue: 'Adicionar: ' })}
-                  onAddItem={(_, { value }) => handleFormChange('category', value)}
-                />
-              </Form.Field>
-
-              <Form.Field>
-                <label className="glass-label">{t('finance.description', { defaultValue: 'Descrição' })}</label>
-                <TextArea
-                  rows={3}
-                  value={formData.description}
-                  className={styles.field}
-                  onChange={(e) => handleFormChange('description', e.target.value)}
-                  placeholder={t('finance.descriptionPlaceholder', {
-                    defaultValue: 'Descrição da despesa...',
-                  })}
-                />
-              </Form.Field>
-
-              <Form.Field required>
-                <label className="glass-label">{t('finance.value', { defaultValue: 'Valor (EUR)' })}</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.value}
-                  className={styles.field}
-                  onChange={(e) => handleFormChange('value', e.target.value)}
-                  placeholder="0.00"
-                />
-              </Form.Field>
-
-              {/* Attachments picker (optional) */}
-              <Form.Field>
-                <label className="glass-label">{t('finance.attachments', { defaultValue: 'Anexos' })}</label>
-                <div
-                  className={styles.filePicker}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      if (fileInputRef.current) fileInputRef.current.click();
-                    }
-                  }}
-                >
-                  <Icon name="paperclip" />
-                  <span className={styles.filePlaceholder}>
-                    {formFiles.length > 0
-                      ? t('finance.nFilesSelected', { defaultValue: '{{count}} ficheiros selecionados', count: formFiles.length })
-                      : t('finance.selectFiles', { defaultValue: 'Selecionar ficheiros...' })}
-                  </span>
-                  <Button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (fileInputRef.current) fileInputRef.current.click();
-                    }}
-                  >
-                    {t('common.browse', { defaultValue: 'Procurar' })}
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*,application/pdf"
-                    multiple
-                    className={styles.hiddenFileInput}
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files || []);
-                      console.log('[Finance][form] file input change', {
-                        selectedCount: files.length,
-                        selectedNames: files.map((f) => f && f.name),
-                        selectedTypes: files.map((f) => f && f.type),
-                        selectedSizes: files.map((f) => f && f.size),
-                      });
-                      if (files.length === 0) return;
-                      setFormFiles((prev) => {
-                        const next = [...prev, ...files];
-                        console.log('[Finance][form] formFiles updated', {
-                          nextCount: next.length,
-                          nextNames: next.map((f) => f && f.name),
-                        });
-                        return next;
-                      });
-                      // reset input to allow re-selecting same file name
-                      e.target.value = '';
-                    }}
-                  />
-                </div>
-                {formFiles.length > 0 && (
-                  <div className={styles.fileList}>
-                    {formFiles.map((f, idx) => (
-                      <div key={`${f.name}-${idx}`} className={styles.fileItem}>
-                        <Icon name={f.type?.startsWith('image/') ? 'file image outline' : 'file pdf outline'} />
-                        <span className={styles.fileName} title={f.name}>{f.name}</span>
-                        <button
-                          type="button"
-                          className={styles.actionButton}
-                          onClick={() => setFormFiles(prev => prev.filter((_, i) => i !== idx))}
-                          title={t('common.delete', { defaultValue: 'Eliminar' })}
-                          aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
-                        >
-                          <Icon name="trash alternate outline" />
-                        </button>
-                      </div>
-                    ))}
-                    <div className={styles.fileHint}>{t('finance.onlyPdfOrImageAllowed', { defaultValue: 'Apenas PDF ou imagem.' })}</div>
-                  </div>
-                )}
-              </Form.Field>
-
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <Button onClick={handleClearForm}>
-                  {t('common.cancel', { defaultValue: 'Limpar' })}
-                </Button>
-                <Button primary onClick={handleFormSubmit} disabled={!isFormValid}>
-                  {t('common.save', { defaultValue: 'Guardar' })}
-                </Button>
-              </div>
-            </Form>
-          </div>
+          <ExpenseForm
+            t={t}
+            categories={EXPENSE_CATEGORIES}
+            editingExpense={editingExpense}
+            onSetEditingExpense={setEditingExpense}
+            projectId={projectId}
+            dispatch={dispatch}
+            formContainerRef={formContainerRef}
+          />
         </div>
 
         {/* Right column - Table */}
@@ -925,15 +660,17 @@ const ExpensesTab = React.memo(({ projectId }) => {
                                       <Icon name="edit outline" />
                                     </button>
                                   )}
-                                  <button
-                                    className={styles.actionButton}
-                                    onClick={() => handleOpenAttachments(expense)}
-                                    type="button"
-                                    aria-label={t('finance.addAttachment', { defaultValue: 'Anexos' })}
-                                    title={t('finance.addAttachment', { defaultValue: 'Anexos' })}
-                                  >
-                                    <Icon name="paperclip" />
-                                  </button>
+                                  {false && (
+                                    <button
+                                      className={styles.actionButton}
+                                      onClick={() => handleOpenAttachments(expense)}
+                                      type="button"
+                                      aria-label={t('finance.addAttachment', { defaultValue: 'Anexos' })}
+                                      title={t('finance.addAttachment', { defaultValue: 'Anexos' })}
+                                    >
+                                      <Icon name="paperclip" />
+                                    </button>
+                                  )}
                                   <button
                                     className={`${styles.actionButton} ${styles.deleteButton}`}
                                     onClick={() => handleDeleteExpense(expense.id)}
@@ -947,8 +684,8 @@ const ExpensesTab = React.memo(({ projectId }) => {
                               </div>
                             </div>
 
-                            {/* Attachments row (if loaded) */}
-                            {attachmentsByExpense[expense.id] && attachmentsByExpense[expense.id].length > 0 && (
+                            {/* Attachments row desativado para evitar botão extra */}
+                            {false && attachmentsByExpense[expense.id] && attachmentsByExpense[expense.id].length > 0 && (
                               <div className={styles.attachmentsRow}>
                                 <div className={styles.attachmentsCell}>
                                   {attachmentsByExpense[expense.id].map((att) => (
@@ -958,18 +695,9 @@ const ExpensesTab = React.memo(({ projectId }) => {
                                         onClick={() => handleDownloadAttachment(att)}
                                         type="button"
                                         title={att.name}
+                                        aria-label={att.name}
                                       >
                                         <Icon name={att.data?.image ? 'file image outline' : 'file pdf outline'} />
-                                        <span className={styles.attachmentName}>{att.name}</span>
-                                      </button>
-                                      <button
-                                        className={`${styles.actionButton} ${styles.deleteButton}`}
-                                        onClick={() => handleRemoveAttachment(att.id)}
-                                        type="button"
-                                        aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
-                                        title={t('common.delete', { defaultValue: 'Eliminar' })}
-                                      >
-                                        <Icon name="trash alternate outline" />
                                       </button>
                                     </div>
                                   ))}

@@ -48,6 +48,7 @@ export default {
         message: 'Não tem permissão para aceder às despesas deste projeto.',
         info: 'Apenas administradores, gestores de projeto e membros financeiros autorizados podem visualizar estas informações.',
       },
+      selectFiles: 'Selecionar ficheiros...',
     },
   },
 };

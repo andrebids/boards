@@ -724,6 +724,7 @@ export default {
       collapsePanel: 'Recolher painel',
       openActivityHistory: 'Abrir histórico de atividades',
       noLabelsCreatedYet: 'Nenhuma etiqueta criada ainda',
+      browse: 'Procurar',
     },
 
     action: {
