@@ -84,6 +84,30 @@ export function* createExpense(projectId, data) {
   }
 }
 
+export function* createExpenseWithAttachments(projectId, data, files) {
+  try {
+    const { item: expense } = yield call(request, api.finance.createExpense, projectId, data);
+    yield put(actions.createExpense.success(expense));
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        try {
+          yield call(request, api.finance.createExpenseAttachment, expense.id, file, file.name);
+        } catch (e) {
+          console.error('Attachment upload failed', e);
+        }
+      }
+      // refresh attachments list
+      yield call(fetchExpenseAttachments, expense.id);
+    }
+
+    // Atualizar estatísticas
+    yield call(fetchExpenseStats, projectId);
+  } catch (error) {
+    yield put(actions.createExpense.failure(error));
+  }
+}
+
 export function* updateExpense(expenseId, data) {
   try {
     const { item } = yield call(request, api.finance.updateExpense, expenseId, data);
@@ -124,6 +148,39 @@ export function* fetchExpenseStats(projectId) {
   }
 }
 
+export function* fetchExpenseAttachments(expenseId) {
+  try {
+    console.log('[Finance][attachments] fetching list for expense', expenseId);
+    const { items } = yield call(request, api.finance.getExpenseAttachments, expenseId);
+    console.log('[Finance][attachments] fetched', { expenseId, count: (items || []).length, items });
+    yield put(actions.fetchExpenseAttachmentsSuccess(expenseId, items || []));
+  } catch (error) {
+    console.error('[Finance][attachments] fetch failed', { expenseId, error });
+    yield put(actions.fetchExpenseAttachmentsFailure(error));
+  }
+}
+
+export function* createExpenseAttachment(expenseId, file, name) {
+  try {
+    console.log('[Finance][attachments] uploading', { expenseId, name: name || file?.name, type: file?.type, size: file?.size });
+    const { item } = yield call(request, api.finance.createExpenseAttachment, expenseId, file, name);
+    console.log('[Finance][attachments] upload success', { expenseId, attachmentId: item?.id, item });
+    yield put(actions.createExpenseAttachmentSuccess(item));
+  } catch (error) {
+    console.error('[Finance][attachments] upload failed', { expenseId, error });
+    yield put(actions.createExpenseAttachmentFailure(error));
+  }
+}
+
+export function* deleteExpenseAttachment(attachmentId) {
+  try {
+    yield call(request, api.finance.deleteExpenseAttachment, attachmentId);
+    yield put(actions.deleteExpenseAttachmentSuccess(attachmentId));
+  } catch (error) {
+    yield put(actions.deleteExpenseAttachmentFailure(error));
+  }
+}
+
 export default {
   fetchFinanceConfig,
   updateFinanceConfig,
@@ -134,5 +191,9 @@ export default {
   updateExpense,
   deleteExpense,
   fetchExpenseStats,
+  fetchExpenseAttachments,
+  createExpenseAttachment,
+  deleteExpenseAttachment,
+  createExpenseWithAttachments,
 };
 

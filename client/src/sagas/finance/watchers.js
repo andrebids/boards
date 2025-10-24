@@ -34,6 +34,11 @@ export default function* financeWatchers() {
     takeEvery(ActionTypes.EXPENSE_CREATE, ({ payload: { projectId, data } }) =>
       services.createExpense(projectId, data),
     ),
+    takeEvery(
+      ActionTypes.EXPENSE_CREATE_WITH_ATTACHMENTS,
+      ({ payload: { projectId, data, files } }) =>
+        services.createExpenseWithAttachments(projectId, data, files),
+    ),
     takeEvery(ActionTypes.EXPENSE_UPDATE, ({ payload: { expenseId, data } }) =>
       services.updateExpense(expenseId, data),
     ),
@@ -42,6 +47,15 @@ export default function* financeWatchers() {
     ),
     takeEvery(ActionTypes.EXPENSE_STATS_FETCH, ({ payload: { projectId } }) =>
       services.fetchExpenseStats(projectId),
+    ),
+    takeEvery(ActionTypes.EXPENSE_ATTACHMENTS_FETCH, ({ payload: { expenseId } }) =>
+      services.fetchExpenseAttachments(expenseId),
+    ),
+    takeEvery(ActionTypes.EXPENSE_ATTACHMENT_CREATE, ({ payload: { expenseId, file, name } }) =>
+      services.createExpenseAttachment(expenseId, file, name),
+    ),
+    takeEvery(ActionTypes.EXPENSE_ATTACHMENT_DELETE, ({ payload: { attachmentId } }) =>
+      services.deleteExpenseAttachment(attachmentId),
     ),
   ]);
 }

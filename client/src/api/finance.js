@@ -38,6 +38,26 @@ const deleteExpense = (expenseId, headers) =>
 const getExpenseStats = (projectId, headers) =>
   socket.get(`/projects/${projectId}/expenses/stats`, undefined, headers);
 
+/* Expense Attachments */
+
+const getExpenseAttachments = (expenseId, headers) =>
+  socket.get(`/expenses/${expenseId}/attachments`, undefined, headers);
+
+const createExpenseAttachment = (expenseId, file, name, headers) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('name', name || file.name);
+  return socket.post(`/expenses/${expenseId}/attachments`, formData, headers, {
+    isMultipart: true,
+  });
+};
+
+const deleteExpenseAttachment = (attachmentId, headers) =>
+  socket.delete(`/expense-attachments/${attachmentId}`, undefined, headers);
+
+const getExpenseAttachmentDownloadUrl = (attachmentId, filename) =>
+  `/expense-attachments/${attachmentId}/download/${encodeURIComponent(filename)}`;
+
 export default {
   getFinanceConfig,
   updateFinanceConfig,
@@ -48,5 +68,9 @@ export default {
   updateExpense,
   deleteExpense,
   getExpenseStats,
+  getExpenseAttachments,
+  createExpenseAttachment,
+  deleteExpenseAttachment,
+  getExpenseAttachmentDownloadUrl,
 };
 

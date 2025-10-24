@@ -22,6 +22,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
   const [t] = useTranslation();
 
   const allExpenses = useSelector(selectors.selectExpenses);
+  const attachmentsByExpense = useSelector((state) => state.finance.expenseAttachmentsByExpenseId);
   const [editingExpense, setEditingExpense] = useState(null);
   const formContainerRef = useRef(null);
   // Inline editing state for table rows
@@ -85,6 +86,8 @@ const ExpensesTab = React.memo(({ projectId }) => {
       date: isoDate, // Pré-define a data atual no formato ISO
     };
   });
+  const [formFiles, setFormFiles] = useState([]);
+  const fileInputRef = useRef(null);
   
   // Estados para filtros
   const [startDate, setStartDate] = useState('');
@@ -118,7 +121,11 @@ const ExpensesTab = React.memo(({ projectId }) => {
     if (editingExpense) {
       dispatch(actions.updateExpense(editingExpense.id, data));
     } else {
-      dispatch(actions.createExpense(projectId, data));
+      if (formFiles && formFiles.length > 0) {
+        dispatch(actions.createExpenseWithAttachments(projectId, data, formFiles));
+      } else {
+        dispatch(actions.createExpense(projectId, data));
+      }
     }
 
     // Limpar formulário após submissão
@@ -130,6 +137,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
       value: '',
       date: isoDate, // Pré-define a data atual no formato ISO
     });
+    setFormFiles([]);
     setEditingExpense(null);
   }, [formData, editingExpense, projectId, dispatch]);
 
@@ -181,6 +189,60 @@ const ExpensesTab = React.memo(({ projectId }) => {
     },
     [dispatch, t],
   );
+
+  const handleOpenAttachments = useCallback((expense) => {
+    // lazy fetch if not loaded
+    if (!attachmentsByExpense[expense.id]) {
+      console.log('[Finance][attachments] lazy-fetch before upload for expense', expense.id);
+      dispatch(actions.fetchExpenseAttachments(expense.id));
+    }
+    // open a simple file input prompt for now
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,application/pdf';
+    input.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        console.log('[Finance][attachments] user cancelled file selection');
+        return;
+      }
+      console.log('[Finance][attachments] file selected', { expenseId: expense.id, name: file.name, type: file.type, size: file.size });
+      dispatch(actions.createExpenseAttachment(expense.id, file, file.name));
+    };
+    input.click();
+  }, [dispatch, attachmentsByExpense]);
+
+  const handleDownloadAttachment = useCallback((attachment) => {
+    const url = selectors.api.finance.getExpenseAttachmentDownloadUrl
+      ? selectors.api.finance.getExpenseAttachmentDownloadUrl(attachment.id, attachment.data?.filename || attachment.name)
+      : `/expense-attachments/${attachment.id}/download/${encodeURIComponent(attachment.data?.filename || attachment.name)}`;
+    window.open(url, '_blank');
+  }, []);
+
+  const handleRemoveAttachment = useCallback((attachmentId) => {
+    if (window.confirm(t('finance.confirmDeleteAttachment', { defaultValue: 'Remover anexo?' }))) {
+      dispatch(actions.deleteExpenseAttachment(attachmentId));
+    }
+  }, [dispatch, t]);
+
+  // Abrir anexo (imagem/PDF) numa nova aba
+  const openAttachment = useCallback((attachment) => {
+    const url = `/expense-attachments/${attachment.id}/download/${encodeURIComponent(
+      attachment.data?.filename || attachment.name,
+    )}`;
+    window.open(url, '_blank');
+  }, []);
+
+  // Prefetch de anexos para as despesas visíveis para renderizar thumbnails
+  useEffect(() => {
+    if (!allExpenses || !Array.isArray(allExpenses)) return;
+    const maxPrefetch = 50;
+    allExpenses.slice(0, maxPrefetch).forEach((exp) => {
+      if (attachmentsByExpense[exp.id] === undefined) {
+        dispatch(actions.fetchExpenseAttachments(exp.id));
+      }
+    });
+  }, [allExpenses, attachmentsByExpense, dispatch]);
 
   // Inline edit handlers
   const handleInlineEditStart = useCallback((expense) => {
@@ -540,6 +602,73 @@ const ExpensesTab = React.memo(({ projectId }) => {
                 />
               </Form.Field>
 
+              {/* Attachments picker (optional) */}
+              <Form.Field>
+                <label className="glass-label">{t('finance.attachments', { defaultValue: 'Anexos' })}</label>
+                <div
+                  className={styles.filePicker}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      if (fileInputRef.current) fileInputRef.current.click();
+                    }
+                  }}
+                >
+                  <Icon name="paperclip" />
+                  <span className={styles.filePlaceholder}>
+                    {formFiles.length > 0
+                      ? t('finance.nFilesSelected', { defaultValue: '{{count}} ficheiros selecionados', count: formFiles.length })
+                      : t('finance.selectFiles', { defaultValue: 'Selecionar ficheiros...' })}
+                  </span>
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (fileInputRef.current) fileInputRef.current.click();
+                    }}
+                  >
+                    {t('common.browse', { defaultValue: 'Procurar' })}
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,application/pdf"
+                    multiple
+                    className={styles.hiddenFileInput}
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length === 0) return;
+                      setFormFiles((prev) => [...prev, ...files]);
+                      // reset input to allow re-selecting same file name
+                      e.target.value = '';
+                    }}
+                  />
+                </div>
+                {formFiles.length > 0 && (
+                  <div className={styles.fileList}>
+                    {formFiles.map((f, idx) => (
+                      <div key={`${f.name}-${idx}`} className={styles.fileItem}>
+                        <Icon name={f.type?.startsWith('image/') ? 'file image outline' : 'file pdf outline'} />
+                        <span className={styles.fileName} title={f.name}>{f.name}</span>
+                        <button
+                          type="button"
+                          className={styles.actionButton}
+                          onClick={() => setFormFiles(prev => prev.filter((_, i) => i !== idx))}
+                          title={t('common.delete', { defaultValue: 'Eliminar' })}
+                          aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
+                        >
+                          <Icon name="trash alternate outline" />
+                        </button>
+                      </div>
+                    ))}
+                    <div className={styles.fileHint}>{t('finance.onlyPdfOrImageAllowed', { defaultValue: 'Apenas PDF ou imagem.' })}</div>
+                  </div>
+                )}
+              </Form.Field>
+
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
                 <Button onClick={handleClearForm}>
                   {t('common.cancel', { defaultValue: 'Limpar' })}
@@ -629,6 +758,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
                     <div className={styles.tableSection}>
                       {/* Table Header */}
                       <div className={styles.tableHeader}>
+                        <div className={styles.headerCell} />
                         <div className={styles.headerCell}>{t('finance.date', { defaultValue: 'Data' })}</div>
                         <div className={styles.headerCell}>{t('finance.category', { defaultValue: 'Categoria' })}</div>
                         <div className={`${styles.headerCell} ${styles.descriptionHeader}`}>{t('finance.description', { defaultValue: 'Descrição' })}</div>
@@ -644,6 +774,54 @@ const ExpensesTab = React.memo(({ projectId }) => {
                           <div key={expense.id}>
                             {/* Desktop Table Row */}
                             <div className={`${styles.tableRow} ${activeDropdownRowId === expense.id ? styles.rowRaised : ''}`}>
+                              <div className={`${styles.tableCell} ${styles.thumbCell}`}>
+                                {(() => {
+                                  const list = attachmentsByExpense[expense.id];
+                                  if (list && list.length > 0) {
+                                    const att = list[0];
+                                    const hasImage = !!(att.data && att.data.image && att.data.image.thumbnailsExtension);
+                                    if (hasImage) {
+                                      const thumbUrl = `/expense-attachments/${att.id}/download/thumbnails/outside-360.${att.data.image.thumbnailsExtension}`;
+                                      return (
+                                        <img
+                                          className={styles.attachmentThumb}
+                                          src={thumbUrl}
+                                          alt={att.name}
+                                          onClick={() => openAttachment(att)}
+                                        />
+                                      );
+                                    }
+                                    return (
+                                      <button
+                                        type="button"
+                                        className={styles.actionButton}
+                                        onClick={() => openAttachment(att)}
+                                        title={att.name}
+                                        aria-label={att.name}
+                                      >
+                                        <Icon name="file pdf outline" />
+                                      </button>
+                                    );
+                                  }
+                                  return (
+                                    <span
+                                      className={styles.noAttachmentLabel}
+                                      onClick={() => handleOpenAttachments(expense)}
+                                      role="button"
+                                      tabIndex={0}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                          e.preventDefault();
+                                          handleOpenAttachments(expense);
+                                        }
+                                      }}
+                                      title={t('finance.addAttachment', { defaultValue: 'Anexar ficheiro' })}
+                                    >
+                                      {t('finance.noAttachment', { defaultValue: 'Sem anexo' })}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
                               <div className={styles.tableCell}>
                                 {inlineEditingRowId === expense.id ? (
                                   <Input
@@ -726,6 +904,15 @@ const ExpensesTab = React.memo(({ projectId }) => {
                                     </button>
                                   )}
                                   <button
+                                    className={styles.actionButton}
+                                    onClick={() => handleOpenAttachments(expense)}
+                                    type="button"
+                                    aria-label={t('finance.addAttachment', { defaultValue: 'Anexos' })}
+                                    title={t('finance.addAttachment', { defaultValue: 'Anexos' })}
+                                  >
+                                    <Icon name="paperclip" />
+                                  </button>
+                                  <button
                                     className={`${styles.actionButton} ${styles.deleteButton}`}
                                     onClick={() => handleDeleteExpense(expense.id)}
                                     type="button"
@@ -737,6 +924,36 @@ const ExpensesTab = React.memo(({ projectId }) => {
                                 </div>
                               </div>
                             </div>
+
+                            {/* Attachments row (if loaded) */}
+                            {attachmentsByExpense[expense.id] && attachmentsByExpense[expense.id].length > 0 && (
+                              <div className={styles.attachmentsRow}>
+                                <div className={styles.attachmentsCell}>
+                                  {attachmentsByExpense[expense.id].map((att) => (
+                                    <div key={att.id} className={styles.attachmentItem}>
+                                      <button
+                                        className={styles.attachmentButton}
+                                        onClick={() => handleDownloadAttachment(att)}
+                                        type="button"
+                                        title={att.name}
+                                      >
+                                        <Icon name={att.data?.image ? 'file image outline' : 'file pdf outline'} />
+                                        <span className={styles.attachmentName}>{att.name}</span>
+                                      </button>
+                                      <button
+                                        className={`${styles.actionButton} ${styles.deleteButton}`}
+                                        onClick={() => handleRemoveAttachment(att.id)}
+                                        type="button"
+                                        aria-label={t('common.delete', { defaultValue: 'Eliminar' })}
+                                        title={t('common.delete', { defaultValue: 'Eliminar' })}
+                                      >
+                                        <Icon name="trash alternate outline" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                             
                             {/* Mobile Card */}
                             <div className={styles.mobileCard}>
@@ -783,6 +1000,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
 
                       {/* Total Row */}
                       <div className={styles.totalRow}>
+                        <div className={styles.totalCell}></div>
                         <div className={styles.totalCell}></div>
                         <div className={styles.totalCell}></div>
                         <div className={styles.totalCell}>

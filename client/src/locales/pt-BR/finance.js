@@ -34,6 +34,11 @@ export default {
       you: 'Você',
       addedOn: 'Adicionado em',
       membersNote: 'Apenas gerentes de projeto podem adicionar ou remover membros.',
+      addAttachment: 'Anexos',
+      confirmDeleteAttachment: 'Remover anexo?',
+      attachments: 'Anexos',
+      onlyPdfOrImageAllowed: 'Apenas PDF ou imagem.',
+      noAttachment: 'Sem anexo',
       accessDenied: {
         title: 'Acesso Negado',
         message: 'Você não tem permissão para acessar as despesas deste projeto.',

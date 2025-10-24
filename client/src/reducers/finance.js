@@ -9,6 +9,7 @@ const initialState = {
   config: null,
   financeMembers: [],
   expenses: [],
+  expenseAttachmentsByExpenseId: {},
   stats: null,
   isLoading: false,
   error: null,
@@ -95,6 +96,40 @@ export default (state = initialState, { type, payload }) => {
         ...state,
         stats: payload.stats,
       };
+    case ActionTypes.EXPENSE_ATTACHMENTS_FETCH__SUCCESS: {
+      const { expenseId, attachments } = payload;
+      return {
+        ...state,
+        expenseAttachmentsByExpenseId: {
+          ...state.expenseAttachmentsByExpenseId,
+          [expenseId]: attachments,
+        },
+      };
+    }
+    case ActionTypes.EXPENSE_ATTACHMENT_CREATE__SUCCESS: {
+      const attachment = payload.attachment;
+      const list = state.expenseAttachmentsByExpenseId[attachment.expenseId] || [];
+      return {
+        ...state,
+        expenseAttachmentsByExpenseId: {
+          ...state.expenseAttachmentsByExpenseId,
+          [attachment.expenseId]: [attachment, ...list],
+        },
+      };
+    }
+    case ActionTypes.EXPENSE_ATTACHMENT_DELETE__SUCCESS: {
+      const { attachmentId } = payload;
+      const byId = state.expenseAttachmentsByExpenseId;
+      // remover de todas as listas (mais simples; listas são curtas)
+      const next = Object.keys(byId).reduce((acc, key) => {
+        acc[key] = (byId[key] || []).filter(a => a.id !== attachmentId);
+        return acc;
+      }, {});
+      return {
+        ...state,
+        expenseAttachmentsByExpenseId: next,
+      };
+    }
     default:
       return state;
   }

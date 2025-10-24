@@ -21,6 +21,9 @@ export const selectFinanceIsLoading = (state) => state.finance.isLoading;
 
 export const selectFinanceError = (state) => state.finance.error;
 
+export const selectExpenseAttachments = (state, expenseId) =>
+  state.finance.expenseAttachmentsByExpenseId[expenseId] || [];
+
 export const selectIsFinanceMember = (state, projectId, userId) => {
   const members = selectFinanceMembers(state);
   return members.some(

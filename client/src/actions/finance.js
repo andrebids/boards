@@ -217,5 +217,49 @@ export default {
   updateExpense,
   deleteExpense,
   fetchExpenseStats,
+  /* Expense Attachments */
+  fetchExpenseAttachments: (expenseId) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENTS_FETCH,
+    payload: { expenseId },
+  }),
+  fetchExpenseAttachmentsSuccess: (expenseId, attachments) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENTS_FETCH__SUCCESS,
+    payload: { expenseId, attachments },
+  }),
+  fetchExpenseAttachmentsFailure: (error) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENTS_FETCH__FAILURE,
+    payload: { error },
+  }),
+
+  createExpenseAttachment: (expenseId, file, name) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENT_CREATE,
+    payload: { expenseId, file, name },
+  }),
+  createExpenseAttachmentSuccess: (attachment) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENT_CREATE__SUCCESS,
+    payload: { attachment },
+  }),
+  createExpenseAttachmentFailure: (error) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENT_CREATE__FAILURE,
+    payload: { error },
+  }),
+
+  deleteExpenseAttachment: (attachmentId) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENT_DELETE,
+    payload: { attachmentId },
+  }),
+  deleteExpenseAttachmentSuccess: (attachmentId) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENT_DELETE__SUCCESS,
+    payload: { attachmentId },
+  }),
+  deleteExpenseAttachmentFailure: (error) => ({
+    type: ActionTypes.EXPENSE_ATTACHMENT_DELETE__FAILURE,
+    payload: { error },
+  }),
+
+  createExpenseWithAttachments: (projectId, data, files) => ({
+    type: ActionTypes.EXPENSE_CREATE_WITH_ATTACHMENTS,
+    payload: { projectId, data, files },
+  }),
 };
 

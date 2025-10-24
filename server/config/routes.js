@@ -198,6 +198,11 @@ module.exports.routes = {
   'DELETE /api/expenses/:id': 'expenses/delete',
   'GET /api/projects/:id/expenses/stats': 'expenses/stats',
 
+  // Expense Attachments
+  'GET /api/expenses/:id/attachments': 'expense-attachments/index',
+  'POST /api/expenses/:id/attachments': 'expense-attachments/create',
+  'DELETE /api/expense-attachments/:id': 'expense-attachments/delete',
+
   'GET /preloaded-favicons/*': {
     fn: staticDirServer('/preloaded-favicons', () =>
       path.join(
@@ -250,6 +255,16 @@ module.exports.routes = {
 
   'GET r|^/attachments/(\\w+)/download/video-thumbnails/([\\w-]+).(\\w+)$|id,fileName,fileExtension': {
     action: 'file-attachments/download-video-thumbnail',
+    skipAssets: false,
+  },
+
+  'GET /expense-attachments/:id/download/:filename': {
+    action: 'file-expense-attachments/download',
+    skipAssets: false,
+  },
+
+  'GET r|^/expense-attachments/(\\w+)/download/thumbnails/([\\w-]+).(\\w+)$|id,fileName,fileExtension': {
+    action: 'file-expense-attachments/download-thumbnail',
     skipAssets: false,
   },
 

@@ -38,6 +38,11 @@ export default {
       you: 'Vous',
       addedOn: 'Ajouté le',
       membersNote: 'Seuls les gestionnaires de projet peuvent ajouter ou supprimer des membres.',
+      addAttachment: 'Pièces jointes',
+      confirmDeleteAttachment: 'Supprimer la pièce jointe ?',
+      attachments: 'Pièces jointes',
+      onlyPdfOrImageAllowed: 'PDF ou image uniquement.',
+      noAttachment: 'Sans pièce jointe',
       accessDenied: {
         title: 'Accès Refusé',
         message: 'Vous n\'avez pas la permission d\'accéder aux dépenses de ce projet.',

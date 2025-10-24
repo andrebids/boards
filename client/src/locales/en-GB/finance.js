@@ -38,6 +38,11 @@ export default {
       you: 'You',
       addedOn: 'Added on',
       membersNote: 'Only project managers can add or remove members.',
+      addAttachment: 'Attachments',
+      confirmDeleteAttachment: 'Remove attachment?',
+      attachments: 'Attachments',
+      onlyPdfOrImageAllowed: 'Only PDF or image.',
+      noAttachment: 'No attachment',
       accessDenied: {
         title: 'Access Denied',
         message: 'You do not have permission to access the expenses for this project.',
