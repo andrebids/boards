@@ -29,36 +29,44 @@ module.exports = {
 
   async fn(inputs, exits) {
     const { currentUser } = this.req;
+    sails.log.info('[EXPENSE-FILE][DOWNLOAD] request', { id: inputs.id, userId: currentUser && currentUser.id });
 
     const attachment = await ExpenseAttachment.findOne({ id: inputs.id });
     if (!attachment || attachment.type !== ExpenseAttachment.Types.FILE) {
+      sails.log.warn('[EXPENSE-FILE][DOWNLOAD] attachment not found or not file', { id: inputs.id });
       throw Errors.FILE_ATTACHMENT_NOT_FOUND;
     }
 
     const expense = await Expense.findOne({ id: attachment.expenseId });
     if (!expense) {
+      sails.log.warn('[EXPENSE-FILE][DOWNLOAD] expense not found for attachment', { attachmentId: inputs.id });
       throw Errors.FILE_ATTACHMENT_NOT_FOUND;
     }
 
     const project = await Project.qm.getOneById(expense.projectId);
     if (!project) {
+      sails.log.warn('[EXPENSE-FILE][DOWNLOAD] project not found for expense', { expenseId: expense.id });
       throw Errors.FILE_ATTACHMENT_NOT_FOUND;
     }
 
     const isFinanceMember = await sails.helpers.finance.isMember(project.id, currentUser.id);
     const isAdmin = currentUser.role === User.Roles.ADMIN;
     if (!isFinanceMember && !isAdmin) {
+      sails.log.warn('[EXPENSE-FILE][DOWNLOAD] not enough rights', { userId: currentUser.id, projectId: project.id });
       throw Errors.FILE_ATTACHMENT_NOT_FOUND; // Forbidden
     }
 
     const fileManager = sails.hooks['file-manager'].getInstance();
 
+    const filePathSegment = `${sails.config.custom.attachmentsPathSegment}/${attachment.data.fileReferenceId}/${attachment.data.filename}`;
+    const exists = await fileManager.isExists(filePathSegment).catch(() => false);
+    sails.log.info('[EXPENSE-FILE][DOWNLOAD] path check', { exists, filePathSegment });
+
     let readStream;
     try {
-      readStream = await fileManager.streamByPath(
-        `${sails.config.custom.attachmentsPathSegment}/${attachment.data.fileReferenceId}/${attachment.data.filename}`,
-      );
+      readStream = await fileManager.read(filePathSegment);
     } catch (error) {
+      sails.log.error('[EXPENSE-FILE][DOWNLOAD] read error', { err: error && error.message, fileRef: attachment.data && attachment.data.fileReferenceId, filename: attachment.data && attachment.data.filename });
       throw Errors.FILE_ATTACHMENT_NOT_FOUND;
     }
 

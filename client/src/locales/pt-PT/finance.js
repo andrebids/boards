@@ -28,6 +28,7 @@ export default {
       editExpense: 'Editar Despesa',
       noExpenses: 'Sem despesas registadas.',
       confirmDelete: 'Tem a certeza que deseja eliminar esta despesa?',
+      confirmDeleteTitle: 'Eliminar despesa',
       selectCategory: 'Selecionar categoria',
       addCategory: 'Adicionar: ',
       descriptionPlaceholder: 'Descrição da despesa...',

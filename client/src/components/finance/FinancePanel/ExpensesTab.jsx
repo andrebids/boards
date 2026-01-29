@@ -42,6 +42,19 @@ const ExpensesTab = React.memo(({ projectId }) => {
   const [activeDropdownRowId, setActiveDropdownRowId] = useState(null);
   const inlineDropdownRefs = useRef({});
 
+  // Converter URLs absolutas em caminhos relativos (para passar pelo proxy e enviar cookies)
+  const toRelativeUrl = useCallback((url) => {
+    try {
+      if (typeof url === 'string' && (url.indexOf('http://') === 0 || url.indexOf('https://') === 0)) {
+        var parsed = new URL(url);
+        return parsed.pathname + (parsed.search || '');
+      }
+      return url;
+    } catch (e) {
+      return url;
+    }
+  }, []);
+
   // Modal de confirmação para apagar
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [expenseIdToDelete, setExpenseIdToDelete] = useState(null);
@@ -169,7 +182,9 @@ const ExpensesTab = React.memo(({ projectId }) => {
         url = '/expense-attachments/' + attachment.id + '/download/' + encodeURIComponent(filename);
       }
     }
-    window.open(url, '_blank');
+    var finalUrl = toRelativeUrl(url);
+    console.log('[Finance][attachments] open download', { url: finalUrl, id: attachment && attachment.id, filename: filename });
+    window.open(finalUrl, '_blank');
   }, []);
 
   const handleRemoveAttachment = useCallback((attachmentId) => {
@@ -185,8 +200,10 @@ const ExpensesTab = React.memo(({ projectId }) => {
       var filename = (attachment && attachment.data && attachment.data.filename) || attachment.name;
       url = '/expense-attachments/' + attachment.id + '/download/' + encodeURIComponent(filename);
     }
-    window.open(url, '_blank');
-  }, []);
+    var finalUrl = toRelativeUrl(url);
+    console.log('[Finance][attachments] open view', { url: finalUrl, id: attachment && attachment.id });
+    window.open(finalUrl, '_blank');
+  }, [toRelativeUrl]);
 
   // Prefetch de anexos para as despesas visíveis para renderizar thumbnails
   useEffect(() => {
@@ -572,6 +589,7 @@ const ExpensesTab = React.memo(({ projectId }) => {
                                     const hasImage = !!(att.data && att.data.image && att.data.image.thumbnailsExtension);
                                     if (hasImage) {
                                       var thumbUrl = (att && att.data && att.data.thumbnailUrls && att.data.thumbnailUrls.outside360);
+                                      thumbUrl = toRelativeUrl(thumbUrl);
                                       if (!thumbUrl) {
                                         thumbUrl = '/expense-attachments/' + att.id + '/download/thumbnails/outside-360.' + att.data.image.thumbnailsExtension;
                                       }

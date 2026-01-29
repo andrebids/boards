@@ -22,6 +22,7 @@ module.exports = {
 
   async fn(inputs) {
     const fileManager = sails.hooks['file-manager'].getInstance();
+    sails.log.info('[UPLOAD][PROCESS] start', { filename: inputs && inputs.file && inputs.file.filename, type: inputs && inputs.file && inputs.file.type, size: inputs && inputs.file && inputs.file.size });
 
     const { id: fileReferenceId } = await FileReference.create().fetch();
 
@@ -51,6 +52,7 @@ module.exports = {
       `${dirPathSegment}/${filename}`,
       inputs.file.type,
     );
+    sails.log.info('[UPLOAD][PROCESS] moved', { fileReferenceId, filename, dirPathSegment, hasPath: !!filePath });
 
     const data = {
       fileReferenceId,
@@ -125,6 +127,7 @@ module.exports = {
           };
         } catch (error) {
           await fileManager.deleteDir(thumbnailsPathSegment);
+          sails.log.warn('[UPLOAD][PROCESS] thumbnail generation failed, cleaned up', { err: error && error.message });
         }
       }
     }
@@ -184,6 +187,7 @@ module.exports = {
       videoData: data.video
     };
 
+    sails.log.info('[UPLOAD][PROCESS] done', { fileReferenceId: result.fileReferenceId, filename: result.filename, mimeType: result.mimeType });
     return result;
   },
 };
