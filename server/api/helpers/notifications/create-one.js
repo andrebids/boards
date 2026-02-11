@@ -509,9 +509,10 @@ module.exports = {
 
     // Define quais os tipos de notificação que devem acionar um e-mail
     const EMAIL_NOTIFIABLE_TYPES = [
-      'setDueDate',
-      'addMemberToCard',
-      'commentCard', // Corrigido de 'commentCreate' e 'commentUpdate'
+      Notification.Types.SET_DUE_DATE,
+      Notification.Types.ADD_MEMBER_TO_CARD,
+      Notification.Types.COMMENT_CARD,
+      Notification.Types.MENTION_IN_COMMENT,
     ];
 
     const globalNotificationsEnabled = sails.config.custom.globalNotifications?.enabled;
@@ -583,9 +584,30 @@ module.exports = {
               stack: error.stack,
             });
           }
+        } else if (smtpIsEnabled) {
+          sails.log.info(
+            `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Notificações globais desativadas, tentando envio via SMTP padrão para "${notifiableUser.email}"...`,
+          );
+          try {
+            await sails.helpers.utils.sendEmail.with({
+              to: notifiableUser.email,
+              subject: buildTitle(notification, t),
+              html: emailHtml,
+              data: emailData,
+            });
+            sails.log.info(
+              `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] ✅ Email enviado com sucesso via SMTP padrão para "${notifiableUser.email}"`,
+            );
+          } catch (error) {
+            sails.log.error(`🔍 [DIAGNÓSTICO_EMAIL_NOTIF] ❌ Falha no envio do email via SMTP padrão:`, {
+              to: notifiableUser.email,
+              error: error.message,
+              stack: error.stack,
+            });
+          }
         } else {
           sails.log.info(
-            `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Notificações globais desativadas, não enviando email`,
+            `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Notificações globais e SMTP padrão desativados, não enviando email`,
           );
         }
       } else {
@@ -626,15 +648,18 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
   // Gerar URL específica baseada no tipo de notificação
   let specificUrl = cardUrl; // Fallback para o cartão geral
 
-  if (notification.type === 'COMMENT_CARD' || notification.type === 'MENTION_IN_COMMENT') {
+  if (
+    notification.type === Notification.Types.COMMENT_CARD ||
+    notification.type === Notification.Types.MENTION_IN_COMMENT
+  ) {
     // Para comentários, tentar levar diretamente ao comentário específico
     if (notification.data?.commentId) {
       specificUrl = generateUrl(`cards/${card.id}#comment-${notification.data.commentId}`);
     }
-  } else if (notification.type === 'MOVE_CARD') {
+  } else if (notification.type === Notification.Types.MOVE_CARD) {
     // Para movimentos, manter o cartão geral (já mostra a nova posição)
     specificUrl = cardUrl;
-  } else if (notification.type === 'CREATE_TASK' || notification.type === 'COMPLETE_TASK') {
+  } else if (notification.type === 'createTask' || notification.type === 'completeTask') {
     // Para tarefas, tentar levar à tarefa específica se disponível
     if (notification.data?.taskId) {
       specificUrl = generateUrl(`cards/${card.id}#task-${notification.data.taskId}`);
@@ -644,15 +669,18 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
   // Gerar texto específico do botão CTA baseado no tipo de notificação
   let ctaButtonText = t('email:viewCard'); // Fallback padrão
 
-  if (notification.type === 'COMMENT_CARD' || notification.type === 'MENTION_IN_COMMENT') {
+  if (
+    notification.type === Notification.Types.COMMENT_CARD ||
+    notification.type === Notification.Types.MENTION_IN_COMMENT
+  ) {
     ctaButtonText = t('email:viewComment');
-  } else if (notification.type === 'CREATE_TASK' || notification.type === 'COMPLETE_TASK') {
+  } else if (notification.type === 'createTask' || notification.type === 'completeTask') {
     ctaButtonText = t('email:viewTask');
-  } else if (notification.type === 'MOVE_CARD') {
+  } else if (notification.type === Notification.Types.MOVE_CARD) {
     ctaButtonText = t('email:viewCard');
-  } else if (notification.type === 'ADD_MEMBER_TO_CARD') {
+  } else if (notification.type === Notification.Types.ADD_MEMBER_TO_CARD) {
     ctaButtonText = t('email:viewCard');
-  } else if (notification.type === 'SET_DUE_DATE') {
+  } else if (notification.type === Notification.Types.SET_DUE_DATE) {
     ctaButtonText = t('email:viewCard');
   }
 
