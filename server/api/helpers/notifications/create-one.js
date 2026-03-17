@@ -33,7 +33,7 @@ const generateUrl = (path = '') => {
 
   if (!baseUrl) {
     console.warn('⚠️ BASE_URL não configurada, usando localhost como fallback');
-    return `http://localhost:3000${path}`;
+    return `http://localhost:3008${path}`;
   }
 
   // Remove barra final do baseUrl se existir

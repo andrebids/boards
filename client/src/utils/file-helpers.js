@@ -53,18 +53,12 @@ export const isImageFile = file => {
 };
 
 export const isSupportedFile = file => {
-  console.log('🔍 Verificando arquivo:', file.name);
-  console.log('🔍 MIME type:', file.type);
-  console.log('🔍 Tamanho:', file.size);
-
   // Verificar por MIME type primeiro
   const isSupportedByMimeType = SUPPORTED_FILE_TYPES.includes(file.type);
-  console.log('🔍 É suportado por MIME type?', isSupportedByMimeType);
 
   // Se não for suportado por MIME type, verificar por extensão
   if (!isSupportedByMimeType) {
     const extension = file.name.toLowerCase().split('.').pop();
-    console.log('🔍 Extensão do arquivo:', extension);
 
     const supportedExtensions = [
       'jpg',
@@ -90,10 +84,7 @@ export const isSupportedFile = file => {
       'rar',
     ];
 
-    const isSupportedByExtension = supportedExtensions.includes(extension);
-    console.log('🔍 É suportado por extensão?', isSupportedByExtension);
-
-    return isSupportedByExtension;
+    return supportedExtensions.includes(extension);
   }
 
   return isSupportedByMimeType;

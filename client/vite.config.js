@@ -28,7 +28,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000,
+    port: 3008,
     open: true,
     host: "0.0.0.0",
     watch: {

@@ -64,7 +64,19 @@ module.exports = {
       video: null,
     };
 
-    if (!['image/svg+xml', 'application/pdf'].includes(mimeType)) {
+    // Sharp não suporta PSD, AI, EPS e outros formatos de design - excluir para evitar falhas
+    const formatsExcludedFromSharp = [
+      'image/svg+xml',
+      'application/pdf',
+      'application/x-photoshop',
+      'image/vnd.adobe.photoshop',
+      'application/illustrator',
+      'image/vnd.adobe.illustrator',
+      'application/postscript',
+      'application/eps',
+      'application/x-illustrator',
+    ];
+    if (!formatsExcludedFromSharp.includes(mimeType)) {
       let image = sharp(buffer || filePath, {
         animated: true,
       });
