@@ -58,9 +58,17 @@ const fetchChatMessages = (conversationId) => ({
   type: ActionTypes.CHAT_MESSAGES_FETCH,
   payload: { conversationId },
 });
-fetchChatMessages.success = (conversationId, messages, users, hasMore, replace) => ({
+fetchChatMessages.success = (
+  conversationId,
+  messages,
+  users,
+  hasMore,
+  replace,
+  hasMoreAfter,
+  direction,
+) => ({
   type: ActionTypes.CHAT_MESSAGES_FETCH__SUCCESS,
-  payload: { conversationId, messages, users, hasMore, replace },
+  payload: { conversationId, messages, users, hasMore, replace, hasMoreAfter, direction },
 });
 fetchChatMessages.failure = (conversationId, error) => ({
   type: ActionTypes.CHAT_MESSAGES_FETCH__FAILURE,

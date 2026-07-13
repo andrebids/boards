@@ -19,6 +19,10 @@ export default function* usersWatchers() {
     takeEvery(EntryActionTypes.USER_CREATE_ERROR_CLEAR, () =>
       services.clearUserCreateError()
     ),
+    takeEvery(
+      EntryActionTypes.USER_WELCOME_EMAIL_RESEND,
+      ({ payload: { id } }) => services.resendUserWelcomeEmail(id)
+    ),
     takeEvery(EntryActionTypes.USER_UPDATE, ({ payload: { id, data } }) =>
       services.updateUser(id, data)
     ),

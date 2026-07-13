@@ -12,5 +12,14 @@
   "%s created %s in %s on %s": "%s creó %s en %s el %s",
   "%s left a new comment to %s on %s": "%s dejó un nuevo comentario en %s el %s",
   "%s mentioned you in %s on %s": "%s te mencionó en %s el %s",
-  "%s moved %s from %s to %s on %s": "%s movió %s de %s a %s el %s"
+  "%s moved %s from %s to %s on %s": "%s movió %s de %s a %s el %s",
+  "email:welcome:subject": "Tu cuenta de Blachere Boards ha sido creada",
+  "email:welcome:preheader": "Tus datos de acceso a Blachere Boards",
+  "email:welcome:greeting": "Hola, %s:",
+  "email:welcome:introduction": "Se ha creado una cuenta para ti en Blachere Boards.",
+  "email:welcome:accessUrl": "Dirección de acceso",
+  "email:welcome:loginEmail": "Correo de acceso",
+  "email:welcome:temporaryPassword": "Contraseña temporal",
+  "email:welcome:openBoards": "ABRIR BLACHERE BOARDS",
+  "email:welcome:securityNotice": "Por seguridad, deberás cambiar esta contraseña temporal la primera vez que inicies sesión."
 }

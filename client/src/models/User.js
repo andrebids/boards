@@ -38,6 +38,12 @@ const DEFAULT_USERNAME_UPDATE_FORM = {
   error: null,
 };
 
+const DEFAULT_WELCOME_EMAIL_RESEND_FORM = {
+  isSubmitting: false,
+  error: null,
+  wasSent: null,
+};
+
 const filterProjectModels = (projectModels, search, isHidden) => {
   let filteredProjectModels = projectModels.filter(
     (projectModel) => projectModel.isHidden === isHidden,
@@ -73,6 +79,8 @@ export default class extends BaseModel {
     isDefaultAdmin: attr(),
     isSsoUser: attr(),
     isDeactivated: attr(),
+    mustChangePassword: attr(),
+    welcomeEmailSentAt: attr(),
     lockedFieldNames: attr(),
     isAvatarUpdating: attr({
       getDefault: () => false,
@@ -85,6 +93,9 @@ export default class extends BaseModel {
     }),
     usernameUpdateForm: attr({
       getDefault: () => DEFAULT_USERNAME_UPDATE_FORM,
+    }),
+    welcomeEmailResendForm: attr({
+      getDefault: () => DEFAULT_WELCOME_EMAIL_RESEND_FORM,
     }),
   };
 
@@ -130,6 +141,37 @@ export default class extends BaseModel {
       case ActionTypes.USER_CREATE_HANDLE:
       case ActionTypes.USER_UPDATE__SUCCESS:
         User.upsert(payload.user);
+
+        break;
+      case ActionTypes.USER_WELCOME_EMAIL_RESEND:
+        User.withId(payload.id).update({
+          welcomeEmailResendForm: {
+            isSubmitting: true,
+            error: null,
+            wasSent: null,
+          },
+        });
+
+        break;
+      case ActionTypes.USER_WELCOME_EMAIL_RESEND__SUCCESS:
+        User.withId(payload.user.id).update({
+          ...payload.user,
+          welcomeEmailResendForm: {
+            isSubmitting: false,
+            error: null,
+            wasSent: payload.welcomeEmailSent,
+          },
+        });
+
+        break;
+      case ActionTypes.USER_WELCOME_EMAIL_RESEND__FAILURE:
+        User.withId(payload.id).update({
+          welcomeEmailResendForm: {
+            isSubmitting: false,
+            error: payload.error,
+            wasSent: false,
+          },
+        });
 
         break;
       case ActionTypes.USER_UPDATE:

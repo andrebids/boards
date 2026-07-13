@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, Bell, LogOut, Minus, MoreHorizontal, UserPlus, X } from 'lucide-react';
+import { ArrowLeft, BellOff, LogOut, Minus, MoreHorizontal, UserPlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
@@ -34,6 +34,10 @@ const ChatWindow = React.memo(({ id }) => {
     () => selectors.makeSelectHasMoreChatMessagesByConversationId(),
     [],
   );
+  const selectHasMoreNewerMessagesByConversationId = useMemo(
+    () => selectors.makeSelectHasMoreNewerChatMessagesByConversationId(),
+    [],
+  );
   const selectTypingUserIdsByConversationId = useMemo(
     () => selectors.makeSelectChatTypingUserIdsByConversationId(),
     [],
@@ -45,6 +49,9 @@ const ChatWindow = React.memo(({ id }) => {
     selectIsMessagesFetchingByConversationId(state, id),
   );
   const hasMoreMessages = useSelector((state) => selectHasMoreMessagesByConversationId(state, id));
+  const hasMoreNewerMessages = useSelector((state) =>
+    selectHasMoreNewerMessagesByConversationId(state, id),
+  );
   const currentUser = useSelector(selectors.selectCurrentUser);
   const project = useSelector(selectors.selectCurrentProject);
   const members = useSelector(selectors.selectChatMembersForCurrentProject) || [];
@@ -187,12 +194,7 @@ const ChatWindow = React.memo(({ id }) => {
         >
           <ArrowLeft aria-hidden="true" size={19} strokeWidth={2} />
         </button>
-        <button
-          type="button"
-          className={styles.headerMain}
-          aria-label={`${t('chat.minimize')} ${title}`}
-          onClick={handleMinimizeClick}
-        >
+        <div className={styles.headerMain}>
           <ChatAvatar
             isOnline={directUser?.isOnline}
             isProject={isGeneralConversation(conversation) || isCustomGroup}
@@ -202,7 +204,7 @@ const ChatWindow = React.memo(({ id }) => {
             <strong>{title}</strong>
             <small>{statusText}</small>
           </span>
-        </button>
+        </div>
         <div className={styles.actions}>
           {isCustomGroup && (
             <button
@@ -227,7 +229,7 @@ const ChatWindow = React.memo(({ id }) => {
             }}
           >
             {currentParticipant?.isMuted ? (
-              <Bell aria-hidden="true" size={17} strokeWidth={2} />
+              <BellOff aria-hidden="true" size={17} strokeWidth={2} />
             ) : (
               <MoreHorizontal aria-hidden="true" size={18} strokeWidth={2} />
             )}
@@ -334,6 +336,7 @@ const ChatWindow = React.memo(({ id }) => {
         conversations={conversations}
         currentUserId={currentUser.id}
         hasMore={hasMoreMessages}
+        hasMoreAfter={hasMoreNewerMessages}
         initialLastReadMessageId={initialReadStateRef.current.lastReadMessageId}
         initialUnreadCount={initialReadStateRef.current.unreadCount}
         isDirect={conversation.type === 'projectDirect'}

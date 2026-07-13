@@ -42,15 +42,17 @@ module.exports = {
     const savedMessageIds = new Set(savedMessages.map(({ messageId }) => messageId));
 
     const extrasByMessageId = Object.fromEntries(
-      inputs.messageIds.map((messageId) => [
-        messageId,
-        {
+      inputs.messageIds.map((messageId) => {
+        const extras = {
           attachments: [],
           reactions: [],
           linkPreviews: [],
-          isSaved: savedMessageIds.has(messageId),
-        },
-      ]),
+        };
+        if (inputs.userId) {
+          extras.isSaved = savedMessageIds.has(messageId);
+        }
+        return [messageId, extras];
+      }),
     );
     const reactionsByMessageIdAndEmoji = new Map();
 

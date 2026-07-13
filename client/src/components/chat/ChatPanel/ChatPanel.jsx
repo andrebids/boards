@@ -7,7 +7,12 @@ import { useTranslation } from 'react-i18next';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useChat } from '../ChatContext';
-import { getConversationTitle, getDirectUser, isGeneralConversation } from '../utils';
+import {
+  getConversationTitle,
+  getDirectUser,
+  isCustomGroupConversation,
+  isGeneralConversation,
+} from '../utils';
 import ChatHeader from '../ChatHeader';
 import ChatSearch from '../ChatSearch';
 import ChatTabs from '../ChatTabs';
@@ -36,6 +41,7 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
   const [isGroupFormOpen, setIsGroupFormOpen] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
+  const [pendingGroup, setPendingGroup] = useState(null);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -57,6 +63,23 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
       dispatch(entryActions.fetchChatSavedMessages(project.id));
     }
   }, [activeTab, dispatch, project?.id]);
+
+  useEffect(() => {
+    if (!pendingGroup) {
+      return;
+    }
+    const createdGroup = conversations.find(
+      (conversation) =>
+        isCustomGroupConversation(conversation) &&
+        conversation.title === pendingGroup.title &&
+        !pendingGroup.existingIds.includes(conversation.id),
+    );
+    if (createdGroup) {
+      openConversation(createdGroup.id);
+      setPendingGroup(null);
+      onClose();
+    }
+  }, [conversations, onClose, openConversation, pendingGroup]);
 
   const filteredConversations = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -150,13 +173,24 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
           userIds: selectedMemberIds,
         }),
       );
+      setPendingGroup({
+        title,
+        existingIds: conversations.map(({ id }) => id),
+      });
       setGroupTitle('');
       setSelectedMemberIds([]);
       setIsGroupFormOpen(false);
       setActiveTab('conversations');
     },
-    [dispatch, groupTitle, project.id, selectedMemberIds],
+    [conversations, dispatch, groupTitle, project.id, selectedMemberIds],
   );
+
+  let searchPlaceholder = t('chat.searchSavedMessages');
+  if (activeTab === 'conversations') {
+    searchPlaceholder = t('chat.searchConversations');
+  } else if (activeTab === 'members') {
+    searchPlaceholder = t('chat.searchMembers');
+  }
 
   return (
     <section
@@ -168,17 +202,7 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
       className={`${styles.panel} ${isClosing ? styles.closing : ''}`}
     >
       <ChatHeader memberCount={members.length} projectName={project?.name} onClose={onClose} />
-      <ChatSearch
-        value={query}
-        placeholder={
-          activeTab === 'conversations'
-            ? t('chat.searchConversations')
-            : activeTab === 'members'
-              ? t('chat.searchMembers')
-              : t('chat.searchSavedMessages')
-        }
-        onChange={setQuery}
-      />
+      <ChatSearch value={query} placeholder={searchPlaceholder} onChange={setQuery} />
       <ChatTabs activeTab={activeTab} onChange={setActiveTab} />
       <div className={styles.content}>
         {activeTab === 'conversations' && (
@@ -207,9 +231,10 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
             </button>
             {isGroupFormOpen && (
               <form className={styles.groupForm} onSubmit={handleGroupSubmit}>
-                <label>
+                <label htmlFor="chat-group-title">
                   <span>{t('chat.groupName')}</span>
                   <input
+                    id="chat-group-title"
                     value={groupTitle}
                     maxLength={80}
                     placeholder={t('chat.groupNamePlaceholder')}
@@ -219,8 +244,9 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
                 <fieldset>
                   <legend>{t('chat.chooseGroupMembers')}</legend>
                   {filteredMembers.map((member) => (
-                    <label key={member.id}>
+                    <label key={member.id} htmlFor={`chat-group-member-${member.id}`}>
                       <input
+                        id={`chat-group-member-${member.id}`}
                         type="checkbox"
                         checked={selectedMemberIds.includes(member.id)}
                         onChange={() =>

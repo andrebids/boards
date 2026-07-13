@@ -15,11 +15,34 @@ const isPrivateIpv4 = (address) => {
     parts[0] === 0 ||
     parts[0] === 10 ||
     parts[0] === 127 ||
+    (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) ||
     (parts[0] === 169 && parts[1] === 254) ||
     (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+    (parts[0] === 192 && parts[1] === 0 && parts[2] === 0) ||
+    (parts[0] === 192 && parts[1] === 0 && parts[2] === 2) ||
     (parts[0] === 192 && parts[1] === 168) ||
+    (parts[0] === 198 && parts[1] >= 18 && parts[1] <= 19) ||
+    (parts[0] === 198 && parts[1] === 51 && parts[2] === 100) ||
+    (parts[0] === 203 && parts[1] === 0 && parts[2] === 113) ||
     parts[0] >= 224
   );
+};
+
+const getMappedIpv4 = (address) => {
+  const value = address.slice('::ffff:'.length);
+  if (net.isIPv4(value)) {
+    return value;
+  }
+  const parts = value.split(':');
+  if (parts.length !== 2) {
+    return null;
+  }
+  const high = Number.parseInt(parts[0], 16);
+  const low = Number.parseInt(parts[1], 16);
+  if (Number.isNaN(high) || Number.isNaN(low)) {
+    return null;
+  }
+  return `${Math.floor(high / 256)}.${high % 256}.${Math.floor(low / 256)}.${low % 256}`;
 };
 
 const isPrivateAddress = (address) => {
@@ -30,6 +53,10 @@ const isPrivateAddress = (address) => {
     return true;
   }
   const normalized = address.toLowerCase();
+  if (normalized.startsWith('::ffff:')) {
+    const mappedIpv4 = getMappedIpv4(normalized);
+    return !mappedIpv4 || isPrivateIpv4(mappedIpv4);
+  }
   return (
     normalized === '::' ||
     normalized === '::1' ||
@@ -40,9 +67,7 @@ const isPrivateAddress = (address) => {
     normalized.startsWith('fea') ||
     normalized.startsWith('feb') ||
     normalized.startsWith('ff') ||
-    normalized.startsWith('::ffff:127.') ||
-    normalized.startsWith('::ffff:10.') ||
-    normalized.startsWith('::ffff:192.168.')
+    !/^[23]/.test(normalized)
   );
 };
 

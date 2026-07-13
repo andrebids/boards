@@ -45,5 +45,14 @@
 	"email:label:newTaskCreated": "New Task Created",
 	"email:label:taskCompleted": "Task Completed",
 	"email:label:addedToCard": "Added to card",
-	"email:label:dueDateCard": "Card Due Date"
+	"email:label:dueDateCard": "Card Due Date",
+	"email:welcome:subject": "Your Blachere Boards account has been created",
+	"email:welcome:preheader": "Your access details for Blachere Boards",
+	"email:welcome:greeting": "Hello, %s,",
+	"email:welcome:introduction": "An account has been created for you in Blachere Boards.",
+	"email:welcome:accessUrl": "Access address",
+	"email:welcome:loginEmail": "Login email",
+	"email:welcome:temporaryPassword": "Temporary password",
+	"email:welcome:openBoards": "OPEN BLACHERE BOARDS",
+	"email:welcome:securityNotice": "For your security, you will be asked to change this temporary password when you first sign in."
 }

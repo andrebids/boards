@@ -75,5 +75,14 @@
   "email:label:newTaskCreated": "Nouvelle Tâche Créée",
   "email:label:taskCompleted": "Tâche Terminée",
   "email:label:addedToCard": "Ajouté à la carte",
-  "email:label:dueDateCard": "Date d'Échéance de la Carte"
+  "email:label:dueDateCard": "Date d'Échéance de la Carte",
+  "email:welcome:subject": "Votre compte Blachere Boards a été créé",
+  "email:welcome:preheader": "Vos informations d’accès à Blachere Boards",
+  "email:welcome:greeting": "Bonjour, %s,",
+  "email:welcome:introduction": "Un compte a été créé pour vous dans Blachere Boards.",
+  "email:welcome:accessUrl": "Adresse d’accès",
+  "email:welcome:loginEmail": "E-mail de connexion",
+  "email:welcome:temporaryPassword": "Mot de passe temporaire",
+  "email:welcome:openBoards": "OUVRIR BLACHERE BOARDS",
+  "email:welcome:securityNotice": "Pour votre sécurité, vous devrez modifier ce mot de passe temporaire lors de votre première connexion."
 }

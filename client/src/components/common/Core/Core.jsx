@@ -17,6 +17,7 @@ import Fixed from '../Fixed';
 import Static from '../Static';
 import AdministrationModal from '../AdministrationModal';
 import UserSettingsModal from '../../users/UserSettingsModal';
+import ForcedPasswordChangeModal from '../../users/ForcedPasswordChangeModal';
 import ProjectBackground from '../../projects/ProjectBackground';
 import AddProjectModal from '../../projects/AddProjectModal';
 
@@ -29,6 +30,7 @@ const Core = React.memo(() => {
   const project = useSelector(selectors.selectCurrentProject);
   const board = useSelector(selectors.selectCurrentBoard);
   const currentUserId = useSelector(selectors.selectCurrentUserId);
+  const currentUser = useSelector(selectors.selectCurrentUser);
 
   // TODO: move to selector?
   const isNewVersionAvailable = useSelector(state => {
@@ -61,7 +63,9 @@ const Core = React.memo(() => {
   }, [project, board]);
 
   let modalNode = null;
-  if (modal) {
+  if (currentUser?.mustChangePassword) {
+    modalNode = <ForcedPasswordChangeModal />;
+  } else if (modal) {
     switch (modal.type) {
       case ModalTypes.ADMINISTRATION:
         modalNode = <AdministrationModal />;

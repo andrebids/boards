@@ -12,15 +12,6 @@ COPY server/setup-python.js ./
 ENV NODE_OPTIONS="--no-experimental-fetch"
 ENV UNDICI_NO_FILE_API=1
 
-# Configurações SMTP para notificações globais
-ENV GLOBAL_NOTIFICATIONS_ENABLED=true
-ENV GLOBAL_SMTP_HOST=mail.bids.pt
-ENV GLOBAL_SMTP_PORT=587
-ENV GLOBAL_SMTP_SECURE=false
-ENV GLOBAL_SMTP_USER="boards@bids.pt"
-ENV GLOBAL_SMTP_PASSWORD="U3ldc6FeXqSUVE"
-ENV GLOBAL_SMTP_FROM="Blachere Boards <boards@bids.pt>"
-
 RUN npm install npm --global \
   && npm install --omit=dev --ignore-scripts
 
@@ -44,15 +35,6 @@ RUN apk -U upgrade \
 # Configurar variáveis de ambiente para resolver problemas com undici
 ENV NODE_OPTIONS="--no-experimental-fetch"
 ENV UNDICI_NO_FILE_API=1
-
-# Configurações SMTP para notificações globais
-ENV GLOBAL_NOTIFICATIONS_ENABLED=true
-ENV GLOBAL_SMTP_HOST=mail.bids.pt
-ENV GLOBAL_SMTP_PORT=587
-ENV GLOBAL_SMTP_SECURE=false
-ENV GLOBAL_SMTP_USER=boards@bids.pt
-ENV GLOBAL_SMTP_PASSWORD=U3ldc6FeXqSUVE
-ENV GLOBAL_SMTP_FROM="Blachere Boards <boards@bids.pt>"
 
 USER node
 WORKDIR /app

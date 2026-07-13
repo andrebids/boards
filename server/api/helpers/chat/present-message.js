@@ -14,25 +14,32 @@ module.exports = {
   },
 
   fn(inputs) {
+    const hasSavedState = Object.prototype.hasOwnProperty.call(inputs.message, 'isSaved');
     if (!inputs.message.deletedAt) {
-      return {
+      const item = {
         ...inputs.message,
         attachments: inputs.message.attachments || [],
         reactions: inputs.message.reactions || [],
         linkPreviews: inputs.message.linkPreviews || [],
         replyTo: inputs.message.replyTo || null,
-        isSaved: !!inputs.message.isSaved,
       };
+      if (hasSavedState) {
+        item.isSaved = !!inputs.message.isSaved;
+      }
+      return item;
     }
 
-    return {
+    const item = {
       ...inputs.message,
       text: null,
       attachments: [],
       reactions: [],
       linkPreviews: [],
       replyTo: null,
-      isSaved: false,
     };
+    if (hasSavedState) {
+      item.isSaved = !!inputs.message.isSaved;
+    }
+    return item;
   },
 };

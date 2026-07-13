@@ -24,6 +24,13 @@ const clearUserCreateError = () => ({
   payload: {},
 });
 
+const resendUserWelcomeEmail = id => ({
+  type: EntryActionTypes.USER_WELCOME_EMAIL_RESEND,
+  payload: {
+    id,
+  },
+});
+
 const updateUser = (id, data) => ({
   type: EntryActionTypes.USER_UPDATE,
   payload: {
@@ -228,6 +235,7 @@ export default {
   createUser,
   handleUserCreate,
   clearUserCreateError,
+  resendUserWelcomeEmail,
   updateUser,
   updateCurrentUser,
   handleUserUpdate,

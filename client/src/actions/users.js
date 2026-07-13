@@ -12,10 +12,11 @@ const createUser = data => ({
   },
 });
 
-createUser.success = user => ({
+createUser.success = (user, welcomeEmailSent) => ({
   type: ActionTypes.USER_CREATE__SUCCESS,
   payload: {
     user,
+    welcomeEmailSent,
   },
 });
 
@@ -36,6 +37,29 @@ const handleUserCreate = user => ({
 const clearUserCreateError = () => ({
   type: ActionTypes.USER_CREATE_ERROR_CLEAR,
   payload: {},
+});
+
+const resendUserWelcomeEmail = id => ({
+  type: ActionTypes.USER_WELCOME_EMAIL_RESEND,
+  payload: {
+    id,
+  },
+});
+
+resendUserWelcomeEmail.success = (user, welcomeEmailSent) => ({
+  type: ActionTypes.USER_WELCOME_EMAIL_RESEND__SUCCESS,
+  payload: {
+    user,
+    welcomeEmailSent,
+  },
+});
+
+resendUserWelcomeEmail.failure = (id, error) => ({
+  type: ActionTypes.USER_WELCOME_EMAIL_RESEND__FAILURE,
+  payload: {
+    id,
+    error,
+  },
 });
 
 const updateUser = (id, data) => ({
@@ -346,6 +370,7 @@ export default {
   createUser,
   handleUserCreate,
   clearUserCreateError,
+  resendUserWelcomeEmail,
   updateUser,
   handleUserUpdate,
   updateUserEmail,

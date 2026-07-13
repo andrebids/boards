@@ -3,23 +3,19 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useMemo, useState } from "react";
-import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
-import { ChevronRight, Search, UserRound, Users } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Popup } from "../../../lib/custom-ui";
+import React, { useCallback, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import { ChevronRight, Search, UserRound, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Popup } from '../../../lib/custom-ui';
 
-import selectors from "../../../selectors";
-import UserAvatar from "../../users/UserAvatar";
-import { useChat } from "../ChatContext";
-import {
-  getConversationTitle,
-  getDirectUser,
-  isGeneralConversation,
-} from "../utils";
+import selectors from '../../../selectors';
+import UserAvatar from '../../users/UserAvatar';
+import { useChat } from '../ChatContext';
+import { getConversationTitle, getDirectUser, isGeneralConversation } from '../utils';
 
-import styles from "./ChatPopover.module.scss";
+import styles from './ChatPopover.module.scss';
 
 const ChatPopover = React.memo(({ onClose }) => {
   const [t] = useTranslation();
@@ -35,7 +31,7 @@ const ChatPopover = React.memo(({ onClose }) => {
     openGeneralConversation,
   } = useChat();
 
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
 
   const recentConversations = useMemo(
     () =>
@@ -55,8 +51,7 @@ const ChatPopover = React.memo(({ onClose }) => {
     return members.filter(
       (member) =>
         member.id !== currentUser.id &&
-        (!normalizedQuery ||
-          member.name.toLocaleLowerCase().includes(normalizedQuery)),
+        (!normalizedQuery || member.name.toLocaleLowerCase().includes(normalizedQuery)),
     );
   }, [currentUser.id, members, query]);
 
@@ -86,11 +81,11 @@ const ChatPopover = React.memo(({ onClose }) => {
       <div className={styles.wrapper}>
         <div className={styles.heading}>
           <div>
-            <span className={styles.eyebrow}>{t("chat.project")}</span>
-            <h3 className={styles.title}>{t("chat.conversations")}</h3>
+            <span className={styles.eyebrow}>{t('chat.project')}</span>
+            <h3 className={styles.title}>{t('chat.conversations')}</h3>
           </div>
           <span className={styles.memberCount}>
-            {t("chat.memberCount", { count: members.length })}
+            {t('chat.memberCount', { count: members.length })}
           </span>
         </div>
 
@@ -105,28 +100,19 @@ const ChatPopover = React.memo(({ onClose }) => {
           </span>
           <span className={styles.itemCopy}>
             <strong>
-              {t("chat.general")} - {project.name}
+              {t('chat.general')} - {project.name}
             </strong>
-            <small>{t("chat.allAuthorizedMembers")}</small>
+            <small>{t('chat.allAuthorizedMembers')}</small>
           </span>
-          <ChevronRight
-            aria-hidden="true"
-            size={15}
-            strokeWidth={2}
-            className={styles.chevron}
-          />
+          <ChevronRight aria-hidden="true" size={15} strokeWidth={2} className={styles.chevron} />
         </button>
 
         {recentConversations.length > 0 && (
           <section className={styles.section}>
-            <h4 className={styles.sectionTitle}>{t("chat.recent")}</h4>
+            <h4 className={styles.sectionTitle}>{t('chat.recent')}</h4>
             <div className={styles.list}>
               {recentConversations.map((conversation) => {
-                const user = getDirectUser(
-                  conversation,
-                  members,
-                  currentUser.id,
-                );
+                const user = getDirectUser(conversation, members, currentUser.id);
 
                 return (
                   <button
@@ -140,30 +126,17 @@ const ChatPopover = React.memo(({ onClose }) => {
                       <UserAvatar id={user.id} size="small" />
                     ) : (
                       <span className={styles.fallbackAvatar}>
-                        <UserRound
-                          aria-hidden="true"
-                          size={16}
-                          strokeWidth={2}
-                        />
+                        <UserRound aria-hidden="true" size={16} strokeWidth={2} />
                       </span>
                     )}
                     <span className={styles.itemCopy}>
                       <strong>
-                        {getConversationTitle(
-                          conversation,
-                          members,
-                          currentUser.id,
-                          project.name,
-                          {
-                            conversationTitle: t("chat.conversation"),
-                            generalTitle: t("chat.general"),
-                          },
-                        )}
+                        {getConversationTitle(conversation, members, currentUser.id, project.name, {
+                          conversationTitle: t('chat.conversation'),
+                          generalTitle: t('chat.general'),
+                        })}
                       </strong>
-                      <small>
-                        {conversation.lastMessage?.text ||
-                          t("chat.openConversation")}
-                      </small>
+                      <small>{conversation.lastMessage?.text || t('chat.openConversation')}</small>
                     </span>
                     {conversation.unreadCount > 0 && (
                       <span className={styles.unread}>
@@ -179,17 +152,14 @@ const ChatPopover = React.memo(({ onClose }) => {
 
         <section className={styles.section}>
           <div className={styles.membersHeading}>
-            <h4 className={styles.sectionTitle}>{t("chat.members")}</h4>
-            <label
-              className={styles.search}
-              htmlFor="chat-popover-member-search"
-            >
+            <h4 className={styles.sectionTitle}>{t('chat.members')}</h4>
+            <label className={styles.search} htmlFor="chat-popover-member-search">
               <Search aria-hidden="true" size={14} strokeWidth={2} />
               <input
                 id="chat-popover-member-search"
                 value={query}
-                placeholder={t("chat.searchMembers")}
-                aria-label={t("chat.searchMembers")}
+                placeholder={t('chat.searchMembers')}
+                aria-label={t('chat.searchMembers')}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </label>
@@ -206,22 +176,18 @@ const ChatPopover = React.memo(({ onClose }) => {
               >
                 <span className={styles.avatarWrapper}>
                   <UserAvatar id={member.id} size="small" />
-                  {member.isOnline && (
-                    <span className={styles.onlineIndicator} />
-                  )}
+                  {member.isOnline && <span className={styles.onlineIndicator} />}
                 </span>
                 <span className={styles.itemCopy}>
                   <strong>{member.name}</strong>
                   <small>
-                    {member.isOnline
-                      ? t("chat.available")
-                      : t("chat.startConversation")}
+                    {member.isOnline ? t('chat.available') : t('chat.startConversation')}
                   </small>
                 </span>
               </button>
             ))}
             {filteredMembers.length === 0 && (
-              <div className={styles.empty}>{t("chat.noMembersFound")}</div>
+              <div className={styles.empty}>{t('chat.noMembersFound')}</div>
             )}
           </div>
         </section>

@@ -131,13 +131,18 @@ function AttachmentPreview({ attachment, onClose }) {
   }, [onClose]);
 
   return createPortal(
-    <div className={styles.previewBackdrop} role="presentation" onMouseDown={onClose}>
+    <div
+      className={styles.previewBackdrop}
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <section
         role="dialog"
         aria-modal="true"
         aria-label={attachment.name}
         className={styles.previewDialog}
-        onMouseDown={(event) => event.stopPropagation()}
       >
         <header>
           <strong>{attachment.name}</strong>
@@ -152,6 +157,8 @@ function AttachmentPreview({ attachment, onClose }) {
         </header>
         <div className={styles.previewBody}>
           {isImage && <img src={url} alt={attachment.name} />}
+          {/* User uploads do not have a separate captions track. */}
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           {isVideo && <video src={url} controls preload="metadata" />}
           {isPdf && <iframe src={url} title={attachment.name} />}
           {!isImage && !isVideo && !isPdf && (
@@ -186,6 +193,7 @@ const MessageList = React.memo(
     conversations,
     currentUserId,
     hasMore,
+    hasMoreAfter,
     initialLastReadMessageId,
     initialUnreadCount,
     isDirect,
@@ -307,12 +315,25 @@ const MessageList = React.memo(
         const list = event.currentTarget;
         isAtBottomRef.current = list.scrollHeight - list.scrollTop - list.clientHeight < 48;
         if (isAtBottomRef.current) setNewMessageCount(0);
+        if (isAtBottomRef.current && hasMoreAfter && !isFetching) {
+          const lastPersistedMessage = [...messages]
+            .reverse()
+            .find((message) => message.isPersisted);
+          if (lastPersistedMessage) {
+            dispatch(
+              entryActions.fetchChatMessages(conversationId, {
+                afterId: lastPersistedMessage.id,
+              }),
+            );
+            return;
+          }
+        }
         if (list.scrollTop <= 12 && hasMore && !isFetching) {
           prependScrollStateRef.current = { height: list.scrollHeight, top: list.scrollTop };
           dispatch(entryActions.fetchChatMessages(conversationId));
         }
       },
-      [conversationId, dispatch, hasMore, isFetching],
+      [conversationId, dispatch, hasMore, hasMoreAfter, isFetching, messages],
     );
 
     const closeMenus = useCallback(() => {
@@ -328,6 +349,8 @@ const MessageList = React.memo(
           setEditingMessageId(message.id);
           setEditingText(message.text || '');
         } else if (action === 'delete') {
+          // Keep deletion behind an explicit native confirmation.
+          // eslint-disable-next-line no-alert
           if (window.confirm(t('chat.confirmDeleteMessage'))) {
             dispatch(entryActions.deleteChatMessage(message.id));
           }
@@ -452,6 +475,46 @@ const MessageList = React.memo(
               new Date(nextMessage.createdAt) - new Date(message.createdAt) < 5 * 60 * 1000;
             const reactions = message.reactions || [];
             const replyAuthor = members.find(({ id }) => id === message.replyTo?.userId)?.name;
+            let messageBody;
+            if (message.deletedAt) {
+              messageBody = <em>{t('chat.messageDeleted')}</em>;
+            } else if (editingMessageId === message.id) {
+              messageBody = (
+                <div className={styles.inlineEditor}>
+                  <textarea
+                    value={editingText}
+                    maxLength={10000}
+                    aria-label={t('chat.editMessage')}
+                    onChange={(event) => setEditingText(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') setEditingMessageId(null);
+                      if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        saveEdit();
+                      }
+                    }}
+                  />
+                  <span>
+                    <button
+                      type="button"
+                      aria-label={t('chat.cancel')}
+                      onClick={() => setEditingMessageId(null)}
+                    >
+                      <X aria-hidden="true" size={14} />
+                    </button>
+                    <button type="button" aria-label={t('chat.save')} onClick={saveEdit}>
+                      <Check aria-hidden="true" size={14} />
+                    </button>
+                  </span>
+                </div>
+              );
+            } else {
+              messageBody = (
+                <LinkifyReact options={{ target: '_blank', rel: 'noreferrer' }}>
+                  {renderMessageText(message.text)}
+                </LinkifyReact>
+              );
+            }
 
             return (
               <React.Fragment key={message.id || message.localId}>
@@ -592,42 +655,7 @@ const MessageList = React.memo(
                       </span>
                     )}
                     <div className={styles.bubble} dir="auto">
-                      {message.deletedAt ? (
-                        <em>{t('chat.messageDeleted')}</em>
-                      ) : editingMessageId === message.id ? (
-                        <div className={styles.inlineEditor}>
-                          <textarea
-                            autoFocus
-                            value={editingText}
-                            maxLength={10000}
-                            aria-label={t('chat.editMessage')}
-                            onChange={(event) => setEditingText(event.target.value)}
-                            onKeyDown={(event) => {
-                              if (event.key === 'Escape') setEditingMessageId(null);
-                              if (event.key === 'Enter' && !event.shiftKey) {
-                                event.preventDefault();
-                                saveEdit();
-                              }
-                            }}
-                          />
-                          <span>
-                            <button
-                              type="button"
-                              aria-label={t('chat.cancel')}
-                              onClick={() => setEditingMessageId(null)}
-                            >
-                              <X aria-hidden="true" size={14} />
-                            </button>
-                            <button type="button" aria-label={t('chat.save')} onClick={saveEdit}>
-                              <Check aria-hidden="true" size={14} />
-                            </button>
-                          </span>
-                        </div>
-                      ) : (
-                        <LinkifyReact options={{ target: '_blank', rel: 'noreferrer' }}>
-                          {renderMessageText(message.text)}
-                        </LinkifyReact>
-                      )}
+                      {messageBody}
                     </div>
                     {!message.deletedAt && message.attachments?.length > 0 && (
                       <div className={styles.attachments}>
@@ -636,29 +664,33 @@ const MessageList = React.memo(
                             attachment.data?.url ||
                             `${Config.SERVER_BASE_URL}/api/chat-message-attachments/${attachment.id}/download`;
                           const thumbnailUrl = attachment.data?.thumbnailUrls?.outside360;
+                          const isVisualPreview =
+                            attachment.data?.image ||
+                            attachment.data?.video ||
+                            attachment.data?.mimeType === 'application/pdf';
+                          let attachmentIcon = <Paperclip aria-hidden="true" size={14} />;
+                          if (thumbnailUrl) {
+                            attachmentIcon = <img src={thumbnailUrl} alt="" />;
+                          } else if (attachment.data?.image) {
+                            attachmentIcon = <ImageIcon aria-hidden="true" size={14} />;
+                          }
                           return (
                             <button
                               type="button"
                               key={attachment.id}
                               className={`${styles.attachment} ${thumbnailUrl ? styles.attachmentVisual : ''}`}
-                              onClick={() =>
-                                attachment.data?.image ||
-                                attachment.data?.video ||
-                                attachment.data?.mimeType === 'application/pdf'
-                                  ? setSelectedAttachment({
-                                      ...attachment,
-                                      data: { ...attachment.data, url },
-                                    })
-                                  : window.open(url, '_blank', 'noopener,noreferrer')
-                              }
+                              onClick={() => {
+                                if (isVisualPreview) {
+                                  setSelectedAttachment({
+                                    ...attachment,
+                                    data: { ...attachment.data, url },
+                                  });
+                                } else {
+                                  window.open(url, '_blank', 'noopener,noreferrer');
+                                }
+                              }}
                             >
-                              {thumbnailUrl ? (
-                                <img src={thumbnailUrl} alt="" />
-                              ) : attachment.data?.image ? (
-                                <ImageIcon aria-hidden="true" size={14} />
-                              ) : (
-                                <Paperclip aria-hidden="true" size={14} />
-                              )}
+                              {attachmentIcon}
                               <span>{attachment.name}</span>
                             </button>
                           );
@@ -809,15 +841,32 @@ const MessageList = React.memo(
 
 MessageList.propTypes = {
   conversationId: PropTypes.string.isRequired,
-  conversations: PropTypes.arrayOf(PropTypes.object).isRequired,
+  conversations: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      isBlocked: PropTypes.bool,
+      title: PropTypes.string,
+      type: PropTypes.string,
+    }),
+  ).isRequired,
   currentUserId: PropTypes.string.isRequired,
   hasMore: PropTypes.bool,
+  hasMoreAfter: PropTypes.bool,
   initialLastReadMessageId: PropTypes.string,
   initialUnreadCount: PropTypes.number,
   isDirect: PropTypes.bool,
   isFetching: PropTypes.bool,
-  members: PropTypes.arrayOf(PropTypes.object).isRequired,
-  messages: PropTypes.arrayOf(PropTypes.object).isRequired,
+  members: PropTypes.arrayOf(
+    PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }),
+  ).isRequired,
+  messages: PropTypes.arrayOf(
+    PropTypes.shape({
+      createdAt: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]),
+      id: PropTypes.string,
+      text: PropTypes.string,
+      userId: PropTypes.string,
+    }),
+  ).isRequired,
   otherReadMessageId: PropTypes.string,
   projectId: PropTypes.string.isRequired,
   projectName: PropTypes.string.isRequired,
@@ -826,6 +875,7 @@ MessageList.propTypes = {
 
 MessageList.defaultProps = {
   hasMore: true,
+  hasMoreAfter: false,
   initialLastReadMessageId: undefined,
   initialUnreadCount: 0,
   isDirect: false,

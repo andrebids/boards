@@ -31,6 +31,9 @@ module.exports = {
     );
     const hasMore = records.length > inputs.limit;
     const savedMessages = records.slice(0, inputs.limit);
+    const savedMessagesByMessageId = new Map(
+      savedMessages.map((savedMessage) => [savedMessage.messageId, savedMessage]),
+    );
     const messages = await ChatMessage.find({
       id: savedMessages.map(({ messageId }) => messageId),
     });
@@ -57,9 +60,12 @@ module.exports = {
     );
 
     return {
-      items: accessibleMessages.map((message) =>
-        sails.helpers.chat.presentMessage({ ...message, ...extras[message.id] }),
-      ),
+      items: accessibleMessages
+        .map((message) => ({
+          ...sails.helpers.chat.presentMessage({ ...message, ...extras[message.id] }),
+          savedAt: savedMessagesByMessageId.get(message.id).createdAt,
+        }))
+        .sort((left, right) => new Date(right.savedAt) - new Date(left.savedAt)),
       included: { users: sails.helpers.users.presentMany(users, this.req.currentUser) },
       meta: { hasMore },
     };

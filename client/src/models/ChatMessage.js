@@ -29,6 +29,7 @@ export default class extends BaseModel {
     forwardedFromUserId: attr(),
     linkPreviews: attr({ getDefault: () => [] }),
     isSaved: attr({ getDefault: () => false }),
+    savedAt: attr(),
     pendingFiles: attr({ getDefault: () => [] }),
     attachments: attr({ getDefault: () => [] }),
     reactions: attr({ getDefault: () => [] }),

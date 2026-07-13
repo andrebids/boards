@@ -5,6 +5,7 @@ const http = require('http');
 const options = {
   host: 'localhost',
   port: 1337,
+  path: '/api/config',
   timeout: 2000,
 };
 

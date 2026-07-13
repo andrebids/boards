@@ -202,14 +202,18 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   const cancelReply = useCallback(() => {
     dispatch(entryActions.setChatReplyTarget(conversationId, null));
   }, [conversationId, dispatch]);
+  const replyAuthorName =
+    members.find(({ id }) => id === replyTarget?.userId)?.name || t('chat.conversation');
 
   return (
+    // React Dropzone exposes the accessible drag-and-drop handlers as root props.
+    // eslint-disable-next-line react/jsx-props-no-spreading
     <div {...getRootProps()} className={styles.wrapper}>
       {isDragActive && <div className={styles.dropOverlay}>{t('chat.dropFilesHere')}</div>}
       {replyTarget && (
         <div className={styles.replyBar}>
           <span>
-            <strong>{t('chat.replyingTo')}</strong>
+            <strong>{t('chat.replyingTo', { name: replyAuthorName })}</strong>
             <small>{replyTarget.deletedAt ? t('chat.messageDeleted') : replyTarget.text}</small>
           </span>
           <button type="button" aria-label={t('chat.cancelReply')} onClick={cancelReply}>

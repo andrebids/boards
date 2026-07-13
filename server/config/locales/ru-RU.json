@@ -12,5 +12,14 @@
 	"%s created %s in %s on %s": "%s создал(а) %s в %s на %s",
 	"%s left a new comment to %s on %s": "%s оставил(а) новый комментарий к %s на %s",
 	"%s mentioned you in %s on %s": "%s упомянул(а) вас в %s на %s",
-	"%s moved %s from %s to %s on %s": "%s переместил(а) %s из %s в %s на %s"
+	"%s moved %s from %s to %s on %s": "%s переместил(а) %s из %s в %s на %s",
+	"email:welcome:subject": "Ваша учётная запись Blachere Boards создана",
+	"email:welcome:preheader": "Данные для доступа к Blachere Boards",
+	"email:welcome:greeting": "Здравствуйте, %s!",
+	"email:welcome:introduction": "Для вас создана учётная запись в Blachere Boards.",
+	"email:welcome:accessUrl": "Адрес входа",
+	"email:welcome:loginEmail": "Электронная почта для входа",
+	"email:welcome:temporaryPassword": "Временный пароль",
+	"email:welcome:openBoards": "ОТКРЫТЬ BLACHERE BOARDS",
+	"email:welcome:securityNotice": "В целях безопасности при первом входе вам потребуется изменить этот временный пароль."
 }

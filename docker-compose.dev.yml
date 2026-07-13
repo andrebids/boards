@@ -15,6 +15,7 @@ services:
       - "smtp.bids.pt:127.0.0.1"
     volumes:
       - ./server:/app
+      - server-node-modules:/app/node_modules
     ports:
       - 1337:1337
     environment:
@@ -28,6 +29,12 @@ services:
       - DEFAULT_ADMIN_NAME=Admin User
       - DEFAULT_ADMIN_USERNAME=admin
       - GLOBAL_NOTIFICATION_SERVICES=[{"url":"mailto://boards%40bids.pt:U31dc6FeXqSUVE@mail.bids.pt:587/?from=boards%40bids.pt&to=andre%40bids.pt","format":"html"}]
+    healthcheck:
+      test: [ "CMD", "node", "healthcheck.js" ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 120s
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,6 +45,9 @@ services:
     container_name: boards-client
     command: [ "bash", "-c", "if [ ! -f node_modules/.planka-dev-lock ] || ! sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1; then npm install && sha256sum package-lock.json > node_modules/.planka-dev-lock; fi && npx vite --host" ]
     restart: on-failure
+    depends_on:
+      planka-server:
+        condition: service_healthy
     volumes:
       - ./client:/app
     ports:
@@ -61,3 +71,4 @@ services:
 
 volumes:
   postgres:
+  server-node-modules:

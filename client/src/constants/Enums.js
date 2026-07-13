@@ -24,6 +24,16 @@ export const UserRoles = {
   BOARD_USER: 'boardUser',
 };
 
+export const WelcomeEmailLanguages = [
+  'en-GB',
+  'en-US',
+  'es-ES',
+  'fr-FR',
+  'it-IT',
+  'pt-PT',
+  'ru-RU',
+];
+
 export const ProjectOrders = {
   BY_DEFAULT: 'byDefault',
   ALPHABETICALLY: 'alphabetically',

@@ -4,6 +4,7 @@
  */
 
 const path = require('path');
+const fs = require('fs');
 
 const generatePlainText = (data) => {
   return `${data.actor_name} ${data.action_verb} ${data.action_object}
@@ -34,25 +35,34 @@ module.exports = {
       type: 'string',
       required: true,
     },
-    data: { 
-      type: 'json' 
-    }, // Para gerar plain text
+    text: {
+      type: 'string',
+    },
+    data: {
+      type: 'json',
+    }, // Compatibilidade com os emails de notificação existentes
   },
 
   async fn(inputs) {
-    const transporter = sails.hooks.smtp.getTransporter(); // TODO: check if enabled?
+    if (!sails.hooks.smtp.isEnabled()) {
+      throw new Error('SMTP is not configured');
+    }
+
+    const transporter = sails.hooks.smtp.getTransporter();
+    if (!transporter) {
+      throw new Error('SMTP transporter is not available');
+    }
 
     try {
       // Preparar anexos (logo inline)
       const attachments = [];
-      const logoPath = path.join(sails.config.appPath, 'client', 'public', 'logo192.png');
+      const logoPath = path.join(sails.config.appPath, 'public', 'logo192.png');
       const logoCid = 'logo@planka';
-      
-      if (require('fs').existsSync(logoPath)) {
+      if (fs.existsSync(logoPath)) {
         attachments.push({
           filename: 'logo.png',
           path: logoPath,
-          cid: logoCid
+          cid: logoCid,
         });
       }
 
@@ -63,16 +73,17 @@ module.exports = {
         to: inputs.to,
         subject: inputs.subject,
         html: htmlWithLogo,
-        text: inputs.data ? generatePlainText(inputs.data) : undefined,
+        text: inputs.text || (inputs.data ? generatePlainText(inputs.data) : undefined),
         attachments: attachments.length > 0 ? attachments : undefined,
         from: sails.config.custom.smtpFrom,
       };
 
       const info = await transporter.sendMail(mailOptions);
       sails.log.info(`✅ Email enviado com sucesso: ${info.messageId}`);
-      
+
+      return info;
     } catch (error) {
-      sails.log.error(`❌ Erro ao enviar email: ${error}`);
+      sails.log.error(`❌ Erro ao enviar email: ${error.message}`);
       throw error;
     }
   },

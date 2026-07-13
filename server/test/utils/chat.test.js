@@ -105,7 +105,6 @@ describe('Chat domain', () => {
       reactions: [],
       linkPreviews: [],
       replyTo: null,
-      isSaved: false,
     });
     expect(message.text).to.equal('<private content>');
   });

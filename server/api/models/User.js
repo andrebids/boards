@@ -68,7 +68,9 @@ const LANGUAGES = [
   'zh-TW',
 ];
 
-const PRIVATE_FIELD_NAMES = ['email', 'isSsoUser'];
+const WELCOME_EMAIL_LANGUAGES = ['en-GB', 'en-US', 'es-ES', 'fr-FR', 'it-IT', 'pt-PT', 'ru-RU'];
+
+const PRIVATE_FIELD_NAMES = ['email', 'isSsoUser', 'mustChangePassword', 'welcomeEmailSentAt'];
 
 const PERSONAL_FIELD_NAMES = [
   'language',
@@ -91,6 +93,7 @@ module.exports = {
   HomeViews,
   ProjectOrders,
   LANGUAGES,
+  WELCOME_EMAIL_LANGUAGES,
   PRIVATE_FIELD_NAMES,
   PERSONAL_FIELD_NAMES,
   OIDC,
@@ -192,6 +195,15 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false,
       columnName: 'is_deactivated',
+    },
+    mustChangePassword: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'must_change_password',
+    },
+    welcomeEmailSentAt: {
+      type: 'ref',
+      columnName: 'welcome_email_sent_at',
     },
     passwordChangedAt: {
       type: 'ref',

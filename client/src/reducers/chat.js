@@ -14,6 +14,7 @@ const initialState = {
   hasFetchedConversationsByProject: {},
   isMessagesFetchingByConversation: {},
   hasMoreMessagesByConversation: {},
+  hasMoreNewerMessagesByConversation: {},
   errorsByScope: {},
   conversationCreationErrorsByKey: {},
   accessRevocationVersionByProject: {},
@@ -37,18 +38,21 @@ export default (state = initialState, { type, payload }) => {
         hasFetchedConversationsByProject: {},
         isMessagesFetchingByConversation: {},
         hasMoreMessagesByConversation: {},
+        hasMoreNewerMessagesByConversation: {},
         typingByConversation: {},
       };
     case ActionTypes.CHAT_PROJECT_ACCESS_REVOKE_HANDLE: {
       const conversationIdSet = new Set(payload.conversationIds);
       const nextMessagesFetching = { ...state.isMessagesFetchingByConversation };
       const nextHasMoreMessages = { ...state.hasMoreMessagesByConversation };
+      const nextHasMoreNewerMessages = { ...state.hasMoreNewerMessagesByConversation };
       const nextDrafts = { ...state.draftsByConversation };
       const nextReplyTargets = { ...state.replyTargetsByConversation };
       const nextTyping = { ...state.typingByConversation };
       payload.conversationIds.forEach((conversationId) => {
         delete nextMessagesFetching[conversationId];
         delete nextHasMoreMessages[conversationId];
+        delete nextHasMoreNewerMessages[conversationId];
         delete nextDrafts[conversationId];
         delete nextReplyTargets[conversationId];
         delete nextTyping[conversationId];
@@ -66,6 +70,7 @@ export default (state = initialState, { type, payload }) => {
         ),
         isMessagesFetchingByConversation: nextMessagesFetching,
         hasMoreMessagesByConversation: nextHasMoreMessages,
+        hasMoreNewerMessagesByConversation: nextHasMoreNewerMessages,
         draftsByConversation: nextDrafts,
         replyTargetsByConversation: nextReplyTargets,
         typingByConversation: nextTyping,
@@ -91,6 +96,7 @@ export default (state = initialState, { type, payload }) => {
         ),
         isMessagesFetchingByConversation: removeKey(state.isMessagesFetchingByConversation),
         hasMoreMessagesByConversation: removeKey(state.hasMoreMessagesByConversation),
+        hasMoreNewerMessagesByConversation: removeKey(state.hasMoreNewerMessagesByConversation),
         draftsByConversation: removeKey(state.draftsByConversation),
         replyTargetsByConversation: removeKey(state.replyTargetsByConversation),
         typingByConversation: removeKey(state.typingByConversation),
@@ -193,7 +199,13 @@ export default (state = initialState, { type, payload }) => {
         },
         hasMoreMessagesByConversation: {
           ...state.hasMoreMessagesByConversation,
-          [payload.conversationId]: payload.hasMore,
+          ...(payload.direction !== 'after' && {
+            [payload.conversationId]: payload.hasMore,
+          }),
+        },
+        hasMoreNewerMessagesByConversation: {
+          ...state.hasMoreNewerMessagesByConversation,
+          [payload.conversationId]: payload.hasMoreAfter,
         },
       };
     case ActionTypes.CHAT_MESSAGES_FETCH__FAILURE:

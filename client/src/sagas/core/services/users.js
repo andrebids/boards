@@ -20,14 +20,38 @@ export function* createUser(data) {
   yield put(actions.createUser(data));
 
   let user;
+  let welcomeEmailSent;
   try {
-    ({ item: user } = yield call(request, api.createUser, data));
+    ({ item: user, included: { welcomeEmailSent } } = yield call(
+      request,
+      api.createUser,
+      data
+    ));
   } catch (error) {
     yield put(actions.createUser.failure(error));
     return;
   }
 
-  yield put(actions.createUser.success(user));
+  yield put(actions.createUser.success(user, welcomeEmailSent));
+}
+
+export function* resendUserWelcomeEmail(id) {
+  yield put(actions.resendUserWelcomeEmail(id));
+
+  let user;
+  let welcomeEmailSent;
+  try {
+    ({ item: user, included: { welcomeEmailSent } } = yield call(
+      request,
+      api.resendUserWelcomeEmail,
+      id
+    ));
+  } catch (error) {
+    yield put(actions.resendUserWelcomeEmail.failure(id, error));
+    return;
+  }
+
+  yield put(actions.resendUserWelcomeEmail.success(user, welcomeEmailSent));
 }
 
 export function* handleUserCreate(user) {
@@ -500,6 +524,7 @@ export default {
   createUser,
   handleUserCreate,
   clearUserCreateError,
+  resendUserWelcomeEmail,
   updateUser,
   updateCurrentUser,
   handleUserUpdate,

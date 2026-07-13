@@ -145,7 +145,10 @@ export const selectSavedChatMessagesForCurrentProject = createSelector(
     return ChatMessage.filter({ isSaved: true })
       .toRefArray()
       .filter(({ conversationId }) => conversationIds.has(conversationId))
-      .sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt));
+      .sort(
+        (left, right) =>
+          new Date(right.savedAt || right.createdAt) - new Date(left.savedAt || left.createdAt),
+      );
   },
 );
 
@@ -165,6 +168,9 @@ export const makeSelectIsChatMessagesFetchingByConversationId = () => (state, co
 
 export const makeSelectHasMoreChatMessagesByConversationId = () => (state, conversationId) =>
   selectChatState(state).hasMoreMessagesByConversation[conversationId] !== false;
+
+export const makeSelectHasMoreNewerChatMessagesByConversationId = () => (state, conversationId) =>
+  Boolean(selectChatState(state).hasMoreNewerMessagesByConversation[conversationId]);
 
 export default {
   selectChatState,
@@ -189,4 +195,5 @@ export default {
   selectChatUnreadTotal,
   makeSelectIsChatMessagesFetchingByConversationId,
   makeSelectHasMoreChatMessagesByConversationId,
+  makeSelectHasMoreNewerChatMessagesByConversationId,
 };

@@ -166,6 +166,12 @@ export function* handleChatConversationUpdate(conversation, chatParticipants, us
 
 export function* fetchChatMessages(conversationId, options = {}) {
   const { replace = false, ...requestOptions } = options;
+  let direction = 'before';
+  if (requestOptions.aroundId) {
+    direction = 'around';
+  } else if (requestOptions.afterId) {
+    direction = 'after';
+  }
   const loadedMessages = yield select(selectors.selectChatMessagesByConversationId, conversationId);
   const firstPersistedMessage = replace
     ? undefined
@@ -176,21 +182,35 @@ export function* fetchChatMessages(conversationId, options = {}) {
   let messages;
   let users = [];
   let hasMore;
+  let hasMoreAfter;
   try {
-    const body = yield call(request, api.getChatMessages, conversationId, {
-      ...(requestOptions.aroundId
-        ? { aroundId: requestOptions.aroundId }
-        : { beforeId: firstPersistedMessage?.id }),
-    });
+    let parameters = { beforeId: firstPersistedMessage?.id };
+    if (requestOptions.aroundId) {
+      parameters = { aroundId: requestOptions.aroundId };
+    } else if (requestOptions.afterId) {
+      parameters = { afterId: requestOptions.afterId };
+    }
+    const body = yield call(request, api.getChatMessages, conversationId, parameters);
     messages = body.items;
     users = body.included?.users || [];
     hasMore = body.hasMore ?? body.meta?.hasMore ?? messages.length > 0;
+    hasMoreAfter = body.meta?.hasMoreAfter ?? (direction === 'after' ? hasMore : false);
   } catch (error) {
     yield put(actions.fetchChatMessages.failure(conversationId, error));
     return;
   }
 
-  yield put(actions.fetchChatMessages.success(conversationId, messages, users, hasMore, replace));
+  yield put(
+    actions.fetchChatMessages.success(
+      conversationId,
+      messages,
+      users,
+      hasMore,
+      replace,
+      hasMoreAfter,
+      direction,
+    ),
+  );
 }
 
 function* uploadChatMessageAttachments(message, files) {

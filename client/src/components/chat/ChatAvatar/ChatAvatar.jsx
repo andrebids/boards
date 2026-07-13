@@ -1,23 +1,21 @@
-import React from "react";
-import PropTypes from "prop-types";
-import initials from "initials";
-import { UserRound, Users } from "lucide-react";
+import React from 'react';
+import PropTypes from 'prop-types';
+import initials from 'initials';
+import { UserRound, Users } from 'lucide-react';
 
-import styles from "./ChatAvatar.module.scss";
+import styles from './ChatAvatar.module.scss';
 
-const mutedColors = ["#4d647c", "#58636e", "#4e6870", "#685d76", "#697058"];
+const mutedColors = ['#4d647c', '#58636e', '#4e6870', '#685d76', '#697058'];
 
 const ChatAvatar = React.memo(({ isOnline, isProject, user }) => {
   const backgroundColor = user
     ? mutedColors[
-        [...user.name].reduce(
-          (sum, character) => sum + character.charCodeAt(0),
-          0,
-        ) % mutedColors.length
+        [...user.name].reduce((sum, character) => sum + character.charCodeAt(0), 0) %
+          mutedColors.length
       ]
-    : "#4d647c";
+    : '#4d647c';
 
-  let contentNode = initials(user?.name || "?").slice(0, 2);
+  let contentNode = initials(user?.name || '?').slice(0, 2);
   if (user?.avatar) {
     contentNode = (
       <span

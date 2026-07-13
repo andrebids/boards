@@ -100,13 +100,13 @@ module.exports.custom = {
     sails.config.environment === 'production' ? process.env.BASE_URL : 'http://localhost:3008'
   }/oidc-callback`,
 
-  smtpHost: process.env.SMTP_HOST,
-  smtpPort: process.env.SMTP_PORT || 587,
+  smtpHost: process.env.SMTP_HOST || process.env.GLOBAL_SMTP_HOST,
+  smtpPort: process.env.SMTP_PORT || process.env.GLOBAL_SMTP_PORT || 587,
   smtpName: process.env.SMTP_NAME,
-  smtpSecure: process.env.SMTP_SECURE === 'true',
-  smtpUser: process.env.SMTP_USER,
-  smtpPassword: process.env.SMTP_PASSWORD,
-  smtpFrom: process.env.SMTP_FROM,
+  smtpSecure: (process.env.SMTP_SECURE || process.env.GLOBAL_SMTP_SECURE) === 'true',
+  smtpUser: process.env.SMTP_USER || process.env.GLOBAL_SMTP_USER,
+  smtpPassword: process.env.SMTP_PASSWORD || process.env.GLOBAL_SMTP_PASSWORD,
+  smtpFrom: process.env.SMTP_FROM || process.env.GLOBAL_SMTP_FROM,
   smtpTlsRejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false',
 
   webhooks: JSON.parse(process.env.WEBHOOKS || '[]'), // TODO: validate structure
@@ -115,14 +115,14 @@ module.exports.custom = {
   globalNotifications: {
     enabled: process.env.GLOBAL_NOTIFICATIONS_ENABLED === 'true',
     nodemailer: {
-      host: process.env.GLOBAL_SMTP_HOST || 'mail.bids.pt',
+      host: process.env.GLOBAL_SMTP_HOST,
       port: parseInt(process.env.GLOBAL_SMTP_PORT, 10) || 587,
       secure: process.env.GLOBAL_SMTP_SECURE === 'true' || false,
       auth: {
-        user: process.env.GLOBAL_SMTP_USER || 'boards@bids.pt',
-        pass: process.env.GLOBAL_SMTP_PASSWORD || 'U3ldc-FeXqSUVE',
+        user: process.env.GLOBAL_SMTP_USER,
+        pass: process.env.GLOBAL_SMTP_PASSWORD,
       },
-      from: process.env.GLOBAL_SMTP_FROM || 'Blachere Boards <boards@bids.pt>',
+      from: process.env.GLOBAL_SMTP_FROM,
       // Configurações avançadas do Nodemailer
       pool: true, // Connection pooling
       maxConnections: 5,

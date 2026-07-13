@@ -7,7 +7,7 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Menu } from 'semantic-ui-react';
+import { Menu, Message } from 'semantic-ui-react';
 import { Popup } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
@@ -98,6 +98,10 @@ const ActionsStep = React.memo(({ userId, onClose }) => {
   const handleEditRoleClick = useCallback(() => {
     openStep(StepTypes.EDIT_ROLE);
   }, [openStep]);
+
+  const handleResendWelcomeEmailClick = useCallback(() => {
+    dispatch(entryActions.resendUserWelcomeEmail(userId));
+  }, [userId, dispatch]);
 
   const handleActivateClick = useCallback(() => {
     openStep(StepTypes.ACTIVATE);
@@ -202,6 +206,13 @@ const ActionsStep = React.memo(({ userId, onClose }) => {
         })}
       </Popup.Header>
       <Popup.Content>
+        {user.welcomeEmailResendForm.wasSent === true && (
+          <Message success visible content={t('common.welcomeEmailResentSuccessfully')} />
+        )}
+        {(user.welcomeEmailResendForm.wasSent === false ||
+          user.welcomeEmailResendForm.error) && (
+          <Message error visible content={t('common.welcomeEmailResendFailed')} />
+        )}
         <Menu secondary vertical className={styles.menu}>
           <Menu.Item
             className={styles.menuItem}
@@ -249,6 +260,19 @@ const ActionsStep = React.memo(({ userId, onClose }) => {
               {t('action.editRole', {
                 context: 'title',
               })}
+            </Menu.Item>
+          )}
+          {user.mustChangePassword && !user.isSsoUser && (
+            <Menu.Item
+              disabled={user.welcomeEmailResendForm.isSubmitting}
+              className={styles.menuItem}
+              onClick={handleResendWelcomeEmailClick}
+            >
+              {user.welcomeEmailResendForm.isSubmitting
+                ? t('common.resendingWelcomeEmail')
+                : t('action.resendWelcomeEmail', {
+                    context: 'title',
+                  })}
             </Menu.Item>
           )}
           <Menu.Item

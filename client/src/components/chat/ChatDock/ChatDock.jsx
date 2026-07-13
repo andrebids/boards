@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { MessageCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { MessageCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { useChat } from "../ChatContext";
-import ChatWindow from "../ChatWindow";
+import { useChat } from '../ChatContext';
+import ChatWindow from '../ChatWindow';
 
-import styles from "./ChatDock.module.scss";
+import styles from './ChatDock.module.scss';
 
 const getLimit = (width) => {
   if (width >= 1440) {
@@ -27,14 +27,11 @@ const ChatDock = React.memo(() => {
   useEffect(() => {
     const handleResize = () => setLimit(getLimit(window.innerWidth));
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const activeWindows = useMemo(
-    () => windows.filter((window) => !window.isMinimized),
-    [windows],
-  );
+  const activeWindows = useMemo(() => windows.filter((window) => !window.isMinimized), [windows]);
 
   const { hiddenWindows, visibleWindows } = useMemo(() => {
     const splitIndex = Math.max(0, activeWindows.length - limit);
@@ -58,12 +55,12 @@ const ChatDock = React.memo(() => {
   }
 
   return (
-    <aside className={styles.dock} aria-label={t("chat.openConversations")}>
+    <aside className={styles.dock} aria-label={t('chat.openConversations')}>
       {hiddenWindows.length > 0 && (
         <button
           type="button"
           className={styles.overflowButton}
-          title={t("chat.showOtherConversations")}
+          title={t('chat.showOtherConversations')}
           onClick={handleOverflowClick}
         >
           <MessageCircle aria-hidden="true" size={17} strokeWidth={2} />

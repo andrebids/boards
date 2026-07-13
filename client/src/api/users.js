@@ -12,6 +12,9 @@ const getUsers = headers => socket.get('/users', undefined, headers);
 
 const createUser = (data, headers) => socket.post('/users', data, headers);
 
+const resendUserWelcomeEmail = (id, headers) =>
+  socket.post(`/users/${id}/resend-welcome-email`, undefined, headers);
+
 /* const getUser = (id, headers) =>
   socket.get(`/users/${id}`, undefined, headers).then((body) => ({
     ...body,
@@ -46,6 +49,7 @@ const deleteUser = (id, headers) =>
 export default {
   getUsers,
   createUser,
+  resendUserWelcomeEmail,
   // getUser,
   getCurrentUser,
   updateUser,

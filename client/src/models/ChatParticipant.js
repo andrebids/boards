@@ -49,11 +49,25 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_CONVERSATIONS_FETCH__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_CREATE__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_CREATE_HANDLE:
-      case ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE:
         (payload.chatParticipants || []).forEach((participant) =>
           ChatParticipant.upsert(participant),
         );
         break;
+      case ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE: {
+        const participants = payload.chatParticipants || [];
+        if (participants.length > 0) {
+          const conversationIds = new Set(participants.map(({ conversationId }) => conversationId));
+          const participantIds = new Set(participants.map(({ id }) => id));
+          conversationIds.forEach((conversationId) => {
+            ChatParticipant.filter({ conversationId })
+              .toModelArray()
+              .filter(({ id }) => !participantIds.has(id))
+              .forEach((participantModel) => participantModel.delete());
+          });
+          participants.forEach((participant) => ChatParticipant.upsert(participant));
+        }
+        break;
+      }
       case ActionTypes.CHAT_CONVERSATION_READ__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_READ_HANDLE: {
         const participantModel = ChatParticipant.filter({

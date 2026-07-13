@@ -64,4 +64,76 @@ describe('chat reducer', () => {
 
     expect(successState.hasFetchedConversationsByProject['project-1']).toBe(true);
   });
+
+  test('keeps independent drafts and reply targets for each conversation', () => {
+    let state = reducer(undefined, {
+      type: ActionTypes.CHAT_DRAFT_UPDATE,
+      payload: { conversationId: 'conversation-1', text: 'first draft' },
+    });
+    state = reducer(state, {
+      type: ActionTypes.CHAT_REPLY_TARGET_SET,
+      payload: { conversationId: 'conversation-2', message: { id: 'message-4' } },
+    });
+
+    expect(state.draftsByConversation['conversation-1']).toBe('first draft');
+    expect(state.replyTargetsByConversation['conversation-2']).toEqual({ id: 'message-4' });
+  });
+
+  test('does not let an expired typing timer clear a newer typing event', () => {
+    let state = reducer(undefined, {
+      type: ActionTypes.CHAT_TYPING_UPDATE_HANDLE,
+      payload: {
+        typingState: {
+          conversationId: 'conversation-1',
+          userId: 'user-2',
+          isTyping: true,
+          receivedAt: 100,
+        },
+      },
+    });
+    state = reducer(state, {
+      type: ActionTypes.CHAT_TYPING_UPDATE_HANDLE,
+      payload: {
+        typingState: {
+          conversationId: 'conversation-1',
+          userId: 'user-2',
+          isTyping: true,
+          receivedAt: 200,
+        },
+      },
+    });
+    state = reducer(state, {
+      type: ActionTypes.CHAT_TYPING_UPDATE_HANDLE,
+      payload: {
+        typingState: {
+          conversationId: 'conversation-1',
+          userId: 'user-2',
+          isTyping: false,
+          receivedAt: 100,
+        },
+      },
+    });
+
+    expect(state.typingByConversation['conversation-1']['user-2']).toBe(200);
+  });
+
+  test('paginates newer messages without overwriting the older-message cursor', () => {
+    const state = {
+      ...reducer(undefined, { type: '@@INIT' }),
+      hasMoreMessagesByConversation: { 'conversation-1': true },
+      hasMoreNewerMessagesByConversation: { 'conversation-1': true },
+    };
+    const nextState = reducer(state, {
+      type: ActionTypes.CHAT_MESSAGES_FETCH__SUCCESS,
+      payload: {
+        conversationId: 'conversation-1',
+        direction: 'after',
+        hasMore: false,
+        hasMoreAfter: false,
+      },
+    });
+
+    expect(nextState.hasMoreMessagesByConversation['conversation-1']).toBe(true);
+    expect(nextState.hasMoreNewerMessagesByConversation['conversation-1']).toBe(false);
+  });
 });

@@ -81,7 +81,10 @@ module.exports = {
       }
     }
 
-    const values = _.pick(inputs, ['password']);
+    const values = {
+      ..._.pick(inputs, ['password']),
+      mustChangePassword: false,
+    };
 
     user = await sails.helpers.users.updateOne.with({
       values,

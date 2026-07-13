@@ -9,5 +9,14 @@
   "You Were Added to Card": "Sei stato aggiunto alla task",
   "%s created %s in %s on %s": "%s ha creato %s in %s in %s",
   "%s left a new comment to %s on %s": "%s ha commentato %s in %s",
-  "%s moved %s from %s to %s on %s": "%s ha spostato %s da %s a %s in %s"
+  "%s moved %s from %s to %s on %s": "%s ha spostato %s da %s a %s in %s",
+  "email:welcome:subject": "Il tuo account Blachere Boards è stato creato",
+  "email:welcome:preheader": "I tuoi dati di accesso a Blachere Boards",
+  "email:welcome:greeting": "Ciao, %s,",
+  "email:welcome:introduction": "È stato creato un account per te in Blachere Boards.",
+  "email:welcome:accessUrl": "Indirizzo di accesso",
+  "email:welcome:loginEmail": "E-mail di accesso",
+  "email:welcome:temporaryPassword": "Password temporanea",
+  "email:welcome:openBoards": "APRI BLACHERE BOARDS",
+  "email:welcome:securityNotice": "Per la tua sicurezza, al primo accesso ti verrà richiesto di modificare questa password temporanea."
 }

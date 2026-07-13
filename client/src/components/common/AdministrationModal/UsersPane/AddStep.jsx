@@ -6,28 +6,21 @@
 import isEmail from 'validator/lib/isEmail';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Icon, Message } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Message } from 'semantic-ui-react';
 import { useDidUpdate, usePrevious } from '../../../../lib/hooks';
 import { Input, Popup } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
-import { useForm, useNestedRef, useSteps } from '../../../../hooks';
-import { isPassword, isUsername } from '../../../../utils/validator';
-import { UserRoles } from '../../../../constants/Enums';
-import { UserRoleIcons } from '../../../../constants/Icons';
-import SelectRoleStep from './SelectRoleStep';
+import locales from '../../../../locales';
+import { useForm, useNestedRef } from '../../../../hooks';
+import { WelcomeEmailLanguages } from '../../../../constants/Enums';
 
 import styles from './AddStep.module.scss';
 
-const StepTypes = {
-  SELECT_ROLE: 'SELECT_ROLE',
-};
-
-const createMessage = error => {
+const createMessage = (error) => {
   if (!error) {
     return error;
   }
@@ -38,11 +31,6 @@ const createMessage = error => {
         type: 'error',
         content: 'common.emailAlreadyInUse',
       };
-    case 'Username already in use':
-      return {
-        type: 'error',
-        content: 'common.usernameAlreadyInUse',
-      };
     default:
       return {
         type: 'warning',
@@ -51,123 +39,128 @@ const createMessage = error => {
   }
 };
 
+const languageOptions = locales
+  .filter((locale) => WelcomeEmailLanguages.includes(locale.language))
+  .map((locale) => ({
+    value: locale.language,
+    flag: locale.country,
+    text: locale.name,
+  }));
+
 const AddStep = React.memo(({ onClose }) => {
   const {
     data: defaultData,
     isSubmitting,
     error,
+    createdUserId,
+    welcomeEmailSent,
   } = useSelector(selectors.selectUserCreateForm);
+
+  const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
+  const createdUser = useSelector((state) =>
+    createdUserId ? selectUserById(state, createdUserId) : null,
+  );
+  const resendForm = createdUser?.welcomeEmailResendForm;
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const wasSubmitting = usePrevious(isSubmitting);
+  const wasResending = usePrevious(resendForm?.isSubmitting);
 
-  const [data, handleFieldChange, setData] = useForm(() => ({
+  const [data, handleFieldChange] = useForm(() => ({
     email: '',
-    password: '',
     name: '',
-    username: '',
-    role: UserRoles.BOARD_USER,
+    language: 'pt-PT',
     ...defaultData,
   }));
 
-  const [step, openStep, handleBack] = useSteps();
   const message = useMemo(() => createMessage(error), [error]);
 
   const [emailFieldRef, handleEmailFieldRef] = useNestedRef('inputRef');
-  const [passwordFieldRef, handlePasswordFieldRef] = useNestedRef('inputRef');
   const [nameFieldRef, handleNameFieldRef] = useNestedRef('inputRef');
-  const [usernameFieldRef, handleUsernameFieldRef] = useNestedRef('inputRef');
 
   const handleSubmit = useCallback(() => {
     const cleanData = {
-      ...data,
       email: data.email.trim(),
       name: data.name.trim(),
-      username: data.username.trim() || null,
+      language: data.language,
     };
-
-    if (!isEmail(cleanData.email)) {
-      emailFieldRef.current.select();
-      return;
-    }
-
-    if (!cleanData.password || !isPassword(cleanData.password)) {
-      passwordFieldRef.current.focus();
-      return;
-    }
 
     if (!cleanData.name) {
       nameFieldRef.current.select();
       return;
     }
 
-    if (cleanData.username && !isUsername(cleanData.username)) {
-      usernameFieldRef.current.select();
+    if (!isEmail(cleanData.email)) {
+      emailFieldRef.current.select();
       return;
     }
 
     dispatch(entryActions.createUser(cleanData));
-  }, [
-    dispatch,
-    data,
-    emailFieldRef,
-    passwordFieldRef,
-    nameFieldRef,
-    usernameFieldRef,
-  ]);
-
-  const handleRoleSelect = useCallback(
-    role => {
-      setData(prevData => ({
-        ...prevData,
-        role,
-      }));
-    },
-    [setData]
-  );
+  }, [dispatch, data, emailFieldRef, nameFieldRef]);
 
   const handleMessageDismiss = useCallback(() => {
-    dispatch(entryActions.clearUserPasswordUpdateError());
+    dispatch(entryActions.clearUserCreateError());
   }, [dispatch]);
 
-  const handleSelectRoleClick = useCallback(() => {
-    openStep(StepTypes.SELECT_ROLE);
-  }, [openStep]);
+  const handleResendClick = useCallback(() => {
+    dispatch(entryActions.resendUserWelcomeEmail(createdUserId));
+  }, [createdUserId, dispatch]);
 
   useEffect(() => {
-    emailFieldRef.current.focus({
+    nameFieldRef.current.focus({
       preventScroll: true,
     });
-  }, [emailFieldRef]);
+  }, [nameFieldRef]);
+
+  useEffect(
+    () => () => {
+      dispatch(entryActions.clearUserCreateError());
+    },
+    [dispatch],
+  );
 
   useDidUpdate(() => {
     if (wasSubmitting && !isSubmitting) {
       if (error) {
-        switch (error.message) {
-          case 'Email already in use':
-            emailFieldRef.current.select();
-
-            break;
-          case 'Username already in use':
-            usernameFieldRef.current.select();
-
-            break;
-          default:
+        if (error.message === 'Email already in use') {
+          emailFieldRef.current.select();
         }
-      } else {
+      } else if (welcomeEmailSent) {
         onClose();
       }
     }
-  }, [onClose, isSubmitting, wasSubmitting, error]);
+  }, [onClose, isSubmitting, wasSubmitting, error, welcomeEmailSent]);
 
-  if (step && step.type === StepTypes.SELECT_ROLE) {
+  useDidUpdate(() => {
+    if (wasResending && !resendForm?.isSubmitting && resendForm?.wasSent) {
+      onClose();
+    }
+  }, [onClose, wasResending, resendForm]);
+
+  if (createdUserId && welcomeEmailSent === false) {
     return (
-      <SelectRoleStep
-        defaultValue={data.role}
-        onSelect={handleRoleSelect}
-        onBack={handleBack}
-      />
+      <>
+        <Popup.Header>
+          {t('common.userCreatedEmailPending', {
+            context: 'title',
+          })}
+        </Popup.Header>
+        <Popup.Content>
+          <Message warning visible content={t('common.userCreatedButWelcomeEmailFailed')} />
+          {resendForm?.wasSent === false && (
+            <Message error visible content={t('common.welcomeEmailResendFailed')} />
+          )}
+          <Button
+            positive
+            content={t('action.resendWelcomeEmail')}
+            loading={resendForm?.isSubmitting}
+            disabled={resendForm?.isSubmitting}
+            onClick={handleResendClick}
+          />
+          <Button content={t('action.close')} onClick={onClose} />
+        </Popup.Content>
+      </>
     );
   }
 
@@ -190,29 +183,6 @@ const AddStep = React.memo(({ onClose }) => {
           />
         )}
         <Form onSubmit={handleSubmit}>
-          <div className={styles.text}>{t('common.email')}</div>
-          <Input
-            fluid
-            ref={handleEmailFieldRef}
-            name="email"
-            value={data.email}
-            maxLength={256}
-            readOnly={isSubmitting}
-            className={styles.field}
-            onChange={handleFieldChange}
-          />
-          <div className={styles.text}>{t('common.password')}</div>
-          <Input.Password
-            withStrengthBar
-            fluid
-            ref={handlePasswordFieldRef}
-            name="password"
-            value={data.password}
-            maxLength={256}
-            readOnly={isSubmitting}
-            className={styles.field}
-            onChange={handleFieldChange}
-          />
           <div className={styles.text}>{t('common.name')}</div>
           <Input
             fluid
@@ -224,20 +194,25 @@ const AddStep = React.memo(({ onClose }) => {
             className={styles.field}
             onChange={handleFieldChange}
           />
-          <div className={styles.text}>
-            {t('common.username')} (
-            {t('common.optional', {
-              context: 'inline',
-            })}
-            )
-          </div>
+          <div className={styles.text}>{t('common.email')}</div>
           <Input
             fluid
-            ref={handleUsernameFieldRef}
-            name="username"
-            value={data.username}
-            maxLength={16}
+            ref={handleEmailFieldRef}
+            name="email"
+            value={data.email}
+            maxLength={256}
             readOnly={isSubmitting}
+            className={styles.field}
+            onChange={handleFieldChange}
+          />
+          <div className={styles.text}>{t('common.welcomeEmailLanguage')}</div>
+          <Dropdown
+            fluid
+            selection
+            name="language"
+            options={languageOptions}
+            value={data.language}
+            disabled={isSubmitting}
             className={styles.field}
             onChange={handleFieldChange}
           />
@@ -249,17 +224,6 @@ const AddStep = React.memo(({ onClose }) => {
               disabled={isSubmitting}
               className={styles.button}
             />
-            <Button
-              type="button"
-              className={classNames(styles.button, styles.selectRoleButton)}
-              onClick={handleSelectRoleClick}
-            >
-              <Icon
-                name={UserRoleIcons[data.role]}
-                className={styles.selectRoleButtonIcon}
-              />
-              {t(`common.${data.role}`)}
-            </Button>
           </div>
         </Form>
       </Popup.Content>
