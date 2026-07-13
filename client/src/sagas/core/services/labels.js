@@ -119,8 +119,6 @@ export function* moveLabel(id, index) {
 }
 
 export function* deleteLabel(id) {
-  yield put(actions.deleteLabel(id));
-
   let label;
   try {
     ({ item: label } = yield call(request, api.deleteLabel, id));

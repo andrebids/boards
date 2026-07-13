@@ -4,6 +4,82 @@
  */
 
 :global(#app) {
+  :global(.ui.modal.glass.project-settings > .content),
+  :global(.ui.basic.modal.glass.project-settings > .content) {
+    background: rgba(14, 17, 23, 0.72) !important;
+    color: #e6edf3;
+  }
+
+  :global(.ui.modal.glass.project-settings .ui.header),
+  :global(.ui.modal.glass.project-settings .ui.form .field > label),
+  :global(.ui.modal.glass.project-settings .field > label),
+  :global(.ui.modal.glass.project-settings .ui.menu .item),
+  :global(.ui.modal.glass.project-settings .ui.menu .item.active),
+  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox label),
+  :global(.ui.modal.glass.project-settings .ui.checkbox label) {
+    color: #e6edf3 !important;
+  }
+
+  :global(.ui.modal.glass.project-settings .ui.input input),
+  :global(.ui.modal.glass.project-settings input[type='text']),
+  :global(.ui.modal.glass.project-settings textarea),
+  :global(.ui.modal.glass.project-settings .ui.selection.dropdown) {
+    background: #f8fafc !important;
+    border-color: rgba(148, 163, 184, 0.35) !important;
+    color: #0f172a !important;
+  }
+
+  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ .box:before),
+  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ label:before) {
+    background-color: #16a34a !important;
+  }
+
+  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ .box:after),
+  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ label:after) {
+    background: #ffffff !important;
+  }
+
+  :global(.ui.modal.glass.project-settings .ui.menu) {
+    background: transparent !important;
+  }
+
+  :global(.ui.modal.glass.project-settings .ui.pointing.secondary.menu .item) {
+    color: rgba(230, 237, 243, 0.9) !important;
+    opacity: 1 !important;
+  }
+
+  :global(.ui.modal.glass.project-settings .ui.pointing.secondary.menu .item:hover) {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+  }
+
+  :global(.ui.modal.glass.project-settings .ui.pointing.secondary.menu .active.item) {
+    background: rgba(59, 130, 246, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.24) !important;
+    color: #ffffff !important;
+  }
+
+  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.buttons .button) {
+    background: #1f2937 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: rgba(230, 237, 243, 0.8) !important;
+    transition: background-color 0.16s ease;
+  }
+
+  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.buttons .button:hover),
+  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.buttons .button:focus-visible) {
+    background: #334155 !important;
+    color: #ffffff !important;
+    outline: none;
+  }
+
+  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.buttons .active.button),
+  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.basic.buttons .active.button) {
+    background: #2563eb !important;
+    color: #ffffff !important;
+  }
+
   .dimmerTransparent {
     background-color: transparent;
   }

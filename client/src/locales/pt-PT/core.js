@@ -539,6 +539,13 @@ export default {
       enableProgressBar: 'Ativar barra de progresso',
       progressPercentage: 'Percentagem de progresso',
       project: 'Projeto',
+      projectChat: 'Chat do projeto',
+      projectChatAccess: 'Quem pode utilizar o chat do projeto',
+      projectChatAccessHint:
+        'O chat geral torna a lista de membros visível para todas as pessoas com acesso.',
+      projectChatAllMembers: 'Todos os membros do projeto',
+      projectChatDisabled: 'Desativado',
+      projectChatManagersOnly: 'Apenas gestores',
       projectNotFound_title: 'Projeto não encontrado',
       projectOwner: 'Proprietário do projeto',
       referenceDataAndKnowledgeStorage:

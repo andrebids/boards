@@ -15,7 +15,7 @@ import { selectIsTimelinePanelExpanded } from '../../../../selectors/timelinePan
 import entryActions from '../../../../entry-actions';
 import parseDndId from '../../../../utils/parse-dnd-id';
 import DroppableTypes from '../../../../constants/DroppableTypes';
-import { BoardMembershipRoles } from '../../../../constants/Enums';
+import { BoardMembershipRoles, ListTypes } from '../../../../constants/Enums';
 import AddList from './AddList';
 import List from '../../../lists/List';
 import PlusMathIcon from '../../../../assets/images/plus-math-icon.svg?react';
@@ -44,6 +44,7 @@ const KanbanContent = React.memo(() => {
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [isAddListOpened, setIsAddListOpened] = useState(false);
+  const [isFileDragOverAddList, setIsFileDragOverAddList] = useState(false);
 
   const wrapperRef = useRef(null);
   const prevPositionRef = useRef(null);
@@ -98,6 +99,51 @@ const KanbanContent = React.memo(() => {
   const handleAddListClose = useCallback(() => {
     setIsAddListOpened(false);
   }, []);
+
+  const handleAddListFileDragOver = useCallback(event => {
+    if (!event.dataTransfer?.types?.includes('Files')) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    setIsFileDragOverAddList(true);
+  }, []);
+
+  const handleAddListFileDragLeave = useCallback(event => {
+    if (!event.dataTransfer?.types?.includes('Files')) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setIsFileDragOverAddList(false);
+    }
+  }, []);
+
+  const handleAddListFileDrop = useCallback(
+    event => {
+      if (!event.dataTransfer?.types?.includes('Files')) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      setIsFileDragOverAddList(false);
+
+      if (event.dataTransfer.files.length > 0) {
+        dispatch(
+          entryActions.createListInCurrentBoard({
+            name: `${t('common.list')} ${listIds.length + 1}`,
+            type: ListTypes.ACTIVE,
+          })
+        );
+      }
+    },
+    [dispatch, listIds.length, t]
+  );
 
   const handleMouseDown = useCallback(event => {
     // If button is defined and not equal to 0 (left click)
@@ -196,7 +242,14 @@ const KanbanContent = React.memo(() => {
                 ))}
                 {placeholder}
                 {canAddList && (
-                  <div data-drag-scroller className={styles.list}>
+                  <div
+                    data-drag-scroller
+                    className={styles.list}
+                    onDragEnter={handleAddListFileDragOver}
+                    onDragOver={handleAddListFileDragOver}
+                    onDragLeave={handleAddListFileDragLeave}
+                    onDrop={handleAddListFileDrop}
+                  >
                     {isAddListOpened ? (
                       <AddList onClose={handleAddListClose} />
                     ) : (
@@ -212,6 +265,11 @@ const KanbanContent = React.memo(() => {
                             : t('action.addList')}
                         </span>
                       </button>
+                    )}
+                    {isFileDragOverAddList && (
+                      <div className={styles.addListDropOverlay}>
+                        {t('common.dropFilesHere')}
+                      </div>
                     )}
                   </div>
                 )}

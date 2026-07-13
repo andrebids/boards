@@ -54,7 +54,11 @@ const BackgroundPane = React.memo(() => {
   return (
     <Tab.Pane attached={false} className={styles.wrapper}>
       <AddImageZone onCreate={handleImageCreate}>
-        <Button.Group fluid basic className={styles.activeTypeButtonGroup}>
+        <Button.Group
+          fluid
+          basic
+          className={`${styles.activeTypeButtonGroup} project-background-type-selector`}
+        >
           {[ProjectBackgroundTypes.GRADIENT, ProjectBackgroundTypes.IMAGE].map(
             type => (
               <Button

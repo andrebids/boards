@@ -81,7 +81,10 @@ module.exports = {
     }
 
     if (!values.card.coverAttachmentId) {
-      if (attachment.type === sails.models.attachment.Types.FILE && attachment.data.image) {
+      if (
+        attachment.type === sails.models.attachment.Types.FILE &&
+        (attachment.data.image || attachment.data.video)
+      ) {
         await sails.helpers.cards.updateOne.with({
           record: values.card,
           values: {

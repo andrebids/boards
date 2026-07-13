@@ -14,11 +14,7 @@ import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { selectIsSidebarExpanded } from '../../../selectors/sidebarSelectors';
 import Paths from '../../../constants/Paths';
-import {
-  BoardMembershipRoles,
-  BoardViews,
-  UserRoles,
-} from '../../../constants/Enums';
+import { BoardMembershipRoles, BoardViews, UserRoles } from '../../../constants/Enums';
 import UserAvatar from '../../users/UserAvatar';
 import UserStep from '../../users/UserStep';
 import NotificationsStep from '../../notifications/NotificationsStep';
@@ -33,19 +29,17 @@ const Header = React.memo(() => {
   const user = useSelector(selectors.selectCurrentUser);
   const project = useSelector(selectors.selectCurrentProject);
   const board = useSelector(selectors.selectCurrentBoard);
-  const notificationIds = useSelector(
-    selectors.selectNotificationIdsForCurrentUser
-  );
+  const notificationIds = useSelector(selectors.selectNotificationIdsForCurrentUser);
   const isFavoritesEnabled = useSelector(selectors.selectIsFavoritesEnabled);
   const isEditModeEnabled = useSelector(selectors.selectIsEditModeEnabled);
   const isSidebarExpanded = useSelector(selectIsSidebarExpanded);
 
   const withFavoritesToggler = useSelector(
     // TODO: use selector instead?
-    state => selectors.selectFavoriteProjectIdsForCurrentUser(state).length > 0
+    (state) => selectors.selectFavoriteProjectIdsForCurrentUser(state).length > 0,
   );
 
-  const { withEditModeToggler, canEditProject } = useSelector(state => {
+  const { withEditModeToggler, canEditProject } = useSelector((state) => {
     if (!project) {
       return {
         withEditModeToggler: false,
@@ -53,10 +47,8 @@ const Header = React.memo(() => {
       };
     }
 
-    const isAdminInSharedProject =
-      user.role === UserRoles.ADMIN && !project.ownerProjectManagerId;
-    const isManager =
-      selectors.selectIsCurrentUserManagerForCurrentProject(state);
+    const isAdminInSharedProject = user.role === UserRoles.ADMIN && !project.ownerProjectManagerId;
+    const isManager = selectors.selectIsCurrentUserManagerForCurrentProject(state);
 
     if (isAdminInSharedProject || isManager) {
       return {
@@ -72,10 +64,8 @@ const Header = React.memo(() => {
       };
     }
 
-    const boardMembership =
-      selectors.selectCurrentUserMembershipForCurrentBoard(state);
-    const isEditor =
-      !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
+    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    const isEditor = !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
 
     return {
       withEditModeToggler: board.view === BoardViews.KANBAN && isEditor,
@@ -124,14 +114,11 @@ const Header = React.memo(() => {
               onClick={handleToggleSidebarClick}
             >
               <div
-                className={classNames(
-                  styles.hamburger,
-                  isSidebarExpanded && styles.open
-                )}
+                className={classNames(styles.hamburger, isSidebarExpanded && styles.open)}
                 aria-label={isSidebarExpanded ? 'Fechar menu' : 'Abrir menu'}
                 role="button"
                 tabIndex={0}
-                onKeyDown={e => {
+                onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     handleToggleSidebarClick();
@@ -159,14 +146,11 @@ const Header = React.memo(() => {
               onClick={handleToggleSidebarClick}
             >
               <div
-                className={classNames(
-                  styles.hamburger,
-                  isSidebarExpanded && styles.open
-                )}
+                className={classNames(styles.hamburger, isSidebarExpanded && styles.open)}
                 aria-label={isSidebarExpanded ? 'Fechar menu' : 'Abrir menu'}
                 role="button"
                 tabIndex={0}
-                onKeyDown={e => {
+                onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     handleToggleSidebarClick();
@@ -188,10 +172,7 @@ const Header = React.memo(() => {
             <Menu.Item className={classNames(styles.item, styles.title)}>
               {project.name}
               {canEditProject && (
-                <Button
-                  className={styles.editButton}
-                  onClick={handleProjectSettingsClick}
-                >
+                <Button className={styles.editButton} onClick={handleProjectSettingsClick}>
                   <Icon fitted name="pencil" size="small" />
                 </Button>
               )}
@@ -207,9 +188,7 @@ const Header = React.memo(() => {
               <Icon
                 fitted
                 name={isFavoritesEnabled ? 'star' : 'star outline'}
-                className={classNames(
-                  isFavoritesEnabled && styles.itemIconEnabled
-                )}
+                className={classNames(isFavoritesEnabled && styles.itemIconEnabled)}
               />
             </Menu.Item>
           )}
@@ -221,28 +200,20 @@ const Header = React.memo(() => {
               <Icon
                 fitted
                 name={isEditModeEnabled ? 'unlock' : 'lock'}
-                className={classNames(
-                  isEditModeEnabled && styles.itemIconEnabled
-                )}
+                className={classNames(isEditModeEnabled && styles.itemIconEnabled)}
               />
             </Menu.Item>
           )}
           <NotificationsPopup>
-            <Menu.Item
-              className={classNames(styles.item, styles.itemHoverable)}
-            >
+            <Menu.Item className={classNames(styles.item, styles.itemHoverable)}>
               <Icon fitted name="bell" />
               {notificationIds.length > 0 && (
-                <span className={styles.notification}>
-                  {notificationIds.length}
-                </span>
+                <span className={styles.notification}>{notificationIds.length}</span>
               )}
             </Menu.Item>
           </NotificationsPopup>
           <UserPopup>
-            <Menu.Item
-              className={classNames(styles.item, styles.itemHoverable)}
-            >
+            <Menu.Item className={classNames(styles.item, styles.itemHoverable)}>
               <span className={styles.userName}>{user.name}</span>
               <UserAvatar id={user.id} size="small" />
             </Menu.Item>

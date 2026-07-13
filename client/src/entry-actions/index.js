@@ -29,6 +29,7 @@ import notifications from './notifications';
 import notificationServices from './notification-services';
 import sidebar from './sidebar';
 import timelinePanel from './timeline-panel';
+import chat from './chat';
 
 export default {
   ...socket,
@@ -57,4 +58,5 @@ export default {
   ...notificationServices,
   ...sidebar,
   ...timelinePanel,
+  ...chat,
 };

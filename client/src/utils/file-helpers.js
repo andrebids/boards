@@ -38,6 +38,16 @@ export const SUPPORTED_FILE_TYPES = [
   'application/postscript',
   'application/eps',
   'application/x-illustrator',
+  // Vídeos
+  'video/mp4',
+  'video/webm',
+  'video/ogg',
+  'video/quicktime',
+  'video/x-msvideo',
+  'video/x-ms-wmv',
+  'video/x-flv',
+  'video/x-matroska',
+  'video/x-m4v',
   // Outros
   'text/plain',
   'text/csv',
@@ -82,6 +92,15 @@ export const isSupportedFile = file => {
       'csv',
       'zip',
       'rar',
+      'mp4',
+      'webm',
+      'ogv',
+      'mov',
+      'avi',
+      'wmv',
+      'flv',
+      'mkv',
+      'm4v',
     ];
 
     return supportedExtensions.includes(extension);

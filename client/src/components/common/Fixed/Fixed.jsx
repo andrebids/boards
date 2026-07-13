@@ -16,6 +16,9 @@ import Project from '../../projects/Project';
 import BoardActions from '../../boards/BoardActions';
 import BoardActivitiesPanel from '../../activities/BoardActivitiesPanel';
 import Sidebar from '../Sidebar/Sidebar';
+import ChatProvider from '../../chat/ChatContext';
+import ChatDock from '../../chat/ChatDock';
+import ChatLauncher from '../../chat/ChatLauncher';
 
 import styles from './Fixed.module.scss';
 
@@ -25,19 +28,23 @@ const Fixed = React.memo(() => {
   const isSidebarExpanded = useSelector(selectIsSidebarExpanded);
 
   return (
-    <div
-      className={classNames(styles.wrapper, {
-        [styles.sidebarExpanded]: isSidebarExpanded,
-      })}
-    >
-      <Sidebar />
-      <Header />
-      <Favorites />
-      {projectId === undefined && <HomeActions />}
-      {projectId && <Project />}
-      {board && !board.isFetching && <BoardActions />}
-      <BoardActivitiesPanel />
-    </div>
+    <ChatProvider>
+      <div
+        className={classNames(styles.wrapper, {
+          [styles.sidebarExpanded]: isSidebarExpanded,
+        })}
+      >
+        <Sidebar />
+        <Header />
+        <Favorites />
+        {projectId === undefined && <HomeActions />}
+        {projectId && <Project />}
+        {board && !board.isFetching && <BoardActions />}
+        <BoardActivitiesPanel />
+        <ChatLauncher />
+        <ChatDock />
+      </div>
+    </ChatProvider>
   );
 });
 

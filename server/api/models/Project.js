@@ -20,6 +20,12 @@ const BackgroundTypes = {
   IMAGE: 'image',
 };
 
+const ChatModes = {
+  DISABLED: 'disabled',
+  MANAGERS: 'managers',
+  ALL_PROJECT_MEMBERS: 'allProjectMembers',
+};
+
 const BACKGROUND_GRADIENTS = [
   'old-lime',
   'ocean-dive',
@@ -51,6 +57,7 @@ const BACKGROUND_GRADIENTS = [
 module.exports = {
   Types,
   BackgroundTypes,
+  ChatModes,
   BACKGROUND_GRADIENTS,
 
   attributes: {
@@ -83,6 +90,12 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false, // TODO: implement via normalizeValues?
       columnName: 'is_hidden',
+    },
+    chatMode: {
+      type: 'string',
+      isIn: Object.values(ChatModes),
+      defaultsTo: ChatModes.DISABLED,
+      columnName: 'chat_mode',
     },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗

@@ -20,6 +20,11 @@ const envToNumber = (value) => {
 
 const envToArray = (value) => (value ? value.split(',') : []);
 
+const envToPositiveNumber = (value, defaultValue) => {
+  const number = envToNumber(value);
+  return number && number > 0 ? number : defaultValue;
+};
+
 const parsedBasedUrl = new URL(process.env.BASE_URL);
 
 module.exports.custom = {
@@ -46,6 +51,16 @@ module.exports.custom = {
   userAvatarsPathSegment: 'public/user-avatars',
   backgroundImagesPathSegment: 'public/background-images',
   attachmentsPathSegment: 'private/attachments',
+
+  chatAttachmentMaxBytes: envToPositiveNumber(
+    process.env.CHAT_ATTACHMENT_MAX_BYTES,
+    25 * 1024 * 1024,
+  ),
+  chatAttachmentsPerMessageLimit: envToPositiveNumber(
+    process.env.CHAT_ATTACHMENTS_PER_MESSAGE_LIMIT,
+    10,
+  ),
+  chatExternalLinkPreviewsEnabled: process.env.CHAT_EXTERNAL_LINK_PREVIEWS_ENABLED === 'true',
 
   defaultAdminEmail:
     process.env.DEFAULT_ADMIN_EMAIL && process.env.DEFAULT_ADMIN_EMAIL.toLowerCase(),

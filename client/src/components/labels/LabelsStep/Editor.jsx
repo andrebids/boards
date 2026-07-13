@@ -52,6 +52,8 @@ const Editor = React.memo(({ data, onFieldChange }) => {
           <Button
             key={color}
             title={formatColorName(color)}
+            aria-label={formatColorName(color)}
+            data-color-name={formatColorName(color)}
             type="button"
             name="color"
             value={color}

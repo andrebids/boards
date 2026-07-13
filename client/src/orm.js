@@ -27,10 +27,13 @@ import {
   Task,
   TaskList,
   User,
+  ChatConversation,
+  ChatParticipant,
+  ChatMessage,
 } from './models';
 
 const orm = new ORM({
-  stateSelector: state => state.orm,
+  stateSelector: (state) => state.orm,
 });
 
 orm.register(
@@ -54,7 +57,10 @@ orm.register(
   Activity,
   Notification,
   NotificationService,
-  OrganizationDefaultLabel
+  OrganizationDefaultLabel,
+  ChatConversation,
+  ChatParticipant,
+  ChatMessage,
 );
 
 export default orm;

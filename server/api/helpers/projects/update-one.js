@@ -172,6 +172,14 @@ module.exports = {
         );
       });
 
+      if (!_.isUndefined(values.chatMode)) {
+        if (project.chatMode !== Project.ChatModes.DISABLED) {
+          await sails.helpers.chat.getOrCreateProjectConversation(project, inputs.actorUser);
+        }
+
+        await sails.helpers.chat.reconcileProjectRooms(project);
+      }
+
       sails.helpers.utils.sendWebhooks.with({
         event: 'projectUpdate',
         buildData: () => ({

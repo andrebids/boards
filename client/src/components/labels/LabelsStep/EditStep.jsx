@@ -63,7 +63,8 @@ const EditStep = React.memo(({ labelId, onBack }) => {
 
   const handleDeleteConfirm = useCallback(() => {
     dispatch(entryActions.deleteLabel(labelId));
-  }, [labelId, dispatch]);
+    onBack();
+  }, [labelId, dispatch, onBack]);
 
   const handleDeleteClick = useCallback(() => {
     openStep(StepTypes.DELETE);

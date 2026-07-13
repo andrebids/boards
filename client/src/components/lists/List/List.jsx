@@ -121,20 +121,21 @@ const List = React.memo(({ id, index }) => {
     setIsEditNameOpened(false);
   }, []);
 
-    const handleDragOver = useCallback(event => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    // Verificar se há arquivos sendo arrastados
-    if (event.dataTransfer && event.dataTransfer.types && event.dataTransfer.types.includes('Files')) {
+  const handleDragOver = useCallback(event => {
+    if (event.dataTransfer?.types?.includes('Files')) {
+      event.preventDefault();
+      event.stopPropagation();
       const fileCount = event.dataTransfer.files.length;
-      console.log(`📁 Arrastando ${fileCount} arquivo(s)`);
       setDragFileCount(fileCount);
       setIsDragOver(true);
     }
   }, []);
 
   const handleDragLeave = useCallback(event => {
+    if (!event.dataTransfer?.types?.includes('Files')) {
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
 
@@ -147,7 +148,12 @@ const List = React.memo(({ id, index }) => {
 
   const handleDrop = useCallback(
     async event => {
+      if (!event.dataTransfer?.types?.includes('Files')) {
+        return;
+      }
+
       event.preventDefault();
+      event.stopPropagation();
       setIsDragOver(false);
 
       const files = Array.from(event.dataTransfer.files);
@@ -276,9 +282,14 @@ const List = React.memo(({ id, index }) => {
               styles.outerWrapper,
               list.color &&
                 styles[`outerWrapper${upperFirst(camelCase(list.color))}`],
-              isFavoritesActive && styles.outerWrapperWithFavorites
+              isFavoritesActive && styles.outerWrapperWithFavorites,
+              isDragOver && styles.outerWrapperFileDragOver
             )}
             onTransitionEnd={handleWrapperTransitionEnd}
+            onDragEnter={canAddCard ? handleDragOver : undefined}
+            onDragOver={canAddCard ? handleDragOver : undefined}
+            onDragLeave={canAddCard ? handleDragLeave : undefined}
+            onDrop={canAddCard ? handleDrop : undefined}
           >
             {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                          jsx-a11y/no-static-element-interactions */}
@@ -342,10 +353,6 @@ const List = React.memo(({ id, index }) => {
                   isProcessing && styles.addCardButtonProcessing
                 )}
                 onClick={handleAddCardClick}
-                onDragEnter={handleDragOver}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
               >
                 <PlusMathIcon className={styles.addCardButtonIcon} />
                 <span className={styles.addCardButtonText}>
@@ -357,17 +364,6 @@ const List = React.memo(({ id, index }) => {
                         ? t('action.addAnotherCard')
                         : t('action.addCard')}
                 </span>
-                                 {isDragOver && (
-                   <div className={styles.dragOverlay}>
-                     <Icon name="upload" size="large" />
-                     <span>
-                       {dragFileCount > 1
-                         ? `${t('common.dropFilesHere')} (${dragFileCount} arquivos)`
-                         : t('common.dropFilesHere')
-                       }
-                     </span>
-                   </div>
-                 )}
                                  {isProcessing && (
                    <div className={styles.processingOverlay}>
                      <Icon name="spinner" loading size="large" />
@@ -380,6 +376,16 @@ const List = React.memo(({ id, index }) => {
                    </div>
                  )}
               </button>
+            )}
+            {isDragOver && (
+              <div className={styles.listDragOverlay}>
+                <Icon name="upload" size="large" />
+                <span>
+                  {dragFileCount > 1
+                    ? `${t('common.dropFilesHere')} (${dragFileCount})`
+                    : t('common.dropFilesHere')}
+                </span>
+              </div>
             )}
           </div>
         </div>

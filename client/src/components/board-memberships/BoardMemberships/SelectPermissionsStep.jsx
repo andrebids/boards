@@ -4,6 +4,7 @@
  */
 
 import { dequal } from 'dequal';
+import classNames from 'classnames';
 import omit from 'lodash/omit';
 import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
@@ -75,28 +76,56 @@ const SelectPermissionsStep = React.memo(
         </Popup.Header>
         <Popup.Content>
           <Form onSubmit={handleSubmit}>
-            <Menu secondary vertical className={styles.menu}>
+            <Menu
+              secondary
+              vertical
+              role="radiogroup"
+              aria-label={t(title, {
+                context: 'title',
+              })}
+              className={styles.menu}
+            >
               {[BoardMembershipRoles.EDITOR, BoardMembershipRoles.VIEWER].map(
-                role => (
-                  <Menu.Item
-                    key={role}
-                    value={role}
-                    active={role === data.role}
-                    className={styles.menuItem}
-                    onClick={handleSelectRoleClick}
-                  >
-                    <Icon
-                      name={BoardMembershipRoleIcons[role]}
-                      className={styles.menuItemIcon}
-                    />
-                    <div className={styles.menuItemTitle}>
-                      {t(`common.${role}`)}
-                    </div>
-                    <p className={styles.menuItemDescription}>
-                      {t(DESCRIPTION_BY_ROLE[role])}
-                    </p>
-                  </Menu.Item>
-                )
+                role => {
+                  const isSelected = role === data.role;
+
+                  return (
+                    <Menu.Item
+                      as="button"
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      key={role}
+                      value={role}
+                      active={isSelected}
+                      className={classNames(
+                        styles.menuItem,
+                        isSelected && styles.menuItemSelected,
+                      )}
+                      onClick={handleSelectRoleClick}
+                    >
+                      <Icon
+                        name={BoardMembershipRoleIcons[role]}
+                        className={styles.menuItemIcon}
+                      />
+                      <span className={styles.menuItemContent}>
+                        <span className={styles.menuItemTitle}>
+                          {t(`common.${role}`)}
+                        </span>
+                        <span className={styles.menuItemDescription}>
+                          {t(DESCRIPTION_BY_ROLE[role])}
+                        </span>
+                      </span>
+                      {isSelected && (
+                        <Icon
+                          name="check circle"
+                          aria-hidden="true"
+                          className={styles.menuItemCheck}
+                        />
+                      )}
+                    </Menu.Item>
+                  );
+                },
               )}
             </Menu>
             {data.role !== BoardMembershipRoles.EDITOR && (

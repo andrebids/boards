@@ -64,29 +64,36 @@ module.exports = function defineCurrentUserHook(sails) {
         '/api/*': {
           async fn(req, res, next) {
             const { authorization: authorizationHeader } = req.headers;
+            const { accessToken: cookieAccessToken, httpOnlyToken } = req.cookies;
+            let sessionAndUser;
 
             if (authorizationHeader && TOKEN_PATTERN.test(authorizationHeader)) {
               const accessToken = authorizationHeader.replace(TOKEN_PATTERN, '');
-              const { httpOnlyToken } = req.cookies;
+              sessionAndUser = await getSessionAndUser(accessToken, httpOnlyToken);
+            }
 
-              const sessionAndUser = await getSessionAndUser(accessToken, httpOnlyToken);
+            // Direct browser requests (for example, opening a chat attachment)
+            // cannot add an Authorization header. In that case, authenticate with
+            // the access-token cookie and still validate the paired HTTP-only token.
+            if (!sessionAndUser && cookieAccessToken) {
+              sessionAndUser = await getSessionAndUser(cookieAccessToken, httpOnlyToken);
+            }
 
-              if (sessionAndUser) {
-                const { session, user } = sessionAndUser;
+            if (sessionAndUser) {
+              const { session, user } = sessionAndUser;
 
-                if (user.language) {
-                  req.setLocale(user.language);
-                }
+              if (user.language) {
+                req.setLocale(user.language);
+              }
 
-                Object.assign(req, {
-                  currentSession: session,
-                  currentUser: user,
-                });
+              Object.assign(req, {
+                currentSession: session,
+                currentUser: user,
+              });
 
-                if (req.isSocket) {
-                  sails.sockets.join(req, `@accessToken:${session.accessToken}`);
-                  sails.sockets.join(req, `@user:${user.id}`);
-                }
+              if (req.isSocket) {
+                sails.sockets.join(req, `@accessToken:${session.accessToken}`);
+                sails.sockets.join(req, `@user:${user.id}`);
               }
             }
 

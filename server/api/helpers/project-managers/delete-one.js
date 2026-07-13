@@ -96,6 +96,8 @@ module.exports = {
         }),
         user: inputs.actorUser,
       });
+
+      await sails.helpers.chat.reconcileProjectRooms(inputs.project);
     }
 
     return projectManager;

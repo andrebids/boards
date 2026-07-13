@@ -22,7 +22,7 @@ export const makeSelectProjectById = () =>
       }
 
       return projectModel.ref;
-    }
+    },
   );
 
 export const selectProjectById = makeSelectProjectById();
@@ -31,7 +31,7 @@ export const makeSelectBoardIdsByProjectId = () =>
   createSelector(
     orm,
     (_, id) => id,
-    state => selectCurrentUserId(state),
+    (state) => selectCurrentUserId(state),
     ({ Project, User }, id, currentUserId) => {
       if (!id) {
         return id;
@@ -47,8 +47,8 @@ export const makeSelectBoardIdsByProjectId = () =>
 
       return projectModel
         .getBoardsModelArrayAvailableForUser(currentUserModel)
-        .map(boardModel => boardModel.id);
-    }
+        .map((boardModel) => boardModel.id);
+    },
   );
 
 export const selectBoardIdsByProjectId = makeSelectBoardIdsByProjectId();
@@ -57,7 +57,7 @@ export const makeSelectFirstBoardIdByProjectId = () =>
   createSelector(
     orm,
     (_, id) => id,
-    state => selectCurrentUserId(state),
+    (state) => selectCurrentUserId(state),
     ({ Project, User }, id, currentUserId) => {
       const projectModel = Project.withId(id);
 
@@ -66,21 +66,19 @@ export const makeSelectFirstBoardIdByProjectId = () =>
       }
 
       const currentUserModel = User.withId(currentUserId);
-      const boardsModels =
-        projectModel.getBoardsModelArrayAvailableForUser(currentUserModel);
+      const boardsModels = projectModel.getBoardsModelArrayAvailableForUser(currentUserModel);
 
       return boardsModels[0] && boardsModels[0].id;
-    }
+    },
   );
 
-export const selectFirstBoardIdByProjectId =
-  makeSelectFirstBoardIdByProjectId();
+export const selectFirstBoardIdByProjectId = makeSelectFirstBoardIdByProjectId();
 
 export const makeSelectNotificationsTotalByProjectId = () =>
   createSelector(
     orm,
     (_, id) => id,
-    state => selectCurrentUserId(state),
+    (state) => selectCurrentUserId(state),
     ({ Project, User }, id, currentUserId) => {
       const projectModel = Project.withId(id);
 
@@ -89,25 +87,22 @@ export const makeSelectNotificationsTotalByProjectId = () =>
       }
 
       const currentUserModel = User.withId(currentUserId);
-      const boardsModels =
-        projectModel.getBoardsModelArrayAvailableForUser(currentUserModel);
+      const boardsModels = projectModel.getBoardsModelArrayAvailableForUser(currentUserModel);
 
       return boardsModels.reduce(
-        (result, boardModel) =>
-          result + boardModel.getUnreadNotificationsQuerySet().count(),
-        0
+        (result, boardModel) => result + boardModel.getUnreadNotificationsQuerySet().count(),
+        0,
       );
-    }
+    },
   );
 
-export const selectNotificationsTotalByProjectId =
-  makeSelectNotificationsTotalByProjectId();
+export const selectNotificationsTotalByProjectId = makeSelectNotificationsTotalByProjectId();
 
 export const makeSelectIsProjectWithIdAvailableForCurrentUser = () =>
   createSelector(
     orm,
     (_, id) => id,
-    state => selectCurrentUserId(state),
+    (state) => selectCurrentUserId(state),
     ({ Project, User }, id, currentUserId) => {
       const projectModel = Project.withId(id);
 
@@ -117,7 +112,7 @@ export const makeSelectIsProjectWithIdAvailableForCurrentUser = () =>
 
       const currentUserModel = User.withId(currentUserId);
       return projectModel.isAvailableForUser(currentUserModel);
-    }
+    },
   );
 
 export const selectIsProjectWithIdAvailableForCurrentUser =
@@ -127,7 +122,7 @@ export const makeSelectIsProjectWithIdExternalAccessibleForCurrentUser = () =>
   createSelector(
     orm,
     (_, id) => id,
-    state => selectCurrentUserId(state),
+    (state) => selectCurrentUserId(state),
     ({ Project, User }, id, currentUserId) => {
       const projectModel = Project.withId(id);
 
@@ -137,7 +132,7 @@ export const makeSelectIsProjectWithIdExternalAccessibleForCurrentUser = () =>
 
       const currentUserModel = User.withId(currentUserId);
       return projectModel.isExternalAccessibleForUser(currentUserModel);
-    }
+    },
   );
 
 export const selectIsProjectWithIdExternalAccessibleForCurrentUser =
@@ -145,7 +140,7 @@ export const selectIsProjectWithIdExternalAccessibleForCurrentUser =
 
 export const selectCurrentProject = createSelector(
   orm,
-  state => selectPath(state).projectId,
+  (state) => selectPath(state).projectId,
   ({ Project }, id) => {
     if (!id) {
       return id;
@@ -158,12 +153,12 @@ export const selectCurrentProject = createSelector(
     }
 
     return projectModel.ref;
-  }
+  },
 );
 
 export const selectManagersForCurrentProject = createSelector(
   orm,
-  state => selectPath(state).projectId,
+  (state) => selectPath(state).projectId,
   ({ Project }, id) => {
     if (!id) {
       return id;
@@ -178,17 +173,17 @@ export const selectManagersForCurrentProject = createSelector(
     return projectModel
       .getManagersQuerySet()
       .toModelArray()
-      .map(projectManagerModel => ({
+      .map((projectManagerModel) => ({
         ...projectManagerModel.ref,
         isPersisted: !isLocalId(projectManagerModel.id),
         user: projectManagerModel.user.ref,
       }));
-  }
+  },
 );
 
 export const selectManagerUserIdsForCurrentProject = createSelector(
   orm,
-  state => selectPath(state).projectId,
+  (state) => selectPath(state).projectId,
   ({ Project }, id) => {
     if (!id) {
       return id;
@@ -203,13 +198,13 @@ export const selectManagerUserIdsForCurrentProject = createSelector(
     return projectModel
       .getManagersQuerySet()
       .toRefArray()
-      .map(projectManager => projectManager.userId);
-  }
+      .map((projectManager) => projectManager.userId);
+  },
 );
 
 export const selectBackgroundImageIdsForCurrentProject = createSelector(
   orm,
-  state => selectPath(state).projectId,
+  (state) => selectPath(state).projectId,
   ({ Project }, id) => {
     if (!id) {
       return id;
@@ -224,13 +219,13 @@ export const selectBackgroundImageIdsForCurrentProject = createSelector(
     return projectModel
       .getBackgroundImagesQuerySet()
       .toRefArray()
-      .map(backgroundImage => backgroundImage.id);
-  }
+      .map((backgroundImage) => backgroundImage.id);
+  },
 );
 
 export const selectBaseCustomFieldGroupIdsForCurrentProject = createSelector(
   orm,
-  state => selectPath(state).projectId,
+  (state) => selectPath(state).projectId,
   ({ Project }, id) => {
     if (!id) {
       return id;
@@ -245,13 +240,13 @@ export const selectBaseCustomFieldGroupIdsForCurrentProject = createSelector(
     return projectModel
       .getBaseCustomFieldGroupsQuerySet()
       .toRefArray()
-      .map(baseCustomFieldGroup => baseCustomFieldGroup.id);
-  }
+      .map((baseCustomFieldGroup) => baseCustomFieldGroup.id);
+  },
 );
 
 export const selectBaseCustomFieldGroupsForCurrentProject = createSelector(
   orm,
-  state => selectPath(state).projectId,
+  (state) => selectPath(state).projectId,
   ({ Project }, id) => {
     if (!id) {
       return id;
@@ -266,17 +261,17 @@ export const selectBaseCustomFieldGroupsForCurrentProject = createSelector(
     return projectModel
       .getBaseCustomFieldGroupsQuerySet()
       .toRefArray()
-      .map(baseCustomFieldGroup => ({
+      .map((baseCustomFieldGroup) => ({
         ...baseCustomFieldGroup,
         isPersisted: !isLocalId(baseCustomFieldGroup.id),
       }));
-  }
+  },
 );
 
 export const selectBoardIdsForCurrentProject = createSelector(
   orm,
-  state => selectPath(state).projectId,
-  state => selectCurrentUserId(state),
+  (state) => selectPath(state).projectId,
+  (state) => selectCurrentUserId(state),
   ({ Project, User }, id, currentUserId) => {
     if (!id) {
       return id;
@@ -292,14 +287,14 @@ export const selectBoardIdsForCurrentProject = createSelector(
 
     return projectModel
       .getBoardsModelArrayAvailableForUser(currentUserModel)
-      .map(boardModel => boardModel.id);
-  }
+      .map((boardModel) => boardModel.id);
+  },
 );
 
 export const selectIsCurrentUserManagerForCurrentProject = createSelector(
   orm,
-  state => selectPath(state).projectId,
-  state => selectCurrentUserId(state),
+  (state) => selectPath(state).projectId,
+  (state) => selectCurrentUserId(state),
   ({ Project }, id, currentUserId) => {
     if (!id) {
       return false;
@@ -312,7 +307,32 @@ export const selectIsCurrentUserManagerForCurrentProject = createSelector(
     }
 
     return projectModel.hasManagerWithUserId(currentUserId);
-  }
+  },
+);
+
+export const selectIsCurrentUserChatMemberForCurrentProject = createSelector(
+  orm,
+  (state) => selectPath(state).projectId,
+  (state) => selectCurrentUserId(state),
+  ({ Project }, id, currentUserId) => {
+    if (!id) {
+      return false;
+    }
+
+    const projectModel = Project.withId(id);
+
+    if (!projectModel || projectModel.chatMode === 'disabled') {
+      return false;
+    }
+
+    const isProjectManager = projectModel.hasManagerWithUserId(currentUserId);
+
+    if (projectModel.chatMode === 'managers') {
+      return isProjectManager;
+    }
+
+    return isProjectManager || projectModel.hasMembershipWithUserIdInAnyBoard(currentUserId);
+  },
 );
 
 export default {
@@ -336,4 +356,5 @@ export default {
   selectBaseCustomFieldGroupsForCurrentProject,
   selectBoardIdsForCurrentProject,
   selectIsCurrentUserManagerForCurrentProject,
+  selectIsCurrentUserChatMemberForCurrentProject,
 };

@@ -46,13 +46,21 @@ const Item = React.memo(({ name }) => {
     );
   }, [name, isActive, dispatch]);
 
+  const label = name
+    .split('-')
+    .map(part => upperFirst(part))
+    .join(' ');
+
   return (
     <Button
       type="button"
       className={classNames(
         styles.wrapper,
+        isActive && styles.wrapperActive,
         globalStyles[`background${upperFirst(camelCase(name))}`]
       )}
+      title={label}
+      aria-label={label}
       onClick={handleClick}
     >
       {isActive && (

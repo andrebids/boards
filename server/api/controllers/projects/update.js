@@ -70,6 +70,10 @@ module.exports = {
     isHidden: {
       type: 'boolean',
     },
+    chatMode: {
+      type: 'string',
+      isIn: Object.values(Project.ChatModes),
+    },
     isFavorite: {
       type: 'boolean',
     },
@@ -138,7 +142,10 @@ module.exports = {
         'description',
         'backgroundType',
         'backgroundGradient',
+        'chatMode',
       );
+    } else if (currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId) {
+      availableInputKeys.push('chatMode');
     }
 
     if (_.difference(Object.keys(inputs), availableInputKeys).length > 0) {
@@ -195,6 +202,7 @@ module.exports = {
       'backgroundType',
       'backgroundGradient',
       'isHidden',
+      'chatMode',
       'isFavorite',
     ]);
 

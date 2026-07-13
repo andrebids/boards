@@ -1,0 +1,68 @@
+:global(#app) {
+  .dock {
+    align-items: flex-end;
+    bottom: 84px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-end;
+    max-width: calc(100vw - 120px);
+    pointer-events: auto;
+    position: fixed;
+    right: 24px;
+    z-index: 1004;
+  }
+
+  .overflowButton {
+    align-items: center;
+    background: var(--chat-overlay);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--chat-border);
+    border-radius: 9px;
+    box-shadow: var(--chat-overlay-shadow);
+    color: var(--chat-foreground);
+    cursor: pointer;
+    display: flex;
+    flex: 0 0 auto;
+    font-size: 12px;
+    gap: 6px;
+    height: 44px;
+    justify-content: center;
+    padding: 0 13px;
+
+    span {
+      font-weight: 700;
+    }
+
+    &:hover {
+      background: var(--chat-surface-hover);
+      border-color: var(--chat-default-hover);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--chat-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  @media only screen and (max-width: 767px) {
+    .dock {
+      bottom: 76px;
+      left: 0;
+      max-width: none;
+      right: 0;
+      width: 100%;
+    }
+
+    .overflowButton {
+      bottom: 84px;
+      left: 8px;
+      position: fixed;
+      z-index: 1;
+    }
+  }
+}

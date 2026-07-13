@@ -1,11 +1,12 @@
 import merge from 'lodash/merge';
 
 import login from './login';
+import chat from './chat';
 import core from './core';
 
 export default {
   language: 'en-US',
   country: 'us',
   name: 'English',
-  embeddedLocale: merge(login, core),
+  embeddedLocale: merge(login, chat, core),
 };

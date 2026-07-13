@@ -355,7 +355,9 @@ export function* createCardWithAttachment(listId, cardData, attachmentFile) {
       requestId
     ));
 
-    // O anexo será processado automaticamente pelo sistema de eventos
+    // The socket event excludes the originating request, so add the uploaded attachment
+    // to the local store explicitly. Otherwise a newly-created card only shows it after reload.
+    yield put(actions.handleAttachmentCreate(attachment));
     console.log('✅ Anexo criado com sucesso:', attachment);
   } catch (error) {
     console.error('❌ Erro ao criar anexo:', error);

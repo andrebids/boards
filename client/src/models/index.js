@@ -24,6 +24,9 @@ import Activity from './Activity';
 import Notification from './Notification';
 import NotificationService from './NotificationService';
 import OrganizationDefaultLabel from './OrganizationDefaultLabel';
+import ChatConversation from './ChatConversation';
+import ChatParticipant from './ChatParticipant';
+import ChatMessage from './ChatMessage';
 
 export {
   User,
@@ -47,4 +50,7 @@ export {
   Notification,
   NotificationService,
   OrganizationDefaultLabel,
+  ChatConversation,
+  ChatParticipant,
+  ChatMessage,
 };

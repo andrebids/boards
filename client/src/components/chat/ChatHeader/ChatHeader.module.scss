@@ -1,0 +1,13 @@
+:global(#app) {
+  .header { align-items: center; display: flex; justify-content: space-between; padding: 16px 14px 10px 16px; }
+  .copy { min-width: 0; }
+  .project { color: var(--chat-muted-subtle); display: block; font-size: 11px; font-weight: 600; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .titleRow { align-items: baseline; display: flex; gap: 10px; margin-top: 2px;
+    h2 { color: var(--chat-foreground); font-size: 19px; letter-spacing: -.02em; line-height: 24px; margin: 0; }
+    span { color: var(--chat-muted); font-size: 12px; }
+  }
+  .closeButton { align-items: center; background: transparent; border: 0; border-radius: 8px; color: var(--chat-muted); cursor: pointer; display: inline-flex; height: 40px; justify-content: center; width: 40px;
+    &:hover { background: var(--chat-default); color: var(--chat-foreground); }
+    &:focus-visible { outline: 2px solid var(--chat-accent); outline-offset: 1px; }
+  }
+}

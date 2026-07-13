@@ -5,6 +5,7 @@
 
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { Button, Icon, Label } from 'semantic-ui-react';
 
 import { usePopupInClosableContext } from '../../../../hooks';
@@ -28,7 +29,7 @@ const Image = React.memo(
       /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                 jsx-a11y/no-static-element-interactions */
       <div
-        className={styles.wrapper}
+        className={classNames(styles.wrapper, isActive && styles.wrapperActive)}
         style={{
           background: `url("${url}") center / cover`,
         }}

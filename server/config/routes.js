@@ -84,6 +84,34 @@ module.exports.routes = {
   'PATCH /api/projects/:id': 'projects/update',
   'DELETE /api/projects/:id': 'projects/delete',
 
+  'GET /api/projects/:projectId/chat-members': 'chat-members/index',
+  'GET /api/projects/:projectId/chat-conversations': 'chat-conversations/index',
+  'POST /api/projects/:projectId/chat-conversations/general': 'chat-conversations/create-general',
+  'POST /api/projects/:projectId/chat-conversations/direct': 'chat-conversations/create-direct',
+  'POST /api/projects/:projectId/chat-conversations/groups': 'chat-conversations/create-group',
+  'PATCH /api/chat-conversations/:id': 'chat-conversations/update',
+  'PATCH /api/chat-conversations/:id/preferences': 'chat-conversations/update-preferences',
+  'POST /api/chat-conversations/:id/typing': 'chat-conversations/typing',
+  'POST /api/chat-conversations/:conversationId/participants':
+    'chat-conversation-participants/create',
+  'DELETE /api/chat-conversations/:conversationId/participants/:userId':
+    'chat-conversation-participants/delete',
+  'POST /api/chat-conversations/:id/leave': 'chat-conversations/leave',
+  'GET /api/chat-conversations/:conversationId/messages': 'chat-messages/index',
+  'POST /api/chat-conversations/:conversationId/messages': 'chat-messages/create',
+  'PATCH /api/chat-messages/:id': 'chat-messages/update',
+  'DELETE /api/chat-messages/:id': 'chat-messages/delete',
+  'POST /api/chat-messages/:id/forward': 'chat-messages/forward',
+  'POST /api/chat-messages/:messageId/saved': 'chat-saved-messages/create',
+  'DELETE /api/chat-messages/:messageId/saved': 'chat-saved-messages/delete',
+  'GET /api/projects/:projectId/chat-saved-messages': 'chat-saved-messages/index',
+  'POST /api/chat-conversations/:id/read': 'chat-conversations/read',
+  'POST /api/chat-conversations/:id/subscribe': 'chat-conversations/subscribe',
+  'DELETE /api/chat-conversations/:id/subscribe': 'chat-conversations/unsubscribe',
+  'POST /api/chat-messages/:messageId/reactions': 'chat-message-reactions/toggle',
+  'POST /api/chat-messages/:messageId/attachments': 'chat-message-attachments/create',
+  'GET /api/chat-message-attachments/:id/download': 'chat-message-attachments/download',
+
   'POST /api/projects/:projectId/project-managers': 'project-managers/create',
   'DELETE /api/project-managers/:id': 'project-managers/delete',
 
@@ -166,8 +194,6 @@ module.exports.routes = {
   'GET /api/boards/:boardId/actions': 'actions/index-in-board',
   'GET /api/cards/:cardId/actions': 'actions/index-in-card',
 
-
-
   'GET /api/notifications': 'notifications/index',
   'GET /api/notifications/:id': 'notifications/show',
   'PATCH /api/notifications/:id': 'notifications/update',
@@ -237,10 +263,11 @@ module.exports.routes = {
     skipAssets: false,
   },
 
-  'GET r|^/attachments/(\\w+)/download/video-thumbnails/([\\w-]+).(\\w+)$|id,fileName,fileExtension': {
-    action: 'file-attachments/download-video-thumbnail',
-    skipAssets: false,
-  },
+  'GET r|^/attachments/(\\w+)/download/video-thumbnails/([\\w-]+).(\\w+)$|id,fileName,fileExtension':
+    {
+      action: 'file-attachments/download-video-thumbnail',
+      skipAssets: false,
+    },
 
   'GET /*': {
     view: 'index',

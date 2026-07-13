@@ -9,17 +9,21 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Button, Icon } from 'semantic-ui-react';
 import { push } from '../../../lib/redux-router';
 import { usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
+import entryActions from '../../../entry-actions';
 import Paths from '../../../constants/Paths';
 import {
+  AttachmentTypes,
   BoardMembershipRoles,
   CardTypes,
   ListTypes,
 } from '../../../constants/Enums';
+import { processSupportedFiles } from '../../../utils/file-helpers';
 import ProjectContent from './ProjectContent';
 import StoryContent from './StoryContent';
 import InlineContent from './InlineContent';
@@ -60,7 +64,9 @@ const Card = React.memo(({ id, isInline }) => {
   });
 
   const dispatch = useDispatch();
+  const [t] = useTranslation();
   const [isEditNameOpened, setIsEditNameOpened] = useState(false);
+  const [isFileDragOver, setIsFileDragOver] = useState(false);
 
   const handleClick = useCallback(() => {
     if (document.activeElement) {
@@ -77,6 +83,57 @@ const Card = React.memo(({ id, isInline }) => {
   const handleEditNameClose = useCallback(() => {
     setIsEditNameOpened(false);
   }, []);
+
+  const handleFileDragOver = useCallback(
+    event => {
+      if (!canUseActions || !event.dataTransfer?.types?.includes('Files')) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      setIsFileDragOver(true);
+    },
+    [canUseActions]
+  );
+
+  const handleFileDragLeave = useCallback(event => {
+    if (!event.dataTransfer?.types?.includes('Files')) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setIsFileDragOver(false);
+    }
+  }, []);
+
+  const handleFileDrop = useCallback(
+    event => {
+      if (!canUseActions || !event.dataTransfer?.types?.includes('Files')) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      setIsFileDragOver(false);
+
+      processSupportedFiles(Array.from(event.dataTransfer.files)).forEach(
+        ({ file }) => {
+          dispatch(
+            entryActions.createAttachment(id, {
+              file,
+              type: AttachmentTypes.FILE,
+              name: file.name,
+            })
+          );
+        }
+      );
+    },
+    [canUseActions, dispatch, id]
+  );
 
   const ActionsPopup = usePopup(ActionsStep, { variantClass: 'notifications' });
 
@@ -107,9 +164,17 @@ const Card = React.memo(({ id, isInline }) => {
       className={classNames(
         styles.wrapper,
         isHighlightedAsRecent && styles.wrapperRecent,
+        isFileDragOver && styles.wrapperFileDragOver,
         'card'
       )}
+      onDragEnter={handleFileDragOver}
+      onDragOver={handleFileDragOver}
+      onDragLeave={handleFileDragLeave}
+      onDrop={handleFileDrop}
     >
+      {isFileDragOver && (
+        <div className={styles.fileDropOverlay}>{t('common.dropFileToUpload')}</div>
+      )}
       {card.isPersisted ? (
         <>
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,

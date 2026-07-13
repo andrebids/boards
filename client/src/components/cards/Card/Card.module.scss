@@ -46,105 +46,48 @@
   }
 
   .wrapper {
-    /* Liquid Glass base */
     position: relative;
-    isolation: isolate;
     overflow: hidden;
-    border-radius: 8px; /* menos arredondado para combinar com a UI da imagem */
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%),
-      rgba(24, 28, 36, 0.5);
-    border: none; /* remover borda externa para evitar efeito de duas bordas */
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease,
-      background 0.2s ease;
-
-    /* Fix para drag - remover backdrop-filter quando está a ser arrastado */
-    [data-rbd-draggable-context-id] & {
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      background: rgb(24, 28, 36);
-    }
-
-    /* Inner depth and subtle tint */
-    &:before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      border-radius: inherit;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      background: transparent;
-      /* Remover borda esquerda que causa a linha vertical */
-      border-left: none;
-    }
-
-    /* Optional distortion/shine layer */
-    &:after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      border-radius: inherit;
-      /* Slight organic ripples */
-      filter: url('#glass-distortion');
-      opacity: 0.12;
-      background: linear-gradient(130deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 45%);
-      mix-blend-mode: screen; /* brilho bem discreto */
-    }
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: #1b2330;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+    transition: background-color 0.16s ease, border-color 0.16s ease,
+      box-shadow 0.16s ease;
 
     &:hover {
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%),
-        rgba(24, 28, 36, 0.52);
-      /* reforçar apenas o traço interno no hover */
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      transform: none;
+      background: #202a38;
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
       .actionsButton {
         opacity: 1;
-      }
-      
-      &:before {
-        border-color: rgba(255, 255, 255, 0.22);
-        /* Manter a remoção da borda esquerda no hover também */
-        border-left: none;
       }
     }
   }
 
   .wrapperRecent:not(:hover) {
-    overflow: hidden;
+    border-color: rgba(96, 165, 250, 0.65);
+    box-shadow: inset 3px 0 0 rgba(96, 165, 250, 0.8), 0 1px 2px rgba(0, 0, 0, 0.22);
+  }
 
-    &:after {
-      animation: slide 4s infinite 2s;
-      background: linear-gradient(
-        to right,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.22) 50%,
-        rgba(59, 130, 246, 0.35) 99%,
-        rgba(59, 130, 246, 0) 100%
-      );
-      content: '';
-      height: 100%;
-      position: absolute;
-      top: 0;
-      transform: translateX(100%);
-      width: 100%;
+  .wrapperFileDragOver {
+    border-color: rgba(96, 165, 250, 0.95);
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.35);
+  }
 
-      @keyframes slide {
-        0% {
-          transform: translateX(-100%);
-        }
-
-        50% {
-          transform: translateX(100%);
-        }
-      }
-    }
+  .fileDropOverlay {
+    align-items: center;
+    background: rgba(30, 64, 175, 0.94);
+    color: #ffffff;
+    display: flex;
+    font-size: 13px;
+    font-weight: 700;
+    inset: 0;
+    justify-content: center;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    z-index: 3;
   }
 }

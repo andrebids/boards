@@ -28,6 +28,7 @@ import comments from './comments';
 import activities from './activities';
 import notifications from './notifications';
 import notificationServices from './notification-services';
+import chat from './chat';
 
 export default {
   ...router,
@@ -55,4 +56,5 @@ export default {
   ...activities,
   ...notifications,
   ...notificationServices,
+  ...chat,
 };

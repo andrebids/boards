@@ -5,17 +5,29 @@
 
 :global(#app) {
   .colorButton {
+    border: 0 !important;
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 40px;
     margin: 0;
     position: relative;
+    transition: background-color 0.16s ease;
 
-    &:hover {
-      opacity: 0.9;
+    &:hover,
+    &:focus-visible {
+      background-color: rgba(15, 23, 42, 0.32) !important;
+      box-shadow: none !important;
+      outline: none;
     }
+  }
+
+  .colorButtonActive {
+    box-shadow: none !important;
   }
 
   .colorButtonActive:before {
     color: #ffffff;
-    content: "Г";
+    content: "✓";
     font-size: 16px;
     line-height: 32px;
     position: absolute;
@@ -23,7 +35,6 @@
     text-align: center;
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
     top: calc(50% - 17px);
-    transform: rotate(-135deg);
   }
 
   .colorButtons {

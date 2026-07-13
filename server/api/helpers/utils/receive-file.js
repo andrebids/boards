@@ -23,6 +23,10 @@ module.exports = {
       required: true,
       description: 'The request to receive the file from.',
     },
+    maxBytes: {
+      type: 'number',
+      min: 1,
+    },
   },
 
   async fn(inputs, exits) {
@@ -30,12 +34,14 @@ module.exports = {
       inputs.req.file(inputs.paramName).upload(options, (error, files) => callback(error, files)),
     );
 
-    return exits.success(
-      await upload({
-        dirname: sails.config.custom.uploadsTempPath,
-        saveAs: uuid(),
-        maxBytes: null,
-      }),
-    );
+    const options = {
+      dirname: sails.config.custom.uploadsTempPath,
+      saveAs: uuid(),
+    };
+    if (inputs.maxBytes) {
+      options.maxBytes = inputs.maxBytes;
+    }
+
+    return exits.success(await upload(options));
   },
 };

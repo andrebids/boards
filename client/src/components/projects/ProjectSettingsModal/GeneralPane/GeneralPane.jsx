@@ -6,7 +6,7 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Divider, Header, Radio, Tab } from 'semantic-ui-react';
+import { Button, Divider, Form, Header, Radio, Tab } from 'semantic-ui-react';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -20,12 +20,10 @@ const GeneralPane = React.memo(() => {
   const project = useSelector(selectors.selectCurrentProject);
 
   const hasBoards = useSelector(
-    state => selectors.selectBoardIdsForCurrentProject(state).length > 0
+    (state) => selectors.selectBoardIdsForCurrentProject(state).length > 0,
   );
 
-  const canEdit = useSelector(
-    selectors.selectIsCurrentUserManagerForCurrentProject
-  );
+  const canEdit = useSelector(selectors.selectIsCurrentUserManagerForCurrentProject);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -35,10 +33,21 @@ const GeneralPane = React.memo(() => {
       dispatch(
         entryActions.updateCurrentProject({
           [fieldName]: checked,
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
+  );
+
+  const handleChatModeChange = useCallback(
+    (_, { value }) => {
+      dispatch(
+        entryActions.updateCurrentProject({
+          chatMode: value,
+        }),
+      );
+    },
+    [dispatch],
   );
 
   const handleDeleteConfirm = useCallback(() => {
@@ -71,6 +80,35 @@ const GeneralPane = React.memo(() => {
       />
       {canEdit && (
         <>
+          <Divider horizontal section>
+            <Header as="h4">{t('common.projectChat')}</Header>
+          </Divider>
+          <div className={styles.chatModeField}>
+            <Form.Select
+              fluid
+              label={t('common.projectChatAccess')}
+              value={project.chatMode || 'disabled'}
+              options={[
+                {
+                  key: 'disabled',
+                  value: 'disabled',
+                  text: t('common.projectChatDisabled'),
+                },
+                {
+                  key: 'managers',
+                  value: 'managers',
+                  text: t('common.projectChatManagersOnly'),
+                },
+                {
+                  key: 'allProjectMembers',
+                  value: 'allProjectMembers',
+                  text: t('common.projectChatAllMembers'),
+                },
+              ]}
+              onChange={handleChatModeChange}
+            />
+          </div>
+          <p className={styles.hint}>{t('common.projectChatAccessHint')}</p>
           <Divider horizontal section>
             <Header as="h4">
               {t('common.dangerZone', {

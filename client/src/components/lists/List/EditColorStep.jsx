@@ -71,6 +71,8 @@ const EditColorStep = React.memo(({ listId, onBack, onClose }) => {
             <Button
               key={color}
               title={formatColorName(color)}
+              aria-label={formatColorName(color)}
+              data-color-name={formatColorName(color)}
               type="button"
               value={color}
               className={classNames(

@@ -1,0 +1,45 @@
+/*
+ * Chat colour system adapted from HeroUI's dark semantic theme.
+ * Keep these tokens scoped to the application so the chat can evolve
+ * independently from the legacy global theme.
+ */
+#app {
+  --chat-background: oklch(12% 0.005 285.823);
+  --chat-foreground: oklch(0.9911 0 0);
+  --chat-surface: oklch(0.2103 0.0059 285.89);
+  --chat-surface-secondary: oklch(0.257 0.0037 286.14);
+  --chat-surface-tertiary: oklch(0.2721 0.0024 247.91);
+  --chat-overlay: oklch(0.2103 0.0059 285.89);
+  --chat-muted: oklch(70.5% 0.015 286.067);
+  --chat-muted-subtle: color-mix(in oklab, var(--chat-muted) 74%, transparent);
+  --chat-default: oklch(27.4% 0.006 286.033);
+  --chat-border: oklch(28% 0.006 286.033);
+  --chat-separator: oklch(25% 0.006 286.033);
+  --chat-accent: oklch(0.6204 0.195 253.83);
+  --chat-accent-foreground: oklch(0.9911 0 0);
+  --chat-success: oklch(0.7329 0.1935 150.81);
+  --chat-warning: oklch(0.8203 0.1388 76.34);
+  --chat-warning-foreground: oklch(0.2103 0.0059 285.89);
+  --chat-danger: oklch(0.594 0.1967 24.63);
+  --chat-danger-foreground: oklch(0.9911 0 0);
+  --chat-surface-hover: color-mix(
+    in oklab,
+    var(--chat-surface) 92%,
+    var(--chat-foreground) 8%
+  );
+  --chat-default-hover: color-mix(
+    in oklab,
+    var(--chat-default) 88%,
+    var(--chat-foreground) 12%
+  );
+  --chat-accent-hover: color-mix(
+    in oklab,
+    var(--chat-accent) 90%,
+    var(--chat-accent-foreground) 10%
+  );
+  --chat-accent-soft: color-mix(in oklab, var(--chat-accent) 12%, transparent);
+  --chat-accent-soft-hover: color-mix(in oklab, var(--chat-accent) 18%, transparent);
+  --chat-focus-ring: color-mix(in oklab, var(--chat-accent) 30%, transparent);
+  --chat-overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.3) inset;
+  --chat-scrollbar: color-mix(in oklab, var(--chat-foreground) 18%, transparent);
+}

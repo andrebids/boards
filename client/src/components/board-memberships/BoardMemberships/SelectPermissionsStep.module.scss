@@ -14,25 +14,96 @@
   }
 
   .menu {
+    display: grid;
+    gap: 6px;
     margin: 0 auto 8px;
     width: 100%;
   }
 
-  .menuItem:last-child {
-    margin-bottom: 0;
+  .menuItem {
+    align-items: flex-start !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    color: #fff !important;
+    cursor: pointer;
+    display: grid !important;
+    gap: 10px;
+    grid-template-columns: 18px minmax(0, 1fr) 18px;
+    margin: 0 !important;
+    min-height: 72px;
+    padding: 12px !important;
+    text-align: left;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      box-shadow 120ms ease,
+      transform 80ms ease;
+    width: 100%;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.28) !important;
+      box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.55) !important;
+    }
+
+    &:focus-visible {
+      border-color: #6fca63 !important;
+      box-shadow:
+        0 0 0 2px rgba(111, 202, 99, 0.35),
+        inset 3px 0 0 #6fca63 !important;
+      outline: none;
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
   }
 
   .menuItemDescription {
-    opacity: 0.5;
+    color: rgba(255, 255, 255, 0.62);
+    display: block;
+    font-size: 14px;
+    line-height: 1.4;
   }
 
   .menuItemIcon {
-    float: left;
-    margin: 0 0.35714286em 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 20px;
+    margin: 0 !important;
   }
 
   .menuItemTitle {
-    margin-bottom: 8px;
+    display: block;
+    font-weight: 700;
+    line-height: 20px;
+    margin-bottom: 3px;
+  }
+
+  .menuItemCheck {
+    color: #6fca63;
+    line-height: 20px;
+    margin: 0 !important;
+  }
+
+  .menuItemContent {
+    min-width: 0;
+  }
+
+  .menuItemSelected {
+    background: rgba(111, 202, 99, 0.1) !important;
+    border-color: rgba(111, 202, 99, 0.55) !important;
+    box-shadow: inset 3px 0 0 #6fca63 !important;
+
+    &:hover {
+      background: rgba(111, 202, 99, 0.15) !important;
+      border-color: rgba(111, 202, 99, 0.78) !important;
+      box-shadow: inset 3px 0 0 #6fca63 !important;
+    }
+
+    .menuItemIcon {
+      color: #8cdb82;
+    }
   }
 
   .settings {

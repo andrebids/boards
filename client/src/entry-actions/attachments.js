@@ -5,6 +5,14 @@
 
 import EntryActionTypes from '../constants/EntryActionTypes';
 
+const createAttachment = (cardId, data) => ({
+  type: EntryActionTypes.ATTACHMENT_CREATE,
+  payload: {
+    cardId,
+    data,
+  },
+});
+
 const createAttachmentInCurrentCard = data => ({
   type: EntryActionTypes.ATTACHMENT_IN_CURRENT_CARD_CREATE,
   payload: {
@@ -50,6 +58,7 @@ const handleAttachmentDelete = attachment => ({
 });
 
 export default {
+  createAttachment,
   createAttachmentInCurrentCard,
   handleAttachmentCreate,
   updateAttachment,

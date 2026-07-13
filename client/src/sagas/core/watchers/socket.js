@@ -12,7 +12,7 @@ import api, { socket } from '../../../api';
 import EntryActionTypes from '../../../constants/EntryActionTypes';
 
 const createSocketEventsChannel = () =>
-  eventChannel(emit => {
+  eventChannel((emit) => {
     const handleDisconnect = () => {
       emit(entryActions.handleSocketDisconnect());
     };
@@ -81,11 +81,7 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleBaseCustomFieldGroupDelete(item));
     };
 
-    const handleBoardCreate = ({
-      item,
-      included: { boardMemberships },
-      requestId,
-    }) => {
+    const handleBoardCreate = ({ item, included: { boardMemberships }, requestId }) => {
       emit(entryActions.handleBoardCreate(item, boardMemberships, requestId));
     };
 
@@ -97,10 +93,7 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleBoardDelete(item));
     };
 
-    const handleBoardMembershipCreate = ({
-      item,
-      included: { users } = {},
-    }) => {
+    const handleBoardMembershipCreate = ({ item, included: { users } = {} }) => {
       emit(entryActions.handleBoardMembershipCreate(item, users));
     };
 
@@ -124,11 +117,9 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleListClear(item));
     };
 
-    const handleListDelete = api.makeHandleListDelete(
-      ({ item, included: { cards } }) => {
-        emit(entryActions.handleListDelete(item, cards));
-      }
-    );
+    const handleListDelete = api.makeHandleListDelete(({ item, included: { cards } }) => {
+      emit(entryActions.handleListDelete(item, cards));
+    });
 
     const handleLabelCreate = ({ item }) => {
       emit(entryActions.handleLabelCreate(item));
@@ -145,7 +136,7 @@ const createSocketEventsChannel = () =>
     const handleCardsUpdate = api.makeHandleCardsUpdate(
       ({ items, included: { activities } = {} }) => {
         emit(entryActions.handleCardsUpdate(items, activities));
-      }
+      },
     );
 
     const handleCardCreate = api.makeHandleCardCreate(({ item }) => {
@@ -161,14 +152,6 @@ const createSocketEventsChannel = () =>
     });
 
     const handleUserToCardAdd = ({ item }) => {
-      try {
-        console.log('🔍 [DIAGNÓSTICO_AVATARES] WebSocket - cardMembershipCreate recebido:', {
-          cardId: item?.cardId,
-          userId: item?.userId,
-        });
-      } catch (error) {
-        // Ignorar erro de log
-      }
       emit(entryActions.handleUserToCardAdd(item));
     };
 
@@ -208,23 +191,17 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleTaskDelete(item));
     };
 
-    const handleAttachmentCreate = api.makeHandleAttachmentCreate(
-      ({ item, requestId }) => {
-        emit(entryActions.handleAttachmentCreate(item, requestId));
-      }
-    );
+    const handleAttachmentCreate = api.makeHandleAttachmentCreate(({ item, requestId }) => {
+      emit(entryActions.handleAttachmentCreate(item, requestId));
+    });
 
-    const handleAttachmentUpdate = api.makeHandleAttachmentUpdate(
-      ({ item }) => {
-        emit(entryActions.handleAttachmentUpdate(item));
-      }
-    );
+    const handleAttachmentUpdate = api.makeHandleAttachmentUpdate(({ item }) => {
+      emit(entryActions.handleAttachmentUpdate(item));
+    });
 
-    const handleAttachmentDelete = api.makeHandleAttachmentDelete(
-      ({ item }) => {
-        emit(entryActions.handleAttachmentDelete(item));
-      }
-    );
+    const handleAttachmentDelete = api.makeHandleAttachmentDelete(({ item }) => {
+      emit(entryActions.handleAttachmentDelete(item));
+    });
 
     const handleCustomFieldGroupCreate = ({ item }) => {
       emit(entryActions.handleCustomFieldGroupCreate(item));
@@ -258,11 +235,9 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleCustomFieldValueDelete(item));
     };
 
-    const handleCommentCreate = api.makeHandleCommentCreate(
-      ({ item, included: { users } }) => {
-        emit(entryActions.handleCommentCreate(item, users));
-      }
-    );
+    const handleCommentCreate = api.makeHandleCommentCreate(({ item, included: { users } }) => {
+      emit(entryActions.handleCommentCreate(item, users));
+    });
 
     const handleCommentUpdate = api.makeHandleCommentUpdate(({ item }) => {
       emit(entryActions.handleCommentUpdate(item));
@@ -272,6 +247,62 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleCommentDelete(item));
     });
 
+    const handleChatConversationCreate = api.makeHandleChatConversationCreate(
+      ({ item, included = {} }) => {
+        emit(
+          entryActions.handleChatConversationCreate(
+            item,
+            included.chatParticipants || [],
+            included.users || [],
+          ),
+        );
+      },
+    );
+
+    const handleChatConversationUpdate = api.makeHandleChatConversationUpdate(
+      ({ item, included = {} }) => {
+        emit(
+          entryActions.handleChatConversationUpdate(
+            item,
+            included.chatParticipants || [],
+            included.users || [],
+          ),
+        );
+      },
+    );
+
+    const handleChatMessageCreate = api.makeHandleChatMessageCreate(({ item, included = {} }) => {
+      emit(entryActions.handleChatMessageCreate(item, included.users || []));
+    });
+
+    const handleChatMessageUpdate = api.makeHandleChatMessageUpdate(({ item }) => {
+      emit(entryActions.handleChatMessageUpdate(item));
+    });
+
+    const handleChatMessageDelete = api.makeHandleChatMessageDelete(({ item }) => {
+      emit(entryActions.handleChatMessageDelete(item));
+    });
+
+    const handleChatConversationRead = api.makeHandleChatConversationRead(({ item }) => {
+      emit(entryActions.handleChatConversationRead(item));
+    });
+
+    const handleChatProjectAccessRevoke = ({ item }) => {
+      emit(entryActions.handleChatProjectAccessRevoke(item.projectId));
+    };
+
+    const handleChatConversationAccessRevoke = ({ item }) => {
+      emit(entryActions.handleChatConversationAccessRevoke(item.projectId, item.conversationId));
+    };
+
+    const handleChatParticipantUpdate = api.makeHandleChatParticipantUpdate(({ item }) => {
+      emit(entryActions.handleChatParticipantUpdate(item));
+    });
+
+    const handleChatTypingUpdate = ({ item }) => {
+      emit(entryActions.handleChatTypingUpdate(item));
+    };
+
     const handleActivityCreate = api.makeHandleActivityCreate(({ item }) => {
       emit(entryActions.handleActivityCreate(item));
     });
@@ -279,14 +310,12 @@ const createSocketEventsChannel = () =>
     const handleNotificationCreate = api.makeHandleNotificationCreate(
       ({ item, included: { users } }) => {
         emit(entryActions.handleNotificationCreate(item, users));
-      }
+      },
     );
 
-    const handleNotificationUpdate = api.makeHandleNotificationUpdate(
-      ({ item }) => {
-        emit(entryActions.handleNotificationDelete(item));
-      }
-    );
+    const handleNotificationUpdate = api.makeHandleNotificationUpdate(({ item }) => {
+      emit(entryActions.handleNotificationDelete(item));
+    });
 
     const handleNotificationServiceCreate = ({ item }) => {
       emit(entryActions.handleNotificationServiceCreate(item));
@@ -380,6 +409,17 @@ const createSocketEventsChannel = () =>
     socket.on('commentUpdate', handleCommentUpdate);
     socket.on('commentDelete', handleCommentDelete);
 
+    socket.on('chatConversationCreate', handleChatConversationCreate);
+    socket.on('chatConversationUpdate', handleChatConversationUpdate);
+    socket.on('chatMessageCreate', handleChatMessageCreate);
+    socket.on('chatMessageUpdate', handleChatMessageUpdate);
+    socket.on('chatMessageDelete', handleChatMessageDelete);
+    socket.on('chatConversationRead', handleChatConversationRead);
+    socket.on('chatProjectAccessRevoke', handleChatProjectAccessRevoke);
+    socket.on('chatConversationAccessRevoke', handleChatConversationAccessRevoke);
+    socket.on('chatParticipantUpdate', handleChatParticipantUpdate);
+    socket.on('chatTypingUpdate', handleChatTypingUpdate);
+
     socket.on('actionCreate', handleActivityCreate);
 
     socket.on('notificationCreate', handleNotificationCreate);
@@ -411,18 +451,9 @@ const createSocketEventsChannel = () =>
       socket.off('backgroundImageCreate', handleBackgroundImageCreate);
       socket.off('backgroundImageDelete', handleBackgroundImageDelete);
 
-      socket.off(
-        'baseCustomFieldGroupCreate',
-        handleBaseCustomFieldGroupCreate
-      );
-      socket.off(
-        'baseCustomFieldGroupUpdate',
-        handleBaseCustomFieldGroupUpdate
-      );
-      socket.off(
-        'baseCustomFieldGroupDelete',
-        handleBaseCustomFieldGroupDelete
-      );
+      socket.off('baseCustomFieldGroupCreate', handleBaseCustomFieldGroupCreate);
+      socket.off('baseCustomFieldGroupUpdate', handleBaseCustomFieldGroupUpdate);
+      socket.off('baseCustomFieldGroupDelete', handleBaseCustomFieldGroupDelete);
 
       socket.off('boardCreate', handleBoardCreate);
       socket.off('boardUpdate', handleBoardUpdate);
@@ -479,6 +510,17 @@ const createSocketEventsChannel = () =>
       socket.off('commentUpdate', handleCommentUpdate);
       socket.off('commentDelete', handleCommentDelete);
 
+      socket.off('chatConversationCreate', handleChatConversationCreate);
+      socket.off('chatConversationUpdate', handleChatConversationUpdate);
+      socket.off('chatMessageCreate', handleChatMessageCreate);
+      socket.off('chatMessageUpdate', handleChatMessageUpdate);
+      socket.off('chatMessageDelete', handleChatMessageDelete);
+      socket.off('chatConversationRead', handleChatConversationRead);
+      socket.off('chatProjectAccessRevoke', handleChatProjectAccessRevoke);
+      socket.off('chatConversationAccessRevoke', handleChatConversationAccessRevoke);
+      socket.off('chatParticipantUpdate', handleChatParticipantUpdate);
+      socket.off('chatTypingUpdate', handleChatTypingUpdate);
+
       socket.off('actionCreate', handleActivityCreate);
 
       socket.off('notificationCreate', handleNotificationCreate);
@@ -493,10 +535,10 @@ const createSocketEventsChannel = () =>
 export default function* socketWatchers() {
   yield all([
     yield takeEvery(EntryActionTypes.SOCKET_DISCONNECT_HANDLE, () =>
-      services.handleSocketDisconnect()
+      services.handleSocketDisconnect(),
     ),
     yield takeEvery(EntryActionTypes.SOCKET_RECONNECT_HANDLE, () =>
-      services.handleSocketReconnect()
+      services.handleSocketReconnect(),
     ),
   ]);
 

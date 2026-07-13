@@ -63,7 +63,7 @@ module.exports = {
       },
     );
 
-          const boardMembership = await sails.models.boardmembership.qm.deleteOne(inputs.record.id);
+    const boardMembership = await sails.models.boardmembership.qm.deleteOne(inputs.record.id);
 
     if (boardMembership) {
       if (inputs.user.role !== User.Roles.ADMIN || inputs.project.ownerProjectManagerId) {
@@ -118,6 +118,8 @@ module.exports = {
         }),
         user: inputs.actorUser,
       });
+
+      await sails.helpers.chat.reconcileProjectRooms(inputs.project);
     }
 
     return boardMembership;

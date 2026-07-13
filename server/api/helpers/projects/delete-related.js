@@ -21,6 +21,11 @@ module.exports = {
       projectIdOrIds = sails.helpers.utils.mapRecords(inputs.recordOrRecords);
     }
 
+    const { fileReferences: chatFileReferences } =
+      await ChatMessageAttachment.qm.deleteByProjectIds(projectIdOrIds);
+
+    sails.helpers.attachments.removeUnreferencedFiles(chatFileReferences);
+
     await ProjectFavorite.qm.delete({
       projectId: projectIdOrIds,
     });
