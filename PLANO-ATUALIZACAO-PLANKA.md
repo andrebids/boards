@@ -64,7 +64,7 @@ O relatório assinala explicitamente que não há uma base Git comum. A release 
 ## Fase 4 — Portar as personalizações
 
 1. Criar uma branch baseada no Planka 2.1.1.
-2. Portar uma funcionalidade personalizada de cada vez, em commits pequenos: finanças, campos personalizados, etiquetas padrão, interface, notificações e configurações próprias.
+2. Portar uma funcionalidade personalizada de cada vez, em commits pequenos: campos personalizados, etiquetas padrão, interface, notificações e configurações próprias. O módulo de finanças foi descontinuado e não será portado.
 3. Para cada funcionalidade, adaptar o código às APIs e estruturas atuais do upstream e adicionar/atualizar migrações quando necessário.
 4. Atualizar o Compose para o armazenamento v2 atual, incluindo o volume unificado `/app/data`, sem apagar os volumes antigos até a migração estar validada.
 
@@ -78,7 +78,7 @@ Criar staging com URL, porta, volumes e base de dados próprios. Restaurar uma c
 2. migrar os dados/ficheiros para a estrutura de armazenamento v2 atual quando aplicável;
 3. executar apenas as migrações incrementais normais (`npm run db:migrate`), nunca `db:upgrade`;
 4. arrancar a imagem construída a partir do fork atualizado;
-5. validar login, projetos, quadros, cartões, anexos, notificações, campos personalizados, etiquetas e todo o módulo de finanças.
+5. validar login, projetos, quadros, cartões, anexos, notificações, campos personalizados e etiquetas.
 
 Critério de conclusão: logs sem erros críticos e testes funcionais aprovados com dados migrados.
 
