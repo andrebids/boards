@@ -36,17 +36,7 @@ const RightSide = React.memo(() => {
     dispatch(entryActions.toggleTimelinePanel());
   }, [dispatch]);
 
-  const handleFinanceClick = useCallback(() => {
-    // Alternar entre KANBAN e FINANCE
-    const newView = board.view === BoardViews.FINANCE ? BoardViews.KANBAN : BoardViews.FINANCE;
-    dispatch(entryActions.updateViewInCurrentBoard(newView));
-  }, [board.view, dispatch]);
-
   const ActionsPopup = usePopup(ActionsStep, { variantClass: 'glass' });
-
-  // Verificar se user tem acesso ao Finance Panel
-  // (Finance Member OU Project Manager OU Admin)
-  const canAccessFinance = useSelector(selectors.selectCanCurrentUserAccessFinance);
 
   const views = [];
   if (board.context === BoardContexts.BOARD) {
@@ -71,18 +61,6 @@ const RightSide = React.memo(() => {
           ))}
         </div>
       </div>
-      {canAccessFinance && (
-        <div className={styles.action}>
-          <button
-            type="button"
-            className={`${styles.button} ${board.view === BoardViews.FINANCE ? styles.active : ''}`}
-            onClick={handleFinanceClick}
-            aria-label={t('finance.title', { defaultValue: 'Painel Financeiro' })}
-          >
-            <Icon fitted name="euro" />
-          </button>
-        </div>
-      )}
       <div className={styles.action}>
         <button
           type="button"

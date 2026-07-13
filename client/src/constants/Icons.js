@@ -49,7 +49,6 @@ export const BoardViewIcons = {
   [BoardViews.KANBAN]: 'columns',
   [BoardViews.GRID]: 'th',
   [BoardViews.LIST]: 'unordered list',
-  [BoardViews.FINANCE]: 'euro',
 };
 
 export const BoardContextIcons = {

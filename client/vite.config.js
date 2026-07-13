@@ -52,11 +52,6 @@ export default defineConfig({
         changeOrigin: true,
         secure: false
       },
-      "/expense-attachments": {
-        target: serverTarget,
-        changeOrigin: true,
-        secure: false
-      },
       "/background-images": {
         target: serverTarget,
         changeOrigin: true,

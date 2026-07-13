@@ -853,20 +853,5 @@ export default {
       uploadNewImage: 'Enviar nova imagem',
     },
 
-    finance: {
-      expenses: 'Despesas',
-      addExpense: 'Adicionar Despesa',
-      noExpenses: 'Sem despesas registadas.',
-      date: 'Data',
-      category: 'Categoria',
-      description: 'Descrição',
-      value: 'Valor',
-      total: 'Total',
-      confirmDelete: 'Tem a certeza?',
-      filters: 'Filtros',
-      startDate: 'Data Inicial',
-      endDate: 'Data Final',
-      showingFiltered: 'A mostrar {{count}} de {{total}} despesas',
-    },
   },
 };

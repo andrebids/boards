@@ -12,7 +12,6 @@ import { BoardContexts, BoardViews } from '../../../constants/Enums';
 import KanbanContent from './KanbanContent';
 import FiniteContent from './FiniteContent';
 import EndlessContent from './EndlessContent';
-import FinanceContent from './FinanceContent';
 import CardModal from '../../cards/CardModal';
 import BoardActivitiesModal from '../../activities/BoardActivitiesModal';
 
@@ -24,9 +23,7 @@ const Board = React.memo(() => {
   );
 
   let Content;
-  if (board.view === BoardViews.FINANCE) {
-    Content = FinanceContent;
-  } else if (board.view === BoardViews.KANBAN) {
+  if (board.view === BoardViews.KANBAN) {
     Content = KanbanContent;
   } else {
     switch (board.context) {
