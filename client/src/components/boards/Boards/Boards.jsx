@@ -5,7 +5,7 @@
 
 import React, { useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import { Button } from 'semantic-ui-react';
 import { closePopup, usePopup } from '../../../lib/popup';
 

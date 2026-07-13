@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Draggable, Droppable } from 'react-beautiful-dnd';
+import { Draggable, Droppable } from '@hello-pangea/dnd';
 import { Button, Icon } from 'semantic-ui-react';
 import { useDidUpdate, useTransitioning } from '../../../lib/hooks';
 import { usePopup } from '../../../lib/popup';

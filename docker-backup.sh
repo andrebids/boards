@@ -1,48 +1,70 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Stop on Error
-set -e
+# Creates a portable backup of Planka data without relying on fixed container names.
+# Optional environment variables:
+#   COMPOSE_FILE=docker-compose.yml
+#   COMPOSE_PROJECT_NAME=planka
+#   BACKUP_DIR=/secure/path/backups
+#   POSTGRES_USER=postgres
+set -Eeuo pipefail
 
-# Configure those to match your PLANKA Docker container names
-PLANKA_DOCKER_CONTAINER_POSTGRES="planka-postgres-1"
-PLANKA_DOCKER_CONTAINER_PLANKA="planka-planka-1"
+umask 077
 
-# Create Temporary folder
-BACKUP_DATETIME=$(date --utc +%FT%H-%M-%SZ)
-mkdir -p "$BACKUP_DATETIME-backup"
+backup_dir="${BACKUP_DIR:-$PWD/backups}"
+postgres_user="${POSTGRES_USER:-postgres}"
+timestamp="$(date --utc +%Y-%m-%dT%H-%M-%SZ)"
+archive="$backup_dir/planka-$timestamp.tar.gz"
+work_dir="$(mktemp -d)"
 
-# Dump DB into SQL File
-echo -n "Exporting postgres database ... "
-docker exec -t "$PLANKA_DOCKER_CONTAINER_POSTGRES" pg_dumpall -c -U postgres > "$BACKUP_DATETIME-backup/postgres.sql"
-echo "Success!"
+compose=(docker compose)
 
-# Export Docker Voumes
-echo -n "Exporting favicons ... "
-docker run --rm --volumes-from "$PLANKA_DOCKER_CONTAINER_PLANKA" -v "$(pwd)/$BACKUP_DATETIME-backup:/backup" ubuntu cp -r /app/public/favicons /backup/favicons
-echo "Success!"
-echo -n "Exporting user-avatars ... "
-docker run --rm --volumes-from "$PLANKA_DOCKER_CONTAINER_PLANKA" -v "$(pwd)/$BACKUP_DATETIME-backup:/backup" ubuntu cp -r /app/public/user-avatars /backup/user-avatars
-echo "Success!"
-echo -n "Exporting background-images ... "
-docker run --rm --volumes-from "$PLANKA_DOCKER_CONTAINER_PLANKA" -v "$(pwd)/$BACKUP_DATETIME-backup:/backup" ubuntu cp -r /app/public/background-images /backup/background-images
-echo "Success!"
-echo -n "Exporting attachments ... "
-docker run --rm --volumes-from "$PLANKA_DOCKER_CONTAINER_PLANKA" -v "$(pwd)/$BACKUP_DATETIME-backup:/backup" ubuntu cp -r /app/private/attachments /backup/attachments
-echo "Success!"
+if [[ -n "${COMPOSE_FILE:-}" ]]; then
+  compose+=(--file "$COMPOSE_FILE")
+fi
 
-# Create tgz
-echo -n "Creating final tarball $BACKUP_DATETIME-backup.tgz ... "
-tar -czf "$BACKUP_DATETIME-backup.tgz" \
-    "$BACKUP_DATETIME-backup/postgres.sql" \
-    "$BACKUP_DATETIME-backup/favicons" \
-    "$BACKUP_DATETIME-backup/user-avatars" \
-    "$BACKUP_DATETIME-backup/background-images" \
-    "$BACKUP_DATETIME-backup/attachments"
-echo "Success!"
+if [[ -n "${COMPOSE_PROJECT_NAME:-}" ]]; then
+  compose+=(--project-name "$COMPOSE_PROJECT_NAME")
+fi
 
-#Remove source files
-echo -n "Cleaning up temporary files and folders ... "
-rm -rf "$BACKUP_DATETIME-backup"
-echo "Success!"
+cleanup() {
+  rm -rf "$work_dir"
+}
 
-echo "Backup Complete!"
+trap cleanup EXIT
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Docker não está disponível." >&2
+  exit 1
+fi
+
+mkdir -p "$backup_dir"
+
+postgres_container="$("${compose[@]}" ps -q postgres)"
+planka_container="$("${compose[@]}" ps -q planka)"
+
+if [[ -z "$postgres_container" || -z "$planka_container" ]]; then
+  echo "Os serviços 'postgres' e 'planka' têm de estar em execução para criar o backup." >&2
+  exit 1
+fi
+
+echo "A exportar a base de dados..."
+"${compose[@]}" exec -T postgres pg_dumpall --clean --if-exists -U "$postgres_user" >"$work_dir/postgres.sql"
+
+echo "A exportar anexos e imagens..."
+docker run --rm \
+  --volumes-from "$planka_container" \
+  --volume "$work_dir:/backup" \
+  alpine:3.21 \
+  tar -C /app -czf /backup/media.tar.gz \
+  public/favicons \
+  public/user-avatars \
+  public/background-images \
+  private/attachments
+
+echo "A criar arquivo: $archive"
+tar -C "$work_dir" -czf "$archive" postgres.sql media.tar.gz
+sha256sum "$archive" >"$archive.sha256"
+
+echo "Backup concluído."
+echo "Arquivo: $archive"
+echo "Checksum: $archive.sha256"

@@ -6,7 +6,7 @@ services:
     image: planka-dev-video-test
     pull_policy: never
     container_name: boards-server
-    command: [ "bash", "-c", "npm install && npm rebuild bcrypt lodepng --build-from-source --force && npm run db:init && npm start" ]
+    command: [ "bash", "-c", "if [ ! -f node_modules/.planka-dev-lock ] || ! sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1; then npm install && npm rebuild bcrypt lodepng --build-from-source --force && sha256sum package-lock.json > node_modules/.planka-dev-lock; fi && npm run db:init && npm start" ]
     restart: on-failure
     dns:
       - 8.8.8.8
@@ -36,7 +36,7 @@ services:
     image: planka-dev-video-test
     pull_policy: never
     container_name: boards-client
-    command: [ "bash", "-c", "npm install && npx vite --host" ]
+    command: [ "bash", "-c", "if [ ! -f node_modules/.planka-dev-lock ] || ! sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1; then npm install && sha256sum package-lock.json > node_modules/.planka-dev-lock; fi && npx vite --host" ]
     restart: on-failure
     volumes:
       - ./client:/app

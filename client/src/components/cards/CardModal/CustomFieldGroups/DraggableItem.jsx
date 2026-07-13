@@ -7,7 +7,7 @@ import React, { useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { Draggable } from 'react-beautiful-dnd';
+import { Draggable } from '@hello-pangea/dnd';
 
 import classNames from 'classnames';
 import selectors from '../../../../selectors';
