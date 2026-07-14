@@ -14,6 +14,7 @@ const presentMessage = require('../../api/helpers/chat/present-message');
 const chatConversationsIndex = require('../../api/controllers/chat-conversations/index');
 const ChatMessageQueryMethods = require('../../api/hooks/query-methods/models/ChatMessage');
 const ChatParticipantQueryMethods = require('../../api/hooks/query-methods/models/ChatParticipant');
+const ProjectQueryMethods = require('../../api/hooks/query-methods/models/Project');
 
 describe('Chat domain', () => {
   it('uses stable API enum values', () => {
@@ -27,6 +28,9 @@ describe('Chat domain', () => {
       MANAGERS: 'managers',
       ALL_PROJECT_MEMBERS: 'allProjectMembers',
     });
+    expect(ProjectDefinition.attributes.chatMode.defaultsTo).to.equal(
+      ProjectDefinition.ChatModes.ALL_PROJECT_MEMBERS,
+    );
   });
 
   it('maps chat models to the migrated table names', () => {
@@ -36,6 +40,64 @@ describe('Chat domain', () => {
     expect(ChatMessageDefinition.attributes.clientMessageId.columnName).to.equal(
       'client_message_id',
     );
+  });
+
+  it('creates projects with chat available to all project members by default', async () => {
+    const previousGlobals = {
+      sails: global.sails,
+      Project: global.Project,
+      ProjectManager: global.ProjectManager,
+    };
+    let createdProjectValues;
+
+    global.Project = {
+      ChatModes: ProjectDefinition.ChatModes,
+      Types: ProjectDefinition.Types,
+      create: (values) => {
+        createdProjectValues = values;
+
+        return {
+          fetch: () => ({
+            usingConnection: async () => ({ id: 'project', ...values }),
+          }),
+        };
+      },
+    };
+    global.ProjectManager = {
+      create: (values) => ({
+        fetch: () => ({
+          usingConnection: async () => ({ id: 'manager', ...values }),
+        }),
+      }),
+    };
+    global.sails = {
+      getDatastore: () => ({
+        transaction: (callback) => callback('connection'),
+      }),
+    };
+
+    try {
+      const { project } = await ProjectQueryMethods.createOne(
+        {
+          type: ProjectDefinition.Types.SHARED,
+          name: 'Project',
+        },
+        { user: { id: 'user' } },
+      );
+
+      expect(createdProjectValues.chatMode).to.equal(
+        ProjectDefinition.ChatModes.ALL_PROJECT_MEMBERS,
+      );
+      expect(project.chatMode).to.equal(ProjectDefinition.ChatModes.ALL_PROJECT_MEMBERS);
+    } finally {
+      Object.entries(previousGlobals).forEach(([name, value]) => {
+        if (value === undefined) {
+          delete global[name];
+        } else {
+          global[name] = value;
+        }
+      });
+    }
   });
 
   it('limits chat membership to project managers and board members', async () => {

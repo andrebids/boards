@@ -1,13 +1,13 @@
 :global(#app) {
-  .row { align-items: center; background: transparent; border: 0; border-radius: 10px; color: inherit; cursor: pointer; display: flex; gap: 10px; min-height: 56px; padding: 8px; text-align: left; transition: background 120ms ease, transform 120ms ease; width: 100%;
+  .row { align-items: center; background: transparent; border: 0; border-radius: var(--chat-radius-control); color: inherit; cursor: pointer; display: flex; gap: 10px; min-height: 58px; padding: 8px 9px; text-align: left; transition: background-color var(--chat-motion-fast) var(--chat-ease), transform var(--chat-motion-fast) var(--chat-ease); width: 100%;
     &:hover { background: var(--chat-surface-hover); }
-    &:active { transform: translateY(1px); }
+    &:active { transform: scale(0.99); }
     &:disabled { cursor: wait; opacity: .56; }
     &:focus-visible { box-shadow: inset 0 0 0 2px var(--chat-accent); outline: none; }
   }
   .copy { display: flex; flex-direction: column; min-width: 0;
     strong, small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    strong { color: var(--chat-foreground); font-size: 13px; font-weight: 650; line-height: 18px; }
-    small { color: var(--chat-muted); font-size: 12px; line-height: 17px; }
+    strong { color: var(--chat-foreground); font-size: var(--chat-font-body); font-weight: 650; line-height: 18px; }
+    small { color: var(--chat-muted); font-size: var(--chat-font-meta); line-height: 17px; }
   }
 }

@@ -9,7 +9,10 @@ const defaultFind = (criteria) => Project.find(criteria).sort('id');
 
 const createOne = (values, { user } = {}) =>
   sails.getDatastore().transaction(async (db) => {
-    let project = await Project.create({ ...values })
+    let project = await Project.create({
+      chatMode: Project.ChatModes.ALL_PROJECT_MEMBERS,
+      ...values,
+    })
       .fetch()
       .usingConnection(db);
 

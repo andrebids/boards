@@ -1,4 +1,4 @@
 :global(#app) {
   .list { height: 100%; overflow-y: auto; padding: 2px 0 8px; scrollbar-color: var(--chat-scrollbar) transparent; scrollbar-width: thin; }
-  .empty { color: var(--chat-muted); font-size: 12px; padding: 32px 14px; text-align: center; }
+  .empty { color: var(--chat-muted); font-size: var(--chat-font-body); padding: 32px 14px; text-align: center; }
 }

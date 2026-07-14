@@ -71,33 +71,44 @@ const EditInformation = React.memo(() => {
   );
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <div className={styles.text}>{t('common.title')}</div>
-      <Input
-        fluid
-        ref={handleNameFieldRef}
-        name="name"
-        value={data.name}
-        maxLength={128}
-        className={styles.field}
-        onChange={handleFieldChange}
-      />
-      <div className={styles.text}>{t('common.description')}</div>
-      <TextArea
-        as={TextareaAutosize}
-        name="description"
-        value={data.description}
-        maxLength={1024}
-        minRows={2}
-        spellCheck={false}
-        className={styles.field}
-        onKeyDown={handleDescriptionKeyDown}
-        onChange={handleFieldChange}
-      />
+    <Form className={styles.form} onSubmit={handleSubmit}>
+      <div className={styles.fieldGroup}>
+        <label className={styles.label} htmlFor="project-settings-name">
+          {t('common.title')}
+        </label>
+        <Input
+          fluid
+          id="project-settings-name"
+          ref={handleNameFieldRef}
+          name="name"
+          value={data.name}
+          maxLength={128}
+          className={styles.field}
+          onChange={handleFieldChange}
+        />
+      </div>
+      <div className={styles.fieldGroup}>
+        <label className={styles.label} htmlFor="project-settings-description">
+          {t('common.description')}
+        </label>
+        <TextArea
+          as={TextareaAutosize}
+          id="project-settings-description"
+          name="description"
+          value={data.description}
+          maxLength={1024}
+          minRows={2}
+          spellCheck={false}
+          className={styles.field}
+          onKeyDown={handleDescriptionKeyDown}
+          onChange={handleFieldChange}
+        />
+      </div>
       <Button
-        positive
+        type="submit"
         disabled={dequal(cleanData, defaultData)}
         content={t('action.save')}
+        className={styles.saveButton}
       />
     </Form>
   );

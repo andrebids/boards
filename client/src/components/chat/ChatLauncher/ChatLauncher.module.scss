@@ -2,10 +2,10 @@
   .launcher {
     align-items: center;
     background: var(--chat-accent);
-    border: 1px solid color-mix(in oklab, var(--chat-accent) 82%, var(--chat-foreground));
+    border: 1px solid var(--chat-accent);
     border-radius: 50%;
     bottom: 24px;
-    box-shadow: var(--chat-overlay-shadow);
+    box-shadow: var(--chat-panel-shadow);
     color: var(--chat-accent-foreground);
     cursor: pointer;
     display: inline-flex;
@@ -14,19 +14,57 @@
     padding: 0;
     position: fixed;
     right: 24px;
-    transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
+    transition:
+      background-color var(--chat-motion-fast) var(--chat-ease),
+      transform var(--chat-motion-fast) var(--chat-ease);
     width: 52px;
-    z-index: 1005;
+    z-index: 1006;
 
     &:hover {
       background: var(--chat-accent-hover);
-      border-color: color-mix(in oklab, var(--chat-accent) 70%, var(--chat-foreground));
-      box-shadow: var(--chat-overlay-shadow);
-      transform: translateY(-2px);
+      transform: translateY(-1px);
     }
 
-    &:active { transform: translateY(0) scale(0.95); }
+    &:active { transform: scale(0.96); }
     &:focus-visible { outline: 3px solid var(--chat-accent); outline-offset: 3px; }
+  }
+
+  .iconStack {
+    display: block;
+    height: 22px;
+    position: relative;
+    width: 22px;
+  }
+
+  .messageIcon,
+  .closeIcon {
+    inset: 0;
+    position: absolute;
+    transition:
+      opacity var(--chat-motion-fast) var(--chat-ease),
+      transform var(--chat-motion-fast) var(--chat-ease);
+  }
+
+  .messageIcon {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+
+  .closeIcon {
+    opacity: 0;
+    transform: rotate(-75deg) scale(0.55);
+  }
+
+  .expanded {
+    .messageIcon {
+      opacity: 0;
+      transform: rotate(75deg) scale(0.55);
+    }
+
+    .closeIcon {
+      opacity: 1;
+      transform: rotate(0) scale(1);
+    }
   }
 
   .badge {
@@ -48,7 +86,7 @@
   }
 
   .alerting {
-    animation: chat-alert 320ms ease-in-out 4;
+    animation: chat-alert 420ms var(--chat-ease) 2;
   }
 
   .alertStatus {
@@ -62,10 +100,19 @@
   }
 
   @keyframes chat-alert {
-    50% { transform: translateY(-3px) scale(1.06); }
+    50% { transform: translateY(-2px); }
   }
 
   @media only screen and (max-width: 767px) {
     .launcher { bottom: 16px; right: 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .launcher,
+    .messageIcon,
+    .closeIcon {
+      animation: none;
+      transition-duration: 0.01ms;
+    }
   }
 }

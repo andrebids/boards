@@ -6,8 +6,8 @@
 }
 
 /* Camada de vidro: usa a estratégia do guia (elemento + ::before + ::after) */
-.ui.modal.glass > .content,
-.ui.basic.modal.glass > .content {
+.ui.modal.glass:not(.project-settings) > .content,
+.ui.basic.modal.glass:not(.project-settings) > .content {
   position: relative;
   border-radius: 16px; /* consistente com notificações */
   isolation: isolate;
@@ -30,8 +30,8 @@
   -webkit-backdrop-filter: none !important;
 }
 
-.ui.modal.glass > .content::before,
-.ui.basic.modal.glass > .content::before {
+.ui.modal.glass:not(.project-settings) > .content::before,
+.ui.basic.modal.glass:not(.project-settings) > .content::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -42,8 +42,8 @@
   pointer-events: none;
 }
 
-.ui.modal.glass > .content::after,
-.ui.basic.modal.glass > .content::after {
+.ui.modal.glass:not(.project-settings) > .content::after,
+.ui.basic.modal.glass:not(.project-settings) > .content::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -117,22 +117,22 @@
 }
 
 /* Texto interno (labels/checks) com contraste melhor */
-.ui.modal.glass label,
-.ui.modal.glass .ui.checkbox label,
-.ui.modal.glass .ui.toggle.checkbox label {
+.ui.modal.glass:not(.project-settings) label,
+.ui.modal.glass:not(.project-settings) .ui.checkbox label,
+.ui.modal.glass:not(.project-settings) .ui.toggle.checkbox label {
   color: rgba(230, 237, 243, 0.9) !important;
 }
 
 /* Inputs e dropdowns mais claros sobre vidro */
-.ui.modal.glass .ui.input input,
-.ui.modal.glass input[type='text'],
-.ui.modal.glass .ui.dropdown > .text,
-.ui.modal.glass .ui.selection.dropdown {
+.ui.modal.glass:not(.project-settings) .ui.input input,
+.ui.modal.glass:not(.project-settings) input[type='text'],
+.ui.modal.glass:not(.project-settings) .ui.dropdown > .text,
+.ui.modal.glass:not(.project-settings) .ui.selection.dropdown {
   color: #0f172a; /* texto escuro em campos claros */
 }
 
-.ui.modal.glass .ui.selection.dropdown,
-.ui.modal.glass .ui.input > input {
+.ui.modal.glass:not(.project-settings) .ui.selection.dropdown,
+.ui.modal.glass:not(.project-settings) .ui.input > input {
   background: #f8fafc !important;
   border-color: rgba(148, 163, 184, 0.35) !important;
 }
@@ -143,11 +143,11 @@
 }
 
 /* Tabs apontadas (ativo e normal) */
-.ui.modal.glass .ui.pointing.secondary.menu .item {
+.ui.modal.glass:not(.project-settings) .ui.pointing.secondary.menu .item {
   color: rgba(230, 237, 243, 0.9);
 }
 
-.ui.modal.glass .ui.pointing.secondary.menu .active.item {
+.ui.modal.glass:not(.project-settings) .ui.pointing.secondary.menu .active.item {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.22);
 }
@@ -194,34 +194,34 @@
   background: rgba(255, 255, 255, 0.08) !important; /* Fundo glass no hover */
   border-color: rgba(255, 255, 255, 0.15) !important; /* Borda mais clara no hover */
 }
-.ui.modal.glass .ui.segment,
-.ui.modal.glass .ui.segment.active,
-.ui.modal.glass .ui.segment.active.tab {
+.ui.modal.glass:not(.project-settings) .ui.segment,
+.ui.modal.glass:not(.project-settings) .ui.segment.active,
+.ui.modal.glass:not(.project-settings) .ui.segment.active.tab {
   background: transparent !important; /* tira placas brancas internas */
   box-shadow: none !important;
   border: none !important;
 }
 
 /* Tabs e texto internos (UserSettingsModal) */
-.ui.modal.glass .ui.menu .item,
-.ui.modal.glass .ui.menu .item.active,
-.ui.modal.glass .ui.menu .item:hover {
+.ui.modal.glass:not(.project-settings) .ui.menu .item,
+.ui.modal.glass:not(.project-settings) .ui.menu .item.active,
+.ui.modal.glass:not(.project-settings) .ui.menu .item:hover {
   color: #e6edf3;
 }
 
-.ui.modal.glass .ui.menu .item.active {
+.ui.modal.glass:not(.project-settings) .ui.menu .item.active {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Títulos internos (ex.: Idioma) dentro do modal vidro */
-.ui.modal.glass .ui.header,
-.ui.basic.modal.glass .ui.header {
+.ui.modal.glass:not(.project-settings) .ui.header,
+.ui.basic.modal.glass:not(.project-settings) .ui.header {
   color: #e6edf3 !important;
   font-weight: 700 !important;
 }
 
 /* Labels de campos (Nome, Telefone, Organização) */
-.ui.modal.glass .ui.form .field > label,
-.ui.modal.glass .field > label {
+.ui.modal.glass:not(.project-settings) .ui.form .field > label,
+.ui.modal.glass:not(.project-settings) .field > label {
   color: rgba(230, 237, 243, 0.9) !important;
 }

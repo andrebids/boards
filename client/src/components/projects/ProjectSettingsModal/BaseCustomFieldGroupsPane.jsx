@@ -30,9 +30,9 @@ const BaseCustomFieldGroupsPane = React.memo(() => {
 
   return (
     <Tab.Pane attached={false} className={styles.wrapper}>
-      <div className={styles.attachments}>
+      <div className={styles.groups}>
         {baseCustomFieldGroupIds.map(baseCustomFieldGroupId => (
-          <span key={baseCustomFieldGroupId} className={styles.attachment}>
+          <span key={baseCustomFieldGroupId} className={styles.group}>
             <BaseCustomFieldGroupPopup id={baseCustomFieldGroupId}>
               <BaseCustomFieldGroupChip id={baseCustomFieldGroupId} />
             </BaseCustomFieldGroupPopup>
@@ -42,9 +42,10 @@ const BaseCustomFieldGroupsPane = React.memo(() => {
           <button
             type="button"
             className={classNames(
-              styles.attachment,
+              styles.group,
               styles.addAttachmentButton
             )}
+            aria-label="Add base custom field group"
           >
             <Icon
               name="plus"

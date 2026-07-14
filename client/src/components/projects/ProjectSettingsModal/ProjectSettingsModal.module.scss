@@ -4,83 +4,209 @@
  */
 
 :global(#app) {
-  :global(.ui.modal.glass.project-settings > .content),
-  :global(.ui.basic.modal.glass.project-settings > .content) {
-    background: rgba(14, 17, 23, 0.72) !important;
-    color: #e6edf3;
-  }
+  :global(.ui.modal.glass.project-settings) {
+    --project-settings-accent: #5f7ee8;
+    --project-settings-accent-hover: #6f8cf0;
+    --project-settings-background: #111318;
+    --project-settings-border: rgba(255, 255, 255, 0.1);
+    --project-settings-border-strong: rgba(255, 255, 255, 0.17);
+    --project-settings-danger: #f08a94;
+    --project-settings-danger-background: #25171b;
+    --project-settings-danger-border: rgba(240, 138, 148, 0.28);
+    --project-settings-field: #20242c;
+    --project-settings-field-hover: #262b35;
+    --project-settings-muted: #aeb4c0;
+    --project-settings-surface: #181b22;
+    --project-settings-surface-raised: #1d2129;
+    --project-settings-text: #f2f4f7;
 
-  :global(.ui.modal.glass.project-settings .ui.header),
-  :global(.ui.modal.glass.project-settings .ui.form .field > label),
-  :global(.ui.modal.glass.project-settings .field > label),
-  :global(.ui.modal.glass.project-settings .ui.menu .item),
-  :global(.ui.modal.glass.project-settings .ui.menu .item.active),
-  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox label),
-  :global(.ui.modal.glass.project-settings .ui.checkbox label) {
-    color: #e6edf3 !important;
-  }
+    background: transparent;
+    color: var(--project-settings-text);
+    color-scheme: dark;
+    max-width: 720px;
+    width: calc(100% - 32px);
 
-  :global(.ui.modal.glass.project-settings .ui.input input),
-  :global(.ui.modal.glass.project-settings input[type='text']),
-  :global(.ui.modal.glass.project-settings textarea),
-  :global(.ui.modal.glass.project-settings .ui.selection.dropdown) {
-    background: #f8fafc !important;
-    border-color: rgba(148, 163, 184, 0.35) !important;
-    color: #0f172a !important;
-  }
+    > :global(.content) {
+      background: var(--project-settings-background);
+      border: 1px solid var(--project-settings-border);
+      border-radius: 14px;
+      box-shadow: 0 24px 64px rgba(3, 5, 10, 0.48);
+      color: var(--project-settings-text);
+      max-height: calc(100dvh - 48px);
+      overflow: hidden;
+      padding: 0;
+    }
 
-  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ .box:before),
-  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ label:before) {
-    background-color: #16a34a !important;
-  }
+    > :global(i.close.icon) {
+      align-items: center;
+      background: var(--project-settings-surface-raised);
+      border: 1px solid var(--project-settings-border);
+      border-radius: 9px;
+      color: var(--project-settings-muted);
+      display: flex;
+      height: 32px;
+      justify-content: center;
+      padding: 0;
+      right: 14px;
+      top: 13px;
+      transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+      width: 32px;
+    }
 
-  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ .box:after),
-  :global(.ui.modal.glass.project-settings .ui.toggle.checkbox input:checked ~ label:after) {
-    background: #ffffff !important;
-  }
+    > :global(i.close.icon:hover) {
+      background: var(--project-settings-field-hover);
+      border-color: var(--project-settings-border-strong);
+      color: var(--project-settings-text);
+    }
 
-  :global(.ui.modal.glass.project-settings .ui.menu) {
-    background: transparent !important;
-  }
+    > :global(i.close.icon:focus-visible) {
+      box-shadow: 0 0 0 3px rgba(95, 126, 232, 0.28);
+      outline: none;
+    }
 
-  :global(.ui.modal.glass.project-settings .ui.pointing.secondary.menu .item) {
-    color: rgba(230, 237, 243, 0.9) !important;
-    opacity: 1 !important;
-  }
+    :global(.ui.pointing.secondary.menu) {
+      align-items: stretch;
+      background: var(--project-settings-surface);
+      border-bottom: 1px solid var(--project-settings-border);
+      gap: 4px;
+      margin: 0;
+      min-height: 58px;
+      overflow-x: auto;
+      padding: 10px 58px 0 18px;
+      scrollbar-width: none;
+    }
 
-  :global(.ui.modal.glass.project-settings .ui.pointing.secondary.menu .item:hover) {
-    background: rgba(255, 255, 255, 0.06) !important;
-    color: #ffffff !important;
-  }
+    :global(.ui.pointing.secondary.menu::-webkit-scrollbar) {
+      display: none;
+    }
 
-  :global(.ui.modal.glass.project-settings .ui.pointing.secondary.menu .active.item) {
-    background: rgba(59, 130, 246, 0.14) !important;
-    border-color: rgba(255, 255, 255, 0.24) !important;
-    color: #ffffff !important;
-  }
+    :global(.ui.pointing.secondary.menu .item) {
+      align-items: center;
+      background: transparent;
+      border-bottom: 2px solid transparent;
+      color: var(--project-settings-muted);
+      display: flex;
+      flex: 0 0 auto;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+      padding: 0 12px 10px;
+      transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+    }
 
-  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.buttons .button) {
-    background: #1f2937 !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    color: rgba(230, 237, 243, 0.8) !important;
-    transition: background-color 0.16s ease;
-  }
+    :global(.ui.pointing.secondary.menu .item:hover) {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--project-settings-text);
+    }
 
-  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.buttons .button:hover),
-  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.buttons .button:focus-visible) {
-    background: #334155 !important;
-    color: #ffffff !important;
-    outline: none;
-  }
+    :global(.ui.pointing.secondary.menu .item:focus-visible) {
+      border-radius: 8px 8px 0 0;
+      box-shadow: inset 0 0 0 2px var(--project-settings-accent);
+      outline: none;
+    }
 
-  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.buttons .active.button),
-  :global(.ui.modal.glass.project-settings .project-background-type-selector.ui.basic.buttons .active.button) {
-    background: #2563eb !important;
-    color: #ffffff !important;
+    :global(.ui.pointing.secondary.menu .active.item) {
+      background: transparent;
+      border-color: var(--project-settings-accent);
+      color: var(--project-settings-text);
+    }
+
+    :global(.ui.segment),
+    :global(.ui.segment.active),
+    :global(.ui.segment.active.tab) {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+
+    :global(.ui.tab.active) {
+      max-height: calc(100dvh - 106px);
+      overflow-y: auto;
+      padding: 24px;
+      scrollbar-color: var(--project-settings-border-strong) transparent;
+      scrollbar-width: thin;
+    }
+
+    :global(.ui.tab.active::-webkit-scrollbar) {
+      width: 8px;
+    }
+
+    :global(.ui.tab.active::-webkit-scrollbar-thumb) {
+      background: var(--project-settings-border-strong);
+      border: 2px solid var(--project-settings-background);
+      border-radius: 8px;
+    }
+
+    :global(.project-background-type-selector.ui.buttons) {
+      background: var(--project-settings-surface);
+      border: 1px solid var(--project-settings-border);
+      border-radius: 10px;
+      gap: 4px;
+      padding: 4px;
+    }
+
+    :global(.project-background-type-selector.ui.buttons .button) {
+      background: transparent;
+      border: 0;
+      border-radius: 7px;
+      box-shadow: none;
+      color: var(--project-settings-muted);
+      font-weight: 600;
+      min-height: 38px;
+      transition: background-color 150ms ease, color 150ms ease;
+    }
+
+    :global(.project-background-type-selector.ui.buttons .button:hover) {
+      background: var(--project-settings-field-hover);
+      color: var(--project-settings-text);
+    }
+
+    :global(.project-background-type-selector.ui.buttons .button:focus-visible) {
+      box-shadow: 0 0 0 2px var(--project-settings-accent);
+      outline: none;
+    }
+
+    :global(.project-background-type-selector.ui.buttons .active.button),
+    :global(.project-background-type-selector.ui.basic.buttons .active.button) {
+      background: var(--project-settings-field);
+      box-shadow: 0 1px 2px rgba(3, 5, 10, 0.28);
+      color: var(--project-settings-text);
+    }
   }
 
   .dimmerTransparent {
     background-color: transparent;
+  }
+
+  @media only screen and (width < 768px) {
+    :global(.ui.modal.glass.project-settings) {
+      width: calc(100% - 20px);
+
+      > :global(.content) {
+        border-radius: 12px;
+        max-height: calc(100dvh - 20px);
+      }
+
+      :global(.ui.pointing.secondary.menu) {
+        padding-left: 10px;
+      }
+
+      :global(.ui.pointing.secondary.menu .item) {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      :global(.ui.tab.active) {
+        max-height: calc(100dvh - 78px);
+        padding: 20px 16px;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.ui.modal.glass.project-settings *) {
+      scroll-behavior: auto;
+      transition-duration: 0.01ms;
+    }
   }
 }

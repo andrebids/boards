@@ -6,7 +6,7 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Divider, Header, Tab } from 'semantic-ui-react';
+import { Button, Tab } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -37,16 +37,16 @@ const ManagersPane = React.memo(() => {
 
   return (
     <Tab.Pane attached={false} className={styles.wrapper}>
-      <ProjectManagers />
+      <section className={styles.section}>
+        <ProjectManagers />
+      </section>
       {!isShared && (
-        <>
-          <Divider horizontal section>
-            <Header as="h4">
-              {t('common.dangerZone', {
-                context: 'title',
-              })}
-            </Header>
-          </Divider>
+        <section className={`${styles.section} ${styles.dangerSection}`}>
+          <h3 className={styles.sectionTitle}>
+            {t('common.dangerZone', {
+              context: 'title',
+            })}
+          </h3>
           <div className={styles.action}>
             <ConfirmationPopup
               title="common.makeProjectShared"
@@ -62,7 +62,7 @@ const ManagersPane = React.memo(() => {
               </Button>
             </ConfirmationPopup>
           </div>
-        </>
+        </section>
       )}
     </Tab.Pane>
   );

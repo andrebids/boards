@@ -9,6 +9,7 @@ import orm from '../orm';
 import { selectPath } from './router';
 import { selectCurrentUserId } from './users';
 import { isLocalId } from '../utils/local-id';
+import { canManageProjectChat } from '../utils/project-chat';
 
 export const makeSelectProjectById = () =>
   createSelector(
@@ -310,6 +311,30 @@ export const selectIsCurrentUserManagerForCurrentProject = createSelector(
   },
 );
 
+export const selectCanCurrentUserManageCurrentProjectChat = createSelector(
+  orm,
+  (state) => selectPath(state).projectId,
+  (state) => selectCurrentUserId(state),
+  ({ Project, User }, id, currentUserId) => {
+    if (!id || !currentUserId) {
+      return false;
+    }
+
+    const projectModel = Project.withId(id);
+    const currentUserModel = User.withId(currentUserId);
+
+    if (!projectModel || !currentUserModel) {
+      return false;
+    }
+
+    return canManageProjectChat({
+      project: projectModel.ref,
+      currentUser: currentUserModel.ref,
+      isProjectManager: projectModel.hasManagerWithUserId(currentUserId),
+    });
+  },
+);
+
 export const selectIsCurrentUserChatMemberForCurrentProject = createSelector(
   orm,
   (state) => selectPath(state).projectId,
@@ -356,5 +381,6 @@ export default {
   selectBaseCustomFieldGroupsForCurrentProject,
   selectBoardIdsForCurrentProject,
   selectIsCurrentUserManagerForCurrentProject,
+  selectCanCurrentUserManageCurrentProjectChat,
   selectIsCurrentUserChatMemberForCurrentProject,
 };

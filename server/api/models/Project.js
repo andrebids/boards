@@ -94,7 +94,7 @@ module.exports = {
     chatMode: {
       type: 'string',
       isIn: Object.values(ChatModes),
-      defaultsTo: ChatModes.DISABLED,
+      defaultsTo: ChatModes.ALL_PROJECT_MEMBERS,
       columnName: 'chat_mode',
     },
 

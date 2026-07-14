@@ -11,11 +11,12 @@ const ChatHeader = React.memo(({ memberCount, projectName, onClose }) => {
   return (
     <header className={styles.header}>
       <div className={styles.copy}>
-        <span className={styles.project}>{projectName || t('chat.project')}</span>
-        <div className={styles.titleRow}>
-          <h2>{t('chat.conversations')}</h2>
+        <h2>{t('chat.conversations')}</h2>
+        <p>
+          <span>{projectName || t('chat.project')}</span>
+          <span aria-hidden="true">·</span>
           <span>{t('chat.memberCount', { count: memberCount })}</span>
-        </div>
+        </p>
       </div>
       <button
         type="button"

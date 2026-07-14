@@ -7,24 +7,38 @@
     gap: 8px;
     justify-content: flex-end;
     max-width: calc(100vw - 120px);
+    opacity: 1;
     pointer-events: auto;
     position: fixed;
     right: 24px;
+    transform: translateY(0);
+    transition:
+      opacity 140ms var(--chat-ease),
+      transform 140ms var(--chat-ease),
+      visibility 0s linear;
+    visibility: visible;
     z-index: 1004;
+  }
+
+  .concealed {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition-delay: 0ms, 0ms, 140ms;
+    visibility: hidden;
   }
 
   .overflowButton {
     align-items: center;
     background: var(--chat-overlay);
-    backdrop-filter: blur(20px);
     border: 1px solid var(--chat-border);
-    border-radius: 9px;
-    box-shadow: var(--chat-overlay-shadow);
+    border-radius: var(--chat-radius-control);
+    box-shadow: var(--chat-panel-shadow);
     color: var(--chat-foreground);
     cursor: pointer;
     display: flex;
     flex: 0 0 auto;
-    font-size: 12px;
+    font-size: var(--chat-font-meta);
     gap: 6px;
     height: 44px;
     justify-content: center;
@@ -40,7 +54,7 @@
     }
 
     &:active {
-      transform: translateY(1px);
+      transform: scale(0.98);
     }
 
     &:focus-visible {
@@ -63,6 +77,14 @@
       left: 8px;
       position: fixed;
       z-index: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dock,
+    .concealed {
+      transform: none;
+      transition: none;
     }
   }
 }

@@ -487,6 +487,14 @@ const MessageList = React.memo(
               new Date(nextMessage.createdAt) - new Date(message.createdAt) < 5 * 60 * 1000;
             const reactions = message.reactions || [];
             const replyAuthor = members.find(({ id }) => id === message.replyTo?.userId)?.name;
+            const messageAttachments = message.deletedAt ? [] : message.attachments || [];
+            const imageAttachments = messageAttachments.filter(
+              (attachment) => attachment.data?.image,
+            );
+            const otherAttachments = messageAttachments.filter(
+              (attachment) => !attachment.data?.image,
+            );
+            const hasImageAttachments = imageAttachments.length > 0;
             let messageBody;
             if (message.deletedAt) {
               messageBody = <em>{t('chat.messageDeleted')}</em>;
@@ -733,12 +741,51 @@ const MessageList = React.memo(
                         <Forward aria-hidden="true" size={12} /> {t('chat.forwarded')}
                       </span>
                     )}
-                    <div className={styles.bubble} dir="auto">
-                      {messageBody}
-                    </div>
-                    {!message.deletedAt && message.attachments?.length > 0 && (
+                    {hasImageAttachments ? (
+                      <div className={styles.imageMessage}>
+                        <div
+                          className={`${styles.imageGallery} ${
+                            imageAttachments.length > 1 ? styles.imageGalleryMultiple : ''
+                          }`}
+                        >
+                          {imageAttachments.map((attachment) => {
+                            const url =
+                              attachment.data?.url ||
+                              `${Config.SERVER_BASE_URL}/api/chat-message-attachments/${attachment.id}/download`;
+                            const previewUrl =
+                              attachment.data?.thumbnailUrls?.outside360 || url;
+                            return (
+                              <button
+                                type="button"
+                                key={attachment.id}
+                                className={styles.imageAttachment}
+                                aria-label={attachment.name}
+                                onClick={() =>
+                                  setSelectedAttachment({
+                                    ...attachment,
+                                    data: { ...attachment.data, url },
+                                  })
+                                }
+                              >
+                                <img src={previewUrl} alt={attachment.name} />
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {(message.text || editingMessageId === message.id) && (
+                          <div className={`${styles.bubble} ${styles.imageCaption}`} dir="auto">
+                            {messageBody}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className={styles.bubble} dir="auto">
+                        {messageBody}
+                      </div>
+                    )}
+                    {otherAttachments.length > 0 && (
                       <div className={styles.attachments}>
-                        {message.attachments.map((attachment) => {
+                        {otherAttachments.map((attachment) => {
                           const url =
                             attachment.data?.url ||
                             `${Config.SERVER_BASE_URL}/api/chat-message-attachments/${attachment.id}/download`;

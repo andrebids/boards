@@ -1,7 +1,7 @@
 :global(#app) {
-  .search { align-items: center; background: var(--chat-surface-secondary); border: 1px solid var(--chat-border); border-radius: 9px; color: var(--chat-muted); display: flex; gap: 8px; height: 38px; margin: 0 16px 12px; padding: 0 10px;
-    &:focus-within { border-color: var(--chat-accent); box-shadow: 0 0 0 3px var(--chat-focus-ring); color: var(--chat-foreground); }
-    input { background: transparent; border: 0; color: var(--chat-foreground); font: inherit; font-size: 13px; min-width: 0; outline: none; width: 100%;
+  .search { align-items: center; background: var(--chat-background); border: 1px solid var(--chat-border); border-radius: var(--chat-radius-control); color: var(--chat-muted); display: flex; gap: 8px; height: 38px; margin: 12px 14px 8px; padding: 0 10px; transition: border-color var(--chat-motion-fast) var(--chat-ease), box-shadow var(--chat-motion-fast) var(--chat-ease), color var(--chat-motion-fast) var(--chat-ease);
+    &:focus-within { background: var(--chat-surface-secondary); border-color: var(--chat-accent); box-shadow: 0 0 0 3px var(--chat-focus-ring); color: var(--chat-foreground); }
+    input { background: transparent; border: 0; color: var(--chat-foreground); font: inherit; font-size: var(--chat-font-body); min-width: 0; outline: none; width: 100%;
       &::placeholder { color: var(--chat-muted-subtle); }
     }
   }

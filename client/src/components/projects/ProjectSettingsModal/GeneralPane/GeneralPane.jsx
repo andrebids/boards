@@ -6,7 +6,7 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Divider, Form, Header, Radio, Tab } from 'semantic-ui-react';
+import { Button, Form, Radio, Tab } from 'semantic-ui-react';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -24,6 +24,7 @@ const GeneralPane = React.memo(() => {
   );
 
   const canEdit = useSelector(selectors.selectIsCurrentUserManagerForCurrentProject);
+  const canManageChat = useSelector(selectors.selectCanCurrentUserManageCurrentProjectChat);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -59,35 +60,35 @@ const GeneralPane = React.memo(() => {
   return (
     <Tab.Pane attached={false} className={styles.wrapper}>
       {canEdit && (
-        <>
+        <section className={styles.section}>
           <EditInformation />
-          <Divider horizontal section>
-            <Header as="h4">
-              {t('common.display', {
-                context: 'title',
-              })}
-            </Header>
-          </Divider>
-        </>
+        </section>
       )}
-      <Radio
-        toggle
-        name="isHidden"
-        checked={project.isHidden}
-        label={t('common.hideFromProjectListAndFavorites')}
-        className={styles.radio}
-        onChange={handleToggleChange}
-      />
-      {canEdit && (
-        <>
-          <Divider horizontal section>
-            <Header as="h4">{t('common.projectChat')}</Header>
-          </Divider>
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>
+          {t('common.display', {
+            context: 'title',
+          })}
+        </h3>
+        <div className={styles.settingRow}>
+          <Radio
+            toggle
+            name="isHidden"
+            checked={project.isHidden}
+            label={t('common.hideFromProjectListAndFavorites')}
+            className={styles.radio}
+            onChange={handleToggleChange}
+          />
+        </div>
+      </section>
+      {canManageChat && (
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle}>{t('common.projectChat')}</h3>
           <div className={styles.chatModeField}>
             <Form.Select
               fluid
               label={t('common.projectChatAccess')}
-              value={project.chatMode || 'disabled'}
+              value={project.chatMode || 'allProjectMembers'}
               options={[
                 {
                   key: 'disabled',
@@ -109,13 +110,15 @@ const GeneralPane = React.memo(() => {
             />
           </div>
           <p className={styles.hint}>{t('common.projectChatAccessHint')}</p>
-          <Divider horizontal section>
-            <Header as="h4">
-              {t('common.dangerZone', {
-                context: 'title',
-              })}
-            </Header>
-          </Divider>
+        </section>
+      )}
+      {canEdit && (
+        <section className={`${styles.section} ${styles.dangerSection}`}>
+          <h3 className={styles.sectionTitle}>
+            {t('common.dangerZone', {
+              context: 'title',
+            })}
+          </h3>
           <div className={styles.action}>
             <ConfirmationPopup
               title="common.deleteProject"
@@ -124,15 +127,18 @@ const GeneralPane = React.memo(() => {
               onConfirm={handleDeleteConfirm}
             >
               <Button disabled={hasBoards} className={styles.actionButton}>
-                {hasBoards
-                  ? t('common.deleteAllBoardsToBeAbleToDeleteThisProject')
-                  : t('action.deleteProject', {
-                      context: 'title',
-                    })}
+                {t('action.deleteProject', {
+                  context: 'title',
+                })}
               </Button>
             </ConfirmationPopup>
           </div>
-        </>
+          {hasBoards && (
+            <p className={styles.dangerHint}>
+              {t('common.deleteAllBoardsToBeAbleToDeleteThisProject')}
+            </p>
+          )}
+        </section>
       )}
     </Tab.Pane>
   );

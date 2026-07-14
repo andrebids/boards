@@ -5,15 +5,15 @@ import { UserRound, Users } from 'lucide-react';
 
 import styles from './ChatAvatar.module.scss';
 
-const mutedColors = ['#4d647c', '#58636e', '#4e6870', '#685d76', '#697058'];
+const mutedColors = ['#536b84', '#65717d', '#55737a', '#74677f', '#747b61'];
 
 const ChatAvatar = React.memo(({ isOnline, isProject, user }) => {
-  const backgroundColor = user
-    ? mutedColors[
-        [...user.name].reduce((sum, character) => sum + character.charCodeAt(0), 0) %
-          mutedColors.length
-      ]
-    : '#4d647c';
+  const colorIndex = user
+    ? [...user.name].reduce(
+        (sum, character) => sum + character.charCodeAt(0),
+        0,
+      ) % mutedColors.length
+    : 0;
 
   let contentNode = initials(user?.name || '?').slice(0, 2);
   if (user?.avatar) {
@@ -32,7 +32,7 @@ const ChatAvatar = React.memo(({ isOnline, isProject, user }) => {
   }
 
   return (
-    <span className={styles.avatar} style={{ backgroundColor }}>
+    <span className={styles.avatar} style={{ backgroundColor: mutedColors[colorIndex] }}>
       {contentNode}
       {isOnline && <span className={styles.online} />}
     </span>

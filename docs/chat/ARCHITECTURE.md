@@ -12,6 +12,10 @@ O chat pertence sempre a um projeto. `Project.chatMode` controla quem o pode usa
 | `managers` | Apenas gestores do projeto |
 | `allProjectMembers` | Gestores e utilizadores com membership num board do projeto |
 
+Novos projetos usam `allProjectMembers` por omissão. Um gestor do projeto ou um administrador
+com acesso administrativo a um projeto partilhado pode alterar o modo, incluindo desativar o
+chat. Projetos existentes mantêm o valor que já tinham quando esta omissão é alterada.
+
 O servidor volta a validar o acesso em cada operação. A visibilidade no cliente não substitui autorização no backend.
 
 Existem três tipos estáveis de conversa:

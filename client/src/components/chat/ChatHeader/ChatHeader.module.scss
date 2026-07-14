@@ -1,13 +1,13 @@
 :global(#app) {
-  .header { align-items: center; display: flex; justify-content: space-between; padding: 16px 14px 10px 16px; }
+  .header { align-items: center; border-bottom: 1px solid var(--chat-separator); display: flex; justify-content: space-between; min-height: 64px; padding: 10px 10px 10px 16px; }
   .copy { min-width: 0; }
-  .project { color: var(--chat-muted-subtle); display: block; font-size: 11px; font-weight: 600; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .titleRow { align-items: baseline; display: flex; gap: 10px; margin-top: 2px;
-    h2 { color: var(--chat-foreground); font-size: 19px; letter-spacing: -.02em; line-height: 24px; margin: 0; }
-    span { color: var(--chat-muted); font-size: 12px; }
+  .copy h2 { color: var(--chat-foreground); font-size: var(--chat-font-title); font-weight: 700; line-height: 22px; margin: 0; }
+  .copy p { align-items: center; color: var(--chat-muted); display: flex; font-size: var(--chat-font-meta); gap: 5px; line-height: 16px; margin: 2px 0 0; min-width: 0;
+    span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   }
-  .closeButton { align-items: center; background: transparent; border: 0; border-radius: 8px; color: var(--chat-muted); cursor: pointer; display: inline-flex; height: 40px; justify-content: center; width: 40px;
+  .closeButton { align-items: center; background: transparent; border: 0; border-radius: var(--chat-radius-control); color: var(--chat-muted); cursor: pointer; display: inline-flex; flex: 0 0 auto; height: 36px; justify-content: center; transition: background-color var(--chat-motion-fast) var(--chat-ease), color var(--chat-motion-fast) var(--chat-ease), transform var(--chat-motion-fast) var(--chat-ease); width: 36px;
     &:hover { background: var(--chat-default); color: var(--chat-foreground); }
+    &:active { transform: scale(0.96); }
     &:focus-visible { outline: 2px solid var(--chat-accent); outline-offset: 1px; }
   }
 }

@@ -21,7 +21,7 @@ const getLimit = (width) => {
 
 const ChatDock = React.memo(() => {
   const [t] = useTranslation();
-  const { isEnabled, openConversation, windows } = useChat();
+  const { isConversationListOpen, isEnabled, openConversation, windows } = useChat();
   const [limit, setLimit] = useState(() => getLimit(window.innerWidth));
 
   useEffect(() => {
@@ -55,7 +55,11 @@ const ChatDock = React.memo(() => {
   }
 
   return (
-    <aside className={styles.dock} aria-label={t('chat.openConversations')}>
+    <aside
+      className={`${styles.dock} ${isConversationListOpen ? styles.concealed : ''}`}
+      aria-hidden={isConversationListOpen}
+      aria-label={t('chat.openConversations')}
+    >
       {hiddenWindows.length > 0 && (
         <button
           type="button"

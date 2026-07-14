@@ -1,6 +1,6 @@
 :global(#app) {
   .list { height: 100%; overflow-y: auto; padding: 2px 0 8px; scrollbar-color: var(--chat-scrollbar) transparent; scrollbar-width: thin; }
-  .sectionLabel { color: var(--chat-muted-subtle); display: block; font-size: 10px; font-weight: 650; letter-spacing: .07em; margin: 12px 8px 5px; text-transform: uppercase; }
-  .sectionLabel:first-child { margin-top: 4px; }
-  .empty { color: var(--chat-muted); font-size: 12px; padding: 32px 14px; text-align: center; }
+  .sectionLabel { color: var(--chat-muted); display: block; font-size: var(--chat-font-meta); font-weight: 650; margin: 14px 9px 6px; }
+  .sectionLabel:first-child { margin-top: 5px; }
+  .empty { color: var(--chat-muted); font-size: var(--chat-font-body); padding: 32px 14px; text-align: center; }
 }

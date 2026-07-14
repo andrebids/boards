@@ -15,23 +15,21 @@
   .eyebrow,
   .sectionTitle {
     color: var(--chat-muted-subtle);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    font-size: var(--chat-font-meta);
+    font-weight: 650;
     margin: 0;
-    text-transform: uppercase;
   }
 
   .title {
     color: var(--chat-foreground);
-    font-size: 18px;
+    font-size: var(--chat-font-title);
     line-height: 1.2;
     margin: 2px 0 0;
   }
 
   .memberCount {
     color: var(--chat-muted);
-    font-size: 11px;
+    font-size: var(--chat-font-meta);
   }
 
   .generalButton,
@@ -53,7 +51,7 @@
     }
 
     &:active {
-      transform: translateY(1px);
+      transform: scale(0.99);
     }
 
     &:disabled {
@@ -100,20 +98,20 @@
 
     strong {
       color: var(--chat-foreground);
-      font-size: 13px;
+      font-size: var(--chat-font-body);
       font-weight: 600;
     }
 
     small {
       color: var(--chat-muted);
-      font-size: 11px;
+      font-size: var(--chat-font-meta);
       margin-top: 2px;
     }
   }
 
   .chevron {
     color: var(--chat-muted-subtle);
-    font-size: 11px;
+    font-size: var(--chat-font-meta);
   }
 
   .section {
@@ -126,7 +124,7 @@
   }
 
   .listItem {
-    border-radius: 8px;
+    border-radius: var(--chat-radius-control);
     min-height: 44px;
     padding: 5px 7px;
   }
@@ -134,7 +132,7 @@
   .unread {
     align-items: center;
     background: var(--chat-accent);
-    border-radius: 9px;
+    border-radius: 999px;
     color: var(--chat-accent-foreground);
     display: inline-flex;
     font-size: 10px;
@@ -155,7 +153,7 @@
     align-items: center;
     background: var(--chat-surface-secondary);
     border: 1px solid var(--chat-border);
-    border-radius: 8px;
+    border-radius: var(--chat-radius-control);
     color: var(--chat-muted-subtle);
     display: flex;
     gap: 6px;
@@ -168,7 +166,7 @@
       border: 0;
       color: var(--chat-foreground);
       font: inherit;
-      font-size: 12px;
+      font-size: var(--chat-font-body);
       min-width: 0;
       outline: none;
       width: 100%;
@@ -211,7 +209,7 @@
 
   .empty {
     color: var(--chat-muted);
-    font-size: 12px;
+    font-size: var(--chat-font-body);
     padding: 18px 8px;
     text-align: center;
   }

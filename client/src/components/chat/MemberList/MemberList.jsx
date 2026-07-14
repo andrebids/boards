@@ -10,11 +10,18 @@ const MemberList = React.memo(({ isPending, members, onMemberOpen }) => {
   const [t] = useTranslation();
 
   return (
-    <div className={styles.list} role="tabpanel" aria-labelledby="chat-tab-members">
+    <div className={styles.list}>
       {members.map((member) => (
-        <MemberRow key={member.id} member={member} isPending={isPending} onClick={onMemberOpen} />
+        <MemberRow
+          key={member.id}
+          member={member}
+          isPending={isPending}
+          onClick={onMemberOpen}
+        />
       ))}
-      {members.length === 0 && <div className={styles.empty}>{t('chat.noMembersFound')}</div>}
+      {members.length === 0 && (
+        <div className={styles.empty}>{t('chat.noMembersFound')}</div>
+      )}
     </div>
   );
 });

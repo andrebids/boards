@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { BellOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { formatTextWithMentions } from '../../../utils/mentions';
 import ChatAvatar from '../ChatAvatar';
-import { hasUnreadMessages } from '../utils';
+import ConversationActions from '../ConversationActions';
+import { hasUnreadMessages, isCustomGroupConversation } from '../utils';
 
 import styles from './ConversationRow.module.scss';
 
@@ -13,8 +15,14 @@ const formatTime = (value) => {
   const date = new Date(value);
   const isToday = date.toDateString() === new Date().toDateString();
   return isToday
-    ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(date)
-    : new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(date);
+    ? new Intl.DateTimeFormat(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date)
+    : new Intl.DateTimeFormat(undefined, {
+        day: 'numeric',
+        month: 'short',
+      }).format(date);
 };
 
 const getPreview = (lastMessage, sender, isGeneral, isBlocked, t) => {
@@ -28,48 +36,107 @@ const getPreview = (lastMessage, sender, isGeneral, isBlocked, t) => {
     lastMessage.attachments?.length > 0 && !lastMessage.text
       ? t('chat.sentFile')
       : formatTextWithMentions(lastMessage.text || '');
-  return isGeneral && sender ? `${sender.name}: ${text}` : text || t('chat.sentFile');
+  return isGeneral && sender
+    ? `${sender.name}: ${text}`
+    : text || t('chat.sentFile');
 };
 
 const ConversationRow = React.memo(
-  ({ conversation, isGeneral, isPending, lastMessage, onClick, sender, user }) => {
+  ({
+    conversation,
+    currentParticipant,
+    isGeneral,
+    isOpen,
+    isPending,
+    lastMessage,
+    onClick,
+    sender,
+    user,
+  }) => {
     const [t] = useTranslation();
     const title = useMemo(
       () =>
         isGeneral
           ? t('chat.general')
-          : user?.name || conversation?.title || conversation?.name || t('chat.conversation'),
+          : user?.name ||
+            conversation?.title ||
+            conversation?.name ||
+            t('chat.conversation'),
       [conversation?.name, conversation?.title, isGeneral, t, user?.name],
     );
     const id = conversation?.id;
     const unreadCount = conversation?.unreadCount || 0;
     const hasUnread = hasUnreadMessages(conversation);
 
+    const rowClassName = [
+      styles.row,
+      hasUnread ? styles.hasUnread : '',
+      isOpen ? styles.isOpen : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
     return (
-      <button
-        type="button"
-        data-id={id}
-        className={`${styles.row} ${hasUnread ? styles.hasUnread : ''}`}
-        disabled={isPending}
-        onClick={(event) => (id ? onClick(event.currentTarget.dataset.id) : onClick())}
-      >
-        <ChatAvatar isOnline={user?.isOnline} isProject={isGeneral} user={user} />
-        <span className={styles.copy}>
-          <strong>{title}</strong>
-          <small>{getPreview(lastMessage, sender, isGeneral, conversation?.isBlocked, t)}</small>
-        </span>
-        <span className={styles.meta}>
-          <time>{formatTime(lastMessage?.createdAt || conversation?.lastMessageAt)}</time>
-          {hasUnread && (
-            <span
-              className={styles.unread}
-              aria-label={t('chat.unreadMessages', { count: unreadCount })}
-            >
-              {Math.min(unreadCount, 99)}
+      <div className={rowClassName}>
+        <button
+          type="button"
+          data-id={id}
+          className={styles.primary}
+          disabled={isPending}
+          onClick={(event) =>
+            id ? onClick(event.currentTarget.dataset.id) : onClick()
+          }
+        >
+          <ChatAvatar
+            isOnline={user?.isOnline}
+            isProject={isGeneral || isCustomGroupConversation(conversation)}
+            user={user}
+          />
+          <span className={styles.copy}>
+            <strong>{title}</strong>
+            <small>
+              {getPreview(
+                lastMessage,
+                sender,
+                isGeneral,
+                conversation?.isBlocked,
+                t,
+              )}
+            </small>
+          </span>
+          <span className={styles.meta}>
+            <time>
+              {formatTime(
+                lastMessage?.createdAt || conversation?.lastMessageAt,
+              )}
+            </time>
+            <span className={styles.metaBottom}>
+              {currentParticipant?.isMuted && (
+                <BellOff
+                  aria-label={t('chat.notificationPreferences')}
+                  className={styles.mutedIndicator}
+                  size={12}
+                  strokeWidth={2}
+                />
+              )}
+              {hasUnread && (
+                <span
+                  className={styles.unread}
+                  aria-label={t('chat.unreadMessages', { count: unreadCount })}
+                >
+                  {Math.min(unreadCount, 99)}
+                </span>
+              )}
             </span>
-          )}
-        </span>
-      </button>
+          </span>
+        </button>
+        {id && (
+          <ConversationActions
+            conversationId={id}
+            participant={currentParticipant}
+          />
+        )}
+      </div>
     );
   },
 );
@@ -80,16 +147,33 @@ ConversationRow.propTypes = {
     isBlocked: PropTypes.bool,
     name: PropTypes.string,
     title: PropTypes.string,
+    type: PropTypes.string.isRequired,
     unreadCount: PropTypes.number,
-    lastMessageAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    lastMessageAt: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date),
+    ]),
+  }),
+  currentParticipant: PropTypes.shape({
+    isMuted: PropTypes.bool,
+    notificationLevel: PropTypes.string,
   }),
   isGeneral: PropTypes.bool,
+  isOpen: PropTypes.bool,
   isPending: PropTypes.bool,
   lastMessage: PropTypes.shape({
     text: PropTypes.string,
-    deletedAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-    createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-    attachments: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string.isRequired })),
+    deletedAt: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date),
+    ]),
+    createdAt: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date),
+    ]),
+    attachments: PropTypes.arrayOf(
+      PropTypes.shape({ id: PropTypes.string.isRequired }),
+    ),
   }),
   onClick: PropTypes.func.isRequired,
   sender: PropTypes.shape({ name: PropTypes.string.isRequired }),
@@ -101,7 +185,9 @@ ConversationRow.propTypes = {
 
 ConversationRow.defaultProps = {
   conversation: undefined,
+  currentParticipant: undefined,
   isGeneral: false,
+  isOpen: false,
   isPending: false,
   lastMessage: undefined,
   sender: undefined,

@@ -8,6 +8,10 @@
     margin-bottom: 16px;
     width: 100%;
 
+    > label {
+      color: #e6edf3 !important;
+    }
+
     &:last-child {
       margin-bottom: 0;
     }
