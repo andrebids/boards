@@ -4,12 +4,12 @@
  */
 
 :global(#app) {
-  .activeTypeButtonGroup {
-    margin-bottom: 12px;
+  .wrapper {
+    border: 0;
+    box-shadow: none;
   }
 
-  .wrapper {
-    border: none;
-    box-shadow: none;
+  .activeTypeButtonGroup {
+    margin-bottom: 16px;
   }
 }

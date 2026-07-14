@@ -612,7 +612,7 @@ export default {
       typeNameToConfirm: 'Digite o nome para confirmar.',
       typeTitleToConfirm: 'Digite o título para confirmar.',
       unsavedChanges: 'Alterações não guardadas',
-      uploadedImages: 'Imagens enviadas',
+      uploadedImages: 'Imagens',
       userActions_title: 'Ações do Utilizador',
       userAddedCardToList:
         '<0>{{user}}</0> adicionou um cartão <2>{{card}}</2> à {{list}}',

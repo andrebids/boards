@@ -23,28 +23,26 @@ const TITLE_BY_TYPE = {
 };
 
 const BackgroundPane = React.memo(() => {
-  const { backgroundType: currentType } = useSelector(
-    selectors.selectCurrentProject
-  );
+  const { backgroundType: currentType } = useSelector(selectors.selectCurrentProject);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
 
   const [activeType, setActiveType] = useState(
-    () => currentType || ProjectBackgroundTypes.GRADIENT
+    () => currentType || ProjectBackgroundTypes.GRADIENT,
   );
 
   const handleImageCreate = useCallback(
-    file => {
+    (file) => {
       dispatch(
         entryActions.createBackgroundImageInCurrentProject({
           file,
-        })
+        }),
       );
 
       setActiveType(ProjectBackgroundTypes.IMAGE);
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleActiveTypeChange = useCallback((_, { value }) => {
@@ -56,22 +54,19 @@ const BackgroundPane = React.memo(() => {
       <AddImageZone onCreate={handleImageCreate}>
         <Button.Group
           fluid
-          basic
           className={`${styles.activeTypeButtonGroup} project-background-type-selector`}
         >
-          {[ProjectBackgroundTypes.GRADIENT, ProjectBackgroundTypes.IMAGE].map(
-            type => (
-              <Button
-                key={type}
-                type="button"
-                value={type}
-                active={type === activeType}
-                onClick={handleActiveTypeChange}
-              >
-                {t(TITLE_BY_TYPE[type])}
-              </Button>
-            )
-          )}
+          {[ProjectBackgroundTypes.GRADIENT, ProjectBackgroundTypes.IMAGE].map((type) => (
+            <Button
+              key={type}
+              type="button"
+              value={type}
+              active={type === activeType}
+              onClick={handleActiveTypeChange}
+            >
+              {t(TITLE_BY_TYPE[type])}
+            </Button>
+          ))}
         </Button.Group>
         {activeType === ProjectBackgroundTypes.GRADIENT && <Gradients />}
         {activeType === ProjectBackgroundTypes.IMAGE && <Images />}

@@ -13,56 +13,66 @@ import ConfirmationStep from '../../../common/ConfirmationStep';
 
 import styles from './Image.module.scss';
 
-const Image = React.memo(
-  ({ url, isActive, onSelect, onDeselect, onDelete }) => {
-    const handleClick = useCallback(() => {
-      if (isActive) {
-        onDeselect();
-      } else {
-        onSelect();
+const Image = React.memo(({ url, isActive, onSelect, onDeselect, onDelete }) => {
+  const handleClick = useCallback(() => {
+    if (isActive) {
+      onDeselect();
+    } else {
+      onSelect();
+    }
+  }, [isActive, onSelect, onDeselect]);
+
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleClick();
       }
-    }, [isActive, onSelect, onDeselect]);
+    },
+    [handleClick],
+  );
 
-    const ConfirmationPopup = usePopupInClosableContext(ConfirmationStep);
+  const ConfirmationPopup = usePopupInClosableContext(ConfirmationStep);
 
-    return (
-      /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
-                                jsx-a11y/no-static-element-interactions */
-      <div
-        className={classNames(styles.wrapper, isActive && styles.wrapperActive)}
-        style={{
-          background: `url("${url}") center / cover`,
-        }}
-        onClick={handleClick}
-      >
-        {isActive && (
-          <Label
-            corner="left"
-            size="mini"
-            icon={{
-              name: 'checkmark',
-              color: 'grey',
-              inverted: true,
-            }}
-            className={styles.label}
-          />
-        )}
-        {onDelete && (
-          <ConfirmationPopup
-            title="common.deleteBackgroundImage"
-            content="common.areYouSureYouWantToDeleteThisBackgroundImage"
-            buttonContent="action.deleteBackgroundImage"
-            onConfirm={onDelete}
-          >
-            <Button className={styles.deleteButton}>
-              <Icon fitted name="trash alternate" size="small" />
-            </Button>
-          </ConfirmationPopup>
-        )}
-      </div>
-    );
-  }
-);
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
+      className={classNames(styles.wrapper, isActive && styles.wrapperActive)}
+      style={{
+        background: `url("${url}") center / cover`,
+      }}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+    >
+      {isActive && (
+        <Label
+          corner="left"
+          size="mini"
+          icon={{
+            name: 'checkmark',
+            color: 'grey',
+            inverted: true,
+          }}
+          className={styles.label}
+        />
+      )}
+      {onDelete && (
+        <ConfirmationPopup
+          title="common.deleteBackgroundImage"
+          content="common.areYouSureYouWantToDeleteThisBackgroundImage"
+          buttonContent="action.deleteBackgroundImage"
+          onConfirm={onDelete}
+        >
+          <Button className={styles.deleteButton}>
+            <Icon fitted name="trash alternate" size="small" />
+          </Button>
+        </ConfirmationPopup>
+      )}
+    </div>
+  );
+});
 
 Image.propTypes = {
   url: PropTypes.string.isRequired,

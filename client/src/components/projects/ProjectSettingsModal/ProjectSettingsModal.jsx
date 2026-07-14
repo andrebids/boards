@@ -19,9 +19,7 @@ import BaseCustomFieldGroupsPane from './BaseCustomFieldGroupsPane';
 import styles from './ProjectSettingsModal.module.scss';
 
 const ProjectSettingsModal = React.memo(() => {
-  const withManagablePanes = useSelector(
-    selectors.selectIsCurrentUserManagerForCurrentProject
-  );
+  const withManagablePanes = useSelector(selectors.selectIsCurrentUserManagerForCurrentProject);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -65,7 +63,7 @@ const ProjectSettingsModal = React.memo(() => {
           context: 'title',
         }),
         render: () => <BaseCustomFieldGroupsPane />,
-      }
+      },
     );
   }
 

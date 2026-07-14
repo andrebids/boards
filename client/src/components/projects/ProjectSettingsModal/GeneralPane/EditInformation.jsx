@@ -28,7 +28,7 @@ const EditInformation = React.memo(() => {
       name: project.name,
       description: project.description,
     }),
-    [project.name, project.description]
+    [project.name, project.description],
   );
 
   const [data, handleFieldChange] = useForm(() => ({
@@ -43,7 +43,7 @@ const EditInformation = React.memo(() => {
       name: data.name.trim(),
       description: data.description.trim() || null,
     }),
-    [data]
+    [data],
   );
 
   const [nameFieldRef, handleNameFieldRef] = useNestedRef('inputRef');
@@ -62,12 +62,12 @@ const EditInformation = React.memo(() => {
   }, [submit]);
 
   const handleDescriptionKeyDown = useCallback(
-    event => {
+    (event) => {
       if (isModifierKeyPressed(event) && event.key === 'Enter') {
         submit();
       }
     },
-    [submit]
+    [submit],
   );
 
   return (

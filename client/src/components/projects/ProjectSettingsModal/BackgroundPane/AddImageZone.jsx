@@ -14,10 +14,10 @@ const AddImageZone = React.memo(({ children, onCreate }) => {
   const [t] = useTranslation();
 
   const handleDropAccepted = useCallback(
-    files => {
+    (files) => {
       onCreate(files[0]);
     },
-    [onCreate]
+    [onCreate],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -31,7 +31,7 @@ const AddImageZone = React.memo(({ children, onCreate }) => {
   });
 
   useEffect(() => {
-    const handlePaste = event => {
+    const handlePaste = (event) => {
       if (!event.clipboardData) {
         return;
       }
@@ -67,10 +67,8 @@ const AddImageZone = React.memo(({ children, onCreate }) => {
 
   return (
     /* eslint-disable-next-line react/jsx-props-no-spreading */
-    <div {...getRootProps()}>
-      {isDragActive && (
-        <div className={styles.dropzone}>{t('common.dropFileToUpload')}</div>
-      )}
+    <div {...getRootProps({ className: styles.wrapper })}>
+      {isDragActive && <div className={styles.dropzone}>{t('common.dropFileToUpload')}</div>}
       {children}
       {/* eslint-disable-next-line react/jsx-props-no-spreading */}
       <input {...getInputProps()} />

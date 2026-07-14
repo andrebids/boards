@@ -6,6 +6,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Icon, Tab } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
@@ -18,20 +19,17 @@ import styles from './BaseCustomFieldGroupsPane.module.scss';
 
 const BaseCustomFieldGroupsPane = React.memo(() => {
   const baseCustomFieldGroupIds = useSelector(
-    selectors.selectBaseCustomFieldGroupIdsForCurrentProject
+    selectors.selectBaseCustomFieldGroupIdsForCurrentProject,
   );
 
-  const BaseCustomFieldGroupPopup = usePopupInClosableContext(
-    BaseCustomFieldGroupStep
-  );
-  const AddBaseCustomFieldGroupPopup = usePopupInClosableContext(
-    AddBaseCustomFieldGroupStep
-  );
+  const BaseCustomFieldGroupPopup = usePopupInClosableContext(BaseCustomFieldGroupStep);
+  const AddBaseCustomFieldGroupPopup = usePopupInClosableContext(AddBaseCustomFieldGroupStep);
+  const [t] = useTranslation();
 
   return (
     <Tab.Pane attached={false} className={styles.wrapper}>
       <div className={styles.groups}>
-        {baseCustomFieldGroupIds.map(baseCustomFieldGroupId => (
+        {baseCustomFieldGroupIds.map((baseCustomFieldGroupId) => (
           <span key={baseCustomFieldGroupId} className={styles.group}>
             <BaseCustomFieldGroupPopup id={baseCustomFieldGroupId}>
               <BaseCustomFieldGroupChip id={baseCustomFieldGroupId} />
@@ -41,17 +39,10 @@ const BaseCustomFieldGroupsPane = React.memo(() => {
         <AddBaseCustomFieldGroupPopup>
           <button
             type="button"
-            className={classNames(
-              styles.group,
-              styles.addAttachmentButton
-            )}
-            aria-label="Add base custom field group"
+            className={classNames(styles.group, styles.addAttachmentButton)}
+            aria-label={t('action.addCustomFieldGroup')}
           >
-            <Icon
-              name="plus"
-              size="small"
-              className={styles.addAttachmentButtonIcon}
-            />
+            <Icon name="plus" size="small" className={styles.addAttachmentButtonIcon} />
           </button>
         </AddBaseCustomFieldGroupPopup>
       </div>

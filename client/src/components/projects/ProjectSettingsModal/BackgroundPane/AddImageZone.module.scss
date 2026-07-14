@@ -4,17 +4,25 @@
  */
 
 :global(#app) {
+  .wrapper {
+    position: relative;
+  }
+
   .dropzone {
-    background: white;
-    font-size: 20px;
-    font-weight: bold;
-    height: 100%;
-    line-height: 30px;
-    opacity: 0.7;
-    padding-top: 200px;
+    align-items: center;
+    background: rgba(17, 19, 24, 0.94);
+    border: 2px dashed var(--project-settings-accent);
+    border-radius: 10px;
+    color: var(--project-settings-text);
+    display: flex;
+    font-size: 16px;
+    font-weight: 700;
+    inset: 0;
+    justify-content: center;
+    line-height: 1.5;
+    padding: 24px;
     position: absolute;
     text-align: center;
-    width: 100%;
-    z-index: 2001;
+    z-index: 20;
   }
 }

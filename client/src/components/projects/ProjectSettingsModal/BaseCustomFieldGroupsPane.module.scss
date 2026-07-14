@@ -4,44 +4,53 @@
  */
 
 :global(#app) {
-  .addAttachmentButton {
-    background: rgba(9, 30, 66, 0.04);
-    border: none;
-    border-radius: 3px;
-    color: #6b808c;
-    cursor: pointer;
-    line-height: 20px;
-    padding: 6px 14px;
-    transition: background 0.3s ease;
-    vertical-align: top;
+  .wrapper {
+    border: 0;
+    box-shadow: none;
+  }
 
-    &:hover {
-      background: rgba(9, 30, 66, 0.08);
-      color: #17394d;
-    }
+  .groups {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .group {
+    display: inline-flex;
+    max-width: 100%;
+  }
+
+  .addAttachmentButton {
+    align-items: center;
+    background: transparent;
+    border: 1px dashed var(--project-settings-border-strong);
+    border-radius: 8px;
+    color: var(--project-settings-muted);
+    cursor: pointer;
+    height: 34px;
+    justify-content: center;
+    padding: 0;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+    width: 42px;
+  }
+
+  .addAttachmentButton:hover {
+    background: var(--project-settings-field-hover);
+    border-color: var(--project-settings-accent);
+    color: var(--project-settings-text);
+  }
+
+  .addAttachmentButton:focus-visible {
+    box-shadow: 0 0 0 3px rgba(95, 126, 232, 0.24);
+    outline: none;
+  }
+
+  .addAttachmentButton:active {
+    transform: scale(0.98);
   }
 
   .addAttachmentButtonIcon {
-    margin: 0 -4.3px;
-  }
-
-  .attachment {
-    display: inline-block;
-    margin: 0 4px 4px 0;
-    max-width: 100%;
-  }
-
-  .attachments {
-    display: inline-block;
-    line-height: 1;
-    margin: 0 8px 8px 0;
-    max-width: 100%;
-    vertical-align: top;
-  }
-
-  .wrapper {
-    border: none;
-    box-shadow: none;
-    display: flex;
+    margin: 0;
   }
 }

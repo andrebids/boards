@@ -5,8 +5,8 @@
 
 :global(#app) {
   :global(.ui.modal.glass.project-settings) {
-    --project-settings-accent: #5f7ee8;
-    --project-settings-accent-hover: #6f8cf0;
+    --project-settings-accent: #4e6bd2;
+    --project-settings-accent-hover: #425bb8;
     --project-settings-background: #111318;
     --project-settings-border: rgba(255, 255, 255, 0.1);
     --project-settings-border-strong: rgba(255, 255, 255, 0.17);
@@ -151,9 +151,11 @@
       border-radius: 7px;
       box-shadow: none;
       color: var(--project-settings-muted);
+      font-size: 13px;
       font-weight: 600;
       min-height: 38px;
-      transition: background-color 150ms ease, color 150ms ease;
+      padding: 10px 14px;
+      transition: background-color 150ms ease, box-shadow 150ms ease, color 150ms ease;
     }
 
     :global(.project-background-type-selector.ui.buttons .button:hover) {
@@ -167,9 +169,10 @@
     }
 
     :global(.project-background-type-selector.ui.buttons .active.button),
-    :global(.project-background-type-selector.ui.basic.buttons .active.button) {
+    :global(.project-background-type-selector.ui.buttons .active.button:hover) {
       background: var(--project-settings-field);
-      box-shadow: 0 1px 2px rgba(3, 5, 10, 0.28);
+      box-shadow: inset 0 0 0 1px var(--project-settings-border),
+        0 1px 2px rgba(3, 5, 10, 0.28);
       color: var(--project-settings-text);
     }
   }

@@ -70,8 +70,8 @@
   // ===== TEMA LIQUID GLASS PARA DROPDOWNS SEMANTIC UI =====
   
   // Dropdown principal
-  .ui.fluid.selection.dropdown,
-  .ui.selection.dropdown {
+  .ui.fluid.selection.dropdown:not(.project-settings *),
+  .ui.selection.dropdown:not(.project-settings *) {
     background: rgba(14, 17, 23, 0.45) !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
@@ -118,9 +118,9 @@
   }
   
   // Menu do dropdown
-  .ui.fluid.selection.dropdown .menu,
-  .ui.selection.dropdown .menu.visible,
-  .ui.dropdown .menu.transition.visible {
+  .ui.fluid.selection.dropdown:not(.project-settings *) .menu,
+  .ui.selection.dropdown:not(.project-settings *) .menu.visible,
+  .ui.dropdown:not(.project-settings *) .menu.transition.visible {
     background: rgba(14, 17, 23, 0.95) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;

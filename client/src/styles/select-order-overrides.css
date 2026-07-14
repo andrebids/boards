@@ -4,36 +4,36 @@
  */
 
 /* Menu de seleção de ordem - cores claras */
-.ui.secondary.vertical.menu .item {
+.ui.secondary.vertical.menu:not(.project-settings *) .item {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-.ui.secondary.vertical.menu .item:hover {
+.ui.secondary.vertical.menu:not(.project-settings *) .item:hover {
   color: rgba(255, 255, 255, 0.95) !important;
 }
 
-.ui.secondary.menu .active.item {
+.ui.secondary.menu:not(.project-settings *) .active.item {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
-.ui.secondary.menu .active.item:hover {
+.ui.secondary.menu:not(.project-settings *) .active.item:hover {
   color: rgba(255, 255, 255, 1) !important;
 }
 
 /* Seletores mais específicos para garantir prioridade */
-#app .ui.secondary.vertical.menu .item {
+#app .ui.secondary.vertical.menu:not(.project-settings *) .item {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-#app .ui.secondary.vertical.menu .item:hover {
+#app .ui.secondary.vertical.menu:not(.project-settings *) .item:hover {
   color: rgba(255, 255, 255, 0.95) !important;
 }
 
-#app .ui.secondary.menu .active.item {
+#app .ui.secondary.menu:not(.project-settings *) .active.item {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
-#app .ui.secondary.menu .active.item:hover {
+#app .ui.secondary.menu:not(.project-settings *) .active.item:hover {
   color: rgba(255, 255, 255, 1) !important;
 }
 

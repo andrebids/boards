@@ -4,47 +4,68 @@
  */
 
 :global(#app) {
+  .wrapper:global(.ui.button) {
+    border: 1px solid var(--project-settings-border);
+    border-radius: 9px;
+    box-shadow: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 84px;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    transition: border-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+  }
+
+  .wrapper:global(.ui.button)::after {
+    background: transparent;
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    transition: background-color 150ms ease;
+  }
+
+  .wrapper:global(.ui.button:hover) {
+    border-color: var(--project-settings-border-strong);
+    box-shadow: none;
+  }
+
+  .wrapper:global(.ui.button:hover)::after,
+  .wrapper:global(.ui.button:focus-visible)::after {
+    background: rgba(8, 10, 15, 0.24);
+  }
+
+  .wrapper:global(.ui.button:focus-visible) {
+    border-color: var(--project-settings-accent);
+    box-shadow: 0 0 0 3px rgba(95, 126, 232, 0.24);
+    outline: none;
+  }
+
+  .wrapper:global(.ui.button:active) {
+    transform: scale(0.99);
+  }
+
+  .wrapperActive:global(.ui.button) {
+    border-color: var(--project-settings-accent);
+    box-shadow: inset 0 0 0 2px var(--project-settings-accent);
+  }
+
+  .wrapperActive:global(.ui.button)::before {
+    background: rgba(8, 10, 15, 0.16);
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
   .label {
-    border-color: rgba(29, 46, 63, 0.8);
-    z-index: 1;
+    border-color: var(--project-settings-accent);
+    z-index: 2;
 
     i {
       cursor: inherit;
-    }
-  }
-
-  .wrapper {
-    border: 0 !important;
-    box-sizing: border-box;
-    cursor: pointer;
-    height: 74px;
-    margin: 0;
-    padding: 0;
-    position: relative;
-    transition: background-color 0.16s ease;
-
-    &:hover,
-    &:focus-visible {
-      &::after {
-        background: rgba(15, 23, 42, 0.48);
-        content: '';
-        inset: 0;
-        pointer-events: none;
-        position: absolute;
-      }
-
-      box-shadow: none !important;
-      outline: none;
-    }
-  }
-
-  .wrapperActive {
-    &::before {
-      background: rgba(15, 23, 42, 0.32);
-      content: '';
-      inset: 0;
-      pointer-events: none;
-      position: absolute;
     }
   }
 }
