@@ -12,6 +12,13 @@ Registar aqui mudanças com impacto funcional, de contrato, dados, segurança, o
 
 ### Corrigido
 
+- Conversas diretas deixam de confundir grupos personalizados que contêm o mesmo membro.
+- O cliente passa a tratar `chatMessageAlert`; previews de links falhados já não interrompem a entrega de mensagens.
+
+### Segurança
+
+- Erros inesperados do chat podem ser reportados ao Sentry sem corpo de pedidos, conteúdo de mensagens, cookies, cabeçalhos ou URLs privadas.
+
 ### Segurança
 
 ### Removido

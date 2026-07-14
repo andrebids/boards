@@ -157,8 +157,12 @@ Parâmetros de deep link:
 | `CHAT_ATTACHMENT_MAX_BYTES` | Limite por anexo; por omissão 25 MiB |
 | `CHAT_ATTACHMENTS_PER_MESSAGE_LIMIT` | Máximo por mensagem; por omissão 10 |
 | `CHAT_EXTERNAL_LINK_PREVIEWS_ENABLED` | Ativa previews externos apenas quando igual a `true` |
+| `SENTRY_DSN` | Ativa reporte seguro de erros inesperados no servidor |
+| `VITE_SENTRY_DSN` | Ativa reporte seguro de erros inesperados no cliente |
 
 Previews externos devem continuar desativados por omissão, porque implicam pedidos de rede a URLs fornecidos por utilizadores e exigem controlos contra SSRF, limites e observabilidade.
+
+Quando Sentry está configurado, o cliente e o servidor reportam erros inesperados do chat com as tags `area=chat` e a operação. Corpos de pedidos, cabeçalhos, cookies, texto de mensagens, URLs com query string e detalhes da exceção são removidos antes do envio. O processamento de previews é assíncrono e best effort: nunca bloqueia a criação nem a entrega de uma mensagem.
 
 ## Testes e validação
 

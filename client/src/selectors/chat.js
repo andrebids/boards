@@ -36,6 +36,8 @@ export const selectChatConversationCreationErrors = (state) =>
 export const selectChatAccessRevocationVersions = (state) =>
   selectChatState(state).accessRevocationVersionByProject;
 
+export const selectLastChatMessageAlert = (state) => selectChatState(state).lastMessageAlert;
+
 export const makeSelectChatDraftByConversationId = () => (state, conversationId) =>
   selectChatState(state).draftsByConversation[conversationId] || '';
 
@@ -133,25 +135,6 @@ export const makeSelectChatMessagesByConversationId = () =>
 
 export const selectChatMessagesByConversationId = makeSelectChatMessagesByConversationId();
 
-export const selectSavedChatMessagesForCurrentProject = createSelector(
-  orm,
-  (state) => selectPath(state).projectId,
-  ({ ChatMessage, ChatConversation }, projectId) => {
-    const conversationIds = new Set(
-      ChatConversation.filter({ projectId })
-        .toRefArray()
-        .map(({ id }) => id),
-    );
-    return ChatMessage.filter({ isSaved: true })
-      .toRefArray()
-      .filter(({ conversationId }) => conversationIds.has(conversationId))
-      .sort(
-        (left, right) =>
-          new Date(right.savedAt || right.createdAt) - new Date(left.savedAt || left.createdAt),
-      );
-  },
-);
-
 export const selectChatUnreadTotal = createSelector(
   orm,
   (state) => selectPath(state).projectId,
@@ -178,6 +161,7 @@ export default {
   selectMinimizedChatConversationIds,
   selectChatConversationCreationErrors,
   selectChatAccessRevocationVersions,
+  selectLastChatMessageAlert,
   makeSelectChatDraftByConversationId,
   makeSelectChatReplyTargetByConversationId,
   makeSelectChatTypingUserIdsByConversationId,
@@ -191,7 +175,6 @@ export default {
   selectChatMessageById,
   makeSelectChatMessagesByConversationId,
   selectChatMessagesByConversationId,
-  selectSavedChatMessagesForCurrentProject,
   selectChatUnreadTotal,
   makeSelectIsChatMessagesFetchingByConversationId,
   makeSelectHasMoreChatMessagesByConversationId,

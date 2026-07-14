@@ -148,7 +148,8 @@
     flex: 0 0 auto;
     gap: 2px;
     position: relative;
-    button {
+
+    > button {
       align-items: center;
       background: transparent;
       border: 0;
@@ -180,6 +181,58 @@
       }
     }
   }
+
+  .attachmentMenu {
+    background: var(--chat-overlay);
+    border: 1px solid var(--chat-border);
+    border-radius: 10px;
+    bottom: 40px;
+    box-shadow: var(--chat-overlay-shadow);
+    color: var(--chat-foreground);
+    display: flex;
+    flex-direction: column;
+    left: 0;
+    max-width: calc(100vw - 28px);
+    padding: 7px;
+    position: absolute;
+    width: 240px;
+    z-index: 9;
+
+    strong {
+      font-size: 12px;
+      padding: 4px 6px 2px;
+    }
+
+    > span {
+      color: var(--chat-muted);
+      font-size: 10px;
+      padding: 1px 6px 7px;
+    }
+  }
+
+  .attachmentMenuItem {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    color: var(--chat-foreground);
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-size: 12px;
+    gap: 8px;
+    min-height: 34px;
+    padding: 7px 8px;
+    text-align: left;
+    width: 100%;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--chat-default);
+      outline: none;
+    }
+  }
+
   .emojiMenu {
     bottom: 40px;
     left: 0;

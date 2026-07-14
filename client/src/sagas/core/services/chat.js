@@ -11,6 +11,7 @@ import selectors from '../../../selectors';
 import actions from '../../../actions';
 import api from '../../../api';
 import { createLocalId } from '../../../utils/local-id';
+import { reportChatError } from '../../../sentry';
 
 export function* fetchChatMembers(projectId) {
   yield put(actions.fetchChatMembers(projectId));
@@ -93,8 +94,7 @@ export function* createDirectChatConversation(projectId, userId) {
   yield call(createChatConversation, projectId, 'projectDirect', userId);
 }
 
-export function* createCustomChatGroup(projectId, data) {
-  const requestKey = `${projectId}:group`;
+export function* createCustomChatGroup(projectId, data, requestKey = `${projectId}:group`) {
   yield put(actions.createChatConversation(projectId, 'projectCustomGroup', requestKey));
   try {
     const body = yield call(request, api.createCustomChatGroup, projectId, data);
@@ -103,6 +103,7 @@ export function* createCustomChatGroup(projectId, data) {
         body.item,
         body.included?.chatParticipants || [],
         body.included?.users || [],
+        requestKey,
       ),
     );
   } catch (error) {
@@ -116,7 +117,8 @@ export function* updateChatConversation(id, data) {
   try {
     const { item } = yield call(request, api.updateChatConversation, id, data);
     yield put(actions.handleChatConversationUpdate(item, [], []));
-  } catch {
+  } catch (error) {
+    reportChatError(error, 'update-conversation');
     // The server remains the source of truth for the title.
   }
 }
@@ -131,7 +133,8 @@ export function* addChatConversationParticipants(id, userIds) {
         body.included?.users || [],
       ),
     );
-  } catch {
+  } catch (error) {
+    reportChatError(error, 'add-participants');
     // Membership changes are reflected only after server confirmation.
   }
 }
@@ -139,7 +142,8 @@ export function* addChatConversationParticipants(id, userIds) {
 export function* deleteChatConversationParticipant(id, userId) {
   try {
     yield call(request, api.deleteChatConversationParticipant, id, userId);
-  } catch {
+  } catch (error) {
+    reportChatError(error, 'remove-participant');
     // Server events keep authorized participants in sync.
   }
 }
@@ -151,7 +155,8 @@ export function* leaveChatConversation(id) {
     if (conversation) {
       yield put(actions.handleChatConversationAccessRevoke(conversation.projectId, id));
     }
-  } catch {
+  } catch (error) {
+    reportChatError(error, 'leave-conversation');
     // Keep the conversation visible when leaving failed.
   }
 }
@@ -244,10 +249,11 @@ function* sendChatMessage(localId, conversationId, data, existingMessageId) {
         clientMessageId,
         hasAttachments: files.length > 0,
       }));
-    } catch (error) {
-      yield put(actions.createChatMessage.failure(localId, error));
-      return;
-    }
+  } catch (error) {
+    reportChatError(error, 'create-message');
+    yield put(actions.createChatMessage.failure(localId, error));
+    return;
+  }
   }
 
   const uploadResult = yield call(uploadChatMessageAttachments, message, files);
@@ -325,6 +331,7 @@ export function* updateChatMessage(id, data) {
   try {
     ({ item: message } = yield call(request, api.updateChatMessage, id, data));
   } catch (error) {
+    reportChatError(error, 'update-message');
     yield put(actions.updateChatMessage.failure(id, previousMessage, error));
     return;
   }
@@ -343,6 +350,7 @@ export function* deleteChatMessage(id) {
   try {
     ({ item: message } = yield call(request, api.deleteChatMessage, id));
   } catch (error) {
+    reportChatError(error, 'delete-message');
     yield put(actions.deleteChatMessage.failure(id, error));
     return;
   }
@@ -359,41 +367,11 @@ export function* toggleChatMessageReaction(id, emoji) {
   try {
     ({ item: message } = yield call(request, api.toggleChatMessageReaction, id, emoji));
   } catch (error) {
+    reportChatError(error, 'toggle-reaction');
     return;
   }
 
   yield put(actions.handleChatMessageUpdate(message));
-}
-
-export function* fetchChatSavedMessages(projectId) {
-  yield put(actions.fetchChatSavedMessages(projectId));
-  try {
-    const body = yield call(request, api.getChatSavedMessages, projectId, {});
-    yield put(
-      actions.fetchChatSavedMessages.success(
-        projectId,
-        body.items,
-        body.included?.users || [],
-        body.meta?.hasMore || false,
-      ),
-    );
-  } catch (error) {
-    yield put(actions.fetchChatSavedMessages.failure(projectId, error));
-  }
-}
-
-export function* toggleChatMessageSaved(id, isSaved) {
-  yield put(actions.toggleChatMessageSaved(id, isSaved));
-  try {
-    const { item } = yield call(
-      request,
-      isSaved ? api.createChatSavedMessage : api.deleteChatSavedMessage,
-      id,
-    );
-    yield put(actions.toggleChatMessageSaved.success(item));
-  } catch (error) {
-    yield put(actions.toggleChatMessageSaved.failure(id, !isSaved, error));
-  }
 }
 
 export function* forwardChatMessage(id, targetConversationId) {
@@ -404,7 +382,8 @@ export function* forwardChatMessage(id, targetConversationId) {
       clientMessageId,
     });
     yield put(actions.handleChatMessageCreate(item, []));
-  } catch {
+  } catch (error) {
+    reportChatError(error, 'forward-message');
     // The source remains unchanged and can be forwarded again.
   }
 }
@@ -429,7 +408,8 @@ export function* updateChatConversationPreferences(id, data) {
 export function* updateChatTyping(id, isTyping) {
   try {
     yield call(request, api.updateChatTyping, id, isTyping);
-  } catch {
+  } catch (error) {
+    reportChatError(error, 'update-typing');
     // Typing state is ephemeral and expires on every client.
   }
 }
@@ -451,6 +431,10 @@ export function* handleChatTypingUpdate(typingState) {
       }),
     );
   }
+}
+
+export function* handleChatMessageAlert(alert) {
+  yield put(actions.handleChatMessageAlert(alert));
 }
 
 export function* handleChatConversationAccessRevoke(projectId, conversationId) {
@@ -497,7 +481,8 @@ export function* openChatConversation(id) {
 
   try {
     yield call(request, api.subscribeToChatConversation, id);
-  } catch {
+  } catch (error) {
+    reportChatError(error, 'subscribe-conversation');
     // Fetching the messages also retries the subscription.
   }
 }
@@ -507,7 +492,8 @@ export function* closeChatConversation(id) {
 
   try {
     yield call(request, api.unsubscribeFromChatConversation, id);
-  } catch {
+  } catch (error) {
+    reportChatError(error, 'unsubscribe-conversation');
     // The server drops socket rooms on disconnect; no local state must remain open.
   }
 }
@@ -539,13 +525,12 @@ export default {
   deleteChatMessage,
   handleChatMessageDelete,
   toggleChatMessageReaction,
-  fetchChatSavedMessages,
-  toggleChatMessageSaved,
   forwardChatMessage,
   updateChatConversationPreferences,
   updateChatTyping,
   handleChatParticipantUpdate,
   handleChatTypingUpdate,
+  handleChatMessageAlert,
   handleChatConversationAccessRevoke,
   updateChatDraft,
   setChatReplyTarget,

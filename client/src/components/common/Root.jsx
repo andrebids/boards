@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import { Provider } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import { ThemeProvider, ToasterProvider } from '@gravity-ui/uikit';
+import { ErrorBoundary } from '@sentry/react';
 // eslint-disable-next-line import/no-unresolved
 import { toaster } from '@gravity-ui/uikit/toaster-singleton';
 import { ReduxRouter } from '../../lib/redux-router';
@@ -24,63 +25,74 @@ import '../../lib/custom-ui/styles.css';
 
 import '../../styles.module.scss';
 
+const ApplicationErrorFallback = () => (
+  <main role="alert">
+    <p>Ocorreu um erro inesperado. Recarregue a página para continuar.</p>
+    <button type="button" onClick={() => window.location.reload()}>
+      Recarregar
+    </button>
+  </main>
+);
+
 function Root({ store, history }) {
   return (
     <Provider store={store}>
-      <ReduxRouter history={history}>
-        <ThemeProvider theme="light">
-          <ToasterProvider toaster={toaster}>
-            {/* SVG defs for optional glass distortion filter */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="0"
-              height="0"
-              style={{ position: 'absolute', overflow: 'hidden' }}
-              aria-hidden="true"
-              focusable="false"
-            >
-              <defs>
-                <filter
-                  id="glass-distortion"
-                  x="0%"
-                  y="0%"
-                  width="100%"
-                  height="100%"
-                >
-                  <feTurbulence
-                    type="fractalNoise"
-                    baseFrequency="0.008 0.008"
-                    numOctaves="2"
-                    seed="92"
-                    result="noise"
-                  />
-                  <feGaussianBlur
-                    in="noise"
-                    stdDeviation="2"
-                    result="blurred"
-                  />
-                  <feDisplacementMap
-                    in="SourceGraphic"
-                    in2="blurred"
-                    scale="77"
-                    xChannelSelector="R"
-                    yChannelSelector="G"
-                  />
-                </filter>
-              </defs>
-            </svg>
-            <Routes>
-              <Route path={Paths.LOGIN} element={<Login />} />
-              <Route path={Paths.OIDC_CALLBACK} element={<Login />} />
-              <Route path={Paths.ROOT} element={<Core />} />
-              <Route path={Paths.PROJECTS} element={<Core />} />
-              <Route path={Paths.BOARDS} element={<Core />} />
-              <Route path={Paths.CARDS} element={<Core />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ToasterProvider>
-        </ThemeProvider>
-      </ReduxRouter>
+      <ErrorBoundary fallback={ApplicationErrorFallback}>
+        <ReduxRouter history={history}>
+          <ThemeProvider theme="light">
+            <ToasterProvider toaster={toaster}>
+              {/* SVG defs for optional glass distortion filter */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="0"
+                height="0"
+                style={{ position: 'absolute', overflow: 'hidden' }}
+                aria-hidden="true"
+                focusable="false"
+              >
+                <defs>
+                  <filter
+                    id="glass-distortion"
+                    x="0%"
+                    y="0%"
+                    width="100%"
+                    height="100%"
+                  >
+                    <feTurbulence
+                      type="fractalNoise"
+                      baseFrequency="0.008 0.008"
+                      numOctaves="2"
+                      seed="92"
+                      result="noise"
+                    />
+                    <feGaussianBlur
+                      in="noise"
+                      stdDeviation="2"
+                      result="blurred"
+                    />
+                    <feDisplacementMap
+                      in="SourceGraphic"
+                      in2="blurred"
+                      scale="77"
+                      xChannelSelector="R"
+                      yChannelSelector="G"
+                    />
+                  </filter>
+                </defs>
+              </svg>
+              <Routes>
+                <Route path={Paths.LOGIN} element={<Login />} />
+                <Route path={Paths.OIDC_CALLBACK} element={<Login />} />
+                <Route path={Paths.ROOT} element={<Core />} />
+                <Route path={Paths.PROJECTS} element={<Core />} />
+                <Route path={Paths.BOARDS} element={<Core />} />
+                <Route path={Paths.CARDS} element={<Core />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ToasterProvider>
+          </ThemeProvider>
+        </ReduxRouter>
+      </ErrorBoundary>
     </Provider>
   );
 }

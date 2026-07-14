@@ -13,7 +13,12 @@ import { Popup } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import UserAvatar from '../../users/UserAvatar';
 import { useChat } from '../ChatContext';
-import { getConversationTitle, getDirectUser, isGeneralConversation } from '../utils';
+import {
+  getConversationTitle,
+  getDirectUser,
+  isDirectConversation,
+  isGeneralConversation,
+} from '../utils';
 
 import styles from './ChatPopover.module.scss';
 
@@ -38,7 +43,7 @@ const ChatPopover = React.memo(({ onClose }) => {
       conversations
         .filter(
           (conversation) =>
-            !isGeneralConversation(conversation) &&
+            isDirectConversation(conversation) &&
             getDirectUser(conversation, members, currentUser.id),
         )
         .slice(0, 5),

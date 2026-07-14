@@ -3,8 +3,71 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const { reportChatError } = require('../../../utils/sentry');
+
 const READY_TTL = 24 * 60 * 60 * 1000;
 const FAILED_TTL = 60 * 60 * 1000;
+
+const schedulePreviewUpdate = (preview, messageId) => {
+  const updatePreview = async () => {
+    let values;
+    try {
+      const metadata = await sails.helpers.chatLinkPreviews.fetchMetadata(preview.url);
+      values = {
+        ...metadata,
+        status: ChatLinkPreview.Statuses.READY,
+        fetchedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + READY_TTL).toISOString(),
+        failureReason: null,
+      };
+    } catch (error) {
+      values = {
+        status:
+          error === 'blocked' ? ChatLinkPreview.Statuses.BLOCKED : ChatLinkPreview.Statuses.FAILED,
+        fetchedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + FAILED_TTL).toISOString(),
+        failureReason: error === 'blocked' ? 'blocked' : 'fetchFailed',
+      };
+    }
+
+    try {
+      await ChatLinkPreview.qm.updateOne(preview.id, values);
+      const currentMessage = await ChatMessage.qm.getOneById(messageId);
+      if (!currentMessage || currentMessage.deletedAt) {
+        return;
+      }
+      const extras = await sails.helpers.chat.getMessageExtras([currentMessage.id]);
+      sails.sockets.broadcast(
+        `chatConversation:${currentMessage.conversationId}`,
+        'chatMessageUpdate',
+        {
+          item: sails.helpers.chat.presentMessage({
+            ...currentMessage,
+            ...extras[currentMessage.id],
+          }),
+        },
+      );
+    } catch (error) {
+      sails.log.error('[CHAT_PREVIEW][UPDATE_ERROR]', {
+        messageId,
+        previewId: preview.id,
+        error: error.message,
+      });
+      reportChatError(error, 'update-link-preview');
+    }
+  };
+
+  setImmediate(() => {
+    updatePreview().catch((error) => {
+      sails.log.error('[CHAT_PREVIEW][UNHANDLED_UPDATE_ERROR]', {
+        messageId,
+        previewId: preview.id,
+        error: error.message,
+      });
+      reportChatError(error, 'schedule-link-preview');
+    });
+  });
+};
 
 module.exports = {
   inputs: {
@@ -53,48 +116,9 @@ module.exports = {
 
     previews.forEach((preview) => {
       const isExpired = !preview.expiresAt || new Date(preview.expiresAt) <= new Date();
-      if (!isExpired && preview.status !== ChatLinkPreview.Statuses.PENDING) {
-        return;
+      if (isExpired || preview.status === ChatLinkPreview.Statuses.PENDING) {
+        schedulePreviewUpdate(preview, inputs.message.id);
       }
-      setImmediate(async () => {
-        let values;
-        try {
-          const metadata = await sails.helpers.chatLinkPreviews.fetchMetadata(preview.url);
-          values = {
-            ...metadata,
-            status: ChatLinkPreview.Statuses.READY,
-            fetchedAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + READY_TTL).toISOString(),
-            failureReason: null,
-          };
-        } catch (error) {
-          values = {
-            status:
-              error === 'blocked'
-                ? ChatLinkPreview.Statuses.BLOCKED
-                : ChatLinkPreview.Statuses.FAILED,
-            fetchedAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + FAILED_TTL).toISOString(),
-            failureReason: error === 'blocked' ? 'blocked' : 'fetchFailed',
-          };
-        }
-        await ChatLinkPreview.qm.updateOne(preview.id, values);
-        const currentMessage = await ChatMessage.qm.getOneById(inputs.message.id);
-        if (!currentMessage || currentMessage.deletedAt) {
-          return;
-        }
-        const extras = await sails.helpers.chat.getMessageExtras([currentMessage.id]);
-        sails.sockets.broadcast(
-          `chatConversation:${currentMessage.conversationId}`,
-          'chatMessageUpdate',
-          {
-            item: sails.helpers.chat.presentMessage({
-              ...currentMessage,
-              ...extras[currentMessage.id],
-            }),
-          },
-        );
-      });
     });
   },
 };

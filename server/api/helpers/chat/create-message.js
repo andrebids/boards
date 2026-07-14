@@ -4,6 +4,7 @@
  */
 
 const { extractMentionIds } = require('../../../utils/mentions');
+const { reportChatError } = require('../../../utils/sentry');
 
 module.exports = {
   inputs: {
@@ -107,11 +108,6 @@ module.exports = {
       return message;
     }
 
-    await sails.helpers.chatLinkPreviews.syncMessageLinks.with({
-      message,
-      projectId: inputs.project.id,
-    });
-
     const extras = await sails.helpers.chat.getMessageExtras([message.id]);
     const messageWithExtras = { ...message, ...extras[message.id] };
     const payload = {
@@ -184,6 +180,19 @@ module.exports = {
         },
       });
     });
+
+    sails.helpers.chatLinkPreviews.syncMessageLinks
+      .with({
+        message,
+        projectId: inputs.project.id,
+      })
+      .catch((error) => {
+        sails.log.error('[CHAT_PREVIEW][SYNC_ERROR]', {
+          messageId: message.id,
+          error: error.message,
+        });
+        reportChatError(error, 'sync-link-previews');
+      });
 
     return messageWithExtras;
   },

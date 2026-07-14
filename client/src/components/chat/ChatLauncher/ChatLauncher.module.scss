@@ -47,6 +47,24 @@
     top: -3px;
   }
 
+  .alerting {
+    animation: chat-alert 320ms ease-in-out 4;
+  }
+
+  .alertStatus {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  @keyframes chat-alert {
+    50% { transform: translateY(-3px) scale(1.06); }
+  }
+
   @media only screen and (max-width: 767px) {
     .launcher { bottom: 16px; right: 16px; }
   }

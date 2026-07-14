@@ -147,24 +147,6 @@ const forwardChatMessage = (id, data, headers) =>
     item: transformChatMessage(body.item),
   }));
 
-const getChatSavedMessages = (projectId, data, headers) =>
-  socket.get(`/projects/${projectId}/chat-saved-messages`, data, headers).then((body) => ({
-    ...body,
-    items: body.items.map(transformChatMessage),
-  }));
-
-const createChatSavedMessage = (messageId, headers) =>
-  socket.post(`/chat-messages/${messageId}/saved`, undefined, headers).then((body) => ({
-    ...body,
-    item: transformChatMessage(body.item),
-  }));
-
-const deleteChatSavedMessage = (messageId, headers) =>
-  socket.delete(`/chat-messages/${messageId}/saved`, undefined, headers).then((body) => ({
-    ...body,
-    item: transformChatMessage(body.item),
-  }));
-
 const markChatConversationAsRead = (conversationId, data, headers) =>
   socket.post(`/chat-conversations/${conversationId}/read`, data, headers).then((body) => ({
     ...body,
@@ -223,9 +205,6 @@ export default {
   updateChatMessage,
   deleteChatMessage,
   forwardChatMessage,
-  getChatSavedMessages,
-  createChatSavedMessage,
-  deleteChatSavedMessage,
   markChatConversationAsRead,
   makeHandleChatConversationCreate,
   makeHandleChatConversationUpdate,

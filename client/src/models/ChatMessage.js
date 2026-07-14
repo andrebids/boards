@@ -28,8 +28,6 @@ export default class extends BaseModel {
     forwardedFromMessageId: attr(),
     forwardedFromUserId: attr(),
     linkPreviews: attr({ getDefault: () => [] }),
-    isSaved: attr({ getDefault: () => false }),
-    savedAt: attr(),
     pendingFiles: attr({ getDefault: () => [] }),
     attachments: attr({ getDefault: () => [] }),
     reactions: attr({ getDefault: () => [] }),
@@ -62,7 +60,6 @@ export default class extends BaseModel {
         ChatMessage.filter({ conversationId: payload.conversationId }).delete();
         break;
       case ActionTypes.CHAT_MESSAGES_FETCH__SUCCESS:
-      case ActionTypes.CHAT_SAVED_MESSAGES_FETCH__SUCCESS:
         if (payload.replace) {
           ChatMessage.filter({ conversationId: payload.conversationId })
             .toModelArray()
@@ -101,23 +98,8 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_MESSAGE_UPDATE_HANDLE:
       case ActionTypes.CHAT_MESSAGE_DELETE__SUCCESS:
       case ActionTypes.CHAT_MESSAGE_DELETE_HANDLE:
-      case ActionTypes.CHAT_MESSAGE_SAVED_TOGGLE__SUCCESS:
         ChatMessage.upsert({ ...payload.message, isPending: false, isFailed: false });
         break;
-      case ActionTypes.CHAT_MESSAGE_SAVED_TOGGLE: {
-        const messageModel = ChatMessage.withId(payload.id);
-        if (messageModel) {
-          messageModel.isSaved = payload.isSaved;
-        }
-        break;
-      }
-      case ActionTypes.CHAT_MESSAGE_SAVED_TOGGLE__FAILURE: {
-        const messageModel = ChatMessage.withId(payload.id);
-        if (messageModel) {
-          messageModel.isSaved = payload.isSaved;
-        }
-        break;
-      }
       case ActionTypes.CHAT_MESSAGE_UPDATE: {
         const messageModel = ChatMessage.withId(payload.id);
         if (messageModel) {

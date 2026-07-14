@@ -32,6 +32,8 @@ const getParticipantUserIds = (conversation) =>
 const isGeneralConversation = (conversation) =>
   ['project_group', 'projectGroup', 'general'].includes(conversation.type);
 
+const isDirectConversation = (conversation) => conversation?.type === 'projectDirect';
+
 const readStoredWindows = (storageKey) => {
   try {
     const value = JSON.parse(localStorage.getItem(storageKey));
@@ -233,7 +235,10 @@ const ChatProvider = React.memo(({ children }) => {
         return isGeneralConversation(item);
       }
 
-      return getParticipantUserIds(item).includes(pendingConversation.userId);
+      return (
+        isDirectConversation(item) &&
+        getParticipantUserIds(item).includes(pendingConversation.userId)
+      );
     });
 
     if (conversation) {
@@ -263,7 +268,7 @@ const ChatProvider = React.memo(({ children }) => {
   const openDirectConversation = useCallback(
     (userId) => {
       const conversation = conversations.find(
-        (item) => !isGeneralConversation(item) && getParticipantUserIds(item).includes(userId),
+        (item) => isDirectConversation(item) && getParticipantUserIds(item).includes(userId),
       );
 
       if (conversation) {

@@ -29,6 +29,8 @@ process.chdir(__dirname);
 
 dotenv.config();
 
+require('./utils/sentry').init();
+
 // Attempt to import `sails` dependency, as well as `rc` (for loading `.sailsrc` files).
 let sails;
 let rc;

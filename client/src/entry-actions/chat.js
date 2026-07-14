@@ -25,9 +25,9 @@ const createDirectChatConversation = (projectId, userId) => ({
   type: EntryActionTypes.DIRECT_CHAT_CONVERSATION_CREATE,
   payload: { projectId, userId },
 });
-const createCustomChatGroup = (projectId, data) => ({
+const createCustomChatGroup = (projectId, data, requestKey) => ({
   type: EntryActionTypes.CUSTOM_CHAT_GROUP_CREATE,
-  payload: { projectId, data },
+  payload: { projectId, data, requestKey },
 });
 const updateChatConversation = (id, data) => ({
   type: EntryActionTypes.CHAT_CONVERSATION_UPDATE,
@@ -121,13 +121,9 @@ const handleChatTypingUpdate = (typingState) => ({
   type: EntryActionTypes.CHAT_TYPING_UPDATE_HANDLE,
   payload: { typingState },
 });
-const fetchChatSavedMessages = (projectId) => ({
-  type: EntryActionTypes.CHAT_SAVED_MESSAGES_FETCH,
-  payload: { projectId },
-});
-const toggleChatMessageSaved = (id, isSaved) => ({
-  type: EntryActionTypes.CHAT_MESSAGE_SAVED_TOGGLE,
-  payload: { id, isSaved },
+const handleChatMessageAlert = (alert) => ({
+  type: EntryActionTypes.CHAT_MESSAGE_ALERT_HANDLE,
+  payload: { alert },
 });
 const forwardChatMessage = (id, targetConversationId) => ({
   type: EntryActionTypes.CHAT_MESSAGE_FORWARD,
@@ -184,8 +180,7 @@ export default {
   handleChatConversationAccessRevoke,
   handleChatParticipantUpdate,
   handleChatTypingUpdate,
-  fetchChatSavedMessages,
-  toggleChatMessageSaved,
+  handleChatMessageAlert,
   forwardChatMessage,
   updateChatDraft,
   setChatReplyTarget,

@@ -27,8 +27,8 @@ export default function* chatWatchers() {
       ({ payload: { projectId, userId } }) =>
         services.createDirectChatConversation(projectId, userId),
     ),
-    takeEvery(EntryActionTypes.CUSTOM_CHAT_GROUP_CREATE, ({ payload: { projectId, data } }) =>
-      services.createCustomChatGroup(projectId, data),
+    takeEvery(EntryActionTypes.CUSTOM_CHAT_GROUP_CREATE, ({ payload: { projectId, data, requestKey } }) =>
+      services.createCustomChatGroup(projectId, data, requestKey),
     ),
     takeEvery(EntryActionTypes.CHAT_CONVERSATION_UPDATE, ({ payload: { id, data } }) =>
       services.updateChatConversation(id, data),
@@ -106,11 +106,8 @@ export default function* chatWatchers() {
     takeEvery(EntryActionTypes.CHAT_TYPING_UPDATE_HANDLE, ({ payload: { typingState } }) =>
       services.handleChatTypingUpdate(typingState),
     ),
-    takeEvery(EntryActionTypes.CHAT_SAVED_MESSAGES_FETCH, ({ payload: { projectId } }) =>
-      services.fetchChatSavedMessages(projectId),
-    ),
-    takeEvery(EntryActionTypes.CHAT_MESSAGE_SAVED_TOGGLE, ({ payload: { id, isSaved } }) =>
-      services.toggleChatMessageSaved(id, isSaved),
+    takeEvery(EntryActionTypes.CHAT_MESSAGE_ALERT_HANDLE, ({ payload: { alert } }) =>
+      services.handleChatMessageAlert(alert),
     ),
     takeEvery(EntryActionTypes.CHAT_MESSAGE_FORWARD, ({ payload: { id, targetConversationId } }) =>
       services.forwardChatMessage(id, targetConversationId),

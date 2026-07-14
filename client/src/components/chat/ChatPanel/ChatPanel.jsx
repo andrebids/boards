@@ -1,18 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Bookmark, Plus, Users, X } from 'lucide-react';
+import { Plus, Users, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useChat } from '../ChatContext';
-import {
-  getConversationTitle,
-  getDirectUser,
-  isCustomGroupConversation,
-  isGeneralConversation,
-} from '../utils';
+import { getDirectUser, isGeneralConversation } from '../utils';
 import ChatHeader from '../ChatHeader';
 import ChatSearch from '../ChatSearch';
 import ChatTabs from '../ChatTabs';
@@ -27,7 +22,9 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
   const currentUser = useSelector(selectors.selectCurrentUser);
   const project = useSelector(selectors.selectCurrentProject);
   const members = useSelector(selectors.selectChatMembersForCurrentProject);
-  const savedMessages = useSelector(selectors.selectSavedChatMessagesForCurrentProject);
+  const createdConversationIds = useSelector(
+    (state) => state.chat.createdConversationIdByRequestKey,
+  );
   const dispatch = useDispatch();
   const {
     conversations,
@@ -59,27 +56,18 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'saved' && project?.id) {
-      dispatch(entryActions.fetchChatSavedMessages(project.id));
-    }
-  }, [activeTab, dispatch, project?.id]);
-
-  useEffect(() => {
     if (!pendingGroup) {
       return;
     }
     const createdGroup = conversations.find(
-      (conversation) =>
-        isCustomGroupConversation(conversation) &&
-        conversation.title === pendingGroup.title &&
-        !pendingGroup.existingIds.includes(conversation.id),
+      (conversation) => conversation.id === createdConversationIds[pendingGroup.requestKey],
     );
     if (createdGroup) {
       openConversation(createdGroup.id);
       setPendingGroup(null);
       onClose();
     }
-  }, [conversations, onClose, openConversation, pendingGroup]);
+  }, [conversations, createdConversationIds, onClose, openConversation, pendingGroup]);
 
   const filteredConversations = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -106,17 +94,6 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
     );
   }, [currentUser.id, members, query]);
 
-  const filteredSavedMessages = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase();
-    return savedMessages.filter(
-      (message) =>
-        !normalizedQuery ||
-        String(message.text || '')
-          .toLocaleLowerCase()
-          .includes(normalizedQuery),
-    );
-  }, [query, savedMessages]);
-
   const handleConversationOpen = useCallback(
     (id) => {
       openConversation(id);
@@ -138,28 +115,6 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
     [onClose, openDirectConversation],
   );
 
-  const handleSavedMessageOpen = useCallback(
-    (message) => {
-      const parameters = new URLSearchParams(window.location.search);
-      parameters.set('chatConversation', message.conversationId);
-      parameters.set('chatMessage', message.id);
-      window.history.replaceState(
-        window.history.state,
-        '',
-        `${window.location.pathname}?${parameters.toString()}${window.location.hash}`,
-      );
-      dispatch(
-        entryActions.fetchChatMessages(message.conversationId, {
-          aroundId: message.id,
-          replace: true,
-        }),
-      );
-      openConversation(message.conversationId);
-      onClose();
-    },
-    [dispatch, onClose, openConversation],
-  );
-
   const handleGroupSubmit = useCallback(
     (event) => {
       event.preventDefault();
@@ -167,15 +122,19 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
       if (!title || selectedMemberIds.length === 0) {
         return;
       }
+      const requestKey = `${project.id}:group:${Date.now()}`;
       dispatch(
-        entryActions.createCustomChatGroup(project.id, {
-          title,
-          userIds: selectedMemberIds,
-        }),
+        entryActions.createCustomChatGroup(
+          project.id,
+          {
+            title,
+            userIds: selectedMemberIds,
+          },
+          requestKey,
+        ),
       );
       setPendingGroup({
-        title,
-        existingIds: conversations.map(({ id }) => id),
+        requestKey,
       });
       setGroupTitle('');
       setSelectedMemberIds([]);
@@ -185,12 +144,8 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
     [conversations, dispatch, groupTitle, project.id, selectedMemberIds],
   );
 
-  let searchPlaceholder = t('chat.searchSavedMessages');
-  if (activeTab === 'conversations') {
-    searchPlaceholder = t('chat.searchConversations');
-  } else if (activeTab === 'members') {
-    searchPlaceholder = t('chat.searchMembers');
-  }
+  const searchPlaceholder =
+    activeTab === 'conversations' ? t('chat.searchConversations') : t('chat.searchMembers');
 
   return (
     <section
@@ -274,43 +229,6 @@ const ChatPanel = React.memo(({ isClosing, onClose }) => {
               isPending={isPending}
               onMemberOpen={handleMemberOpen}
             />
-          </div>
-        )}
-        {activeTab === 'saved' && (
-          <div className={styles.savedList}>
-            {filteredSavedMessages.length === 0 ? (
-              <div className={styles.savedEmpty}>
-                <Bookmark aria-hidden="true" size={25} strokeWidth={1.7} />
-                <span>{t('chat.noSavedMessages')}</span>
-              </div>
-            ) : (
-              filteredSavedMessages.map((message) => {
-                const conversation = conversations.find(({ id }) => id === message.conversationId);
-                return (
-                  <button
-                    type="button"
-                    key={message.id}
-                    onClick={() => handleSavedMessageOpen(message)}
-                  >
-                    <strong>
-                      {conversation
-                        ? getConversationTitle(
-                            conversation,
-                            members,
-                            currentUser.id,
-                            project.name,
-                            {
-                              conversationTitle: t('chat.conversation'),
-                              generalTitle: t('chat.general'),
-                            },
-                          )
-                        : t('chat.conversation')}
-                    </strong>
-                    <span>{message.text || t('chat.sentFile')}</span>
-                  </button>
-                );
-              })
-            )}
           </div>
         )}
       </div>

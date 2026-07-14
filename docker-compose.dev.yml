@@ -29,6 +29,10 @@ services:
       - DEFAULT_ADMIN_NAME=Admin User
       - DEFAULT_ADMIN_USERNAME=admin
       - GLOBAL_NOTIFICATION_SERVICES=[{"url":"mailto://boards%40bids.pt:U31dc6FeXqSUVE@mail.bids.pt:587/?from=boards%40bids.pt&to=andre%40bids.pt","format":"html"}]
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT:-development}
+      - SENTRY_RELEASE=${SENTRY_RELEASE:-}
+      - SENTRY_TRACES_SAMPLE_RATE=${SENTRY_TRACES_SAMPLE_RATE:-0.1}
     healthcheck:
       test: [ "CMD", "node", "healthcheck.js" ]
       interval: 10s
@@ -52,6 +56,11 @@ services:
       - ./client:/app
     ports:
       - 3008:3008
+    environment:
+      - VITE_SENTRY_DSN=${VITE_SENTRY_DSN:-}
+      - VITE_SENTRY_ENVIRONMENT=${VITE_SENTRY_ENVIRONMENT:-development}
+      - VITE_SENTRY_RELEASE=${VITE_SENTRY_RELEASE:-}
+      - VITE_SENTRY_TRACES_SAMPLE_RATE=${VITE_SENTRY_TRACES_SAMPLE_RATE:-0.1}
 
   postgres:
     image: postgres:15-alpine

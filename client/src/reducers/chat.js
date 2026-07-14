@@ -17,12 +17,12 @@ const initialState = {
   hasMoreNewerMessagesByConversation: {},
   errorsByScope: {},
   conversationCreationErrorsByKey: {},
+  createdConversationIdByRequestKey: {},
+  lastMessageAlert: null,
   accessRevocationVersionByProject: {},
   draftsByConversation: {},
   replyTargetsByConversation: {},
   typingByConversation: {},
-  isSavedMessagesFetchingByProject: {},
-  hasMoreSavedMessagesByProject: {},
   isPreferencesUpdatingByConversation: {},
 };
 
@@ -169,11 +169,24 @@ export default (state = initialState, { type, payload }) => {
     case ActionTypes.CHAT_CONVERSATION_CREATE: {
       const nextCreationErrors = { ...state.conversationCreationErrorsByKey };
       delete nextCreationErrors[payload.requestKey];
+      const nextCreatedConversationIds = { ...state.createdConversationIdByRequestKey };
+      delete nextCreatedConversationIds[payload.requestKey];
       return {
         ...state,
         conversationCreationErrorsByKey: nextCreationErrors,
+        createdConversationIdByRequestKey: nextCreatedConversationIds,
       };
     }
+    case ActionTypes.CHAT_CONVERSATION_CREATE__SUCCESS:
+      return payload.requestKey
+        ? {
+            ...state,
+            createdConversationIdByRequestKey: {
+              ...state.createdConversationIdByRequestKey,
+              [payload.requestKey]: payload.conversation.id,
+            },
+          }
+        : state;
     case ActionTypes.CHAT_CONVERSATION_CREATE__FAILURE:
       return {
         ...state,
@@ -273,36 +286,12 @@ export default (state = initialState, { type, payload }) => {
         },
       };
     }
-    case ActionTypes.CHAT_SAVED_MESSAGES_FETCH:
+    case ActionTypes.CHAT_MESSAGE_ALERT_HANDLE:
       return {
         ...state,
-        isSavedMessagesFetchingByProject: {
-          ...state.isSavedMessagesFetchingByProject,
-          [payload.projectId]: true,
-        },
-      };
-    case ActionTypes.CHAT_SAVED_MESSAGES_FETCH__SUCCESS:
-      return {
-        ...state,
-        isSavedMessagesFetchingByProject: {
-          ...state.isSavedMessagesFetchingByProject,
-          [payload.projectId]: false,
-        },
-        hasMoreSavedMessagesByProject: {
-          ...state.hasMoreSavedMessagesByProject,
-          [payload.projectId]: payload.hasMore,
-        },
-      };
-    case ActionTypes.CHAT_SAVED_MESSAGES_FETCH__FAILURE:
-      return {
-        ...state,
-        isSavedMessagesFetchingByProject: {
-          ...state.isSavedMessagesFetchingByProject,
-          [payload.projectId]: false,
-        },
-        errorsByScope: {
-          ...state.errorsByScope,
-          [`saved:${payload.projectId}`]: payload.error,
+        lastMessageAlert: {
+          ...payload.alert,
+          receivedAt: Date.now(),
         },
       };
     case ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE:

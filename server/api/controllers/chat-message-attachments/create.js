@@ -42,14 +42,38 @@ module.exports = {
       conversation && (await sails.helpers.chat.getConversationAccess(conversation, currentUser));
 
     if (!message || !access) {
+      sails.log.warn('[CHAT_UPLOAD][MESSAGE_ACCESS_REJECTED]', {
+        messageId: inputs.messageId,
+        hasMessage: Boolean(message),
+        hasConversation: Boolean(conversation),
+        hasAccess: Boolean(access),
+        userId: currentUser.id,
+      });
       throw Errors.MESSAGE_NOT_FOUND;
     }
     if (!access.canWrite || message.userId !== currentUser.id) {
+      sails.log.warn('[CHAT_UPLOAD][WRITE_ACCESS_REJECTED]', {
+        messageId: message.id,
+        userId: currentUser.id,
+        messageUserId: message.userId,
+        canWrite: access.canWrite,
+      });
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
     if (message.deletedAt) {
+      sails.log.warn('[CHAT_UPLOAD][MESSAGE_DELETED]', {
+        messageId: message.id,
+        userId: currentUser.id,
+      });
       throw Errors.MESSAGE_DELETED;
     }
+
+    sails.log.info('[CHAT_UPLOAD][RECEIVE_START]', {
+      messageId: message.id,
+      userId: currentUser.id,
+      contentType: this.req.headers['content-type'],
+      contentLength: this.req.headers['content-length'],
+    });
 
     let files;
     try {
@@ -59,8 +83,18 @@ module.exports = {
         maxBytes: sails.config.custom.chatAttachmentMaxBytes,
       });
     } catch (error) {
+      sails.log.error('[CHAT_UPLOAD][RECEIVE_ERROR]', {
+        messageId: message.id,
+        error: error.message,
+        code: error.code,
+      });
       return exits.uploadError(error.message);
     }
+    sails.log.info('[CHAT_UPLOAD][RECEIVE_DONE]', {
+      messageId: message.id,
+      fileCount: files.length,
+      files: files.map(({ filename, type, size }) => ({ filename, type, size })),
+    });
     if (files.length === 0) {
       throw Errors.NO_FILE_WAS_UPLOADED;
     }
@@ -91,6 +125,12 @@ module.exports = {
         },
       );
     } catch (error) {
+      sails.log.error('[CHAT_UPLOAD][PERSIST_ERROR]', {
+        messageId: message.id,
+        fileReferenceId: data.fileReferenceId,
+        error: error.message || error,
+        code: error.code,
+      });
       try {
         await sails.helpers.chatMessageAttachments.discardFile(data.fileReferenceId);
       } catch (cleanupError) {

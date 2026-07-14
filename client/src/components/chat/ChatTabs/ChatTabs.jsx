@@ -9,7 +9,6 @@ const ChatTabs = React.memo(({ activeTab, onChange }) => {
   const tabs = [
     { id: 'conversations', label: t('chat.conversations') },
     { id: 'members', label: t('chat.members') },
-    { id: 'saved', label: t('chat.saved') },
   ];
 
   return (
@@ -32,7 +31,7 @@ const ChatTabs = React.memo(({ activeTab, onChange }) => {
 });
 
 ChatTabs.propTypes = {
-  activeTab: PropTypes.oneOf(['conversations', 'members', 'saved']).isRequired,
+  activeTab: PropTypes.oneOf(['conversations', 'members']).isRequired,
   onChange: PropTypes.func.isRequired,
 };
 

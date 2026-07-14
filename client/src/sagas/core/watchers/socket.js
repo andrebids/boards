@@ -303,6 +303,10 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleChatTypingUpdate(item));
     };
 
+    const handleChatMessageAlert = ({ item }) => {
+      emit(entryActions.handleChatMessageAlert(item));
+    };
+
     const handleActivityCreate = api.makeHandleActivityCreate(({ item }) => {
       emit(entryActions.handleActivityCreate(item));
     });
@@ -419,6 +423,7 @@ const createSocketEventsChannel = () =>
     socket.on('chatConversationAccessRevoke', handleChatConversationAccessRevoke);
     socket.on('chatParticipantUpdate', handleChatParticipantUpdate);
     socket.on('chatTypingUpdate', handleChatTypingUpdate);
+    socket.on('chatMessageAlert', handleChatMessageAlert);
 
     socket.on('actionCreate', handleActivityCreate);
 
@@ -520,6 +525,7 @@ const createSocketEventsChannel = () =>
       socket.off('chatConversationAccessRevoke', handleChatConversationAccessRevoke);
       socket.off('chatParticipantUpdate', handleChatParticipantUpdate);
       socket.off('chatTypingUpdate', handleChatTypingUpdate);
+      socket.off('chatMessageAlert', handleChatMessageAlert);
 
       socket.off('actionCreate', handleActivityCreate);
 

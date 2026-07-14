@@ -6,6 +6,7 @@
 const { idInput } = require('../../../utils/inputs');
 
 const lastEvents = new Map();
+const EVENT_TTL = 2 * 60 * 1000;
 const Errors = {
   CONVERSATION_NOT_FOUND: { conversationNotFound: 'Conversation not found' },
   SOCKET_REQUIRED: { socketRequired: 'Socket required' },
@@ -35,6 +36,11 @@ module.exports = {
 
     const key = `${inputs.id}:${this.req.currentUser.id}`;
     const now = Date.now();
+    lastEvents.forEach((timestamp, eventKey) => {
+      if (now - timestamp > EVENT_TTL) {
+        lastEvents.delete(eventKey);
+      }
+    });
     if (inputs.isTyping && now - (lastEvents.get(key) || 0) < 1500) {
       return {};
     }

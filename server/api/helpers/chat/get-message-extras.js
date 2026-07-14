@@ -23,23 +23,18 @@ module.exports = {
     const replyMessageIds = messages
       .map(({ replyToMessageId }) => replyToMessageId)
       .filter(Boolean);
-    const [attachments, reactions, replyMessages, savedMessages, linkAssociations] =
-      await Promise.all([
-        ChatMessageAttachment.find({ messageId: inputs.messageIds }).sort('id'),
-        ChatMessageReaction.find({ messageId: inputs.messageIds }).sort('id'),
-        replyMessageIds.length > 0 ? ChatMessage.find({ id: replyMessageIds }) : [],
-        inputs.userId
-          ? ChatSavedMessage.qm.getByUserIdAndMessageIds(inputs.userId, inputs.messageIds)
-          : [],
-        ChatMessageLinkPreview.qm.getByMessageIds(inputs.messageIds),
-      ]);
+    const [attachments, reactions, replyMessages, linkAssociations] = await Promise.all([
+      ChatMessageAttachment.find({ messageId: inputs.messageIds }).sort('id'),
+      ChatMessageReaction.find({ messageId: inputs.messageIds }).sort('id'),
+      replyMessageIds.length > 0 ? ChatMessage.find({ id: replyMessageIds }) : [],
+      ChatMessageLinkPreview.qm.getByMessageIds(inputs.messageIds),
+    ]);
 
     const linkPreviews = await ChatLinkPreview.qm.getByIds([
       ...new Set(linkAssociations.map(({ linkPreviewId }) => linkPreviewId)),
     ]);
     const replyMessagesById = new Map(replyMessages.map((message) => [message.id, message]));
     const linkPreviewsById = new Map(linkPreviews.map((preview) => [preview.id, preview]));
-    const savedMessageIds = new Set(savedMessages.map(({ messageId }) => messageId));
 
     const extrasByMessageId = Object.fromEntries(
       inputs.messageIds.map((messageId) => {
@@ -48,9 +43,6 @@ module.exports = {
           reactions: [],
           linkPreviews: [],
         };
-        if (inputs.userId) {
-          extras.isSaved = savedMessageIds.has(messageId);
-        }
         return [messageId, extras];
       }),
     );

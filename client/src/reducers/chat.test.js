@@ -20,6 +20,41 @@ describe('chat reducer', () => {
     expect(retriedState.conversationCreationErrorsByKey[requestKey]).toBeUndefined();
   });
 
+  test('correlates a created conversation with the originating request', () => {
+    const requestKey = 'project-1:group:123';
+    const state = reducer(undefined, {
+      type: ActionTypes.CHAT_CONVERSATION_CREATE__SUCCESS,
+      payload: {
+        requestKey,
+        conversation: { id: 'conversation-7' },
+      },
+    });
+
+    expect(state.createdConversationIdByRequestKey[requestKey]).toBe('conversation-7');
+  });
+
+  test('stores the latest chat alert without its message content', () => {
+    const state = reducer(undefined, {
+      type: ActionTypes.CHAT_MESSAGE_ALERT_HANDLE,
+      payload: {
+        alert: {
+          conversationId: 'conversation-1',
+          messageId: 'message-1',
+          projectId: 'project-1',
+          hasMention: true,
+        },
+      },
+    });
+
+    expect(state.lastMessageAlert).toMatchObject({
+      conversationId: 'conversation-1',
+      messageId: 'message-1',
+      projectId: 'project-1',
+      hasMention: true,
+    });
+    expect(state.lastMessageAlert.text).toBeUndefined();
+  });
+
   test('purges revoked conversations from window and pagination state', () => {
     const state = {
       ...reducer(undefined, { type: '@@INIT' }),

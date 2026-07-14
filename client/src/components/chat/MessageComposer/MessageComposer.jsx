@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { Mention, MentionsInput } from 'react-mentions';
 import { useDropzone } from 'react-dropzone';
-import { Paperclip, Send, Smile, X } from 'lucide-react';
+import { Paperclip, Send, Smile, Upload, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import entryActions from '../../../entry-actions';
@@ -71,7 +71,9 @@ const mentionsInputStyle = {
 const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   const [t] = useTranslation();
   const [files, setFiles] = useState([]);
+  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const [isEmojiMenuOpen, setIsEmojiMenuOpen] = useState(false);
+  const toolsRef = useRef(null);
   const dispatch = useDispatch();
   const typingSentAtRef = useRef(0);
   const selectDraft = useMemo(() => selectors.makeSelectChatDraftByConversationId(), []);
@@ -167,6 +169,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   );
   const handleFilesSelect = useCallback((selectedFiles) => {
     setFiles((currentFiles) => [...currentFiles, ...selectedFiles]);
+    setIsAttachmentMenuOpen(false);
   }, []);
   const removeFile = useCallback((index) => {
     setFiles((currentFiles) => currentFiles.filter((_, currentIndex) => currentIndex !== index));
@@ -198,6 +201,21 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
     },
     [conversationId, dispatch],
   );
+
+  useEffect(() => {
+    if (!isAttachmentMenuOpen) {
+      return undefined;
+    }
+
+    const closeOnOutsidePointerDown = (event) => {
+      if (!toolsRef.current?.contains(event.target)) {
+        setIsAttachmentMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', closeOnOutsidePointerDown, true);
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointerDown, true);
+  }, [isAttachmentMenuOpen]);
 
   const cancelReply = useCallback(() => {
     dispatch(entryActions.setChatReplyTarget(conversationId, null));
@@ -239,17 +257,39 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
         </div>
       )}
       <div className={styles.composerRow}>
-        <div className={styles.tools}>
-          <FilePicker multiple onSelect={handleFilesSelect}>
-            <button type="button" aria-label={t('chat.attachFiles')} disabled={isDisabled}>
-              <Paperclip aria-hidden="true" size={17} strokeWidth={2} />
-            </button>
-          </FilePicker>
+        <div ref={toolsRef} className={styles.tools}>
+          <button
+            type="button"
+            aria-label={t('chat.attachFiles')}
+            aria-expanded={isAttachmentMenuOpen}
+            disabled={isDisabled}
+            onClick={() => {
+              setIsAttachmentMenuOpen((isOpen) => !isOpen);
+              setIsEmojiMenuOpen(false);
+            }}
+          >
+            <Paperclip aria-hidden="true" size={17} strokeWidth={2} />
+          </button>
+          {isAttachmentMenuOpen && (
+            <div className={styles.attachmentMenu} role="menu" aria-label={t('chat.attachFiles')}>
+              <strong>{t('chat.attachFiles')}</strong>
+              <span>{t('chat.dropFilesHere')}</span>
+              <FilePicker multiple onSelect={handleFilesSelect}>
+                <button type="button" className={styles.attachmentMenuItem}>
+                  <Upload aria-hidden="true" size={16} strokeWidth={2} />
+                  {t('chat.uploadFromDevice')}
+                </button>
+              </FilePicker>
+            </div>
+          )}
           <button
             type="button"
             aria-label={t('chat.addEmoji')}
             disabled={isDisabled}
-            onClick={() => setIsEmojiMenuOpen((isOpen) => !isOpen)}
+            onClick={() => {
+              setIsEmojiMenuOpen((isOpen) => !isOpen);
+              setIsAttachmentMenuOpen(false);
+            }}
           >
             <Smile aria-hidden="true" size={17} strokeWidth={2} />
           </button>

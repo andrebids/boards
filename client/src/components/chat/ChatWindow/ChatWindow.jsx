@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, BellOff, LogOut, Minus, MoreHorizontal, UserPlus, X } from 'lucide-react';
+import { ArrowLeft, Bell, BellOff, LogOut, UserPlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
@@ -111,10 +111,6 @@ const ChatWindow = React.memo(({ id }) => {
       document.removeEventListener('visibilitychange', markAsReadIfVisible);
     };
   }, [conversation, dispatch, id]);
-
-  const handleMinimizeClick = useCallback(() => {
-    toggleConversationMinimized(id);
-  }, [id, toggleConversationMinimized]);
 
   const handleBackClick = useCallback(() => {
     toggleConversationMinimized(id);
@@ -231,11 +227,8 @@ const ChatWindow = React.memo(({ id }) => {
             {currentParticipant?.isMuted ? (
               <BellOff aria-hidden="true" size={17} strokeWidth={2} />
             ) : (
-              <MoreHorizontal aria-hidden="true" size={18} strokeWidth={2} />
+              <Bell aria-hidden="true" size={17} strokeWidth={2} />
             )}
-          </button>
-          <button type="button" aria-label={t('chat.minimize')} onClick={handleMinimizeClick}>
-            <Minus aria-hidden="true" size={18} strokeWidth={2} />
           </button>
           <button type="button" aria-label={t('chat.close')} onClick={handleCloseClick}>
             <X aria-hidden="true" size={18} strokeWidth={2} />

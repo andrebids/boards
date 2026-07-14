@@ -35,9 +35,9 @@ const createChatConversation = (projectId, type, requestKey) => ({
   type: ActionTypes.CHAT_CONVERSATION_CREATE,
   payload: { projectId, type, requestKey },
 });
-createChatConversation.success = (conversation, chatParticipants, users) => ({
+createChatConversation.success = (conversation, chatParticipants, users, requestKey) => ({
   type: ActionTypes.CHAT_CONVERSATION_CREATE__SUCCESS,
-  payload: { conversation, chatParticipants, users },
+  payload: { conversation, chatParticipants, users, requestKey },
 });
 createChatConversation.failure = (projectId, type, requestKey, error) => ({
   type: ActionTypes.CHAT_CONVERSATION_CREATE__FAILURE,
@@ -168,31 +168,9 @@ const handleChatTypingUpdate = (typingState) => ({
   type: ActionTypes.CHAT_TYPING_UPDATE_HANDLE,
   payload: { typingState },
 });
-
-const fetchChatSavedMessages = (projectId) => ({
-  type: ActionTypes.CHAT_SAVED_MESSAGES_FETCH,
-  payload: { projectId },
-});
-fetchChatSavedMessages.success = (projectId, messages, users, hasMore) => ({
-  type: ActionTypes.CHAT_SAVED_MESSAGES_FETCH__SUCCESS,
-  payload: { projectId, messages, users, hasMore },
-});
-fetchChatSavedMessages.failure = (projectId, error) => ({
-  type: ActionTypes.CHAT_SAVED_MESSAGES_FETCH__FAILURE,
-  payload: { projectId, error },
-});
-
-const toggleChatMessageSaved = (id, isSaved) => ({
-  type: ActionTypes.CHAT_MESSAGE_SAVED_TOGGLE,
-  payload: { id, isSaved },
-});
-toggleChatMessageSaved.success = (message) => ({
-  type: ActionTypes.CHAT_MESSAGE_SAVED_TOGGLE__SUCCESS,
-  payload: { message },
-});
-toggleChatMessageSaved.failure = (id, isSaved, error) => ({
-  type: ActionTypes.CHAT_MESSAGE_SAVED_TOGGLE__FAILURE,
-  payload: { id, isSaved, error },
+const handleChatMessageAlert = (alert) => ({
+  type: ActionTypes.CHAT_MESSAGE_ALERT_HANDLE,
+  payload: { alert },
 });
 
 const updateChatConversationPreferences = (conversationId, data) => ({
@@ -251,8 +229,7 @@ export default {
   handleChatConversationAccessRevoke,
   handleChatParticipantUpdate,
   handleChatTypingUpdate,
-  fetchChatSavedMessages,
-  toggleChatMessageSaved,
+  handleChatMessageAlert,
   updateChatConversationPreferences,
   updateChatDraft,
   setChatReplyTarget,

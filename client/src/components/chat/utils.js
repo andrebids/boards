@@ -4,6 +4,8 @@ export const isGeneralConversation = (conversation) =>
 export const isCustomGroupConversation = (conversation) =>
   conversation?.type === 'projectCustomGroup';
 
+export const isDirectConversation = (conversation) => conversation?.type === 'projectDirect';
+
 export const hasUnreadMessages = (conversation) => (conversation?.unreadCount || 0) > 0;
 
 export const getParticipantUserIds = (conversation) =>

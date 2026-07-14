@@ -3,6 +3,7 @@ import {
   getDirectUser,
   getParticipantUserIds,
   hasUnreadMessages,
+  isDirectConversation,
   isGeneralConversation,
 } from './utils';
 
@@ -17,6 +18,11 @@ const labels = {
 };
 
 describe('chat utils', () => {
+  test('distinguishes a direct conversation from a custom group', () => {
+    expect(isDirectConversation({ type: 'projectDirect' })).toBeTruthy();
+    expect(isDirectConversation({ type: 'projectCustomGroup' })).toBeFalsy();
+  });
+
   test('recognizes the project group conversation', () => {
     expect(isGeneralConversation({ type: 'projectGroup' })).toBeTruthy();
     expect(isGeneralConversation({ type: 'projectDirect' })).toBeFalsy();

@@ -12,10 +12,10 @@ import { createPortal } from 'react-dom';
 import { useDispatch } from 'react-redux';
 import LinkifyReact from 'linkify-react';
 import {
-  Bookmark,
   Check,
   ChevronDown,
   Download,
+  Eye,
   ExternalLink,
   FileText,
   Forward,
@@ -25,9 +25,9 @@ import {
   MoreHorizontal,
   Paperclip,
   Pencil,
-  Plus,
+  Quote,
   Reply,
-  Smile,
+  SmilePlus,
   Trash2,
   X,
 } from 'lucide-react';
@@ -207,6 +207,7 @@ const MessageList = React.memo(
   }) => {
     const [t] = useTranslation();
     const listRef = useRef(null);
+    const activeMessageActionsRef = useRef(null);
     const previousLastIdRef = useRef(null);
     const prependScrollStateRef = useRef(null);
     const isAtBottomRef = useRef(true);
@@ -338,8 +339,26 @@ const MessageList = React.memo(
 
     const closeMenus = useCallback(() => {
       setActiveActionsMessageId(null);
+      setActiveReactionMenuMessageId(null);
       setForwardingMessageId(null);
+      setIsReactionEmojiPickerOpen(false);
+      setReactionEmojiPickerPosition(null);
     }, []);
+
+    useEffect(() => {
+      if (!activeActionsMessageId && !forwardingMessageId) {
+        return undefined;
+      }
+
+      const closeOnOutsidePointerDown = (event) => {
+        if (!activeMessageActionsRef.current?.contains(event.target)) {
+          closeMenus();
+        }
+      };
+
+      document.addEventListener('pointerdown', closeOnOutsidePointerDown, true);
+      return () => document.removeEventListener('pointerdown', closeOnOutsidePointerDown, true);
+    }, [activeActionsMessageId, closeMenus, forwardingMessageId]);
 
     const handleMessageAction = useCallback(
       (action, message) => {
@@ -354,8 +373,6 @@ const MessageList = React.memo(
           if (window.confirm(t('chat.confirmDeleteMessage'))) {
             dispatch(entryActions.deleteChatMessage(message.id));
           }
-        } else if (action === 'save') {
-          dispatch(entryActions.toggleChatMessageSaved(message.id, !message.isSaved));
         } else if (action === 'link') {
           const url = new URL(`/projects/${projectId}`, window.location.origin);
           url.searchParams.set('chatConversation', conversationId);
@@ -393,10 +410,17 @@ const MessageList = React.memo(
 
     const handleReactionMenuToggle = useCallback((event) => {
       const { messageId } = event.currentTarget.dataset;
-      setActiveReactionMenuMessageId((current) => (current === messageId ? null : messageId));
-      setIsReactionEmojiPickerOpen(false);
-      setReactionEmojiPickerPosition(null);
-    }, []);
+      if (activeReactionMenuMessageId === messageId) {
+        setActiveReactionMenuMessageId(null);
+        setIsReactionEmojiPickerOpen(false);
+        setReactionEmojiPickerPosition(null);
+        return;
+      }
+
+      setActiveReactionMenuMessageId(messageId);
+      setReactionEmojiPickerPosition(getReactionEmojiPickerPosition(event.currentTarget));
+      setIsReactionEmojiPickerOpen(true);
+    }, [activeReactionMenuMessageId]);
 
     const chooseReaction = useCallback(
       (messageId, emoji) => {
@@ -407,22 +431,10 @@ const MessageList = React.memo(
       [dispatch],
     );
 
-    const handleReactionEmojiPickerToggle = useCallback(
-      (event) => {
-        if (isReactionEmojiPickerOpen) {
-          setIsReactionEmojiPickerOpen(false);
-          setReactionEmojiPickerPosition(null);
-        } else {
-          setReactionEmojiPickerPosition(getReactionEmojiPickerPosition(event.currentTarget));
-          setIsReactionEmojiPickerOpen(true);
-        }
-      },
-      [isReactionEmojiPickerOpen],
-    );
-
     useEffect(() => {
       if (!isReactionEmojiPickerOpen) return undefined;
       const close = () => {
+        setActiveReactionMenuMessageId(null);
         setIsReactionEmojiPickerOpen(false);
         setReactionEmojiPickerPosition(null);
       };
@@ -541,98 +553,165 @@ const MessageList = React.memo(
                       <span className={styles.groupTime}>{formatTime(message.createdAt)}</span>
                     )}
                     {!message.deletedAt && !message.localId && (
-                      <div className={styles.messageActions}>
+                      <div
+                        className={`${styles.hoverActions} ${
+                          activeReactionMenuMessageId === message.id ||
+                          activeActionsMessageId === message.id ||
+                          forwardingMessageId === message.id
+                            ? styles.hoverActionsOpen
+                            : ''
+                        }`}
+                        role="group"
+                        aria-label={t('chat.messageActions')}
+                      >
+                        {['👍', '❤️', '😂', '😮'].map((emoji) => (
+                          <button
+                            type="button"
+                            key={emoji}
+                            className={styles.quickReactionButton}
+                            aria-label={`${t('chat.addEmoji')}: ${emoji}`}
+                            onClick={() => chooseReaction(message.id, emoji)}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                        <div className={styles.reactionControl}>
+                          <button
+                            type="button"
+                            data-message-id={message.id}
+                            aria-label={t('chat.addEmoji')}
+                            onClick={handleReactionMenuToggle}
+                          >
+                            <SmilePlus aria-hidden="true" size={15} />
+                          </button>
+                          {activeReactionMenuMessageId === message.id &&
+                            isReactionEmojiPickerOpen &&
+                            reactionEmojiPickerPosition &&
+                            document.getElementById('app') &&
+                            createPortal(
+                              <div
+                                className={styles.floatingReactionEmojiMenu}
+                                style={reactionEmojiPickerPosition}
+                              >
+                                <Suspense fallback={null}>
+                                  <LazyEmojiPicker
+                                    className={styles.reactionEmojiPicker}
+                                    theme="dark"
+                                    width={250}
+                                    height={270}
+                                    previewConfig={{ showPreview: false }}
+                                    searchPlaceholder={t('chat.searchEmoji')}
+                                    onEmojiClick={(emojiData) =>
+                                      chooseReaction(message.id, emojiData.emoji)
+                                    }
+                                  />
+                                </Suspense>
+                              </div>,
+                              document.getElementById('app'),
+                            )}
+                        </div>
+                        <span className={styles.hoverActionDivider} aria-hidden="true" />
                         <button
                           type="button"
-                          aria-label={t('chat.messageActions')}
-                          aria-expanded={activeActionsMessageId === message.id}
-                          onClick={() =>
-                            setActiveActionsMessageId((current) =>
-                              current === message.id ? null : message.id,
-                            )
-                          }
+                          className={styles.replyAction}
+                          aria-label={t('chat.reply')}
+                          onClick={() => handleMessageAction('reply', message)}
                         >
-                          <MoreHorizontal aria-hidden="true" size={15} />
+                          <Quote aria-hidden="true" size={15} />
                         </button>
-                        {activeActionsMessageId === message.id && (
-                          <div className={styles.actionsMenu} role="menu">
-                            <button
-                              type="button"
-                              onClick={() => handleMessageAction('reply', message)}
-                            >
-                              <Reply aria-hidden="true" size={14} /> {t('chat.reply')}
-                            </button>
-                            {isOwn && (
-                              <button
-                                type="button"
-                                onClick={() => handleMessageAction('edit', message)}
-                              >
-                                <Pencil aria-hidden="true" size={14} /> {t('chat.editMessage')}
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => handleMessageAction('save', message)}
-                            >
-                              <Bookmark aria-hidden="true" size={14} />
-                              {message.isSaved ? t('chat.removeFromSaved') : t('chat.saveMessage')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleMessageAction('link', message)}
-                            >
-                              <Link2 aria-hidden="true" size={14} /> {t('chat.copyMessageLink')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleMessageAction('forward', message)}
-                            >
-                              <Forward aria-hidden="true" size={14} /> {t('chat.forwardMessage')}
-                            </button>
-                            {isOwn && (
-                              <button
-                                type="button"
-                                className={styles.destructiveAction}
-                                onClick={() => handleMessageAction('delete', message)}
-                              >
-                                <Trash2 aria-hidden="true" size={14} /> {t('chat.deleteMessage')}
-                              </button>
-                            )}
-                          </div>
-                        )}
-                        {forwardingMessageId === message.id && (
-                          <div className={styles.forwardMenu}>
-                            <strong>{t('chat.forwardTo')}</strong>
-                            {conversations
-                              .filter(
-                                (conversation) =>
-                                  conversation.id !== conversationId && !conversation.isBlocked,
+                        <div
+                          ref={
+                            activeActionsMessageId === message.id || forwardingMessageId === message.id
+                              ? activeMessageActionsRef
+                              : null
+                          }
+                          className={styles.messageActions}
+                        >
+                          <button
+                            type="button"
+                            aria-label={t('chat.messageActions')}
+                            aria-expanded={activeActionsMessageId === message.id}
+                            onClick={() =>
+                              setActiveActionsMessageId((current) =>
+                                current === message.id ? null : message.id,
                               )
-                              .map((conversation) => (
+                            }
+                          >
+                            <MoreHorizontal aria-hidden="true" size={15} />
+                          </button>
+                          {activeActionsMessageId === message.id && (
+                            <div className={styles.actionsMenu} role="menu">
+                              <button
+                                type="button"
+                                onClick={() => handleMessageAction('reply', message)}
+                              >
+                                <Reply aria-hidden="true" size={14} /> {t('chat.reply')}
+                              </button>
+                              {isOwn && (
                                 <button
                                   type="button"
-                                  key={conversation.id}
-                                  onClick={() => {
-                                    dispatch(
-                                      entryActions.forwardChatMessage(message.id, conversation.id),
-                                    );
-                                    closeMenus();
-                                  }}
+                                  onClick={() => handleMessageAction('edit', message)}
                                 >
-                                  {getConversationTitle(
-                                    conversation,
-                                    members,
-                                    currentUserId,
-                                    projectName,
-                                    {
-                                      conversationTitle: t('chat.conversation'),
-                                      generalTitle: t('chat.general'),
-                                    },
-                                  )}
+                                  <Pencil aria-hidden="true" size={14} /> {t('chat.editMessage')}
                                 </button>
-                              ))}
-                          </div>
-                        )}
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleMessageAction('link', message)}
+                              >
+                                <Link2 aria-hidden="true" size={14} /> {t('chat.copyMessageLink')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMessageAction('forward', message)}
+                              >
+                                <Forward aria-hidden="true" size={14} /> {t('chat.forwardMessage')}
+                              </button>
+                              {isOwn && (
+                                <button
+                                  type="button"
+                                  className={styles.destructiveAction}
+                                  onClick={() => handleMessageAction('delete', message)}
+                                >
+                                  <Trash2 aria-hidden="true" size={14} /> {t('chat.deleteMessage')}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                          {forwardingMessageId === message.id && (
+                            <div className={styles.forwardMenu}>
+                              <strong>{t('chat.forwardTo')}</strong>
+                              {conversations
+                                .filter(
+                                  (conversation) =>
+                                    conversation.id !== conversationId && !conversation.isBlocked,
+                                )
+                                .map((conversation) => (
+                                  <button
+                                    type="button"
+                                    key={conversation.id}
+                                    onClick={() => {
+                                      dispatch(
+                                        entryActions.forwardChatMessage(message.id, conversation.id),
+                                      );
+                                      closeMenus();
+                                    }}
+                                  >
+                                    {getConversationTitle(
+                                      conversation,
+                                      members,
+                                      currentUserId,
+                                      projectName,
+                                      {
+                                        conversationTitle: t('chat.conversation'),
+                                        generalTitle: t('chat.general'),
+                                      },
+                                    )}
+                                  </button>
+                                ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                     {message.replyTo && (
@@ -710,9 +789,7 @@ const MessageList = React.memo(
                       </div>
                     )}
                     {!message.deletedAt && (
-                      <div
-                        className={`${styles.reactions} ${reactions.length === 0 ? styles.emptyReactions : ''}`}
-                      >
+                      <div className={styles.reactions}>
                         {reactions.map((reaction) => (
                           <button
                             type="button"
@@ -727,64 +804,6 @@ const MessageList = React.memo(
                             {reaction.emoji} {reaction.userIds.length}
                           </button>
                         ))}
-                        {!message.localId && (
-                          <div
-                            className={`${styles.reactionControl} ${activeReactionMenuMessageId === message.id ? styles.reactionControlOpen : ''}`}
-                          >
-                            <button
-                              type="button"
-                              data-message-id={message.id}
-                              aria-label={t('chat.addEmoji')}
-                              onClick={handleReactionMenuToggle}
-                            >
-                              <Smile aria-hidden="true" size={14} />
-                            </button>
-                            {activeReactionMenuMessageId === message.id && (
-                              <div className={styles.reactionPicker} role="menu">
-                                {['👍', '❤️', '😂', '😮'].map((emoji) => (
-                                  <button
-                                    type="button"
-                                    key={emoji}
-                                    onClick={() => chooseReaction(message.id, emoji)}
-                                  >
-                                    {emoji}
-                                  </button>
-                                ))}
-                                <button
-                                  type="button"
-                                  aria-label={t('chat.addEmoji')}
-                                  onClick={handleReactionEmojiPickerToggle}
-                                >
-                                  <Plus aria-hidden="true" size={15} />
-                                </button>
-                                {isReactionEmojiPickerOpen &&
-                                  reactionEmojiPickerPosition &&
-                                  document.getElementById('app') &&
-                                  createPortal(
-                                    <div
-                                      className={styles.floatingReactionEmojiMenu}
-                                      style={reactionEmojiPickerPosition}
-                                    >
-                                      <Suspense fallback={null}>
-                                        <LazyEmojiPicker
-                                          className={styles.reactionEmojiPicker}
-                                          theme="dark"
-                                          width={250}
-                                          height={270}
-                                          previewConfig={{ showPreview: false }}
-                                          searchPlaceholder={t('chat.searchEmoji')}
-                                          onEmojiClick={(emojiData) =>
-                                            chooseReaction(message.id, emojiData.emoji)
-                                          }
-                                        />
-                                      </Suspense>
-                                    </div>,
-                                    document.getElementById('app'),
-                                  )}
-                              </div>
-                            )}
-                          </div>
-                        )}
                       </div>
                     )}
                     {(message.editedAt ||
@@ -796,7 +815,15 @@ const MessageList = React.memo(
                       >
                         {message.editedAt && t('chat.edited')}
                         {message.isPending && t('chat.sending')}
-                        {message.id === lastReadOwnMessageId && t('chat.seen')}
+                        {message.id === lastReadOwnMessageId && (
+                          <span
+                            className={styles.seenIcon}
+                            aria-label={t('chat.seen')}
+                            title={t('chat.seen')}
+                          >
+                            <Eye aria-hidden="true" size={12} strokeWidth={2} />
+                          </span>
+                        )}
                         {message.isFailed && (
                           <button
                             type="button"

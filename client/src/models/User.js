@@ -111,7 +111,6 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_CONVERSATION_CREATE_HANDLE:
       case ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE:
       case ActionTypes.CHAT_MESSAGES_FETCH__SUCCESS:
-      case ActionTypes.CHAT_SAVED_MESSAGES_FETCH__SUCCESS:
       case ActionTypes.CHAT_MESSAGE_CREATE_HANDLE:
         if (payload.users) {
           payload.users.forEach((user) => {
