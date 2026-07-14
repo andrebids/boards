@@ -16,6 +16,7 @@ Registar aqui mudanças com impacto funcional, de contrato, dados, segurança, o
 
 ### Corrigido
 
+- O estado silenciado passa a ter feedback imediato com ícones persistentes no cabeçalho e na lista de conversas, revertendo visualmente se a atualização falhar.
 - A transição da lista de conversas para uma conversa individual deixa de sobrepor as duas interfaces.
 - A barra de reações deixa de desaparecer enquanto o cursor se desloca da mensagem para as ações.
 - Conversas diretas deixam de confundir grupos personalizados que contêm o mesmo membro.

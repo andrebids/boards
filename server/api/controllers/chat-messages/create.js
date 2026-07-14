@@ -47,8 +47,22 @@ module.exports = {
 
   async fn(inputs) {
     const { currentUser } = this.req;
+    const startedAt = Date.now();
+    const logContext = {
+      clientMessageId: inputs.clientMessageId,
+      hasAttachments: inputs.hasAttachments,
+      transport: this.req.isSocket ? 'socket' : 'http',
+    };
+
+    sails.log.info('[CHAT_MESSAGE][REQUEST_START]', logContext);
+
     const text = inputs.text.trim();
     if (!text && !inputs.hasAttachments) {
+      sails.log.warn('[CHAT_MESSAGE][REQUEST_REJECTED]', {
+        ...logContext,
+        reason: 'empty-message',
+        durationMs: Date.now() - startedAt,
+      });
       throw Errors.TEXT_MUST_NOT_BE_EMPTY;
     }
 
@@ -61,9 +75,19 @@ module.exports = {
         ensureParticipant: true,
       }));
     if (!access) {
+      sails.log.warn('[CHAT_MESSAGE][REQUEST_REJECTED]', {
+        ...logContext,
+        reason: 'conversation-not-found',
+        durationMs: Date.now() - startedAt,
+      });
       throw Errors.CONVERSATION_NOT_FOUND;
     }
     if (!access.canWrite) {
+      sails.log.warn('[CHAT_MESSAGE][REQUEST_REJECTED]', {
+        ...logContext,
+        reason: 'conversation-blocked',
+        durationMs: Date.now() - startedAt,
+      });
       throw Errors.CONVERSATION_BLOCKED;
     }
 
@@ -73,22 +97,44 @@ module.exports = {
         ? sails.helpers.utils.mapRecords(access.participants, 'userId', true)
         : access.memberUserIds;
     if (mentionUserIds.some((userId) => !allowedMentionUserIds.includes(userId))) {
+      sails.log.warn('[CHAT_MESSAGE][REQUEST_REJECTED]', {
+        ...logContext,
+        reason: 'mention-not-allowed',
+        durationMs: Date.now() - startedAt,
+      });
       throw Errors.MENTION_NOT_ALLOWED;
     }
 
-    const message = await sails.helpers.chat.createMessage
-      .with({
-        conversation,
-        project: access.project,
-        participantUserIds: sails.helpers.utils.mapRecords(access.participants, 'userId', true),
-        memberUserIds: access.memberUserIds,
-        text,
-        clientMessageId: inputs.clientMessageId,
-        replyToMessageId: inputs.replyToMessageId,
-        user: currentUser,
-        request: this.req,
-      })
-      .intercept('replyMessageNotFound', () => Errors.REPLY_MESSAGE_NOT_FOUND);
+    let message;
+    try {
+      message = await sails.helpers.chat.createMessage
+        .with({
+          conversation,
+          project: access.project,
+          participantUserIds: sails.helpers.utils.mapRecords(access.participants, 'userId', true),
+          memberUserIds: access.memberUserIds,
+          text,
+          clientMessageId: inputs.clientMessageId,
+          replyToMessageId: inputs.replyToMessageId,
+          user: currentUser,
+          request: this.req,
+        })
+        .intercept('replyMessageNotFound', () => Errors.REPLY_MESSAGE_NOT_FOUND);
+    } catch (error) {
+      sails.log.error('[CHAT_MESSAGE][REQUEST_ERROR]', {
+        ...logContext,
+        errorCode: error.code || error.name || 'UNKNOWN_ERROR',
+        durationMs: Date.now() - startedAt,
+      });
+      throw error;
+    }
+
+    sails.log.info('[CHAT_MESSAGE][REQUEST_DONE]', {
+      ...logContext,
+      messageId: message.id,
+      conversationType: conversation.type,
+      durationMs: Date.now() - startedAt,
+    });
 
     return {
       item: sails.helpers.chat.presentMessage(message),

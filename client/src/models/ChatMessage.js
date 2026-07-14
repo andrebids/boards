@@ -8,6 +8,23 @@ import { attr, fk } from 'redux-orm';
 import BaseModel from './BaseModel';
 import ActionTypes from '../constants/ActionTypes';
 
+const removeMatchingOptimisticMessage = (ChatMessage, message) => {
+  if (!message.clientMessageId) {
+    return;
+  }
+
+  ChatMessage.filter(
+    ({ id, localId, clientMessageId, conversationId, userId }) =>
+      id !== message.id &&
+      Boolean(localId) &&
+      clientMessageId === message.clientMessageId &&
+      conversationId === message.conversationId &&
+      userId === message.userId,
+  )
+    .toModelArray()
+    .forEach((messageModel) => messageModel.delete());
+};
+
 export default class extends BaseModel {
   static modelName = 'ChatMessage';
 
@@ -98,6 +115,7 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_MESSAGE_UPDATE_HANDLE:
       case ActionTypes.CHAT_MESSAGE_DELETE__SUCCESS:
       case ActionTypes.CHAT_MESSAGE_DELETE_HANDLE:
+        removeMatchingOptimisticMessage(ChatMessage, payload.message);
         ChatMessage.upsert({ ...payload.message, isPending: false, isFailed: false });
         break;
       case ActionTypes.CHAT_MESSAGE_UPDATE: {

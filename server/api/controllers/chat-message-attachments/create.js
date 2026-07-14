@@ -36,43 +36,71 @@ module.exports = {
 
   async fn(inputs, exits) {
     const { currentUser } = this.req;
+    const startedAt = Date.now();
+    const logContext = {
+      messageId: inputs.messageId,
+      contentType: this.req.headers['content-type'],
+      contentLength: this.req.headers['content-length'],
+    };
+    let wasAbortLogged = false;
+    const logAbortedRequest = (source) => {
+      if (wasAbortLogged) return;
+      wasAbortLogged = true;
+      sails.log.warn('[CHAT_UPLOAD][REQUEST_ABORTED]', {
+        ...logContext,
+        source,
+        durationMs: Date.now() - startedAt,
+      });
+    };
+
+    this.req.once('aborted', () => logAbortedRequest('request'));
+    this.res.once('close', () => {
+      if (!this.res.writableEnded) {
+        logAbortedRequest('response');
+      }
+    });
+
+    sails.log.info('[CHAT_UPLOAD][REQUEST_START]', logContext);
+
     const message = await ChatMessage.qm.getOneById(inputs.messageId);
     const conversation = message && (await ChatConversation.qm.getOneById(message.conversationId));
     const access =
       conversation && (await sails.helpers.chat.getConversationAccess(conversation, currentUser));
 
+    if (message && message.clientMessageId) {
+      logContext.clientMessageId = message.clientMessageId;
+    }
+
     if (!message || !access) {
       sails.log.warn('[CHAT_UPLOAD][MESSAGE_ACCESS_REJECTED]', {
-        messageId: inputs.messageId,
+        ...logContext,
         hasMessage: Boolean(message),
         hasConversation: Boolean(conversation),
         hasAccess: Boolean(access),
-        userId: currentUser.id,
+        durationMs: Date.now() - startedAt,
       });
       throw Errors.MESSAGE_NOT_FOUND;
     }
     if (!access.canWrite || message.userId !== currentUser.id) {
       sails.log.warn('[CHAT_UPLOAD][WRITE_ACCESS_REJECTED]', {
-        messageId: message.id,
-        userId: currentUser.id,
-        messageUserId: message.userId,
+        ...logContext,
+        isMessageOwner: message.userId === currentUser.id,
         canWrite: access.canWrite,
+        durationMs: Date.now() - startedAt,
       });
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
     if (message.deletedAt) {
       sails.log.warn('[CHAT_UPLOAD][MESSAGE_DELETED]', {
-        messageId: message.id,
-        userId: currentUser.id,
+        ...logContext,
+        durationMs: Date.now() - startedAt,
       });
       throw Errors.MESSAGE_DELETED;
     }
 
     sails.log.info('[CHAT_UPLOAD][RECEIVE_START]', {
-      messageId: message.id,
-      userId: currentUser.id,
-      contentType: this.req.headers['content-type'],
-      contentLength: this.req.headers['content-length'],
+      ...logContext,
+      durationMs: Date.now() - startedAt,
     });
 
     let files;
@@ -84,16 +112,18 @@ module.exports = {
       });
     } catch (error) {
       sails.log.error('[CHAT_UPLOAD][RECEIVE_ERROR]', {
-        messageId: message.id,
-        error: error.message,
-        code: error.code,
+        ...logContext,
+        errorType: error.name,
+        errorCode: error.code || 'RECEIVE_ERROR',
+        durationMs: Date.now() - startedAt,
       });
       return exits.uploadError(error.message);
     }
     sails.log.info('[CHAT_UPLOAD][RECEIVE_DONE]', {
-      messageId: message.id,
+      ...logContext,
       fileCount: files.length,
-      files: files.map(({ filename, type, size }) => ({ filename, type, size })),
+      files: files.map(({ type, size }) => ({ type, size })),
+      durationMs: Date.now() - startedAt,
     });
     if (files.length === 0) {
       throw Errors.NO_FILE_WAS_UPLOADED;
@@ -107,6 +137,12 @@ module.exports = {
     try {
       data = await sails.helpers.attachments.processUploadedFile(files[0]);
     } catch (error) {
+      sails.log.error('[CHAT_UPLOAD][PROCESS_ERROR]', {
+        ...logContext,
+        errorType: error.name,
+        errorCode: error.code || 'PROCESS_ERROR',
+        durationMs: Date.now() - startedAt,
+      });
       return exits.uploadError(error.message);
     }
 
@@ -126,10 +162,11 @@ module.exports = {
       );
     } catch (error) {
       sails.log.error('[CHAT_UPLOAD][PERSIST_ERROR]', {
-        messageId: message.id,
+        ...logContext,
         fileReferenceId: data.fileReferenceId,
-        error: error.message || error,
-        code: error.code,
+        errorType: error.name,
+        errorCode: error.code || (typeof error === 'string' ? error : 'PERSIST_ERROR'),
+        durationMs: Date.now() - startedAt,
       });
       try {
         await sails.helpers.chatMessageAttachments.discardFile(data.fileReferenceId);
@@ -185,6 +222,12 @@ module.exports = {
         });
       });
     }
+
+    sails.log.info('[CHAT_UPLOAD][REQUEST_DONE]', {
+      ...logContext,
+      attachmentId: attachment.id,
+      durationMs: Date.now() - startedAt,
+    });
 
     return { item, attachment };
   },

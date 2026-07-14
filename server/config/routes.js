@@ -109,6 +109,7 @@ module.exports.routes = {
   'POST /api/chat-messages/:messageId/reactions': 'chat-message-reactions/toggle',
   'POST /api/chat-messages/:messageId/attachments': 'chat-message-attachments/create',
   'GET /api/chat-message-attachments/:id/download': 'chat-message-attachments/download',
+  'POST /api/chat-diagnostics': 'chat-diagnostics/create',
 
   'POST /api/projects/:projectId/project-managers': 'project-managers/create',
   'DELETE /api/project-managers/:id': 'project-managers/delete',

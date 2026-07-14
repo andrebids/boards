@@ -67,6 +67,7 @@ const ConversationRow = React.memo(
     const id = conversation?.id;
     const unreadCount = conversation?.unreadCount || 0;
     const hasUnread = hasUnreadMessages(conversation);
+    const isMuted = Boolean(currentParticipant?.isMuted);
 
     const rowClassName = [
       styles.row,
@@ -93,7 +94,19 @@ const ConversationRow = React.memo(
             user={user}
           />
           <span className={styles.copy}>
-            <strong>{title}</strong>
+            <span className={styles.titleLine}>
+              <strong>{title}</strong>
+              {isMuted && (
+                <span
+                  className={styles.mutedIndicator}
+                  role="img"
+                  aria-label={t('chat.notificationsMuted')}
+                  title={t('chat.notificationsMuted')}
+                >
+                  <BellOff aria-hidden="true" size={13} strokeWidth={2.2} />
+                </span>
+              )}
+            </span>
             <small>
               {getPreview(
                 lastMessage,
@@ -110,24 +123,14 @@ const ConversationRow = React.memo(
                 lastMessage?.createdAt || conversation?.lastMessageAt,
               )}
             </time>
-            <span className={styles.metaBottom}>
-              {currentParticipant?.isMuted && (
-                <BellOff
-                  aria-label={t('chat.notificationPreferences')}
-                  className={styles.mutedIndicator}
-                  size={12}
-                  strokeWidth={2}
-                />
-              )}
-              {hasUnread && (
-                <span
-                  className={styles.unread}
-                  aria-label={t('chat.unreadMessages', { count: unreadCount })}
-                >
-                  {Math.min(unreadCount, 99)}
-                </span>
-              )}
-            </span>
+            {hasUnread && (
+              <span
+                className={styles.unread}
+                aria-label={t('chat.unreadMessages', { count: unreadCount })}
+              >
+                {Math.min(unreadCount, 99)}
+              </span>
+            )}
           </span>
         </button>
         {id && (

@@ -87,6 +87,25 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE__SUCCESS:
         ChatParticipant.upsert(payload.participant);
         break;
+      case ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE: {
+        const participantModel =
+          payload.participantId && ChatParticipant.withId(payload.participantId);
+        if (participantModel) {
+          participantModel.update({
+            ...payload.data,
+            isMuted: payload.data.notificationLevel === 'none' || Boolean(payload.data.mutedUntil),
+          });
+        }
+        break;
+      }
+      case ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE__FAILURE: {
+        const participantModel =
+          payload.participantId && ChatParticipant.withId(payload.participantId);
+        if (participantModel && payload.previousData) {
+          participantModel.update(payload.previousData);
+        }
+        break;
+      }
       default:
     }
   }

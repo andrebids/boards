@@ -52,7 +52,6 @@
       }
     }
 
-    &:hover,
     &:focus-within {
       .meta {
         opacity: 1;
@@ -63,7 +62,10 @@
         opacity: 1;
         pointer-events: auto;
         transform: translateY(0) scale(1);
-        transition-delay: 0ms;
+        transition:
+          opacity 170ms var(--chat-ease),
+          transform 210ms var(--chat-ease),
+          visibility 0s linear;
         visibility: visible;
       }
     }
@@ -77,6 +79,24 @@
     max-width: 74%;
     min-width: 0;
     position: relative;
+
+    &:hover {
+      .meta {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .hoverActions {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+        transition:
+          opacity 170ms var(--chat-ease) 240ms,
+          transform 210ms var(--chat-ease) 240ms,
+          visibility 0s linear 240ms;
+        visibility: visible;
+      }
+    }
   }
 
   .focusedMessage .bubble,
@@ -126,15 +146,15 @@
     left: 0;
     opacity: 0;
     padding: 3px;
-    pointer-events: auto;
+    pointer-events: none;
     position: absolute;
     top: -36px;
-    transform: translateY(2px) scale(0.98);
+    transform: translateY(6px) scale(0.965);
     transform-origin: bottom left;
     transition:
-      opacity 120ms ease 100ms,
-      transform 120ms ease 100ms,
-      visibility 0s linear 220ms;
+      opacity 120ms var(--chat-ease),
+      transform 150ms var(--chat-ease),
+      visibility 0s linear 150ms;
     visibility: hidden;
     z-index: 12;
 
@@ -175,7 +195,10 @@
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0) scale(1);
-    transition-delay: 0ms;
+    transition:
+      opacity 170ms var(--chat-ease),
+      transform 210ms var(--chat-ease),
+      visibility 0s linear;
     visibility: visible;
   }
 
@@ -817,15 +840,24 @@
   @media (prefers-reduced-motion: reduce) {
     .hoverActions {
       transition:
-        opacity 0.01ms linear 100ms,
-        transform 0.01ms linear 100ms,
-        visibility 0s linear 101ms;
+        opacity 0.01ms linear,
+        transform 0.01ms linear,
+        visibility 0s linear 0.01ms;
     }
 
-    .messageRow:hover .hoverActions,
+    .messageContent:hover .hoverActions {
+      transition:
+        opacity 0.01ms linear 240ms,
+        transform 0.01ms linear 240ms,
+        visibility 0s linear 240ms;
+    }
+
     .messageRow:focus-within .hoverActions,
     .hoverActionsOpen {
-      transition-delay: 0ms;
+      transition:
+        opacity 0.01ms linear,
+        transform 0.01ms linear,
+        visibility 0s linear;
     }
 
     .skeletons span {

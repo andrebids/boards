@@ -173,17 +173,22 @@ const handleChatMessageAlert = (alert) => ({
   payload: { alert },
 });
 
-const updateChatConversationPreferences = (conversationId, data) => ({
+const updateChatConversationPreferences = (conversationId, participantId, data) => ({
   type: ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE,
-  payload: { conversationId, data },
+  payload: { conversationId, participantId, data },
 });
 updateChatConversationPreferences.success = (participant) => ({
   type: ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE__SUCCESS,
   payload: { participant },
 });
-updateChatConversationPreferences.failure = (conversationId, previousData, error) => ({
+updateChatConversationPreferences.failure = (
+  conversationId,
+  participantId,
+  previousData,
+  error,
+) => ({
   type: ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE__FAILURE,
-  payload: { conversationId, previousData, error },
+  payload: { conversationId, participantId, previousData, error },
 });
 
 const updateChatDraft = (conversationId, text) => ({

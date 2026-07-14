@@ -8,6 +8,25 @@ export const isDirectConversation = (conversation) => conversation?.type === 'pr
 
 export const hasUnreadMessages = (conversation) => (conversation?.unreadCount || 0) > 0;
 
+export const getClipboardImageFiles = (clipboardData) => {
+  if (!clipboardData) {
+    return [];
+  }
+
+  const files = Array.from(clipboardData.files || []).filter((file) =>
+    file.type.startsWith('image/'),
+  );
+
+  if (files.length > 0) {
+    return files;
+  }
+
+  return Array.from(clipboardData.items || [])
+    .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+    .map((item) => item.getAsFile())
+    .filter(Boolean);
+};
+
 export const getParticipantUserIds = (conversation) =>
   conversation.participantUserIds ||
   conversation.userIds ||

@@ -1,4 +1,5 @@
 import {
+  getClipboardImageFiles,
   getConversationTitle,
   getDirectUser,
   getParticipantUserIds,
@@ -32,6 +33,27 @@ describe('chat utils', () => {
     expect(hasUnreadMessages()).toBeFalsy();
     expect(hasUnreadMessages({ unreadCount: 0 })).toBeFalsy();
     expect(hasUnreadMessages({ unreadCount: 1 })).toBeTruthy();
+  });
+
+  test('extracts images pasted from clipboard files', () => {
+    const image = { name: 'screenshot.png', type: 'image/png' };
+    const document = { name: 'notes.txt', type: 'text/plain' };
+
+    expect(getClipboardImageFiles({ files: [image, document] })).toEqual([image]);
+  });
+
+  test('extracts clipboard images from items when files are unavailable', () => {
+    const image = { name: 'screenshot.png', type: 'image/png' };
+
+    expect(
+      getClipboardImageFiles({
+        files: [],
+        items: [
+          { kind: 'string', type: 'text/plain' },
+          { kind: 'file', type: 'image/png', getAsFile: () => image },
+        ],
+      }),
+    ).toEqual([image]);
   });
 
   test('normalizes participant records to user ids', () => {

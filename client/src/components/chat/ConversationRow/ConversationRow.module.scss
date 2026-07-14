@@ -18,11 +18,13 @@
     strong { color: var(--chat-foreground); font-size: var(--chat-font-body); font-weight: 650; line-height: 18px; }
     small { color: var(--chat-muted); font-size: var(--chat-font-meta); line-height: 17px; }
   }
+  .titleLine { align-items: center; display: flex; gap: 5px; min-width: 0;
+    strong { flex: 0 1 auto; min-width: 0; }
+  }
   .meta { align-items: flex-end; align-self: stretch; display: flex; flex: 0 0 auto; gap: 5px; justify-content: flex-end; min-width: 30px; padding: 1px 5px 1px 0;
     time { color: var(--chat-muted-subtle); font-size: var(--chat-font-meta); font-variant-numeric: tabular-nums; line-height: 18px; order: 2; white-space: nowrap; }
   }
-  .metaBottom { align-items: center; display: flex; gap: 5px; min-height: 18px; order: 1; }
-  .mutedIndicator { color: var(--chat-muted-subtle); }
+  .mutedIndicator { align-items: center; background: var(--chat-default); border: 1px solid var(--chat-border); border-radius: 5px; color: var(--chat-muted); display: inline-flex; flex: 0 0 auto; height: 18px; justify-content: center; width: 18px; }
   .unread { align-items: center; background: var(--chat-accent); border-radius: 999px; color: var(--chat-accent-foreground); display: inline-flex; font-size: 10px; font-variant-numeric: tabular-nums; font-weight: 700; height: 18px; justify-content: center; min-width: 18px; padding: 0 5px; }
 
   @media (prefers-reduced-motion: reduce) {

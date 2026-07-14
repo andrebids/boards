@@ -28,6 +28,7 @@ export default {
       directConversations: 'Direct conversations',
       downloadFile: 'Download file',
       dropFilesHere: 'Drop files here',
+      dropOrPasteFiles: 'Drop files here or paste an image',
       editMessage: 'Edit message',
       edited: 'edited',
       emptyConversationDescription:
@@ -66,6 +67,7 @@ export default {
       noMembersFound: 'No members found.',
       notificationPreferences: 'Notification preferences',
       notifications: 'Notifications',
+      notificationsMuted: 'Notifications muted',
       notifyAll: 'All messages',
       notifyMentions: 'Mentions only',
       onePersonTyping: '{{name}} is typing…',

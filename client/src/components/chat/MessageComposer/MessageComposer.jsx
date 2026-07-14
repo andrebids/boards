@@ -11,6 +11,7 @@ import selectors from '../../../selectors';
 import FilePicker from '../../../lib/custom-ui/components/FilePicker/FilePicker';
 import ChatAvatar from '../ChatAvatar';
 import LazyEmojiPicker from '../LazyEmojiPicker';
+import { getClipboardImageFiles } from '../utils';
 
 import styles from './MessageComposer.module.scss';
 
@@ -45,7 +46,7 @@ const mentionsInputStyle = {
     minWidth: '238px',
     overflow: 'hidden',
     padding: '5px',
-    zIndex: 10,
+    zIndex: 1013,
     list: {
       listStyleType: 'none',
       margin: 0,
@@ -171,6 +172,20 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
     setFiles((currentFiles) => [...currentFiles, ...selectedFiles]);
     setIsAttachmentMenuOpen(false);
   }, []);
+  const handlePaste = useCallback(
+    (event) => {
+      const pastedImages = getClipboardImageFiles(event.clipboardData);
+
+      if (isDisabled || pastedImages.length === 0) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      handleFilesSelect(pastedImages);
+    },
+    [handleFilesSelect, isDisabled],
+  );
   const removeFile = useCallback((index) => {
     setFiles((currentFiles) => currentFiles.filter((_, currentIndex) => currentIndex !== index));
   }, []);
@@ -203,19 +218,20 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   );
 
   useEffect(() => {
-    if (!isAttachmentMenuOpen) {
+    if (!isAttachmentMenuOpen && !isEmojiMenuOpen) {
       return undefined;
     }
 
     const closeOnOutsidePointerDown = (event) => {
       if (!toolsRef.current?.contains(event.target)) {
         setIsAttachmentMenuOpen(false);
+        setIsEmojiMenuOpen(false);
       }
     };
 
     document.addEventListener('pointerdown', closeOnOutsidePointerDown, true);
     return () => document.removeEventListener('pointerdown', closeOnOutsidePointerDown, true);
-  }, [isAttachmentMenuOpen]);
+  }, [isAttachmentMenuOpen, isEmojiMenuOpen]);
 
   const cancelReply = useCallback(() => {
     dispatch(entryActions.setChatReplyTarget(conversationId, null));
@@ -273,7 +289,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
           {isAttachmentMenuOpen && (
             <div className={styles.attachmentMenu} role="menu" aria-label={t('chat.attachFiles')}>
               <strong>{t('chat.attachFiles')}</strong>
-              <span>{t('chat.dropFilesHere')}</span>
+              <span>{t('chat.dropOrPasteFiles')}</span>
               <FilePicker multiple onSelect={handleFilesSelect}>
                 <button type="button" className={styles.attachmentMenuItem}>
                   <Upload aria-hidden="true" size={16} strokeWidth={2} />
@@ -319,9 +335,11 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
             allowSpaceInQuery
             allowSuggestionsAboveCursor
             a11ySuggestionsListLabel={t('chat.mentionSuggestions')}
+            suggestionsPortalHost={document.body}
             style={mentionsInputStyle}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             onBlur={() => dispatch(entryActions.updateChatTyping(conversationId, false))}
           >
             <Mention

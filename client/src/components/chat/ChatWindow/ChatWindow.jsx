@@ -157,6 +157,7 @@ const ChatWindow = React.memo(({ id }) => {
   }
 
   const isCustomGroup = isCustomGroupConversation(conversation);
+  const isMuted = Boolean(currentParticipant?.isMuted);
   const isGroupOwner = currentParticipant?.role === 'owner';
   const participantUserIds = new Set(conversation.participantUserIds || []);
 
@@ -217,15 +218,21 @@ const ChatWindow = React.memo(({ id }) => {
           )}
           <button
             type="button"
-            aria-label={t('chat.notificationPreferences')}
+            className={isMuted ? styles.notificationButtonMuted : undefined}
+            aria-label={
+              isMuted
+                ? `${t('chat.notificationPreferences')}: ${t('chat.notificationsMuted')}`
+                : t('chat.notificationPreferences')
+            }
             aria-expanded={isOptionsOpen}
+            title={isMuted ? t('chat.notificationsMuted') : t('chat.notificationPreferences')}
             onClick={() => {
               setIsOptionsOpen((value) => !value);
               setIsGroupEditorOpen(false);
             }}
           >
-            {currentParticipant?.isMuted ? (
-              <BellOff aria-hidden="true" size={17} strokeWidth={2} />
+            {isMuted ? (
+              <BellOff aria-hidden="true" size={18} strokeWidth={2.2} />
             ) : (
               <Bell aria-hidden="true" size={17} strokeWidth={2} />
             )}

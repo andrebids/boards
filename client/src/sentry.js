@@ -49,7 +49,7 @@ if (dsn) {
   });
 }
 
-export const reportChatError = (error, operation) => {
+export const reportChatError = (error, operation, context = {}) => {
   if (!dsn) {
     return;
   }
@@ -57,6 +57,14 @@ export const reportChatError = (error, operation) => {
   Sentry.withScope((scope) => {
     scope.setTag('area', 'chat');
     scope.setTag('operation', operation);
+    Object.entries(context.tags || {}).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        scope.setTag(key, String(value).slice(0, 128));
+      }
+    });
+    if (context.details) {
+      scope.setContext('chat_delivery', context.details);
+    }
     scope.setLevel('error');
     Sentry.captureException(error);
   });

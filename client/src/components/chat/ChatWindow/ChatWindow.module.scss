@@ -145,6 +145,16 @@
         outline-offset: -1px;
       }
     }
+
+    .notificationButtonMuted {
+      background: var(--chat-accent-soft);
+      color: var(--chat-accent);
+
+      &:hover {
+        background: var(--chat-accent-soft-hover);
+        color: var(--chat-accent-hover);
+      }
+    }
   }
 
   .blocked {

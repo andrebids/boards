@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import { all, call, delay, put, select } from 'redux-saga/effects';
+import { all, call, delay, put, race, select } from 'redux-saga/effects';
 import { nanoid } from 'nanoid';
 
 import request from '../request';
@@ -12,6 +12,63 @@ import actions from '../../../actions';
 import api from '../../../api';
 import { createLocalId } from '../../../utils/local-id';
 import { reportChatError } from '../../../sentry';
+
+const getFileSizeBucket = (file) => {
+  if (!file?.size) return 'none';
+  if (file.size < 1024 * 1024) return 'under-1mb';
+  if (file.size < 5 * 1024 * 1024) return '1mb-5mb';
+  if (file.size < 25 * 1024 * 1024) return '5mb-25mb';
+  return 'over-25mb';
+};
+
+const getMimeGroup = (file) => {
+  const group = file?.type?.split('/')[0];
+  return ['image', 'video', 'audio', 'text', 'application'].includes(group) ? group : 'other';
+};
+
+const getErrorCode = (error) =>
+  String(error?.code || error?.name || 'UNKNOWN_ERROR')
+    .replace(/[^a-zA-Z0-9_.:-]/g, '_')
+    .slice(0, 128);
+
+const getStatusCode = (error) => {
+  const statusCode = Number(error?.statusCode || error?.status);
+  return Number.isInteger(statusCode) && statusCode >= 0 && statusCode <= 599
+    ? statusCode
+    : undefined;
+};
+
+function* reportChatDeliveryFailure(error, details) {
+  const accessToken = yield select(selectors.selectAccessToken);
+  const diagnostic = Object.fromEntries(
+    Object.entries({
+      ...details,
+      errorCode: getErrorCode(error),
+      statusCode: getStatusCode(error),
+      online: typeof navigator === 'undefined' ? undefined : navigator.onLine,
+    }).filter(([, value]) => value !== undefined),
+  );
+
+  console.warn('[CHAT_DELIVERY][FAILED]', diagnostic); // eslint-disable-line no-console
+  reportChatError(error, details.event, {
+    tags: {
+      transport: diagnostic.transport,
+      errorCode: diagnostic.errorCode,
+    },
+    details: diagnostic,
+  });
+
+  try {
+    yield race({
+      request: call(api.createChatDiagnostic, diagnostic, {
+        Authorization: `Bearer ${accessToken}`,
+      }),
+      timeout: delay(5000),
+    });
+  } catch {
+    // The browser console and Sentry remain available if the diagnostic request also fails.
+  }
+}
 
 export function* fetchChatMembers(projectId) {
   yield put(actions.fetchChatMembers(projectId));
@@ -224,6 +281,7 @@ function* uploadChatMessageAttachments(message, files) {
   let lastError;
 
   for (let index = 0; index < files.length; index += 1) {
+    const startedAt = Date.now();
     try {
       ({ item: updatedMessage } = yield call(request, api.createChatMessageAttachment, message.id, {
         file: files[index],
@@ -231,6 +289,18 @@ function* uploadChatMessageAttachments(message, files) {
     } catch (error) {
       failedFiles.push(files[index]);
       lastError = error;
+      yield call(reportChatDeliveryFailure, error, {
+        event: 'attachment-upload-failed',
+        transport: 'http',
+        clientMessageId: message.clientMessageId,
+        messageId: message.id,
+        durationMs: Math.min(Date.now() - startedAt, 10 * 60 * 1000),
+        hasAttachments: true,
+        fileCount: files.length,
+        fileSizeBucket: getFileSizeBucket(files[index]),
+        mimeGroup: getMimeGroup(files[index]),
+        attempt: index + 1,
+      });
     }
   }
 
@@ -239,6 +309,7 @@ function* uploadChatMessageAttachments(message, files) {
 
 function* sendChatMessage(localId, conversationId, data, existingMessageId) {
   const { files = [], clientMessageId = localId, ...messageData } = data;
+  const startedAt = Date.now();
   let message;
   if (existingMessageId) {
     message = yield select(selectors.selectChatMessageById, existingMessageId);
@@ -249,11 +320,20 @@ function* sendChatMessage(localId, conversationId, data, existingMessageId) {
         clientMessageId,
         hasAttachments: files.length > 0,
       }));
-  } catch (error) {
-    reportChatError(error, 'create-message');
-    yield put(actions.createChatMessage.failure(localId, error));
-    return;
-  }
+    } catch (error) {
+      yield call(reportChatDeliveryFailure, error, {
+        event: 'message-create-failed',
+        transport: 'socket',
+        clientMessageId,
+        durationMs: Math.min(Date.now() - startedAt, 10 * 60 * 1000),
+        hasAttachments: files.length > 0,
+        fileCount: files.length,
+        fileSizeBucket: files.length > 0 ? getFileSizeBucket(files[0]) : 'none',
+        mimeGroup: files.length > 0 ? getMimeGroup(files[0]) : 'none',
+      });
+      yield put(actions.createChatMessage.failure(localId, error));
+      return;
+    }
   }
 
   const uploadResult = yield call(uploadChatMessageAttachments, message, files);
@@ -395,13 +475,16 @@ export function* updateChatConversationPreferences(id, data) {
   const previousData = participant && {
     notificationLevel: participant.notificationLevel,
     mutedUntil: participant.mutedUntil,
+    isMuted: participant.isMuted,
   };
-  yield put(actions.updateChatConversationPreferences(id, data));
+  yield put(actions.updateChatConversationPreferences(id, participant?.id, data));
   try {
     const { item } = yield call(request, api.updateChatConversationPreferences, id, data);
     yield put(actions.updateChatConversationPreferences.success(item));
   } catch (error) {
-    yield put(actions.updateChatConversationPreferences.failure(id, previousData, error));
+    yield put(
+      actions.updateChatConversationPreferences.failure(id, participant?.id, previousData, error),
+    );
   }
 }
 

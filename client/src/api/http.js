@@ -7,6 +7,16 @@ import Config from '../constants/Config';
 
 const http = {};
 
+const createResponseError = (body, statusCode) => {
+  const error = new Error('HTTP request failed');
+  if (body && typeof body === 'object') {
+    Object.assign(error, body);
+  }
+  error.code = error.code || `E_HTTP_${statusCode}`;
+  error.statusCode = statusCode;
+  return error;
+};
+
 // TODO: add all methods
 ['GET', 'POST', 'DELETE'].forEach(method => {
   http[method.toLowerCase()] = (url, data, headers) => {
@@ -24,18 +34,31 @@ const http = {};
       body: formData,
       credentials: 'include',
     })
-      .then(response =>
-        response.json().then(body => ({
-          body,
-          isError: response.status !== 200,
-        }))
-      )
-      .then(({ body, isError }) => {
-        if (isError) {
-          throw body;
+      .then(async (response) => {
+        let body;
+        try {
+          body = await response.json();
+        } catch {
+          const error = new Error('Invalid HTTP response');
+          error.code = 'E_HTTP_INVALID_RESPONSE';
+          error.statusCode = response.status;
+          throw error;
         }
 
+        if (!response.ok) {
+          throw createResponseError(body, response.status);
+        }
         return body;
+      })
+      .catch((error) => {
+        if (error.code) {
+          throw error;
+        }
+
+        const networkError = new Error('HTTP network request failed');
+        networkError.code = 'E_HTTP_NETWORK';
+        networkError.name = error.name || networkError.name;
+        throw networkError;
       });
   };
 });

@@ -27,6 +27,7 @@ export default {
       directConversations: 'Conversas diretas',
       downloadFile: 'Transferir ficheiro',
       dropFilesHere: 'Larga os ficheiros aqui',
+      dropOrPasteFiles: 'Larga ficheiros aqui ou cola uma imagem',
       editMessage: 'Editar mensagem',
       edited: 'editada',
       emptyConversationDescription:
@@ -65,6 +66,7 @@ export default {
       noMembersFound: 'Nenhum membro encontrado.',
       notificationPreferences: 'Preferências de notificações',
       notifications: 'Notificações',
+      notificationsMuted: 'Notificações silenciadas',
       notifyAll: 'Todas as mensagens',
       notifyMentions: 'Apenas menções',
       onePersonTyping: '{{name}} está a escrever…',

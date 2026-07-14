@@ -30,3 +30,56 @@ describe('ChatParticipant group reconciliation', () => {
     expect(model.upsert).toHaveBeenCalledWith(keptParticipant);
   });
 });
+
+describe('ChatParticipant notification preferences', () => {
+  const reducePreferences = (participant, type, payload) => {
+    ChatParticipant.reducer(
+      { type, payload },
+      {
+        withId: (id) => (id === participant.id ? participant : null),
+      },
+    );
+  };
+
+  test.each([
+    {
+      notificationLevel: 'all',
+      mutedUntil: '2026-07-14T18:00:00.000Z',
+    },
+    {
+      notificationLevel: 'none',
+      mutedUntil: null,
+    },
+  ])('shows the muted state optimistically for %#', (data) => {
+    const participant = {
+      id: 'participant-1',
+      update: jest.fn(),
+    };
+
+    reducePreferences(participant, ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE, {
+      participantId: participant.id,
+      data,
+    });
+
+    expect(participant.update).toHaveBeenCalledWith({ ...data, isMuted: true });
+  });
+
+  test('restores the previous state when the request fails', () => {
+    const participant = {
+      id: 'participant-1',
+      update: jest.fn(),
+    };
+    const previousData = {
+      notificationLevel: 'all',
+      mutedUntil: null,
+      isMuted: false,
+    };
+
+    reducePreferences(participant, ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE__FAILURE, {
+      participantId: participant.id,
+      previousData,
+    });
+
+    expect(participant.update).toHaveBeenCalledWith(previousData);
+  });
+});

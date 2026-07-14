@@ -123,6 +123,8 @@ const createChatMessageAttachment = (messageId, { file }, headers) =>
     .post(`/chat-messages/${messageId}/attachments`, { file }, headers)
     .then((body) => ({ ...body, item: transformChatMessage(body.item) }));
 
+const createChatDiagnostic = (data, headers) => http.post('/chat-diagnostics', data, headers);
+
 const toggleChatMessageReaction = (messageId, emoji, headers) =>
   socket.post(`/chat-messages/${messageId}/reactions`, { emoji }, headers).then((body) => ({
     ...body,
@@ -201,6 +203,7 @@ export default {
   unsubscribeFromChatConversation,
   createChatMessage,
   createChatMessageAttachment,
+  createChatDiagnostic,
   toggleChatMessageReaction,
   updateChatMessage,
   deleteChatMessage,
