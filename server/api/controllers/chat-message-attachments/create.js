@@ -242,6 +242,7 @@ module.exports = {
         sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', {
           item: {
             id: conversation.id,
+            projectId: conversation.projectId,
             lastMessage: item,
             unreadCount: unreadCounts[userId] || 0,
           },

@@ -2,6 +2,162 @@ import reducer from './chat';
 import ActionTypes from '../constants/ActionTypes';
 
 describe('chat reducer', () => {
+  test('stores a normalized global inbox response and its authoritative metadata', () => {
+    const state = reducer(undefined, {
+      type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,
+      payload: {
+        items: [
+          {
+            conversationId: 'conversation-1',
+            projectId: 'project-1',
+            unreadCount: 3,
+          },
+        ],
+        meta: {
+          hasChatAccess: true,
+          unreadConversationTotal: 1,
+          unreadMessageTotal: 3,
+          unreadConversationTotalsByProjectId: { 'project-1': 1 },
+        },
+      },
+    });
+
+    expect(state.inboxItemsByConversationId['conversation-1']).toMatchObject({
+      conversationId: 'conversation-1',
+      projectId: 'project-1',
+      unreadCount: 3,
+    });
+    expect(state.hasFetchedInbox).toBe(true);
+    expect(state.inboxMeta.unreadConversationTotal).toBe(1);
+  });
+
+  test('merges a global event into an inbox item without requiring a local conversation', () => {
+    const initialState = reducer(undefined, {
+      type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,
+      payload: {
+        items: [
+          {
+            conversationId: 'conversation-1',
+            projectId: 'project-1',
+            projectName: 'Project one',
+            unreadCount: 0,
+          },
+        ],
+        meta: {
+          unreadConversationTotal: 0,
+          unreadMessageTotal: 0,
+          unreadConversationTotalsByProjectId: { 'project-1': 0 },
+        },
+      },
+    });
+
+    const state = reducer(initialState, {
+      type: ActionTypes.CHAT_INBOX_ITEM_UPDATE_HANDLE,
+      payload: {
+        item: {
+          id: 'conversation-1',
+          unreadCount: 2,
+          lastMessageAt: new Date('2026-07-15T12:00:00.000Z'),
+        },
+      },
+    });
+
+    expect(state.inboxItemsByConversationId['conversation-1']).toMatchObject({
+      projectName: 'Project one',
+      unreadCount: 2,
+    });
+    expect(state.inboxMeta).toMatchObject({
+      unreadConversationTotal: 1,
+      unreadMessageTotal: 2,
+      unreadConversationTotalsByProjectId: { 'project-1': 1 },
+    });
+  });
+
+  test('ignores partial events for items that have not been fetched', () => {
+    const state = reducer(undefined, {
+      type: ActionTypes.CHAT_INBOX_ITEM_UPDATE_HANDLE,
+      payload: { item: { id: 'conversation-1', unreadCount: 1 } },
+    });
+
+    expect(state.inboxItemsByConversationId).toEqual({});
+  });
+
+  test('inserts complete conversation events that arrive after the inbox was fetched', () => {
+    const state = reducer(undefined, {
+      type: ActionTypes.CHAT_INBOX_ITEM_UPDATE_HANDLE,
+      payload: {
+        item: {
+          id: 'conversation-1',
+          projectId: 'project-1',
+          title: 'New group',
+          unreadCount: 1,
+        },
+      },
+    });
+
+    expect(state.inboxItemsByConversationId['conversation-1']).toMatchObject({
+      conversationId: 'conversation-1',
+      projectId: 'project-1',
+      title: 'New group',
+      unreadCount: 1,
+    });
+    expect(state.inboxMeta.hasChatAccess).toBe(true);
+  });
+
+  test('optimistically reads inbox conversations and restores only targets on failure', () => {
+    const items = {
+      'conversation-1': {
+        conversationId: 'conversation-1',
+        projectId: 'project-1',
+        unreadCount: 2,
+        hasUnreadMention: true,
+      },
+      'conversation-2': {
+        conversationId: 'conversation-2',
+        projectId: 'project-2',
+        unreadCount: 1,
+      },
+    };
+    const initialState = {
+      ...reducer(undefined, { type: '@@INIT' }),
+      inboxItemsByConversationId: items,
+      inboxMeta: {
+        unreadConversationTotal: 2,
+        unreadMessageTotal: 3,
+        unreadConversationTotalsByProjectId: { 'project-1': 1, 'project-2': 1 },
+      },
+    };
+    const optimisticState = reducer(initialState, {
+      type: ActionTypes.CHAT_INBOX_READ,
+      payload: {
+        conversationIds: ['conversation-1'],
+        previousItemsByConversationId: { 'conversation-1': items['conversation-1'] },
+      },
+    });
+    const concurrentState = reducer(optimisticState, {
+      type: ActionTypes.CHAT_INBOX_ITEM_UPDATE_HANDLE,
+      payload: { item: { id: 'conversation-2', unreadCount: 3 } },
+    });
+    const error = new Error('offline');
+    const restoredState = reducer(concurrentState, {
+      type: ActionTypes.CHAT_INBOX_READ__FAILURE,
+      payload: {
+        previousItemsByConversationId: { 'conversation-1': items['conversation-1'] },
+        error,
+      },
+    });
+
+    expect(restoredState.inboxItemsByConversationId['conversation-1']).toMatchObject(
+      items['conversation-1'],
+    );
+    expect(restoredState.inboxItemsByConversationId['conversation-2'].unreadCount).toBe(3);
+    expect(restoredState.inboxMeta).toMatchObject({
+      unreadConversationTotal: 2,
+      unreadMessageTotal: 5,
+    });
+    expect(restoredState.inboxError).toBe(error);
+  });
+
   test('clears a conversation creation failure when the operation is retried', () => {
     const requestKey = 'project-1:direct:user-2';
     const error = { message: 'network error' };

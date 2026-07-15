@@ -105,6 +105,7 @@ export default class extends BaseModel {
       case ActionTypes.PROJECT_UPDATE_HANDLE:
       case ActionTypes.BOARD_MEMBERSHIP_CREATE_HANDLE:
       case ActionTypes.CARD_UPDATE_HANDLE:
+      case ActionTypes.CHAT_INBOX_FETCH__SUCCESS:
       case ActionTypes.CHAT_MEMBERS_FETCH__SUCCESS:
       case ActionTypes.CHAT_CONVERSATIONS_FETCH__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_CREATE__SUCCESS:

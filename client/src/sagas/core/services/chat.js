@@ -94,6 +94,63 @@ export function* fetchChatMembers(projectId) {
   yield put(actions.fetchChatMembers.success(projectId, users));
 }
 
+export function* fetchChatInbox() {
+  yield put(actions.fetchChatInbox());
+
+  try {
+    const body = yield call(request, api.getChatInbox);
+    yield put(
+      actions.fetchChatInbox.success(body.items || [], body.meta || {}, body.included?.users || []),
+    );
+  } catch (error) {
+    yield put(actions.fetchChatInbox.failure(error));
+  }
+}
+
+export function* markAllChatInboxAsRead(conversationIds) {
+  const chatState = yield select(selectors.selectChatState);
+  const targetConversationIds = (
+    conversationIds ||
+    Object.values(chatState.inboxItemsByConversationId)
+      .filter((item) => (item.unreadCount || 0) > 0)
+      .map((item) => item.conversationId)
+  ).filter(Boolean);
+
+  if (targetConversationIds.length === 0) {
+    return;
+  }
+
+  const previousItemsByConversationId = targetConversationIds.reduce(
+    (result, conversationId) => ({
+      ...result,
+      ...(chatState.inboxItemsByConversationId[conversationId] && {
+        [conversationId]: chatState.inboxItemsByConversationId[conversationId],
+      }),
+    }),
+    {},
+  );
+  const previousMeta = chatState.inboxMeta;
+  yield put(
+    actions.markAllChatInboxAsRead(
+      targetConversationIds,
+      previousItemsByConversationId,
+      previousMeta,
+    ),
+  );
+
+  try {
+    const body = yield call(request, api.markAllChatInboxAsRead, targetConversationIds);
+    yield put(actions.markAllChatInboxAsRead.success(body.items || [], body.meta));
+    yield all(
+      (body.items || []).map((readState) => put(actions.handleChatConversationRead(readState))),
+    );
+  } catch (error) {
+    yield put(
+      actions.markAllChatInboxAsRead.failure(previousItemsByConversationId, previousMeta, error),
+    );
+  }
+}
+
 export function* fetchChatConversations(projectId) {
   const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
   const accessRevocationVersion = accessRevocationVersions[projectId] || 0;
@@ -152,7 +209,9 @@ function* createChatConversation(projectId, type, userId) {
     const body =
       type === 'projectGroup'
         ? yield call(request, api.createGeneralChatConversation, projectId)
-        : yield call(request, api.createDirectChatConversation, projectId, { userId });
+        : yield call(request, api.createDirectChatConversation, projectId, {
+            userId,
+          });
 
     conversation = body.item;
     chatParticipants = body.included?.chatParticipants || [];
@@ -170,6 +229,7 @@ function* createChatConversation(projectId, type, userId) {
   if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
     return;
   }
+  yield put(actions.handleChatInboxItemUpdate(conversation));
   yield put(actions.createChatConversation.success(conversation, chatParticipants, users));
 }
 
@@ -191,6 +251,7 @@ export function* createCustomChatGroup(projectId, data, requestKey = `${projectI
     if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
       return;
     }
+    yield put(actions.handleChatInboxItemUpdate(body.item));
     yield put(
       actions.createChatConversation.success(
         body.item,
@@ -213,7 +274,11 @@ export function* createCustomChatGroup(projectId, data, requestKey = `${projectI
 export function* updateChatConversation(id, data) {
   try {
     const { item } = yield call(request, api.updateChatConversation, id, data);
-    yield put(actions.handleChatConversationUpdate(item, [], []));
+    yield put(actions.handleChatInboxItemUpdate(item));
+    const conversation = yield select(selectors.selectChatConversationById, item.id);
+    if (conversation) {
+      yield put(actions.handleChatConversationUpdate(item, [], []));
+    }
   } catch (error) {
     reportChatError(error, 'update-conversation');
     // The server remains the source of truth for the title.
@@ -223,13 +288,17 @@ export function* updateChatConversation(id, data) {
 export function* addChatConversationParticipants(id, userIds) {
   try {
     const body = yield call(request, api.addChatConversationParticipants, id, userIds);
-    yield put(
-      actions.handleChatConversationUpdate(
-        body.item,
-        body.included?.chatParticipants || [],
-        body.included?.users || [],
-      ),
-    );
+    yield put(actions.handleChatInboxItemUpdate(body.item));
+    const conversation = yield select(selectors.selectChatConversationById, body.item.id);
+    if (conversation) {
+      yield put(
+        actions.handleChatConversationUpdate(
+          body.item,
+          body.included?.chatParticipants || [],
+          body.included?.users || [],
+        ),
+      );
+    }
   } catch (error) {
     reportChatError(error, 'add-participants');
     // Membership changes are reflected only after server confirmation.
@@ -267,10 +336,12 @@ export function* handleChatConversationCreate(conversation, chatParticipants, us
       return;
     }
   }
+  yield put(actions.handleChatInboxItemUpdate(conversation));
   yield put(actions.handleChatConversationCreate(conversation, chatParticipants, users));
 }
 
 export function* handleChatConversationUpdate(conversation, chatParticipants, users) {
+  yield put(actions.handleChatInboxItemUpdate(conversation));
   const currentConversation = yield select(selectors.selectChatConversationById, conversation.id);
   if (!currentConversation) {
     return;
@@ -579,23 +650,40 @@ export function* forwardChatMessage(id, targetConversationId) {
 
 export function* updateChatConversationPreferences(id, data) {
   const conversation = yield select(selectors.selectChatConversationById, id);
+  const chatState = yield select(selectors.selectChatState);
+  const inboxItem = chatState.inboxItemsByConversationId[id];
   const currentUserId = yield select(selectors.selectCurrentUserId);
   const participant = conversation?.participants?.find(({ userId }) => userId === currentUserId);
-  const previousData = participant && {
-    notificationLevel: participant.notificationLevel,
-    mutedUntil: participant.mutedUntil,
-    isMuted: participant.isMuted,
+  const preferencesSource = participant || inboxItem;
+  const previousData = preferencesSource && {
+    notificationLevel: preferencesSource.notificationLevel,
+    mutedUntil: preferencesSource.mutedUntil,
+    isMuted: preferencesSource.isMuted,
   };
   yield put(actions.updateChatConversationPreferences(id, participant?.id, data));
   try {
     const { item } = yield call(request, api.updateChatConversationPreferences, id, data);
     const currentConversation = yield select(selectors.selectChatConversationById, id);
+    const currentChatState = yield select(selectors.selectChatState);
     if (currentConversation) {
       yield put(actions.updateChatConversationPreferences.success(item));
+    } else if (currentChatState.inboxItemsByConversationId[id]) {
+      yield put(
+        actions.handleChatInboxItemUpdate(
+          {
+            conversationId: item.conversationId,
+            notificationLevel: item.notificationLevel,
+            mutedUntil: item.mutedUntil,
+            isMuted: item.isMuted,
+          },
+          true,
+        ),
+      );
     }
   } catch (error) {
     const currentConversation = yield select(selectors.selectChatConversationById, id);
-    if (currentConversation) {
+    const currentChatState = yield select(selectors.selectChatState);
+    if (currentConversation || currentChatState.inboxItemsByConversationId[id]) {
       yield put(
         actions.updateChatConversationPreferences.failure(id, participant?.id, previousData, error),
       );
@@ -613,6 +701,14 @@ export function* updateChatTyping(id, isTyping) {
 }
 
 export function* handleChatParticipantUpdate(participant) {
+  yield put(
+    actions.handleChatInboxItemUpdate({
+      conversationId: participant.conversationId,
+      notificationLevel: participant.notificationLevel,
+      mutedUntil: participant.mutedUntil,
+      isMuted: participant.isMuted,
+    }),
+  );
   const conversation = yield select(
     selectors.selectChatConversationById,
     participant.conversationId,
@@ -674,36 +770,44 @@ export function* setChatReplyTarget(conversationId, message) {
 
 export function* markChatConversationAsRead(conversationId) {
   const conversation = yield select(selectors.selectChatConversationById, conversationId);
-  if (!conversation) {
+  const chatState = yield select(selectors.selectChatState);
+  const inboxItem = chatState.inboxItemsByConversationId[conversationId];
+  if (!conversation && !inboxItem) {
     return;
   }
-  const previousUnreadCount = conversation?.unreadCount || 0;
-  yield put(actions.markChatConversationAsRead(conversationId));
+  const previousUnreadCount = conversation
+    ? conversation.unreadCount || 0
+    : inboxItem?.unreadCount || 0;
+  yield put(actions.markChatConversationAsRead(conversationId, inboxItem));
 
   let readState;
   try {
     ({ item: readState } = yield call(request, api.markChatConversationAsRead, conversationId, {}));
   } catch (error) {
     const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
-    if (currentConversation) {
+    const currentChatState = yield select(selectors.selectChatState);
+    if (currentConversation || currentChatState.inboxItemsByConversationId[conversationId]) {
       yield put(
-        actions.markChatConversationAsRead.failure(conversationId, previousUnreadCount, error),
+        actions.markChatConversationAsRead.failure(
+          conversationId,
+          previousUnreadCount,
+          error,
+          inboxItem,
+        ),
       );
     }
     return;
   }
 
   const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
-  if (currentConversation) {
+  const currentChatState = yield select(selectors.selectChatState);
+  if (currentConversation || currentChatState.inboxItemsByConversationId[conversationId]) {
     yield put(actions.markChatConversationAsRead.success(readState));
   }
 }
 
 export function* handleChatConversationRead(readState) {
-  const conversation = yield select(selectors.selectChatConversationById, readState.conversationId);
-  if (conversation) {
-    yield put(actions.handleChatConversationRead(readState));
-  }
+  yield put(actions.handleChatConversationRead(readState));
 }
 
 export function* handleChatProjectAccessRevoke(projectId) {
@@ -738,6 +842,8 @@ export function* toggleChatConversationMinimized(id) {
 }
 
 export default {
+  fetchChatInbox,
+  markAllChatInboxAsRead,
   fetchChatMembers,
   fetchChatConversations,
   fetchChatForProject,

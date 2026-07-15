@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import history from '../../../history';
+import Paths from '../../../constants/Paths';
 
 import '../theme.scss';
 
@@ -68,6 +69,9 @@ const ChatProvider = React.memo(({ children }) => {
     selectors.selectHasFetchedChatConversationsForCurrentProject,
   );
   const hasPendingMessages = useSelector(selectors.selectHasPendingChatMessages);
+  const hasFetchedInbox = useSelector(selectors.selectHasFetchedChatInbox);
+  const isInboxFetching = useSelector(selectors.selectIsChatInboxFetching);
+  const isChatAvailableForCurrentUser = useSelector(selectors.selectIsChatAvailableForCurrentUser);
 
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -77,13 +81,26 @@ const ChatProvider = React.memo(({ children }) => {
   const subscribedWindowIdsRef = useRef(new Set());
   const previousRevocationVersionRef = useRef(accessRevocationVersions[projectId] || 0);
   const handledDeepLinkRef = useRef(null);
+  const hasRequestedInboxRef = useRef(false);
 
   const [windows, setWindows] = useState(() => readStoredWindows(storageKey));
   const [pendingConversation, setPendingConversation] = useState(null);
   const [isConversationListOpen, setIsConversationListOpen] = useState(false);
+  const [inboxScope, setInboxScope] = useState(() =>
+    projectId && isCurrentUserChatMember ? 'project' : 'global',
+  );
   const windowsRef = useRef(windows);
 
-  const isEnabled = isCurrentUserChatMember;
+  const isEnabled = isCurrentUserChatMember || isChatAvailableForCurrentUser;
+
+  useEffect(() => {
+    if (hasFetchedInbox || isInboxFetching || hasRequestedInboxRef.current) {
+      return;
+    }
+
+    hasRequestedInboxRef.current = true;
+    dispatch(entryActions.fetchChatInbox());
+  }, [dispatch, hasFetchedInbox, isInboxFetching]);
 
   useEffect(() => {
     if (!hasPendingMessages) {
@@ -133,8 +150,9 @@ const ChatProvider = React.memo(({ children }) => {
     setWindows(readStoredWindows(storageKey));
     setPendingConversation(null);
     setIsConversationListOpen(false);
+    setInboxScope(projectId && isCurrentUserChatMember ? 'project' : 'global');
     handledDeepLinkRef.current = null;
-  }, [accessRevocationVersions, dispatch, projectId, storageKey]);
+  }, [accessRevocationVersions, dispatch, isCurrentUserChatMember, projectId, storageKey]);
 
   useEffect(() => {
     windowsRef.current = windows;
@@ -358,11 +376,27 @@ const ChatProvider = React.memo(({ children }) => {
   );
 
   const openConversationList = useCallback(() => {
+    setInboxScope(projectId && isCurrentUserChatMember ? 'project' : 'global');
     setIsConversationListOpen(true);
-  }, []);
+  }, [isCurrentUserChatMember, projectId]);
 
   const closeConversationList = useCallback(() => {
     setIsConversationListOpen(false);
+  }, []);
+
+  const openGlobalConversation = useCallback((item) => {
+    const conversationId = item?.conversationId || item?.id;
+    if (!item?.projectId || !conversationId) {
+      return;
+    }
+
+    const parameters = new URLSearchParams();
+    parameters.set('chatConversation', conversationId);
+    if (item.firstUnreadMessageId) {
+      parameters.set('chatMessage', item.firstUnreadMessageId);
+    }
+
+    history.push(`${Paths.PROJECTS.replace(':id', item.projectId)}?${parameters.toString()}`);
   }, []);
 
   const value = useMemo(
@@ -370,13 +404,17 @@ const ChatProvider = React.memo(({ children }) => {
       closeConversationList,
       closeConversation,
       conversations,
+      inboxScope,
       isConversationListOpen,
       isEnabled,
+      isProjectChatEnabled: isCurrentUserChatMember,
       isPending: !!pendingConversation,
       openConversation,
       openConversationList,
       openDirectConversation,
       openGeneralConversation,
+      openGlobalConversation,
+      setInboxScope,
       toggleConversationMinimized,
       windows,
     }),
@@ -384,12 +422,15 @@ const ChatProvider = React.memo(({ children }) => {
       closeConversationList,
       closeConversation,
       conversations,
+      inboxScope,
       isConversationListOpen,
       isEnabled,
+      isCurrentUserChatMember,
       openConversation,
       openConversationList,
       openDirectConversation,
       openGeneralConversation,
+      openGlobalConversation,
       pendingConversation,
       toggleConversationMinimized,
       windows,

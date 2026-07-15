@@ -4,6 +4,7 @@
  */
 
 import { createSelector } from 'redux-orm';
+import { createSelector as createReselector } from 'reselect';
 
 import orm from '../orm';
 import { selectPath } from './router';
@@ -24,6 +25,74 @@ const enrichConversation = (conversationModel) => {
 };
 
 export const selectChatState = (state) => state.chat;
+
+export const selectChatInboxItems = createReselector(
+  selectChatState,
+  ({ inboxItemsByConversationId }) =>
+    Object.values(inboxItemsByConversationId).sort((left, right) => {
+      const leftTime = left.lastMessageAt ? new Date(left.lastMessageAt).getTime() : 0;
+      const rightTime = right.lastMessageAt ? new Date(right.lastMessageAt).getTime() : 0;
+      return (
+        rightTime - leftTime ||
+        String(right.conversationId).localeCompare(String(left.conversationId))
+      );
+    }),
+);
+
+export const selectIsChatInboxFetching = (state) => selectChatState(state).isInboxFetching;
+
+export const selectHasFetchedChatInbox = (state) => selectChatState(state).hasFetchedInbox;
+
+export const selectChatInboxError = (state) => selectChatState(state).inboxError;
+
+export const selectChatInboxUnreadConversationTotal = createReselector(
+  selectChatState,
+  ({ inboxItemsByConversationId, inboxMeta }) =>
+    typeof inboxMeta.unreadConversationTotal === 'number'
+      ? inboxMeta.unreadConversationTotal
+      : Object.values(inboxItemsByConversationId).filter((item) => (item.unreadCount || 0) > 0)
+          .length,
+);
+
+export const selectChatInboxUnreadMessageTotal = createReselector(
+  selectChatState,
+  ({ inboxItemsByConversationId, inboxMeta }) =>
+    typeof inboxMeta.unreadMessageTotal === 'number'
+      ? inboxMeta.unreadMessageTotal
+      : Object.values(inboxItemsByConversationId).reduce(
+          (total, item) => total + (item.unreadCount || 0),
+          0,
+        ),
+);
+
+export const selectChatInboxUnreadConversationTotalsByProjectId = createReselector(
+  selectChatState,
+  ({ inboxItemsByConversationId, inboxMeta }) => {
+    if (inboxMeta.unreadConversationTotalsByProjectId) {
+      return inboxMeta.unreadConversationTotalsByProjectId;
+    }
+    return Object.values(inboxItemsByConversationId).reduce((totals, item) => {
+      if (!item.projectId || !(item.unreadCount > 0)) {
+        return totals;
+      }
+      return {
+        ...totals,
+        [item.projectId]: (totals[item.projectId] || 0) + 1,
+      };
+    }, {});
+  },
+);
+
+export const selectChatInboxUnreadTotalsByProjectId =
+  selectChatInboxUnreadConversationTotalsByProjectId;
+
+export const selectIsChatAvailableForCurrentUser = createReselector(
+  selectChatState,
+  ({ inboxItemsByConversationId, inboxMeta }) =>
+    typeof inboxMeta.hasChatAccess === 'boolean'
+      ? inboxMeta.hasChatAccess
+      : Object.keys(inboxItemsByConversationId).length > 0,
+);
 
 export const selectOpenChatConversationIds = (state) => selectChatState(state).openConversationIds;
 
@@ -162,6 +231,15 @@ export const makeSelectHasMoreNewerChatMessagesByConversationId = () => (state, 
 
 export default {
   selectChatState,
+  selectChatInboxItems,
+  selectIsChatInboxFetching,
+  selectHasFetchedChatInbox,
+  selectChatInboxError,
+  selectChatInboxUnreadConversationTotal,
+  selectChatInboxUnreadMessageTotal,
+  selectChatInboxUnreadConversationTotalsByProjectId,
+  selectChatInboxUnreadTotalsByProjectId,
+  selectIsChatAvailableForCurrentUser,
   selectOpenChatConversationIds,
   selectMinimizedChatConversationIds,
   selectChatConversationCreationErrors,

@@ -10,6 +10,11 @@ const createOne = (values) => ChatConversation.create({ ...values }).fetch();
 
 const getByProjectId = (projectId) => defaultFind({ projectId });
 
+const getByProjectIds = (projectIds) =>
+  projectIds.length > 0 ? defaultFind({ projectId: projectIds }) : [];
+
+const getByIds = (ids) => (ids.length > 0 ? defaultFind({ id: ids }) : []);
+
 const getOneById = (id) => ChatConversation.findOne(id);
 
 const getOneProjectGroupByProjectId = (projectId) =>
@@ -33,6 +38,8 @@ const updateOne = (criteria, values) => ChatConversation.updateOne(criteria).set
 module.exports = {
   createOne,
   getByProjectId,
+  getByProjectIds,
+  getByIds,
   getOneById,
   getOneProjectGroupByProjectId,
   getOneProjectDirectByProjectIdAndDirectKey,

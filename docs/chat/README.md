@@ -2,7 +2,7 @@
 
 Este diretório é a fonte de verdade para o estado atual do chat por projeto. Os ficheiros em `planos-desenvolvimento/` continuam a guardar planos e análises históricas, mas não devem ser usados isoladamente para determinar o que já está implementado.
 
-Última revisão da documentação: **2026-07-13**.
+Última revisão da documentação: **2026-07-15**.
 
 ## Navegação
 
@@ -21,6 +21,7 @@ O chat está associado a um projeto e pode ser ativado para gestores ou para tod
 - respostas, reencaminhamento, mensagens guardadas e deep links;
 - anexos, reações e previews externos de links opcionais;
 - preferências de notificação, mute e indicação temporária de escrita;
+- Inbox global com uma única bolha, contadores de todos os projetos e navegação direta para a primeira mensagem não lida;
 - restauro das janelas abertas, reconexão e revogação de acesso no cliente.
 
 Há trabalho operacional ainda identificado antes de uma ativação geral: E2E com duas sessões reais, quotas de armazenamento, métricas e alertas, rollout progressivo e revisão responsiva completa. O detalhe permanece em [PLANO_MELHORIAS_CHAT.md](../../planos-desenvolvimento/PLANO_MELHORIAS_CHAT.md) e [PLANO_CHAT_COLABORACAO_RESPOSTAS_PREVIEWS.md](../../planos-desenvolvimento/PLANO_CHAT_COLABORACAO_RESPOSTAS_PREVIEWS.md).

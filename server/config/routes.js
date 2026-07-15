@@ -86,6 +86,8 @@ module.exports.routes = {
   'DELETE /api/projects/:id': 'projects/delete',
 
   'GET /api/projects/:projectId/chat-members': 'chat-members/index',
+  'GET /api/chat-inbox': 'chat-inbox/index',
+  'POST /api/chat-inbox/read': 'chat-inbox/read',
   'GET /api/projects/:projectId/chat-conversations': 'chat-conversations/index',
   'POST /api/projects/:projectId/chat-conversations/general': 'chat-conversations/create-general',
   'POST /api/projects/:projectId/chat-conversations/direct': 'chat-conversations/create-direct',

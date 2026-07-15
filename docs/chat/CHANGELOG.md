@@ -8,8 +8,14 @@ Registar aqui mudanças com impacto funcional, de contrato, dados, segurança, o
 
 ### Adicionado
 
+- Inbox global com resumos autorizados das conversas de todos os projetos, filtros de leitura e navegação por deep link.
+- Endpoint de leitura em lote para limpar explicitamente várias conversas sem fazer um pedido por projeto.
+- Traduções da Inbox global em português, espanhol, francês e inglês.
+
 ### Alterado
 
+- A mesma bolha de chat passa a estar disponível na página inicial e dentro dos projetos, alternando entre âmbito global e local sem duplicar launchers.
+- O badge principal passa a contar conversas globais não lidas; os badges das linhas continuam a contar mensagens.
 - Novos projetos passam a ter o chat disponível para todos os membros por omissão; gestores e administradores de projetos partilhados podem restringi-lo ou desativá-lo.
 - O launcher do chat permanece visível e o painel abre e recolhe a partir dele com motion reduzido quando solicitado pelo sistema.
 - As reações nas mensagens passam a apresentar apenas o emoji e a contagem, sem cápsula visual.

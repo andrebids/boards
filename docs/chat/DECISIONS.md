@@ -4,6 +4,27 @@ Registo leve de decisões arquiteturais. Serve para preservar o contexto que o c
 
 Estados possíveis: `Proposta`, `Aceite`, `Substituída` e `Rejeitada`.
 
+## CHAT-005 — Launcher único e resumo global separado
+
+- Data: 2026-07-15
+- Estado: Aceite
+
+### Contexto
+
+Um utilizador pode participar em muitos projetos e não deve ter de os abrir individualmente para descobrir conversas por ler. Carregar todas as conversas completas de todos os projetos aumentaria o estado, o tráfego e o risco de misturar dados parciais com o projeto ativo.
+
+### Decisão
+
+Existe uma única bolha de chat na posição atual. Na homepage abre uma Inbox global; dentro de um projeto abre primeiro o âmbito local e permite mudar para o global. A Inbox guarda resumos autorizados num estado separado de `ChatConversation`.
+
+### Consequências
+
+- O badge principal conta conversas globais não lidas.
+- Históricos e participantes completos continuam limitados ao projeto ativo.
+- Eventos dirigidos ao utilizador atualizam Inbox e conversa local de forma independente.
+- O sino de notificações permanece separado das mensagens.
+- A reconexão refaz o snapshot global para recuperar eventos perdidos.
+
 ## CHAT-001 — Servidor como fonte de verdade
 
 - Data: 2026-07-13

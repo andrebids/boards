@@ -18,13 +18,16 @@ const CLOSE_ANIMATION_MS = 160;
 
 const ChatLauncher = React.memo(() => {
   const [t] = useTranslation();
-  const unreadTotal = useSelector(selectors.selectChatUnreadTotal) || 0;
+  const unreadTotal = useSelector(selectors.selectChatInboxUnreadConversationTotal) || 0;
   const lastMessageAlert = useSelector(selectors.selectLastChatMessageAlert);
   const {
     closeConversationList,
+    inboxScope,
     isConversationListOpen,
     isEnabled,
+    openGlobalConversation,
     openConversationList,
+    setInboxScope,
     windows,
   } = useChat();
   const [isPanelClosing, setIsPanelClosing] = useState(false);
@@ -115,7 +118,15 @@ const ChatLauncher = React.memo(() => {
 
   return (
     <>
-      {isConversationListOpen && <ChatPanel isClosing={isPanelClosing} onClose={handleClose} />}
+      {isConversationListOpen && (
+        <ChatPanel
+          inboxScope={inboxScope}
+          isClosing={isPanelClosing}
+          onClose={handleClose}
+          onInboxScopeChange={setInboxScope}
+          onOpenGlobalConversation={openGlobalConversation}
+        />
+      )}
       <button
         type="button"
         aria-controls="chat-conversation-panel"

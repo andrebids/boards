@@ -52,7 +52,9 @@ module.exports = {
       mutedUntil,
       isMuted: inputs.notificationLevel === ChatParticipant.NotificationLevels.NONE || !!mutedUntil,
     });
-    sails.sockets.broadcast(`@user:${this.req.currentUser.id}`, 'chatParticipantUpdate', { item });
+    sails.sockets.broadcast(`@user:${this.req.currentUser.id}`, 'chatParticipantUpdate', {
+      item: { ...item, projectId: conversation.projectId },
+    });
     return { item };
   },
 };

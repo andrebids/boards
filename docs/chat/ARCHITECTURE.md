@@ -89,6 +89,8 @@ As rotas abaixo estão declaradas em `server/config/routes.js`. Os corpos e resp
 
 | Método | Rota | Finalidade |
 |---|---|---|
+| `GET` | `/api/chat-inbox` | Listar resumos autorizados de conversas de todos os projetos |
+| `POST` | `/api/chat-inbox/read` | Marcar em lote conversas autorizadas como lidas |
 | `GET` | `/api/projects/:projectId/chat-members` | Listar membros elegíveis |
 | `GET` | `/api/projects/:projectId/chat-conversations` | Listar conversas e estado agregado |
 | `POST` | `/api/projects/:projectId/chat-conversations/general` | Obter/criar conversa geral |
@@ -149,6 +151,10 @@ utilizadores, os destinatários são novamente cruzados com as permissões atuai
 ### Interface
 
 `ChatContext` coordena as janelas do projeto, persiste a disposição em `localStorage`, abre deep links e limpa estado após revogação. `ChatDock` e `ChatPanel` apresentam o launcher e a lista; cada `ChatWindow` controla histórico, leitura e composição.
+
+O launcher é único e mantém a mesma posição em toda a aplicação. Na página inicial abre a Inbox global; dentro de um projeto abre primeiro as conversas locais e permite alternar para `Todas as mensagens`. O badge do launcher conta conversas globais não lidas, enquanto cada linha conta mensagens não lidas.
+
+A Inbox usa `chat.inboxItemsByConversationId`, um resumo leve separado de `ChatConversation`. Este estado inclui apenas metadados de projeto, título, preview seguro, cursores e contadores. Histórico, participantes completos, rascunhos e janelas continuam a ser carregados apenas no projeto ativo. Eventos dirigidos a `@user:<id>` atualizam o resumo mesmo quando a conversa não está no Redux ORM; após reconexão, o cliente volta a obter o snapshot global.
 
 A chave persistida segue o formato:
 

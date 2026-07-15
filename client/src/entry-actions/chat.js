@@ -5,6 +5,15 @@
 
 import EntryActionTypes from '../constants/EntryActionTypes';
 
+const fetchChatInbox = () => ({
+  type: EntryActionTypes.CHAT_INBOX_FETCH,
+  payload: {},
+});
+const markAllChatInboxAsRead = (conversationIds) => ({
+  type: EntryActionTypes.CHAT_INBOX_READ,
+  payload: { conversationIds },
+});
+
 const fetchChatForCurrentProject = () => ({
   type: EntryActionTypes.CHAT_FOR_CURRENT_PROJECT_FETCH,
   payload: {},
@@ -151,6 +160,8 @@ const toggleChatConversationMinimized = (id) => ({
 });
 
 export default {
+  fetchChatInbox,
+  markAllChatInboxAsRead,
   fetchChatForCurrentProject,
   fetchChatMembers,
   fetchChatConversations,

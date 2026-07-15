@@ -5,6 +5,37 @@
 
 import ActionTypes from '../constants/ActionTypes';
 
+const fetchChatInbox = () => ({
+  type: ActionTypes.CHAT_INBOX_FETCH,
+  payload: {},
+});
+fetchChatInbox.success = (items, meta, users) => ({
+  type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,
+  payload: { items, meta, users },
+});
+fetchChatInbox.failure = (error) => ({
+  type: ActionTypes.CHAT_INBOX_FETCH__FAILURE,
+  payload: { error },
+});
+
+const markAllChatInboxAsRead = (conversationIds, previousItemsByConversationId, previousMeta) => ({
+  type: ActionTypes.CHAT_INBOX_READ,
+  payload: { conversationIds, previousItemsByConversationId, previousMeta },
+});
+markAllChatInboxAsRead.success = (readStates, meta) => ({
+  type: ActionTypes.CHAT_INBOX_READ__SUCCESS,
+  payload: { readStates, meta },
+});
+markAllChatInboxAsRead.failure = (previousItemsByConversationId, previousMeta, error) => ({
+  type: ActionTypes.CHAT_INBOX_READ__FAILURE,
+  payload: { previousItemsByConversationId, previousMeta, error },
+});
+
+const handleChatInboxItemUpdate = (item, isPreferencesUpdateComplete = false) => ({
+  type: ActionTypes.CHAT_INBOX_ITEM_UPDATE_HANDLE,
+  payload: { item, isPreferencesUpdateComplete },
+});
+
 const fetchChatMembers = (projectId) => ({
   type: ActionTypes.CHAT_MEMBERS_FETCH,
   payload: { projectId },
@@ -68,7 +99,15 @@ fetchChatMessages.success = (
   direction,
 ) => ({
   type: ActionTypes.CHAT_MESSAGES_FETCH__SUCCESS,
-  payload: { conversationId, messages, users, hasMore, replace, hasMoreAfter, direction },
+  payload: {
+    conversationId,
+    messages,
+    users,
+    hasMore,
+    replace,
+    hasMoreAfter,
+    direction,
+  },
 });
 fetchChatMessages.failure = (conversationId, error) => ({
   type: ActionTypes.CHAT_MESSAGES_FETCH__FAILURE,
@@ -136,17 +175,22 @@ const toggleChatMessageReaction = (id, emoji) => ({
   payload: { id, emoji },
 });
 
-const markChatConversationAsRead = (conversationId) => ({
+const markChatConversationAsRead = (conversationId, previousInboxItem) => ({
   type: ActionTypes.CHAT_CONVERSATION_READ,
-  payload: { conversationId },
+  payload: { conversationId, previousInboxItem },
 });
 markChatConversationAsRead.success = (readState) => ({
   type: ActionTypes.CHAT_CONVERSATION_READ__SUCCESS,
   payload: { readState },
 });
-markChatConversationAsRead.failure = (conversationId, previousUnreadCount, error) => ({
+markChatConversationAsRead.failure = (
+  conversationId,
+  previousUnreadCount,
+  error,
+  previousInboxItem,
+) => ({
   type: ActionTypes.CHAT_CONVERSATION_READ__FAILURE,
-  payload: { conversationId, previousUnreadCount, error },
+  payload: { conversationId, previousUnreadCount, error, previousInboxItem },
 });
 const handleChatConversationRead = (readState) => ({
   type: ActionTypes.CHAT_CONVERSATION_READ_HANDLE,
@@ -214,6 +258,9 @@ const toggleChatConversationMinimized = (id) => ({
 });
 
 export default {
+  fetchChatInbox,
+  markAllChatInboxAsRead,
+  handleChatInboxItemUpdate,
   fetchChatMembers,
   fetchChatConversations,
   createChatConversation,

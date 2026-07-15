@@ -19,6 +19,10 @@ module.exports = {
     request: {
       type: 'ref',
     },
+    skipLatestMessage: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
   },
 
   exits: {
@@ -32,7 +36,7 @@ module.exports = {
       if (!message || message.conversationId !== inputs.conversation.id) {
         throw 'messageNotFound';
       }
-    } else {
+    } else if (!inputs.skipLatestMessage) {
       message = await ChatMessage.qm.getLastByConversationId(inputs.conversation.id);
     }
 
@@ -56,6 +60,7 @@ module.exports = {
 
     const item = {
       conversationId: inputs.conversation.id,
+      ...(inputs.conversation.projectId && { projectId: inputs.conversation.projectId }),
       userId: inputs.user.id,
       lastReadMessageId: participant.lastReadMessageId,
       lastReadAt: participant.lastReadAt,

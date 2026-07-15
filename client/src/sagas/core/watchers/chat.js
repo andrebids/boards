@@ -7,9 +7,15 @@ import { all, takeEvery, takeLatest } from 'redux-saga/effects';
 
 import services from '../services';
 import EntryActionTypes from '../../../constants/EntryActionTypes';
+import ActionTypes from '../../../constants/ActionTypes';
 
 export default function* chatWatchers() {
   yield all([
+    takeLatest(EntryActionTypes.CHAT_INBOX_FETCH, () => services.fetchChatInbox()),
+    takeEvery(EntryActionTypes.CHAT_INBOX_READ, ({ payload: { conversationIds } }) =>
+      services.markAllChatInboxAsRead(conversationIds),
+    ),
+    takeLatest(ActionTypes.SOCKET_RECONNECT_HANDLE, () => services.fetchChatInbox()),
     takeLatest(EntryActionTypes.CHAT_FOR_CURRENT_PROJECT_FETCH, () =>
       services.fetchChatForCurrentProject(),
     ),
@@ -27,8 +33,10 @@ export default function* chatWatchers() {
       ({ payload: { projectId, userId } }) =>
         services.createDirectChatConversation(projectId, userId),
     ),
-    takeEvery(EntryActionTypes.CUSTOM_CHAT_GROUP_CREATE, ({ payload: { projectId, data, requestKey } }) =>
-      services.createCustomChatGroup(projectId, data, requestKey),
+    takeEvery(
+      EntryActionTypes.CUSTOM_CHAT_GROUP_CREATE,
+      ({ payload: { projectId, data, requestKey } }) =>
+        services.createCustomChatGroup(projectId, data, requestKey),
     ),
     takeEvery(EntryActionTypes.CHAT_CONVERSATION_UPDATE, ({ payload: { id, data } }) =>
       services.updateChatConversation(id, data),
