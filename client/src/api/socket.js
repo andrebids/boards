@@ -24,13 +24,6 @@ socket.connect = socket._connect; // eslint-disable-line no-underscore-dangle
 ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].forEach((method) => {
   socket[method.toLowerCase()] = (url, data, headers) =>
     new Promise((resolve, reject) => {
-      if (!socket.isConnected()) {
-        const error = new Error(`Socket is disconnected: ${method} ${url}`);
-        error.code = 'E_SOCKET_DISCONNECTED';
-        reject(error);
-        return;
-      }
-
       let isSettled = false;
       const timeoutId = window.setTimeout(() => {
         isSettled = true;
@@ -40,6 +33,7 @@ socket.connect = socket._connect; // eslint-disable-line no-underscore-dangle
         reject(error);
       }, REQUEST_TIMEOUT);
 
+      // sails.io queues requests while the initial connection is still in progress.
       socket.request(
         {
           method,
