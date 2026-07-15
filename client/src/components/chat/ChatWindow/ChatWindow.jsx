@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, Bell, BellOff, LogOut, UserPlus, X } from 'lucide-react';
+import { ArrowLeft, AtSign, Bell, BellOff, LogOut, UserPlus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
@@ -10,9 +10,11 @@ import { useChat } from '../ChatContext';
 import ChatAvatar from '../ChatAvatar';
 import MessageComposer from '../MessageComposer';
 import MessageList from '../MessageList';
+import useChatParticipantMuteState from '../useChatParticipantMuteState';
 import {
   getConversationTitle,
   getDirectUser,
+  isChatParticipantMentionsOnly,
   isCustomGroupConversation,
   isGeneralConversation,
 } from '../utils';
@@ -121,13 +123,26 @@ const ChatWindow = React.memo(({ id }) => {
     closeConversation(id);
   }, [closeConversation, id]);
 
+  const currentParticipant = conversation?.participants?.find(
+    ({ userId }) => userId === currentUser.id,
+  );
+  const isMuted = useChatParticipantMuteState(currentParticipant);
+  const isMentionsOnly = isChatParticipantMentionsOnly(currentParticipant);
+  const hasConfiguredNotifications = isMuted || isMentionsOnly;
+  let NotificationIcon = Bell;
+  let notificationStateLabel = t('chat.notificationPreferences');
+  if (isMuted) {
+    NotificationIcon = BellOff;
+    notificationStateLabel = t('chat.notificationsMuted');
+  } else if (isMentionsOnly) {
+    NotificationIcon = AtSign;
+    notificationStateLabel = t('chat.notifyMentions');
+  }
+
   if (!conversation) {
     return null;
   }
 
-  const currentParticipant = conversation.participants?.find(
-    ({ userId }) => userId === currentUser.id,
-  );
   const otherParticipant = conversation.participants?.find(
     ({ userId }) => userId !== currentUser.id,
   );
@@ -157,7 +172,6 @@ const ChatWindow = React.memo(({ id }) => {
   }
 
   const isCustomGroup = isCustomGroupConversation(conversation);
-  const isMuted = Boolean(currentParticipant?.isMuted);
   const isGroupOwner = currentParticipant?.role === 'owner';
   const participantUserIds = new Set(conversation.participantUserIds || []);
 
@@ -218,24 +232,24 @@ const ChatWindow = React.memo(({ id }) => {
           )}
           <button
             type="button"
-            className={isMuted ? styles.notificationButtonMuted : undefined}
+            className={hasConfiguredNotifications ? styles.notificationButtonConfigured : undefined}
             aria-label={
-              isMuted
-                ? `${t('chat.notificationPreferences')}: ${t('chat.notificationsMuted')}`
+              hasConfiguredNotifications
+                ? `${t('chat.notificationPreferences')}: ${notificationStateLabel}`
                 : t('chat.notificationPreferences')
             }
             aria-expanded={isOptionsOpen}
-            title={isMuted ? t('chat.notificationsMuted') : t('chat.notificationPreferences')}
+            title={notificationStateLabel}
             onClick={() => {
               setIsOptionsOpen((value) => !value);
               setIsGroupEditorOpen(false);
             }}
           >
-            {isMuted ? (
-              <BellOff aria-hidden="true" size={18} strokeWidth={2.2} />
-            ) : (
-              <Bell aria-hidden="true" size={17} strokeWidth={2} />
-            )}
+            <NotificationIcon
+              aria-hidden="true"
+              size={hasConfiguredNotifications ? 18 : 17}
+              strokeWidth={hasConfiguredNotifications ? 2.2 : 2}
+            />
           </button>
           <button type="button" aria-label={t('chat.close')} onClick={handleCloseClick}>
             <X aria-hidden="true" size={18} strokeWidth={2} />
@@ -267,7 +281,7 @@ const ChatWindow = React.memo(({ id }) => {
             <button type="button" onClick={() => updatePreferences('none')}>
               {t('chat.mutePermanently')}
             </button>
-            {currentParticipant?.isMuted && (
+            {isMuted && (
               <button type="button" onClick={() => updatePreferences('all')}>
                 {t('chat.unmute')}
               </button>

@@ -14,9 +14,11 @@ import React, {
 } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
+import history from '../../../history';
 
 import '../theme.scss';
 
@@ -65,8 +67,10 @@ const ChatProvider = React.memo(({ children }) => {
   const hasFetchedConversations = useSelector(
     selectors.selectHasFetchedChatConversationsForCurrentProject,
   );
+  const hasPendingMessages = useSelector(selectors.selectHasPendingChatMessages);
 
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const projectId = project?.id;
   const storageKey = `planka-chat-windows:${currentUser.id}:${projectId || 'none'}`;
   const previousStorageKey = useRef(storageKey);
@@ -80,6 +84,40 @@ const ChatProvider = React.memo(({ children }) => {
   const windowsRef = useRef(windows);
 
   const isEnabled = isCurrentUserChatMember;
+
+  useEffect(() => {
+    if (!hasPendingMessages) {
+      return undefined;
+    }
+
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      // eslint-disable-next-line no-param-reassign
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasPendingMessages]);
+
+  useEffect(() => {
+    if (!hasPendingMessages) {
+      return undefined;
+    }
+
+    const unblock = history.block((transition) => {
+      // eslint-disable-next-line no-alert
+      if (window.confirm(t('chat.pendingMessageLeaveWarning'))) {
+        unblock();
+        transition.retry();
+      }
+    });
+
+    return unblock;
+  }, [hasPendingMessages, t]);
 
   useEffect(() => {
     if (previousStorageKey.current === storageKey) {

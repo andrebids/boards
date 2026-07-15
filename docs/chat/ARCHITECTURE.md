@@ -78,6 +78,7 @@ Os identificadores `BIGINT` são tratados como strings no JavaScript. Não devem
 - Criação e remoção de anexos atualizam `FileReference.total` de forma transacional.
 - Uma resposta só pode apontar para uma mensagem da mesma conversa.
 - Um reencaminhamento só pode usar uma origem acessível no mesmo projeto.
+- O mute ativo é derivado de `notificationLevel === 'none'` ou de um `mutedUntil` futuro; o booleano serializado nunca deve manter um silêncio temporário expirado.
 - Migrações já executadas num ambiente partilhado não são reescritas; cria-se uma migração corretiva.
 
 ## API
@@ -168,12 +169,18 @@ Previews externos devem continuar desativados por omissão, porque implicam pedi
 
 Quando Sentry está configurado, o cliente e o servidor reportam erros inesperados do chat com as tags `area=chat` e a operação. Corpos de pedidos, cabeçalhos, cookies, texto de mensagens, URLs com query string e detalhes da exceção são removidos antes do envio. O processamento de previews é assíncrono e best effort: nunca bloqueia a criação nem a entrega de uma mensagem.
 
+### Política de tipos de anexos
+
+O chat usa uma allowlist fechada para imagens, áudio, vídeo, PDF, texto e documentos Office Open XML sem macros. Executáveis, scripts, SVG, arquivos compactados, imagens de disco, atalhos e formatos Office com macros não são aceites. Nomes com extensões perigosas intermédias, como `fatura.exe.pdf`, também são rejeitados.
+
+O atributo `accept` e a validação do cliente servem para feedback imediato, mas não constituem a barreira de segurança. O servidor volta a validar a extensão e compara a assinatura/conteúdo real antes de criar a `FileReference` e mover o ficheiro para o armazenamento permanente. Ficheiros rejeitados são removidos da área temporária.
+
 ## Testes e validação
 
 Testes automatizados existentes:
 
-- backend: `server/test/utils/chat.test.js` e `server/test/utils/chat-message-attachments.test.js`;
-- frontend: `client/src/components/chat/utils.test.js`, `client/src/models/ChatConversation.test.js` e `client/src/reducers/chat.test.js`.
+- backend: `server/test/utils/chat.test.js`, `server/test/utils/chat-message-attachments.test.js` e `server/test/utils/chat-attachment-policy.test.js`;
+- frontend: `client/src/components/chat/utils.test.js`, `client/src/components/chat/attachmentPolicy.test.js`, `client/src/models/ChatConversation.test.js` e `client/src/reducers/chat.test.js`.
 
 Comandos usuais:
 

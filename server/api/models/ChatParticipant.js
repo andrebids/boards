@@ -14,9 +14,35 @@ const Roles = {
   MEMBER: 'member',
 };
 
+const isMuted = (participant, now = Date.now()) => {
+  if (participant.notificationLevel === NotificationLevels.NONE) {
+    return true;
+  }
+
+  if (!participant.mutedUntil) {
+    return false;
+  }
+
+  const expiration = new Date(participant.mutedUntil).getTime();
+  const currentTime = now instanceof Date ? now.getTime() : Number(now);
+
+  return Number.isFinite(expiration) && Number.isFinite(currentTime) && expiration > currentTime;
+};
+
 module.exports = {
   NotificationLevels,
   Roles,
+  isMuted,
+
+  customToJSON() {
+    const participant = { ...this };
+    delete participant.toJSON;
+
+    return {
+      ...participant,
+      isMuted: isMuted(this),
+    };
+  },
 
   tableName: 'chat_participant',
 

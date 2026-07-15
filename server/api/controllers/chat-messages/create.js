@@ -23,7 +23,7 @@ module.exports = {
     text: {
       type: 'string',
       maxLength: 10000,
-      required: true,
+      defaultsTo: '',
     },
     hasAttachments: {
       type: 'boolean',

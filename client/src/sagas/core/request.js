@@ -3,18 +3,22 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import { call, join, put, select, spawn, take } from 'redux-saga/effects';
+import { call, delay, join, put, race, select, spawn, take } from 'redux-saga/effects';
 
 import selectors from '../../selectors';
 import entryActions from '../../entry-actions';
 import ErrorCodes from '../../constants/ErrorCodes';
 
 let lastRequestTask;
+const PREVIOUS_REQUEST_WAIT_TIMEOUT = 30000;
 
-function* queueRequest(method, ...args) {
-  if (lastRequestTask) {
+function* queueRequest(previousRequestTask, method, ...args) {
+  if (previousRequestTask) {
     try {
-      yield join(lastRequestTask);
+      yield race({
+        completed: join(previousRequestTask),
+        timeout: delay(PREVIOUS_REQUEST_WAIT_TIMEOUT),
+      });
     } catch {
       /* empty */
     }
@@ -37,7 +41,8 @@ function* queueRequest(method, ...args) {
 }
 
 export default function* request(method, ...args) {
-  lastRequestTask = yield spawn(queueRequest, method, ...args);
+  const previousRequestTask = lastRequestTask;
+  lastRequestTask = yield spawn(queueRequest, previousRequestTask, method, ...args);
 
   return yield join(lastRequestTask);
 }

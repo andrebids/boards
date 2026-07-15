@@ -13,10 +13,12 @@ Registar aqui mudanças com impacto funcional, de contrato, dados, segurança, o
 - Novos projetos passam a ter o chat disponível para todos os membros por omissão; gestores e administradores de projetos partilhados podem restringi-lo ou desativá-lo.
 - O launcher do chat permanece visível e o painel abre e recolhe a partir dele com motion reduzido quando solicitado pelo sistema.
 - As reações nas mensagens passam a apresentar apenas o emoji e a contagem, sem cápsula visual.
+- A preferência “Apenas menções” passa a usar um ícone `@` no cabeçalho e na lista de conversas.
 
 ### Corrigido
 
 - O estado silenciado passa a ter feedback imediato com ícones persistentes no cabeçalho e na lista de conversas, revertendo visualmente se a atualização falhar.
+- Silêncios temporários expiram visualmente na data definida e deixam de regressar como ativos nas respostas posteriores do servidor.
 - A transição da lista de conversas para uma conversa individual deixa de sobrepor as duas interfaces.
 - A barra de reações deixa de desaparecer enquanto o cursor se desloca da mensagem para as ações.
 - Conversas diretas deixam de confundir grupos personalizados que contêm o mesmo membro.

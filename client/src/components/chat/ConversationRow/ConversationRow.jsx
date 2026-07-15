@@ -1,12 +1,17 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { BellOff } from 'lucide-react';
+import { AtSign, BellOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { formatTextWithMentions } from '../../../utils/mentions';
 import ChatAvatar from '../ChatAvatar';
 import ConversationActions from '../ConversationActions';
-import { hasUnreadMessages, isCustomGroupConversation } from '../utils';
+import useChatParticipantMuteState from '../useChatParticipantMuteState';
+import {
+  hasUnreadMessages,
+  isChatParticipantMentionsOnly,
+  isCustomGroupConversation,
+} from '../utils';
 
 import styles from './ConversationRow.module.scss';
 
@@ -67,7 +72,11 @@ const ConversationRow = React.memo(
     const id = conversation?.id;
     const unreadCount = conversation?.unreadCount || 0;
     const hasUnread = hasUnreadMessages(conversation);
-    const isMuted = Boolean(currentParticipant?.isMuted);
+    const isMuted = useChatParticipantMuteState(currentParticipant);
+    const isMentionsOnly = isChatParticipantMentionsOnly(currentParticipant);
+    const notificationStateLabel = isMuted
+      ? t('chat.notificationsMuted')
+      : t('chat.notifyMentions');
 
     const rowClassName = [
       styles.row,
@@ -96,14 +105,18 @@ const ConversationRow = React.memo(
           <span className={styles.copy}>
             <span className={styles.titleLine}>
               <strong>{title}</strong>
-              {isMuted && (
+              {(isMuted || isMentionsOnly) && (
                 <span
-                  className={styles.mutedIndicator}
+                  className={styles.notificationIndicator}
                   role="img"
-                  aria-label={t('chat.notificationsMuted')}
-                  title={t('chat.notificationsMuted')}
+                  aria-label={notificationStateLabel}
+                  title={notificationStateLabel}
                 >
-                  <BellOff aria-hidden="true" size={13} strokeWidth={2.2} />
+                  {isMuted ? (
+                    <BellOff aria-hidden="true" size={13} strokeWidth={2.2} />
+                  ) : (
+                    <AtSign aria-hidden="true" size={13} strokeWidth={2.2} />
+                  )}
                 </span>
               )}
             </span>
@@ -136,6 +149,7 @@ const ConversationRow = React.memo(
         {id && (
           <ConversationActions
             conversationId={id}
+            isMuted={isMuted}
             participant={currentParticipant}
           />
         )}
@@ -159,6 +173,7 @@ ConversationRow.propTypes = {
   }),
   currentParticipant: PropTypes.shape({
     isMuted: PropTypes.bool,
+    mutedUntil: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
     notificationLevel: PropTypes.string,
   }),
   isGeneral: PropTypes.bool,

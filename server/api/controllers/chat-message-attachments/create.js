@@ -6,6 +6,7 @@
 const { rimraf } = require('rimraf');
 
 const { idInput } = require('../../../utils/inputs');
+const { validateChatAttachment } = require('../../../utils/chat-attachment-policy');
 
 const Errors = {
   MESSAGE_NOT_FOUND: { messageNotFound: 'Message not found' },
@@ -14,6 +15,12 @@ const Errors = {
   NO_FILE_WAS_UPLOADED: { noFileWasUploaded: 'No file was uploaded' },
   ATTACHMENT_LIMIT_REACHED: {
     attachmentLimitReached: 'Attachment limit reached',
+  },
+  UNSUPPORTED_FILE_TYPE: {
+    unsupportedFileType: 'File type is not allowed',
+  },
+  ATTACHMENT_TOO_LARGE: {
+    attachmentTooLarge: 'File cannot be larger than 25 MB',
   },
 };
 
@@ -31,6 +38,8 @@ module.exports = {
     messageDeleted: { responseType: 'conflict' },
     noFileWasUploaded: { responseType: 'unprocessableEntity' },
     attachmentLimitReached: { responseType: 'unprocessableEntity' },
+    unsupportedFileType: { responseType: 'unprocessableEntity' },
+    attachmentTooLarge: { responseType: 'unprocessableEntity' },
     uploadError: { responseType: 'unprocessableEntity' },
   },
 
@@ -131,6 +140,26 @@ module.exports = {
     if (files.length > 1) {
       await Promise.all(files.map(({ fd }) => rimraf(fd)));
       throw Errors.ATTACHMENT_LIMIT_REACHED;
+    }
+
+    const validation = await validateChatAttachment(files[0]);
+    if (!validation.isValid) {
+      await rimraf(files[0].fd);
+      if (validation.reason === 'attachmentTooLarge') {
+        sails.log.warn('[CHAT_UPLOAD][FILE_SIZE_REJECTED]', {
+          ...logContext,
+          reason: validation.reason,
+          size: files[0].size,
+          durationMs: Date.now() - startedAt,
+        });
+        throw Errors.ATTACHMENT_TOO_LARGE;
+      }
+      sails.log.warn('[CHAT_UPLOAD][FILE_TYPE_REJECTED]', {
+        ...logContext,
+        reason: validation.reason,
+        durationMs: Date.now() - startedAt,
+      });
+      throw Errors.UNSUPPORTED_FILE_TYPE;
     }
 
     let data;

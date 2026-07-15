@@ -495,6 +495,9 @@ const MessageList = React.memo(
               (attachment) => !attachment.data?.image,
             );
             const hasImageAttachments = imageAttachments.length > 0;
+            const hasTextBubble =
+              !hasImageAttachments &&
+              (message.deletedAt || message.text || editingMessageId === message.id);
             let messageBody;
             if (message.deletedAt) {
               messageBody = <em>{t('chat.messageDeleted')}</em>;
@@ -779,9 +782,11 @@ const MessageList = React.memo(
                         )}
                       </div>
                     ) : (
-                      <div className={styles.bubble} dir="auto">
-                        {messageBody}
-                      </div>
+                      hasTextBubble && (
+                        <div className={styles.bubble} dir="auto">
+                          {messageBody}
+                        </div>
+                      )
                     )}
                     {otherAttachments.length > 0 && (
                       <div className={styles.attachments}>

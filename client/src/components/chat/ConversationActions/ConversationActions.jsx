@@ -18,7 +18,7 @@ import styles from './ConversationActions.module.scss';
 const MENU_GAP = 6;
 const VIEWPORT_GAP = 8;
 
-const ConversationActions = React.memo(({ conversationId, participant }) => {
+const ConversationActions = React.memo(({ conversationId, isMuted, participant }) => {
   const [t] = useTranslation();
   const dispatch = useDispatch();
   const buttonRef = useRef(null);
@@ -134,7 +134,7 @@ const ConversationActions = React.memo(({ conversationId, participant }) => {
       <button
         ref={buttonRef}
         type="button"
-        className={`${styles.actionButton} ${participant?.isMuted ? styles.muted : ''}`}
+        className={`${styles.actionButton} ${isMuted ? styles.muted : ''}`}
         aria-label={t('chat.conversationActions')}
         aria-expanded={isOpen}
         aria-haspopup="menu"
@@ -193,7 +193,7 @@ const ConversationActions = React.memo(({ conversationId, participant }) => {
               <BellOff aria-hidden="true" size={15} />
               {t('chat.mutePermanently')}
             </button>
-            {participant?.isMuted && (
+            {isMuted && (
               <button
                 type="button"
                 role="menuitem"
@@ -212,13 +212,14 @@ const ConversationActions = React.memo(({ conversationId, participant }) => {
 
 ConversationActions.propTypes = {
   conversationId: PropTypes.string.isRequired,
+  isMuted: PropTypes.bool,
   participant: PropTypes.shape({
-    isMuted: PropTypes.bool,
     notificationLevel: PropTypes.string,
   }),
 };
 
 ConversationActions.defaultProps = {
+  isMuted: false,
   participant: undefined,
 };
 

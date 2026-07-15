@@ -73,6 +73,8 @@ export default {
       openConversation: 'Abrir conversa',
       openConversations: 'Abrir conversas',
       pendingAttachments: 'Ficheiros a enviar',
+      pendingMessageLeaveWarning:
+        'Ainda existem mensagens a enviar. Se sair agora, estas mensagens podem perder-se. Deseja continuar?',
       peopleTyping: '{{count}} pessoas estão a escrever…',
       pinned: 'Fixada',
       previewUnavailable: 'Pré-visualização indisponível',
@@ -101,8 +103,11 @@ export default {
       startConversation: 'Iniciar conversa',
       unavailable: 'Indisponível',
       unmute: 'Voltar a ativar notificações',
+      attachmentTooLarge: 'O ficheiro não pode ter mais de 25 MB.',
       unreadMessages_one: '{{count}} mensagem não lida',
       unreadMessages_other: '{{count}} mensagens não lidas',
+      unsupportedAttachmentType:
+        'Tipo de ficheiro não permitido. Usa imagens, áudio, vídeo, PDF, texto ou documentos Office sem macros.',
       writeMessage: 'Escrever mensagem',
       addToGroup: 'Adicionar',
     },

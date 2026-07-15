@@ -12,6 +12,11 @@ import FilePicker from '../../../lib/custom-ui/components/FilePicker/FilePicker'
 import ChatAvatar from '../ChatAvatar';
 import LazyEmojiPicker from '../LazyEmojiPicker';
 import { getClipboardImageFiles } from '../utils';
+import {
+  CHAT_ATTACHMENT_ACCEPT,
+  isChatAttachmentAllowed,
+  isChatAttachmentTooLarge,
+} from '../attachmentPolicy';
 
 import styles from './MessageComposer.module.scss';
 
@@ -72,6 +77,7 @@ const mentionsInputStyle = {
 const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   const [t] = useTranslation();
   const [files, setFiles] = useState([]);
+  const [attachmentError, setAttachmentError] = useState(null);
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const [isEmojiMenuOpen, setIsEmojiMenuOpen] = useState(false);
   const toolsRef = useRef(null);
@@ -168,10 +174,29 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
     },
     [conversationId, dispatch],
   );
-  const handleFilesSelect = useCallback((selectedFiles) => {
-    setFiles((currentFiles) => [...currentFiles, ...selectedFiles]);
-    setIsAttachmentMenuOpen(false);
-  }, []);
+  const handleFilesSelect = useCallback(
+    (selectedFiles) => {
+      const candidateFiles = Array.isArray(selectedFiles) ? selectedFiles : [selectedFiles];
+      const typeAllowedFiles = candidateFiles.filter(isChatAttachmentAllowed);
+      const oversizedFiles = typeAllowedFiles.filter(isChatAttachmentTooLarge);
+      const allowedFiles = typeAllowedFiles.filter((file) => !isChatAttachmentTooLarge(file));
+
+      const errors = [];
+      if (typeAllowedFiles.length !== candidateFiles.length) {
+        errors.push(t('chat.unsupportedAttachmentType'));
+      }
+      if (oversizedFiles.length > 0) {
+        errors.push(t('chat.attachmentTooLarge'));
+      }
+
+      setAttachmentError(errors.length > 0 ? errors.join(' ') : null);
+      if (allowedFiles.length > 0) {
+        setFiles((currentFiles) => [...currentFiles, ...allowedFiles]);
+      }
+      setIsAttachmentMenuOpen(false);
+    },
+    [t],
+  );
   const handlePaste = useCallback(
     (event) => {
       const pastedImages = getClipboardImageFiles(event.clipboardData);
@@ -272,6 +297,11 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
           ))}
         </div>
       )}
+      {attachmentError && (
+        <div className={styles.attachmentError} role="alert">
+          {attachmentError}
+        </div>
+      )}
       <div className={styles.composerRow}>
         <div ref={toolsRef} className={styles.tools}>
           <button
@@ -290,7 +320,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
             <div className={styles.attachmentMenu} role="menu" aria-label={t('chat.attachFiles')}>
               <strong>{t('chat.attachFiles')}</strong>
               <span>{t('chat.dropOrPasteFiles')}</span>
-              <FilePicker multiple onSelect={handleFilesSelect}>
+              <FilePicker accept={CHAT_ATTACHMENT_ACCEPT} multiple onSelect={handleFilesSelect}>
                 <button type="button" className={styles.attachmentMenuItem}>
                   <Upload aria-hidden="true" size={16} strokeWidth={2} />
                   {t('chat.uploadFromDevice')}

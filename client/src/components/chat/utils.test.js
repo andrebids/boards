@@ -3,7 +3,10 @@ import {
   getConversationTitle,
   getDirectUser,
   getParticipantUserIds,
+  getChatParticipantMuteExpiration,
   hasUnreadMessages,
+  isChatParticipantMentionsOnly,
+  isChatParticipantMuted,
   isDirectConversation,
   isGeneralConversation,
 } from './utils';
@@ -33,6 +36,57 @@ describe('chat utils', () => {
     expect(hasUnreadMessages()).toBeFalsy();
     expect(hasUnreadMessages({ unreadCount: 0 })).toBeFalsy();
     expect(hasUnreadMessages({ unreadCount: 1 })).toBeTruthy();
+  });
+
+  test('derives temporary and permanent mute states from notification preferences', () => {
+    const now = Date.parse('2026-07-14T12:00:00.000Z');
+    const temporaryMute = {
+      notificationLevel: 'all',
+      mutedUntil: '2026-07-14T13:00:00.000Z',
+    };
+
+    expect(getChatParticipantMuteExpiration(temporaryMute)).toBe(
+      Date.parse(temporaryMute.mutedUntil),
+    );
+    expect(isChatParticipantMuted(temporaryMute, now)).toBeTruthy();
+    expect(isChatParticipantMuted(temporaryMute, Date.parse(temporaryMute.mutedUntil))).toBeFalsy();
+    expect(
+      isChatParticipantMuted({ notificationLevel: 'none', mutedUntil: null }, now),
+    ).toBeTruthy();
+  });
+
+  test('ignores stale or invalid temporary mute dates', () => {
+    const now = Date.parse('2026-07-14T12:00:00.000Z');
+
+    expect(
+      isChatParticipantMuted(
+        { notificationLevel: 'all', mutedUntil: '2026-07-14T11:59:59.999Z', isMuted: true },
+        now,
+      ),
+    ).toBeFalsy();
+    expect(
+      isChatParticipantMuted(
+        { notificationLevel: 'all', mutedUntil: 'invalid', isMuted: true },
+        now,
+      ),
+    ).toBeFalsy();
+  });
+
+  test('distinguishes mentions-only notifications from mute states', () => {
+    const now = Date.parse('2026-07-14T12:00:00.000Z');
+
+    expect(
+      isChatParticipantMentionsOnly({ notificationLevel: 'mentions', mutedUntil: null }, now),
+    ).toBeTruthy();
+    expect(
+      isChatParticipantMentionsOnly(
+        { notificationLevel: 'mentions', mutedUntil: '2026-07-14T13:00:00.000Z' },
+        now,
+      ),
+    ).toBeFalsy();
+    expect(
+      isChatParticipantMentionsOnly({ notificationLevel: 'all', mutedUntil: null }, now),
+    ).toBeFalsy();
   });
 
   test('extracts images pasted from clipboard files', () => {

@@ -272,6 +272,18 @@
     gap: 4px;
     margin: 0 0 7px;
   }
+
+  .attachmentError {
+    background: rgba(204, 73, 73, 0.12);
+    border: 1px solid rgba(232, 99, 99, 0.34);
+    border-radius: var(--chat-radius-control);
+    color: #ffb4b4;
+    font-size: var(--chat-font-meta);
+    line-height: 16px;
+    margin: 0 0 7px;
+    padding: 6px 8px;
+  }
+
   .file {
     align-items: center;
     background: var(--chat-default);

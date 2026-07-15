@@ -26,7 +26,7 @@ module.exports = {
     },
     text: {
       type: 'string',
-      required: true,
+      defaultsTo: '',
     },
     clientMessageId: {
       type: 'string',
@@ -158,13 +158,10 @@ module.exports = {
         return;
       }
       const preferences = preferencesByUserId.get(userId);
-      const isTemporarilyMuted =
-        preferences && preferences.mutedUntil && new Date(preferences.mutedUntil) > new Date();
       const notificationLevel =
         (preferences && preferences.notificationLevel) || ChatParticipant.NotificationLevels.ALL;
       if (
-        isTemporarilyMuted ||
-        notificationLevel === ChatParticipant.NotificationLevels.NONE ||
+        (preferences && ChatParticipant.isMuted(preferences)) ||
         (notificationLevel === ChatParticipant.NotificationLevels.MENTIONS &&
           !mentionUserIds.has(userId))
       ) {

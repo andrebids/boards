@@ -135,6 +135,11 @@ export const makeSelectChatMessagesByConversationId = () =>
 
 export const selectChatMessagesByConversationId = makeSelectChatMessagesByConversationId();
 
+export const selectHasPendingChatMessages = createSelector(
+  orm,
+  ({ ChatMessage }) => ChatMessage.filter({ isPending: true }).count() > 0,
+);
+
 export const selectChatUnreadTotal = createSelector(
   orm,
   (state) => selectPath(state).projectId,
@@ -175,6 +180,7 @@ export default {
   selectChatMessageById,
   makeSelectChatMessagesByConversationId,
   selectChatMessagesByConversationId,
+  selectHasPendingChatMessages,
   selectChatUnreadTotal,
   makeSelectIsChatMessagesFetchingByConversationId,
   makeSelectHasMoreChatMessagesByConversationId,

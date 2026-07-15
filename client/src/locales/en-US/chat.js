@@ -74,6 +74,8 @@ export default {
       openConversation: 'Open conversation',
       openConversations: 'Open conversations',
       pendingAttachments: 'Files to send',
+      pendingMessageLeaveWarning:
+        'Some messages are still being sent. If you leave now, these messages may be lost. Do you want to continue?',
       peopleTyping: '{{count}} people are typing…',
       pinned: 'Pinned',
       previewUnavailable: 'Preview unavailable',
@@ -102,8 +104,11 @@ export default {
       startConversation: 'Start conversation',
       unavailable: 'Unavailable',
       unmute: 'Turn notifications back on',
+      attachmentTooLarge: 'Files cannot be larger than 25 MB.',
       unreadMessages_one: '{{count}} unread message',
       unreadMessages_other: '{{count}} unread messages',
+      unsupportedAttachmentType:
+        'File type not allowed. Use images, audio, video, PDF, text, or macro-free Office documents.',
       writeMessage: 'Write a message',
       addToGroup: 'Add',
     },

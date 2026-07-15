@@ -6,6 +6,7 @@
 import Config from '../constants/Config';
 
 const http = {};
+const REQUEST_TIMEOUT = 120000;
 
 const createResponseError = (body, statusCode) => {
   const error = new Error('HTTP request failed');
@@ -18,8 +19,10 @@ const createResponseError = (body, statusCode) => {
 };
 
 // TODO: add all methods
-['GET', 'POST', 'DELETE'].forEach(method => {
+['GET', 'POST', 'DELETE'].forEach((method) => {
   http[method.toLowerCase()] = (url, data, headers) => {
+    const abortController = new AbortController();
+    const timeoutId = window.setTimeout(() => abortController.abort(), REQUEST_TIMEOUT);
     const formData =
       data &&
       Object.keys(data).reduce((result, key) => {
@@ -33,6 +36,7 @@ const createResponseError = (body, statusCode) => {
       headers,
       body: formData,
       credentials: 'include',
+      signal: abortController.signal,
     })
       .then(async (response) => {
         let body;
@@ -56,10 +60,11 @@ const createResponseError = (body, statusCode) => {
         }
 
         const networkError = new Error('HTTP network request failed');
-        networkError.code = 'E_HTTP_NETWORK';
+        networkError.code = error.name === 'AbortError' ? 'E_HTTP_TIMEOUT' : 'E_HTTP_NETWORK';
         networkError.name = error.name || networkError.name;
         throw networkError;
-      });
+      })
+      .finally(() => window.clearTimeout(timeoutId));
   };
 });
 
