@@ -339,14 +339,15 @@ export const selectIsCurrentUserChatMemberForCurrentProject = createSelector(
   orm,
   (state) => selectPath(state).projectId,
   (state) => selectCurrentUserId(state),
-  ({ Project }, id, currentUserId) => {
-    if (!id) {
+  ({ Project, User }, id, currentUserId) => {
+    if (!id || !currentUserId) {
       return false;
     }
 
     const projectModel = Project.withId(id);
+    const currentUserModel = User.withId(currentUserId);
 
-    if (!projectModel || projectModel.chatMode === 'disabled') {
+    if (!projectModel || !currentUserModel || projectModel.chatMode === 'disabled') {
       return false;
     }
 
@@ -356,7 +357,7 @@ export const selectIsCurrentUserChatMemberForCurrentProject = createSelector(
       return isProjectManager;
     }
 
-    return isProjectManager || projectModel.hasMembershipWithUserIdInAnyBoard(currentUserId);
+    return projectModel.isAvailableForUser(currentUserModel);
   },
 );
 

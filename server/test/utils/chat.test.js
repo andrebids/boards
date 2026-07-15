@@ -100,7 +100,7 @@ describe('Chat domain', () => {
     }
   });
 
-  it('limits chat membership to project managers and board members', async () => {
+  it('includes administrators with full visibility in shared-project chat', async () => {
     const previousGlobals = {
       sails: global.sails,
       Project: global.Project,
@@ -113,9 +113,11 @@ describe('Chat domain', () => {
       helpers: {
         projects: {
           makeScoper: {
-            with: () => ({
+            with: ({ record }) => ({
               getProjectManagerUserIds: async () => ['manager', 'shared'],
               getBoardMemberUserIdsForWholeProject: async () => ['member', 'shared'],
+              getUserIdsWithFullProjectVisibility: async () =>
+                record.ownerProjectManagerId ? ['shared'] : ['admin', 'shared'],
             }),
           },
         },
@@ -125,12 +127,26 @@ describe('Chat domain', () => {
     try {
       expect(
         await getProjectMemberUserIds.fn({
-          project: { chatMode: ProjectDefinition.ChatModes.MANAGERS },
+          project: {
+            chatMode: ProjectDefinition.ChatModes.MANAGERS,
+            ownerProjectManagerId: null,
+          },
         }),
       ).to.deep.equal(['manager', 'shared']);
       expect(
         await getProjectMemberUserIds.fn({
-          project: { chatMode: ProjectDefinition.ChatModes.ALL_PROJECT_MEMBERS },
+          project: {
+            chatMode: ProjectDefinition.ChatModes.ALL_PROJECT_MEMBERS,
+            ownerProjectManagerId: null,
+          },
+        }),
+      ).to.deep.equal(['manager', 'shared', 'member', 'admin']);
+      expect(
+        await getProjectMemberUserIds.fn({
+          project: {
+            chatMode: ProjectDefinition.ChatModes.ALL_PROJECT_MEMBERS,
+            ownerProjectManagerId: 'owner-manager',
+          },
         }),
       ).to.deep.equal(['manager', 'shared', 'member']);
     } finally {

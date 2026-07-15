@@ -24,6 +24,8 @@ module.exports = {
     }
 
     const boardMemberUserIds = await scoper.getBoardMemberUserIdsForWholeProject();
-    return _.union(projectManagerUserIds, boardMemberUserIds);
+    const userIdsWithFullProjectVisibility = await scoper.getUserIdsWithFullProjectVisibility();
+
+    return _.union(projectManagerUserIds, boardMemberUserIds, userIdsWithFullProjectVisibility);
   },
 };
