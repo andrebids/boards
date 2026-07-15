@@ -85,6 +85,9 @@
   }
 
   .chatModeField {
+    position: relative;
+    z-index: var(--project-settings-layer-field);
+
     :global(.field) {
       margin: 0;
     }
@@ -121,6 +124,7 @@
       background: var(--project-settings-field);
       border-color: var(--project-settings-accent);
       box-shadow: 0 0 0 3px rgba(95, 126, 232, 0.22);
+      z-index: var(--project-settings-layer-dropdown);
     }
 
     :global(.ui.selection.dropdown > .text),
@@ -142,6 +146,12 @@
       box-shadow: 0 14px 32px rgba(3, 5, 10, 0.42);
       margin-top: 6px;
       overflow: hidden auto;
+      z-index: var(--project-settings-layer-dropdown);
+    }
+
+    :global(.ui.upward.selection.dropdown .menu) {
+      margin-bottom: 6px;
+      margin-top: 0;
     }
 
     :global(.ui.selection.dropdown .menu > .item) {

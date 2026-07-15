@@ -137,8 +137,8 @@
   border-color: rgba(148, 163, 184, 0.35) !important;
 }
 
-/* Dropdown de idioma: garantir sobreposição acima do conteúdo do modal */
-.ui.modal.glass .ui.selection.dropdown .menu {
+/* Dropdowns dos modais gerais: garantir sobreposição acima do conteúdo do modal */
+.ui.modal.glass:not(.project-settings) .ui.selection.dropdown .menu {
   z-index: 4000 !important;
 }
 

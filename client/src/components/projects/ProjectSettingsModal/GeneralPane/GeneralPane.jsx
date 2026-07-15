@@ -87,6 +87,7 @@ const GeneralPane = React.memo(() => {
           <div className={styles.chatModeField}>
             <Form.Select
               fluid
+              upward
               label={t('common.projectChatAccess')}
               value={project.chatMode || 'allProjectMembers'}
               options={[
