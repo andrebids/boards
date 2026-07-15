@@ -124,11 +124,9 @@ module.exports = {
       inputs.request,
     );
 
-    const recipientUserIds =
-      inputs.conversation.type === ChatConversation.Types.PROJECT_GROUP
-        ? inputs.memberUserIds
-        : inputs.participantUserIds;
-    const uniqueRecipientUserIds = [...new Set(recipientUserIds)];
+    const uniqueRecipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
+      inputs.conversation,
+    );
     const unreadCounts = await sails.helpers.chat.getUnreadCountsForUsers(
       inputs.conversation.id,
       uniqueRecipientUserIds,

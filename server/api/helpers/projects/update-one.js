@@ -35,6 +35,7 @@ module.exports = {
   // TODO: use normalizeValues
   async fn(inputs) {
     const { isFavorite, ...values } = inputs.values;
+    let previouslyAuthorizedChatUserIds;
 
     if (values.backgroundImage) {
       values.backgroundImageId = values.backgroundImage.id;
@@ -59,6 +60,12 @@ module.exports = {
 
         values.ownerProjectManagerId = values.ownerProjectManager.id;
       }
+    }
+
+    if (!_.isUndefined(values.chatMode) || values.ownerProjectManager) {
+      previouslyAuthorizedChatUserIds = await sails.helpers.chat.getProjectMemberUserIds(
+        inputs.record,
+      );
     }
 
     const backgroundType = _.isUndefined(values.backgroundType)
@@ -172,12 +179,15 @@ module.exports = {
         );
       });
 
-      if (!_.isUndefined(values.chatMode)) {
+      if (!_.isUndefined(values.chatMode) || values.ownerProjectManager) {
         if (project.chatMode !== Project.ChatModes.DISABLED) {
           await sails.helpers.chat.getOrCreateProjectConversation(project, inputs.actorUser);
         }
 
-        await sails.helpers.chat.reconcileProjectRooms(project);
+        await sails.helpers.chat.reconcileProjectRooms.with({
+          project,
+          affectedUserIds: previouslyAuthorizedChatUserIds,
+        });
       }
 
       sails.helpers.utils.sendWebhooks.with({

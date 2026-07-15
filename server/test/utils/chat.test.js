@@ -7,10 +7,13 @@ const ChatParticipantDefinition = require('../../api/models/ChatParticipant');
 const ProjectDefinition = require('../../api/models/Project');
 const buildDirectKey = require('../../api/helpers/chat/build-direct-key');
 const getProjectMemberUserIds = require('../../api/helpers/chat/get-project-member-user-ids');
+const getConversationRecipientUserIds = require('../../api/helpers/chat/get-conversation-recipient-user-ids');
 const getMessageExtras = require('../../api/helpers/chat/get-message-extras');
 const createMessage = require('../../api/helpers/chat/create-message');
 const markAsRead = require('../../api/helpers/chat/mark-as-read');
 const presentMessage = require('../../api/helpers/chat/present-message');
+const reconcileProjectRooms = require('../../api/helpers/chat/reconcile-project-rooms');
+const deleteBoard = require('../../api/helpers/boards/delete-one');
 const chatConversationsIndex = require('../../api/controllers/chat-conversations/index');
 const ChatMessageQueryMethods = require('../../api/hooks/query-methods/models/ChatMessage');
 const ChatParticipantQueryMethods = require('../../api/hooks/query-methods/models/ChatParticipant');
@@ -149,6 +152,269 @@ describe('Chat domain', () => {
           },
         }),
       ).to.deep.equal(['manager', 'shared', 'member']);
+    } finally {
+      Object.entries(previousGlobals).forEach(([name, value]) => {
+        if (value === undefined) {
+          delete global[name];
+        } else {
+          global[name] = value;
+        }
+      });
+    }
+  });
+
+  it('revokes explicitly affected users even when the project has no conversations', async () => {
+    const previousGlobals = {
+      sails: global.sails,
+      ChatConversation: global.ChatConversation,
+      ChatParticipant: global.ChatParticipant,
+      BoardMembership: global.BoardMembership,
+      _: global._,
+    };
+    const broadcasts = [];
+
+    global._ = lodash;
+    global.ChatConversation = { qm: { getByProjectId: async () => [] } };
+    global.ChatParticipant = { qm: { getByConversationIds: async () => [] } };
+    global.BoardMembership = { qm: { getByProjectId: async () => [] } };
+    global.sails = {
+      helpers: {
+        chat: { getProjectMemberUserIds: async () => ['still-authorized'] },
+        projects: {
+          makeScoper: {
+            with: () => ({ getProjectManagerUserIds: async () => [] }),
+          },
+        },
+        utils: {
+          mapRecords: (records, attribute = 'id') => records.map((record) => record[attribute]),
+        },
+      },
+      sockets: { broadcast: (...args) => broadcasts.push(args) },
+    };
+
+    try {
+      const result = await reconcileProjectRooms.fn({
+        project: { id: 'project-1' },
+        affectedUserIds: ['removed', 'still-authorized'],
+      });
+
+      expect(result).to.deep.equal({
+        revokedUserIds: ['removed'],
+        conversationIds: [],
+      });
+      expect(broadcasts).to.deep.equal([
+        ['@user:removed', 'chatProjectAccessRevoke', { item: { projectId: 'project-1' } }],
+      ]);
+    } finally {
+      Object.entries(previousGlobals).forEach(([name, value]) => {
+        if (value === undefined) {
+          delete global[name];
+        } else {
+          global[name] = value;
+        }
+      });
+    }
+  });
+
+  it('removes revoked users from every chat room before broadcasting the revocation', async () => {
+    const previousGlobals = {
+      sails: global.sails,
+      ChatConversation: global.ChatConversation,
+      ChatParticipant: global.ChatParticipant,
+      BoardMembership: global.BoardMembership,
+      _: global._,
+    };
+    const events = [];
+    let destroyCriteria;
+    const conversations = [
+      { id: '10', type: 'projectGroup' },
+      { id: '20', type: 'projectCustomGroup' },
+    ];
+
+    global._ = lodash;
+    global.ChatConversation = {
+      Types: {
+        PROJECT_GROUP: 'projectGroup',
+        PROJECT_CUSTOM_GROUP: 'projectCustomGroup',
+      },
+      qm: { getByProjectId: async () => conversations },
+    };
+    global.ChatParticipant = {
+      qm: {
+        getByConversationIds: async () => [
+          { conversationId: '10', userId: 'removed' },
+          { conversationId: '20', userId: 'removed' },
+        ],
+      },
+      destroy: async (criteria) => {
+        destroyCriteria = criteria;
+      },
+    };
+    global.BoardMembership = { qm: { getByProjectId: async () => [] } };
+    global.sails = {
+      helpers: {
+        chat: { getProjectMemberUserIds: async () => [] },
+        projects: {
+          makeScoper: {
+            with: () => ({ getProjectManagerUserIds: async () => [] }),
+          },
+        },
+        utils: {
+          mapRecords: (records, attribute = 'id') => records.map((record) => record[attribute]),
+        },
+      },
+      sockets: {
+        removeRoomMembersFromRooms: (sourceRoom, destinationRoom, callback) => {
+          setImmediate(() => {
+            events.push(['leave', sourceRoom, destinationRoom]);
+            callback();
+          });
+        },
+        broadcast: (...args) => events.push(['broadcast', ...args]),
+      },
+    };
+
+    try {
+      await reconcileProjectRooms.fn({
+        project: { id: 'project-1' },
+        affectedUserIds: ['removed'],
+      });
+
+      expect(destroyCriteria).to.deep.equal({
+        conversationId: ['20'],
+        userId: ['removed'],
+      });
+      expect(events.slice(0, 2)).to.have.deep.members([
+        ['leave', '@user:removed', 'chatConversation:10'],
+        ['leave', '@user:removed', 'chatConversation:20'],
+      ]);
+      expect(events[2][0]).to.equal('broadcast');
+    } finally {
+      Object.entries(previousGlobals).forEach(([name, value]) => {
+        if (value === undefined) {
+          delete global[name];
+        } else {
+          global[name] = value;
+        }
+      });
+    }
+  });
+
+  it('only returns currently authorized conversation recipients', async () => {
+    const previousGlobals = {
+      sails: global.sails,
+      Project: global.Project,
+      ChatConversation: global.ChatConversation,
+      ChatParticipant: global.ChatParticipant,
+    };
+
+    global.Project = {
+      ChatModes: ProjectDefinition.ChatModes,
+      qm: {
+        getOneById: async () => ({
+          id: 'project-1',
+          chatMode: ProjectDefinition.ChatModes.ALL_PROJECT_MEMBERS,
+        }),
+      },
+    };
+    global.ChatConversation = {
+      Types: {
+        PROJECT_GROUP: 'projectGroup',
+        PROJECT_DIRECT: 'projectDirect',
+        PROJECT_CUSTOM_GROUP: 'projectCustomGroup',
+      },
+    };
+    global.ChatParticipant = {
+      qm: {
+        getByConversationId: async () => [{ userId: 'authorized' }, { userId: 'removed' }],
+      },
+    };
+    global.sails = {
+      helpers: {
+        chat: { getProjectMemberUserIds: async () => ['authorized'] },
+        utils: {
+          mapRecords: (records, attribute = 'id') => records.map((record) => record[attribute]),
+        },
+      },
+    };
+
+    try {
+      expect(
+        await getConversationRecipientUserIds.fn({
+          conversation: {
+            id: '10',
+            projectId: 'project-1',
+            type: 'projectDirect',
+          },
+        }),
+      ).to.deep.equal(['authorized']);
+    } finally {
+      Object.entries(previousGlobals).forEach(([name, value]) => {
+        if (value === undefined) {
+          delete global[name];
+        } else {
+          global[name] = value;
+        }
+      });
+    }
+  });
+
+  it('reconciles chat access for every membership removed with a board', async () => {
+    const previousGlobals = {
+      sails: global.sails,
+      Board: global.Board,
+    };
+    let reconcileInputs;
+    const board = { id: 'board-1', projectId: 'project-1' };
+    const boardMemberships = [
+      { id: 'membership-1', userId: 'user-1' },
+      { id: 'membership-2', userId: 'user-2' },
+      { id: 'membership-3', userId: 'user-1' },
+    ];
+
+    global.Board = { qm: { deleteOne: async () => board } };
+    global.sails = {
+      helpers: {
+        boards: { deleteRelated: async () => ({ boardMemberships }) },
+        chat: {
+          reconcileProjectRooms: {
+            with: async (values) => {
+              reconcileInputs = values;
+            },
+          },
+        },
+        projects: {
+          makeScoper: {
+            with: () => ({
+              getBoardRelatedUserIds: async () => ['user-1', 'user-2'],
+            }),
+          },
+        },
+        utils: {
+          mapRecords: (records, attribute = 'id', unique = false) => {
+            const values = records.map((record) => record[attribute]);
+            return unique ? [...new Set(values)] : values;
+          },
+          sendWebhooks: { with: () => {} },
+        },
+      },
+      sockets: {
+        broadcast: () => {},
+        removeRoomMembersFromRooms: () => {},
+      },
+    };
+
+    try {
+      await deleteBoard.fn({
+        record: board,
+        project: { id: 'project-1' },
+        actorUser: { id: 'manager' },
+      });
+
+      expect(reconcileInputs).to.deep.equal({
+        project: { id: 'project-1' },
+        affectedUserIds: ['user-1', 'user-2'],
+      });
     } finally {
       Object.entries(previousGlobals).forEach(([name, value]) => {
         if (value === undefined) {

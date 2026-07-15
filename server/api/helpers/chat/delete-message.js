@@ -57,7 +57,9 @@ module.exports = {
         ? { lastMessage: sails.helpers.chat.presentMessage(message) }
         : {};
 
-    const uniqueRecipientUserIds = [...new Set(inputs.recipientUserIds)];
+    const uniqueRecipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
+      inputs.conversation,
+    );
     const unreadCounts = await sails.helpers.chat.getUnreadCountsForUsers(
       inputs.conversation.id,
       uniqueRecipientUserIds,

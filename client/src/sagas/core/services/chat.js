@@ -71,20 +71,32 @@ function* reportChatDeliveryFailure(error, details) {
 }
 
 export function* fetchChatMembers(projectId) {
+  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  const accessRevocationVersion = accessRevocationVersions[projectId] || 0;
   yield put(actions.fetchChatMembers(projectId));
 
   let users;
   try {
     ({ items: users } = yield call(request, api.getChatMembers, projectId));
   } catch (error) {
+    const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+    if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
+      return;
+    }
     yield put(actions.fetchChatMembers.failure(projectId, error));
     return;
   }
 
+  const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
+    return;
+  }
   yield put(actions.fetchChatMembers.success(projectId, users));
 }
 
 export function* fetchChatConversations(projectId) {
+  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  const accessRevocationVersion = accessRevocationVersions[projectId] || 0;
   yield put(actions.fetchChatConversations(projectId));
 
   let conversations;
@@ -96,10 +108,18 @@ export function* fetchChatConversations(projectId) {
     chatParticipants = body.included?.chatParticipants || [];
     users = body.included?.users || [];
   } catch (error) {
+    const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+    if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
+      return;
+    }
     yield put(actions.fetchChatConversations.failure(projectId, error));
     return;
   }
 
+  const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
+    return;
+  }
   yield put(
     actions.fetchChatConversations.success(projectId, conversations, chatParticipants, users),
   );
@@ -119,6 +139,8 @@ export function* fetchChatForCurrentProject() {
 }
 
 function* createChatConversation(projectId, type, userId) {
+  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  const accessRevocationVersion = accessRevocationVersions[projectId] || 0;
   const requestKey =
     type === 'projectGroup' ? `${projectId}:general` : `${projectId}:direct:${userId}`;
   yield put(actions.createChatConversation(projectId, type, requestKey));
@@ -136,10 +158,18 @@ function* createChatConversation(projectId, type, userId) {
     chatParticipants = body.included?.chatParticipants || [];
     users = body.included?.users || [];
   } catch (error) {
+    const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+    if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
+      return;
+    }
     yield put(actions.createChatConversation.failure(projectId, type, requestKey, error));
     return;
   }
 
+  const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
+    return;
+  }
   yield put(actions.createChatConversation.success(conversation, chatParticipants, users));
 }
 
@@ -152,9 +182,15 @@ export function* createDirectChatConversation(projectId, userId) {
 }
 
 export function* createCustomChatGroup(projectId, data, requestKey = `${projectId}:group`) {
+  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  const accessRevocationVersion = accessRevocationVersions[projectId] || 0;
   yield put(actions.createChatConversation(projectId, 'projectCustomGroup', requestKey));
   try {
     const body = yield call(request, api.createCustomChatGroup, projectId, data);
+    const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+    if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
+      return;
+    }
     yield put(
       actions.createChatConversation.success(
         body.item,
@@ -164,6 +200,10 @@ export function* createCustomChatGroup(projectId, data, requestKey = `${projectI
       ),
     );
   } catch (error) {
+    const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+    if ((currentVersions[projectId] || 0) !== accessRevocationVersion) {
+      return;
+    }
     yield put(
       actions.createChatConversation.failure(projectId, 'projectCustomGroup', requestKey, error),
     );
@@ -219,14 +259,32 @@ export function* leaveChatConversation(id) {
 }
 
 export function* handleChatConversationCreate(conversation, chatParticipants, users) {
+  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  if ((accessRevocationVersions[conversation.projectId] || 0) > 0) {
+    const chatState = yield select(selectors.selectChatState);
+    const currentUserId = yield select(selectors.selectCurrentUserId);
+    if (!(chatState.memberIdsByProject[conversation.projectId] || []).includes(currentUserId)) {
+      return;
+    }
+  }
   yield put(actions.handleChatConversationCreate(conversation, chatParticipants, users));
 }
 
 export function* handleChatConversationUpdate(conversation, chatParticipants, users) {
+  const currentConversation = yield select(selectors.selectChatConversationById, conversation.id);
+  if (!currentConversation) {
+    return;
+  }
   yield put(actions.handleChatConversationUpdate(conversation, chatParticipants, users));
 }
 
 export function* fetchChatMessages(conversationId, options = {}) {
+  const conversation = yield select(selectors.selectChatConversationById, conversationId);
+  if (!conversation) {
+    return;
+  }
+  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  const accessRevocationVersion = accessRevocationVersions[conversation.projectId] || 0;
   const { replace = false, ...requestOptions } = options;
   let direction = 'before';
   if (requestOptions.aroundId) {
@@ -258,10 +316,26 @@ export function* fetchChatMessages(conversationId, options = {}) {
     hasMore = body.hasMore ?? body.meta?.hasMore ?? messages.length > 0;
     hasMoreAfter = body.meta?.hasMoreAfter ?? (direction === 'after' ? hasMore : false);
   } catch (error) {
+    const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
+    const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+    if (
+      !currentConversation ||
+      (currentVersions[conversation.projectId] || 0) !== accessRevocationVersion
+    ) {
+      return;
+    }
     yield put(actions.fetchChatMessages.failure(conversationId, error));
     return;
   }
 
+  const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
+  const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  if (
+    !currentConversation ||
+    (currentVersions[conversation.projectId] || 0) !== accessRevocationVersion
+  ) {
+    return;
+  }
   yield put(
     actions.fetchChatMessages.success(
       conversationId,
@@ -336,7 +410,20 @@ function* sendChatMessage(localId, conversationId, data, existingMessageId) {
     }
   }
 
+  const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
+  if (!currentConversation) {
+    return;
+  }
+
   const uploadResult = yield call(uploadChatMessageAttachments, message, files);
+
+  const conversationAfterUploads = yield select(
+    selectors.selectChatConversationById,
+    conversationId,
+  );
+  if (!conversationAfterUploads) {
+    return;
+  }
 
   yield put(
     actions.createChatMessage.success(localId, {
@@ -400,6 +487,10 @@ export function* retryChatMessage(localId) {
 }
 
 export function* handleChatMessageCreate(message, users) {
+  const conversation = yield select(selectors.selectChatConversationById, message.conversationId);
+  if (!conversation) {
+    return;
+  }
   yield put(actions.handleChatMessageCreate(message, users));
 }
 
@@ -416,11 +507,17 @@ export function* updateChatMessage(id, data) {
     return;
   }
 
-  yield put(actions.updateChatMessage.success(message));
+  const conversation = yield select(selectors.selectChatConversationById, message.conversationId);
+  if (conversation) {
+    yield put(actions.updateChatMessage.success(message));
+  }
 }
 
 export function* handleChatMessageUpdate(message) {
-  yield put(actions.handleChatMessageUpdate(message));
+  const conversation = yield select(selectors.selectChatConversationById, message.conversationId);
+  if (conversation) {
+    yield put(actions.handleChatMessageUpdate(message));
+  }
 }
 
 export function* deleteChatMessage(id) {
@@ -435,11 +532,17 @@ export function* deleteChatMessage(id) {
     return;
   }
 
-  yield put(actions.deleteChatMessage.success(message));
+  const conversation = yield select(selectors.selectChatConversationById, message.conversationId);
+  if (conversation) {
+    yield put(actions.deleteChatMessage.success(message));
+  }
 }
 
 export function* handleChatMessageDelete(message) {
-  yield put(actions.handleChatMessageDelete(message));
+  const conversation = yield select(selectors.selectChatConversationById, message.conversationId);
+  if (conversation) {
+    yield put(actions.handleChatMessageDelete(message));
+  }
 }
 
 export function* toggleChatMessageReaction(id, emoji) {
@@ -451,7 +554,10 @@ export function* toggleChatMessageReaction(id, emoji) {
     return;
   }
 
-  yield put(actions.handleChatMessageUpdate(message));
+  const conversation = yield select(selectors.selectChatConversationById, message.conversationId);
+  if (conversation) {
+    yield put(actions.handleChatMessageUpdate(message));
+  }
 }
 
 export function* forwardChatMessage(id, targetConversationId) {
@@ -461,7 +567,10 @@ export function* forwardChatMessage(id, targetConversationId) {
       targetConversationId,
       clientMessageId,
     });
-    yield put(actions.handleChatMessageCreate(item, []));
+    const conversation = yield select(selectors.selectChatConversationById, item.conversationId);
+    if (conversation) {
+      yield put(actions.handleChatMessageCreate(item, []));
+    }
   } catch (error) {
     reportChatError(error, 'forward-message');
     // The source remains unchanged and can be forwarded again.
@@ -480,11 +589,17 @@ export function* updateChatConversationPreferences(id, data) {
   yield put(actions.updateChatConversationPreferences(id, participant?.id, data));
   try {
     const { item } = yield call(request, api.updateChatConversationPreferences, id, data);
-    yield put(actions.updateChatConversationPreferences.success(item));
+    const currentConversation = yield select(selectors.selectChatConversationById, id);
+    if (currentConversation) {
+      yield put(actions.updateChatConversationPreferences.success(item));
+    }
   } catch (error) {
-    yield put(
-      actions.updateChatConversationPreferences.failure(id, participant?.id, previousData, error),
-    );
+    const currentConversation = yield select(selectors.selectChatConversationById, id);
+    if (currentConversation) {
+      yield put(
+        actions.updateChatConversationPreferences.failure(id, participant?.id, previousData, error),
+      );
+    }
   }
 }
 
@@ -498,14 +613,34 @@ export function* updateChatTyping(id, isTyping) {
 }
 
 export function* handleChatParticipantUpdate(participant) {
-  yield put(actions.handleChatParticipantUpdate(participant));
+  const conversation = yield select(
+    selectors.selectChatConversationById,
+    participant.conversationId,
+  );
+  if (conversation) {
+    yield put(actions.handleChatParticipantUpdate(participant));
+  }
 }
 
 export function* handleChatTypingUpdate(typingState) {
+  const conversation = yield select(
+    selectors.selectChatConversationById,
+    typingState.conversationId,
+  );
+  if (!conversation) {
+    return;
+  }
   const receivedAt = Date.now();
   yield put(actions.handleChatTypingUpdate({ ...typingState, receivedAt }));
   if (typingState.isTyping) {
     yield delay(5500);
+    const currentConversation = yield select(
+      selectors.selectChatConversationById,
+      typingState.conversationId,
+    );
+    if (!currentConversation) {
+      return;
+    }
     yield put(
       actions.handleChatTypingUpdate({
         ...typingState,
@@ -517,6 +652,11 @@ export function* handleChatTypingUpdate(typingState) {
 }
 
 export function* handleChatMessageAlert(alert) {
+  const conversation = yield select(selectors.selectChatConversationById, alert.conversationId);
+  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  if (!conversation && (accessRevocationVersions[alert.projectId] || 0) > 0) {
+    return;
+  }
   yield put(actions.handleChatMessageAlert(alert));
 }
 
@@ -534,6 +674,9 @@ export function* setChatReplyTarget(conversationId, message) {
 
 export function* markChatConversationAsRead(conversationId) {
   const conversation = yield select(selectors.selectChatConversationById, conversationId);
+  if (!conversation) {
+    return;
+  }
   const previousUnreadCount = conversation?.unreadCount || 0;
   yield put(actions.markChatConversationAsRead(conversationId));
 
@@ -541,17 +684,26 @@ export function* markChatConversationAsRead(conversationId) {
   try {
     ({ item: readState } = yield call(request, api.markChatConversationAsRead, conversationId, {}));
   } catch (error) {
-    yield put(
-      actions.markChatConversationAsRead.failure(conversationId, previousUnreadCount, error),
-    );
+    const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
+    if (currentConversation) {
+      yield put(
+        actions.markChatConversationAsRead.failure(conversationId, previousUnreadCount, error),
+      );
+    }
     return;
   }
 
-  yield put(actions.markChatConversationAsRead.success(readState));
+  const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
+  if (currentConversation) {
+    yield put(actions.markChatConversationAsRead.success(readState));
+  }
 }
 
 export function* handleChatConversationRead(readState) {
-  yield put(actions.handleChatConversationRead(readState));
+  const conversation = yield select(selectors.selectChatConversationById, readState.conversationId);
+  if (conversation) {
+    yield put(actions.handleChatConversationRead(readState));
+  }
 }
 
 export function* handleChatProjectAccessRevoke(projectId) {

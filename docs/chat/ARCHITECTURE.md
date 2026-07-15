@@ -128,6 +128,13 @@ O cliente deve conseguir receber e aplicar, pelo menos, estes eventos:
 
 As mensagens de uma conversa usam a sala `chatConversation:<id>`. Eventos específicos do utilizador podem ser publicados na sala `@user:<id>`. O payload canónico é preparado no servidor antes do broadcast.
 
+Quando uma membership de board, um gestor, o modo do chat ou um board inteiro altera o acesso,
+o servidor reconcilia explicitamente os utilizadores afetados. Utilizadores que perderam a última
+fonte de acesso ao projeto são removidos de todas as salas da conversa antes de receberem
+`chatProjectAccessRevoke`. A revogação também é emitida quando o projeto ainda não possui
+conversas, para que o cliente elimine membros e estado persistido. Antes de broadcasts dirigidos a
+utilizadores, os destinatários são novamente cruzados com as permissões atuais do projeto.
+
 ## Frontend
 
 ### Estado e comunicação

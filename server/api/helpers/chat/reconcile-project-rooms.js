@@ -9,20 +9,23 @@ module.exports = {
       type: 'ref',
       required: true,
     },
+    affectedUserIds: {
+      type: 'ref',
+    },
   },
 
   async fn(inputs) {
     const conversations = await ChatConversation.qm.getByProjectId(inputs.project.id);
-    if (conversations.length === 0) {
-      return;
-    }
-
     const conversationIds = sails.helpers.utils.mapRecords(conversations);
-    const participants = await ChatParticipant.qm.getByConversationIds(conversationIds);
+    const participants =
+      conversationIds.length > 0
+        ? await ChatParticipant.qm.getByConversationIds(conversationIds)
+        : [];
     const boardMemberships = await BoardMembership.qm.getByProjectId(inputs.project.id);
     const scoper = sails.helpers.projects.makeScoper.with({ record: inputs.project });
     const projectManagerUserIds = await scoper.getProjectManagerUserIds();
     const candidateUserIds = _.union(
+      inputs.affectedUserIds || [],
       projectManagerUserIds,
       sails.helpers.utils.mapRecords(boardMemberships, 'userId', true),
       sails.helpers.utils.mapRecords(participants, 'userId', true),
@@ -40,17 +43,37 @@ module.exports = {
       });
     }
 
-    unauthorizedUserIds.forEach((userId) => {
-      conversationIds.forEach((conversationId) => {
+    const leaveRoom = (userId, conversationId) =>
+      new Promise((resolve, reject) => {
         sails.sockets.removeRoomMembersFromRooms(
           `@user:${userId}`,
           `chatConversation:${conversationId}`,
+          (error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            resolve();
+          },
         );
       });
 
+    await Promise.all(
+      unauthorizedUserIds.flatMap((userId) =>
+        conversationIds.map((conversationId) => leaveRoom(userId, conversationId)),
+      ),
+    );
+
+    unauthorizedUserIds.forEach((userId) => {
       sails.sockets.broadcast(`@user:${userId}`, 'chatProjectAccessRevoke', {
         item: { projectId: inputs.project.id },
       });
     });
+
+    return {
+      revokedUserIds: unauthorizedUserIds,
+      conversationIds,
+    };
   },
 };

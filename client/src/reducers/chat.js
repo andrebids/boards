@@ -49,6 +49,24 @@ export default (state = initialState, { type, payload }) => {
       const nextDrafts = { ...state.draftsByConversation };
       const nextReplyTargets = { ...state.replyTargetsByConversation };
       const nextTyping = { ...state.typingByConversation };
+      const nextPreferencesUpdating = { ...state.isPreferencesUpdatingByConversation };
+      const nextErrors = { ...state.errorsByScope };
+      const nextMembersFetching = { ...state.isMembersFetchingByProject };
+      const nextConversationsFetching = { ...state.isConversationsFetchingByProject };
+      const nextFetchedConversations = { ...state.hasFetchedConversationsByProject };
+      const nextCreationErrors = { ...state.conversationCreationErrorsByKey };
+      const nextCreatedConversationIds = { ...state.createdConversationIdByRequestKey };
+      delete nextMembersFetching[payload.projectId];
+      delete nextConversationsFetching[payload.projectId];
+      delete nextFetchedConversations[payload.projectId];
+      delete nextErrors[`members:${payload.projectId}`];
+      delete nextErrors[`conversations:${payload.projectId}`];
+      Object.keys(nextCreationErrors)
+        .filter((key) => key.startsWith(`${payload.projectId}:`))
+        .forEach((key) => delete nextCreationErrors[key]);
+      Object.keys(nextCreatedConversationIds)
+        .filter((key) => key.startsWith(`${payload.projectId}:`))
+        .forEach((key) => delete nextCreatedConversationIds[key]);
       payload.conversationIds.forEach((conversationId) => {
         delete nextMessagesFetching[conversationId];
         delete nextHasMoreMessages[conversationId];
@@ -56,6 +74,8 @@ export default (state = initialState, { type, payload }) => {
         delete nextDrafts[conversationId];
         delete nextReplyTargets[conversationId];
         delete nextTyping[conversationId];
+        delete nextPreferencesUpdating[conversationId];
+        delete nextErrors[`messages:${conversationId}`];
       });
 
       return {
@@ -68,12 +88,21 @@ export default (state = initialState, { type, payload }) => {
         minimizedConversationIds: state.minimizedConversationIds.filter(
           (id) => !conversationIdSet.has(id),
         ),
+        isMembersFetchingByProject: nextMembersFetching,
+        isConversationsFetchingByProject: nextConversationsFetching,
+        hasFetchedConversationsByProject: nextFetchedConversations,
         isMessagesFetchingByConversation: nextMessagesFetching,
         hasMoreMessagesByConversation: nextHasMoreMessages,
         hasMoreNewerMessagesByConversation: nextHasMoreNewerMessages,
+        errorsByScope: nextErrors,
+        conversationCreationErrorsByKey: nextCreationErrors,
+        createdConversationIdByRequestKey: nextCreatedConversationIds,
         draftsByConversation: nextDrafts,
         replyTargetsByConversation: nextReplyTargets,
         typingByConversation: nextTyping,
+        isPreferencesUpdatingByConversation: nextPreferencesUpdating,
+        lastMessageAlert:
+          state.lastMessageAlert?.projectId === payload.projectId ? null : state.lastMessageAlert,
         accessRevocationVersionByProject: {
           ...state.accessRevocationVersionByProject,
           [payload.projectId]: (state.accessRevocationVersionByProject[payload.projectId] || 0) + 1,

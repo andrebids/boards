@@ -59,6 +59,11 @@ module.exports = {
         }),
         user: inputs.actorUser,
       });
+
+      await sails.helpers.chat.reconcileProjectRooms.with({
+        project: inputs.project,
+        affectedUserIds: sails.helpers.utils.mapRecords(boardMemberships, 'userId', true),
+      });
     }
 
     return board;

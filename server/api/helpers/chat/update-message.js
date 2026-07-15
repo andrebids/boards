@@ -49,7 +49,10 @@ module.exports = {
 
       const lastMessage = await ChatMessage.qm.getLastByConversationId(inputs.conversation.id);
       if (lastMessage && lastMessage.id === message.id) {
-        inputs.recipientUserIds.forEach((userId) => {
+        const recipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
+          inputs.conversation,
+        );
+        recipientUserIds.forEach((userId) => {
           sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', {
             item: {
               id: inputs.conversation.id,

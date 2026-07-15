@@ -97,7 +97,10 @@ module.exports = {
         user: inputs.actorUser,
       });
 
-      await sails.helpers.chat.reconcileProjectRooms(inputs.project);
+      await sails.helpers.chat.reconcileProjectRooms.with({
+        project: inputs.project,
+        affectedUserIds: [projectManager.userId],
+      });
     }
 
     return projectManager;

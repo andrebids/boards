@@ -86,11 +86,9 @@ module.exports = {
       inputs.request,
     );
 
-    const recipientUserIds =
-      inputs.targetConversation.type === ChatConversation.Types.PROJECT_GROUP
-        ? inputs.targetAccess.memberUserIds
-        : sails.helpers.utils.mapRecords(inputs.targetAccess.participants, 'userId', true);
-    const uniqueRecipientUserIds = [...new Set(recipientUserIds)];
+    const uniqueRecipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
+      inputs.targetConversation,
+    );
     const unreadCounts = await sails.helpers.chat.getUnreadCountsForUsers(
       inputs.targetConversation.id,
       uniqueRecipientUserIds,

@@ -231,11 +231,8 @@ module.exports = {
 
     const lastMessage = await ChatMessage.qm.getLastByConversationId(conversation.id);
     if (lastMessage && lastMessage.id === message.id) {
-      const recipientUserIds =
-        conversation.type === ChatConversation.Types.PROJECT_GROUP
-          ? access.memberUserIds
-          : sails.helpers.utils.mapRecords(access.participants, 'userId', true);
-      const uniqueRecipientUserIds = [...new Set(recipientUserIds)];
+      const uniqueRecipientUserIds =
+        await sails.helpers.chat.getConversationRecipientUserIds(conversation);
       const unreadCounts = await sails.helpers.chat.getUnreadCountsForUsers(
         conversation.id,
         uniqueRecipientUserIds,

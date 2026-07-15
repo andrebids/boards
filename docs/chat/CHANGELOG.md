@@ -27,8 +27,7 @@ Registar aqui mudanças com impacto funcional, de contrato, dados, segurança, o
 ### Segurança
 
 - Erros inesperados do chat podem ser reportados ao Sentry sem corpo de pedidos, conteúdo de mensagens, cookies, cabeçalhos ou URLs privadas.
-
-### Segurança
+- A remoção da última fonte de acesso ao projeto expulsa todas as sessões das salas do chat, incluindo quando um board inteiro é eliminado, e volta a validar destinatários antes dos broadcasts.
 
 ### Removido
 

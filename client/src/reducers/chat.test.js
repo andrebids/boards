@@ -59,6 +59,9 @@ describe('chat reducer', () => {
     const state = {
       ...reducer(undefined, { type: '@@INIT' }),
       memberIdsByProject: { 'project-1': ['user-1'] },
+      isMembersFetchingByProject: { 'project-1': true, 'project-2': true },
+      isConversationsFetchingByProject: { 'project-1': true },
+      hasFetchedConversationsByProject: { 'project-1': true },
       openConversationIds: ['conversation-1', 'conversation-2'],
       minimizedConversationIds: ['conversation-1'],
       isMessagesFetchingByConversation: {
@@ -69,6 +72,16 @@ describe('chat reducer', () => {
         'conversation-1': true,
         'conversation-2': true,
       },
+      errorsByScope: {
+        'members:project-1': new Error('members'),
+        'messages:conversation-1': new Error('messages'),
+        'members:project-2': new Error('other project'),
+      },
+      conversationCreationErrorsByKey: {
+        'project-1:direct:user-2': new Error('create'),
+        'project-2:direct:user-2': new Error('other project'),
+      },
+      lastMessageAlert: { projectId: 'project-1', messageId: 'message-1' },
     };
 
     const nextState = reducer(state, {
@@ -81,6 +94,16 @@ describe('chat reducer', () => {
     expect(nextState.minimizedConversationIds).toEqual([]);
     expect(nextState.isMessagesFetchingByConversation).toEqual({ 'conversation-2': false });
     expect(nextState.hasMoreMessagesByConversation).toEqual({ 'conversation-2': true });
+    expect(nextState.isMembersFetchingByProject).toEqual({ 'project-2': true });
+    expect(nextState.isConversationsFetchingByProject).toEqual({});
+    expect(nextState.hasFetchedConversationsByProject).toEqual({});
+    expect(nextState.errorsByScope).toEqual({
+      'members:project-2': state.errorsByScope['members:project-2'],
+    });
+    expect(nextState.conversationCreationErrorsByKey).toEqual({
+      'project-2:direct:user-2': state.conversationCreationErrorsByKey['project-2:direct:user-2'],
+    });
+    expect(nextState.lastMessageAlert).toBeNull();
     expect(nextState.accessRevocationVersionByProject['project-1']).toBe(1);
   });
 
