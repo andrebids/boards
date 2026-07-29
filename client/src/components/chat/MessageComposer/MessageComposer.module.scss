@@ -97,9 +97,13 @@
   }
 
   .mention {
-    background: var(--chat-accent-soft-hover);
-    border-radius: 3px;
-    color: var(--chat-foreground);
+    background: rgba(4, 133, 247, 0.3);
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1px rgba(4, 133, 247, 0.38);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   .suggestion {
@@ -242,30 +246,6 @@
     z-index: 8;
   }
 
-  .emojiPicker {
-    --epr-category-label-height: 0px;
-    --epr-category-label-padding: 0 8px;
-    --epr-category-navigation-button-size: 26px;
-    --epr-category-padding: 0 8px;
-    --epr-emoji-padding: 3px;
-    --epr-emoji-size: 20px;
-    --epr-header-padding: 7px 8px 4px;
-    --epr-horizontal-padding: 8px;
-    --epr-search-bar-inner-padding: 8px;
-    --epr-search-input-height: 32px;
-    --epr-search-input-padding: 0 26px;
-    --epr-search-input-border-radius: var(--chat-radius-control);
-    box-shadow: var(--chat-panel-shadow);
-    max-width: calc(100vw - 28px) !important;
-
-    :global(.epr-category-nav) {
-      padding: 0 8px 6px;
-    }
-
-    :global(.epr-emoji-category-label) {
-      display: none;
-    }
-  }
   .files {
     display: flex;
     flex-wrap: wrap;
@@ -352,12 +332,4 @@
     }
   }
 
-  @media only screen and (max-width: 380px) {
-    .emojiPicker {
-      --epr-emoji-padding: 2px;
-      --epr-emoji-size: 18px;
-      height: 276px !important;
-      width: min(242px, calc(100vw - 28px)) !important;
-    }
-  }
 }

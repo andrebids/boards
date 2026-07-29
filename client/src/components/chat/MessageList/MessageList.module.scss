@@ -457,10 +457,25 @@
   }
 
   .mention {
-    background: var(--chat-accent-soft-hover);
-    border-radius: 3px;
-    color: var(--chat-foreground);
-    padding: 0 2px;
+    background: rgba(4, 133, 247, 0.3);
+    border: 1px solid rgba(4, 133, 247, 0.38);
+    border-radius: 5px;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0 4px;
+    white-space: nowrap;
+  }
+
+  .mentionSelf {
+    background: rgba(4, 133, 247, 0.46);
+    border-color: rgba(4, 133, 247, 0.58);
+    color: #ffffff;
+  }
+
+  .own .mention {
+    background: rgba(4, 133, 247, 0.32);
+    border-color: rgba(4, 133, 247, 0.38);
+    color: #ffffff;
   }
   .attachments {
     display: flex;
@@ -600,28 +615,6 @@
   .floatingReactionEmojiMenu {
     position: fixed;
     z-index: 1100;
-  }
-
-  .reactionEmojiPicker {
-    --epr-category-label-height: 0px;
-    --epr-category-navigation-button-size: 26px;
-    --epr-category-padding: 0 8px;
-    --epr-emoji-padding: 3px;
-    --epr-emoji-size: 20px;
-    --epr-header-padding: 7px 8px 4px;
-    --epr-horizontal-padding: 8px;
-    --epr-search-bar-inner-padding: 8px;
-    --epr-search-input-height: 32px;
-    --epr-search-input-padding: 0 26px;
-    max-width: calc(100vw - 28px) !important;
-
-    :global(.epr-category-nav) {
-      padding: 0 8px 6px;
-    }
-
-    :global(.epr-emoji-category-label) {
-      display: none;
-    }
   }
 
   .meta {

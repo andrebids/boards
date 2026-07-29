@@ -10,7 +10,12 @@ import entryActions from '../../../entry-actions';
 import selectors from '../../../selectors';
 import FilePicker from '../../../lib/custom-ui/components/FilePicker/FilePicker';
 import ChatAvatar from '../ChatAvatar';
-import LazyEmojiPicker from '../LazyEmojiPicker';
+import LazyEmojiPicker, {
+  EMOJI_CATEGORY_ICONS,
+  EMOJI_PICKER_CLASS_NAME,
+  EMOJI_PICKER_HEIGHT,
+  EMOJI_PICKER_WIDTH,
+} from '../LazyEmojiPicker';
 import { getClipboardImageFiles } from '../utils';
 import {
   CHAT_ATTACHMENT_ACCEPT,
@@ -21,12 +26,23 @@ import {
 import styles from './MessageComposer.module.scss';
 
 const mentionsInputStyle = {
-  control: { minHeight: '36px' },
+  control: {
+    fontFamily: 'inherit',
+    fontSize: 'var(--chat-font-body)',
+    fontWeight: 400,
+    letterSpacing: 'normal',
+    lineHeight: '18px',
+    minHeight: '36px',
+  },
   input: {
     background: 'transparent',
     border: 'none',
     boxSizing: 'border-box',
     color: '#edf3fa',
+    fontFamily: 'inherit',
+    fontSize: 'inherit',
+    fontWeight: 'inherit',
+    letterSpacing: 'inherit',
     lineHeight: '18px',
     maxHeight: '84px',
     minHeight: '36px',
@@ -36,6 +52,10 @@ const mentionsInputStyle = {
   },
   highlighter: {
     boxSizing: 'border-box',
+    fontFamily: 'inherit',
+    fontSize: 'inherit',
+    fontWeight: 'inherit',
+    letterSpacing: 'inherit',
     lineHeight: '18px',
     maxHeight: '84px',
     minHeight: '36px',
@@ -67,7 +87,7 @@ const mentionsInputStyle = {
       padding: 0,
       transition: 'background-color 140ms ease, color 140ms ease',
       '&focused': {
-        backgroundColor: 'rgba(94, 136, 207, 0.18)',
+        backgroundColor: 'rgba(4, 133, 247, 0.18)',
         color: '#ffffff',
       },
     },
@@ -343,10 +363,11 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
             <div className={styles.emojiMenu} role="menu" aria-label={t('chat.chooseEmoji')}>
               <Suspense fallback={null}>
                 <LazyEmojiPicker
-                  className={styles.emojiPicker}
+                  categoryIcons={EMOJI_CATEGORY_ICONS}
+                  className={EMOJI_PICKER_CLASS_NAME}
                   theme="dark"
-                  width={260}
-                  height={300}
+                  width={EMOJI_PICKER_WIDTH}
+                  height={EMOJI_PICKER_HEIGHT}
                   previewConfig={{ showPreview: false }}
                   searchPlaceholder={t('chat.searchEmoji')}
                   onEmojiClick={handleEmojiClick}

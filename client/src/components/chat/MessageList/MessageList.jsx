@@ -36,7 +36,12 @@ import { useTranslation } from 'react-i18next';
 import entryActions from '../../../entry-actions';
 import UserAvatar from '../../users/UserAvatar';
 import Config from '../../../constants/Config';
-import LazyEmojiPicker from '../LazyEmojiPicker';
+import LazyEmojiPicker, {
+  EMOJI_CATEGORY_ICONS,
+  EMOJI_PICKER_CLASS_NAME,
+  EMOJI_PICKER_HEIGHT,
+  EMOJI_PICKER_WIDTH,
+} from '../LazyEmojiPicker';
 import { getConversationTitle } from '../utils';
 
 import styles from './MessageList.module.scss';
@@ -73,22 +78,20 @@ const compareNumericIds = (left, right) => {
   return normalizedLeft.localeCompare(normalizedRight);
 };
 
-const REACTION_EMOJI_PICKER_WIDTH = 250;
-const REACTION_EMOJI_PICKER_HEIGHT = 270;
 const FLOATING_PICKER_MARGIN = 12;
 
 const getReactionEmojiPickerPosition = (element) => {
   const rect = element.getBoundingClientRect();
   const maximumLeft = Math.max(
     FLOATING_PICKER_MARGIN,
-    window.innerWidth - REACTION_EMOJI_PICKER_WIDTH - FLOATING_PICKER_MARGIN,
+    window.innerWidth - EMOJI_PICKER_WIDTH - FLOATING_PICKER_MARGIN,
   );
-  const preferredTop = rect.top - REACTION_EMOJI_PICKER_HEIGHT - 8;
+  const preferredTop = rect.top - EMOJI_PICKER_HEIGHT - 8;
   const top =
     preferredTop >= FLOATING_PICKER_MARGIN
       ? preferredTop
       : Math.min(
-          window.innerHeight - REACTION_EMOJI_PICKER_HEIGHT - FLOATING_PICKER_MARGIN,
+          window.innerHeight - EMOJI_PICKER_HEIGHT - FLOATING_PICKER_MARGIN,
           rect.bottom + 8,
         );
   return {
@@ -97,15 +100,18 @@ const getReactionEmojiPickerPosition = (element) => {
   };
 };
 
-const renderMessageText = (text) => {
+const renderMessageText = (text, currentUserId) => {
   const parts = String(text).split(/(@\[[^\]]+\]\([^)]*\))/g);
   let offset = 0;
   return parts.map((part) => {
     const partOffset = offset;
     offset += part.length;
-    const match = part.match(/^@\[([^\]]+)\]\([^)]*\)$/);
+    const match = part.match(/^@\[([^\]]+)\]\(([^)]*)\)$/);
     return match ? (
-      <span key={`${match[1]}-${partOffset}`} className={styles.mention}>
+      <span
+        key={`${match[1]}-${partOffset}`}
+        className={`${styles.mention} ${match[2] === currentUserId ? styles.mentionSelf : ''}`}
+      >
         @{match[1]}
       </span>
     ) : (
@@ -534,7 +540,7 @@ const MessageList = React.memo(
             } else {
               messageBody = (
                 <LinkifyReact options={{ target: '_blank', rel: 'noreferrer' }}>
-                  {renderMessageText(message.text)}
+                  {renderMessageText(message.text, currentUserId)}
                 </LinkifyReact>
               );
             }
@@ -606,10 +612,11 @@ const MessageList = React.memo(
                               >
                                 <Suspense fallback={null}>
                                   <LazyEmojiPicker
-                                    className={styles.reactionEmojiPicker}
+                                    categoryIcons={EMOJI_CATEGORY_ICONS}
+                                    className={EMOJI_PICKER_CLASS_NAME}
                                     theme="dark"
-                                    width={250}
-                                    height={270}
+                                    width={EMOJI_PICKER_WIDTH}
+                                    height={EMOJI_PICKER_HEIGHT}
                                     previewConfig={{ showPreview: false }}
                                     searchPlaceholder={t('chat.searchEmoji')}
                                     onEmojiClick={(emojiData) =>

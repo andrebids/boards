@@ -40,24 +40,53 @@ module.exports = {
 
   async fn(inputs) {
     const { values } = inputs;
+    const previousText = inputs.record.text;
 
     const comment = await Comment.qm.updateOne(inputs.record.id, values);
+
+    if (comment && values.text !== undefined) {
+      const mentionUserIds = await sails.helpers.comments.getNewMentionUserIds.with({
+        text: comment.text,
+        previousText,
+        boardId: inputs.board.id,
+        exceptUserIdOrIds: inputs.actorUser.id,
+      });
+
+      await Promise.all(
+        mentionUserIds.map((userId) =>
+          sails.helpers.notifications.createOne.with({
+            values: {
+              userId,
+              comment,
+              type: Notification.Types.MENTION_IN_COMMENT,
+              data: {
+                card: _.pick(inputs.card, ['name']),
+                text: comment.text,
+              },
+              creatorUser: inputs.actorUser,
+              card: inputs.card,
+            },
+            project: inputs.project,
+            board: inputs.board,
+            list: inputs.list,
+          }),
+        ),
+      );
+    }
 
     // Criar atividade para atualização do comentário usando o helper padronizado
     if (comment) {
       try {
         // Usar o helper de atividades de comentário (mesmo padrão da criação)
-        const activity = await sails.helpers.activities.createCommentActivity.with({
-          comment: comment,
+        await sails.helpers.activities.createCommentActivity.with({
+          comment,
           card: inputs.card,
           user: inputs.actorUser,
           board: inputs.board,
-          action: 'update'
+          action: 'update',
         });
-
-        console.log('✅ Atividade de atualização de comentário criada:', activity.id);
       } catch (activityError) {
-        console.error('❌ Erro ao criar atividade de atualização de comentário:', activityError);
+        sails.log.warn('Failed to create activity for an updated comment', activityError);
         // Não falhar a atualização do comentário se a atividade falhar
       }
     }

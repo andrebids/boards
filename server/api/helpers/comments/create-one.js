@@ -3,38 +3,6 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-const escapeMarkdown = require('escape-markdown');
-const escapeHtml = require('escape-html');
-
-const { extractMentionIds, formatTextWithMentions } = require('../../../utils/mentions');
-
-const buildAndSendNotifications = async (services, board, card, comment, actorUser, t) => {
-  const markdownCardLink = `[${escapeMarkdown(card.name)}](${sails.config.custom.baseUrl}/cards/${card.id})`;
-  const htmlCardLink = `<a href="${sails.config.custom.baseUrl}/cards/${card.id}}">${escapeHtml(card.name)}</a>`;
-  const commentText = _.truncate(formatTextWithMentions(comment.text));
-
-  await sails.helpers.utils.sendNotifications(services, t('New Comment'), {
-    text: `${t(
-      '%s left a new comment to %s on %s',
-      actorUser.name,
-      card.name,
-      board.name,
-    )}:\n${commentText}`,
-    markdown: `${t(
-      '%s left a new comment to %s on %s',
-      escapeMarkdown(actorUser.name),
-      markdownCardLink,
-      escapeMarkdown(board.name),
-    )}:\n\n*${escapeMarkdown(commentText)}*`,
-    html: `${t(
-      '%s left a new comment to %s on %s',
-      escapeHtml(actorUser.name),
-      htmlCardLink,
-      escapeHtml(board.name),
-    )}:\n\n<i>${escapeHtml(commentText)}</i>`,
-  });
-};
-
 module.exports = {
   inputs: {
     values: {
@@ -70,14 +38,15 @@ module.exports = {
     // Criar atividade para o comentário
     try {
       // Usar o helper de atividades de comentário
-      const activity = await sails.helpers.activities.createCommentActivity.with({
-        comment: comment,
+      await sails.helpers.activities.createCommentActivity.with({
+        comment,
         card: values.card,
         user: values.user,
         board: inputs.board,
-        action: 'create'
+        action: 'create',
       });
     } catch (activityError) {
+      sails.log.warn('Failed to create activity for a new comment', activityError);
       // Não falhar a criação do comentário se a atividade falhar
     }
 
@@ -107,16 +76,11 @@ module.exports = {
       user: values.user,
     });
 
-    let mentionUserIds = extractMentionIds(comment.text);
-
-    if (mentionUserIds.length > 0) {
-      const boardMemberUserIds = await sails.helpers.boards.getMemberUserIds(inputs.board.id);
-
-      mentionUserIds = _.difference(
-        _.intersection(mentionUserIds, boardMemberUserIds),
-        comment.userId,
-      );
-    }
+    const mentionUserIds = await sails.helpers.comments.getNewMentionUserIds.with({
+      text: comment.text,
+      boardId: inputs.board.id,
+      exceptUserIdOrIds: comment.userId,
+    });
 
     const mentionUserIdsSet = new Set(mentionUserIds);
 
@@ -182,24 +146,6 @@ module.exports = {
 
         // TODO: send webhooks
       }
-    }
-
-    const notificationServices = await NotificationService.qm.getByBoardId(inputs.board.id);
-
-    if (notificationServices.length > 0) {
-      const services = notificationServices.map((notificationService) =>
-        _.pick(notificationService, ['url', 'format']),
-      );
-
-      // This helper is now called from actions/create-one.js
-      // buildAndSendNotifications(
-      //   services,
-      //   inputs.board,
-      //   values.card,
-      //   comment,
-      //   values.user,
-      //   sails.helpers.utils.makeTranslator(),
-      // );
     }
 
     return comment;
