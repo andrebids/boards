@@ -5,33 +5,77 @@
 
 :global(#app) {
   .controls {
-    clear: both;
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
     margin-top: 6px;
+
+    :global(.ui.button) {
+      background: var(--card-modal-surface-hover, #e5e7eb) !important;
+      border-radius: 8px !important;
+      box-shadow: none !important;
+      color: var(--card-modal-text, #17394d) !important;
+      font-size: 12px !important;
+      margin: 0 !important;
+      min-height: 30px;
+      padding: 7px 10px !important;
+
+      &:focus-visible {
+        box-shadow: 0 0 0 3px
+          var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16)) !important;
+        outline: none;
+      }
+    }
+
+    :global(.ui.positive.button) {
+      background: var(--card-modal-accent, #2563eb) !important;
+      color: var(--card-modal-text, #fff) !important;
+    }
   }
 
   .field {
+    :global(.mentions-input__control) {
+      padding: 0 !important;
+    }
+
+    :global(.mentions-input__input),
+    :global(.mentions-input__highlighter) {
+      box-sizing: border-box !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      line-height: 19px !important;
+      padding: 8px 10px !important;
+    }
+
+    :global(.mentions-input__highlighter) {
+      color: transparent !important;
+    }
+
     textarea {
-      background: #fff !important;
-      border: 1px solid rgba(9, 30, 66, 0.13);
-      border-radius: 3px;
+      background: var(--card-modal-background, #fff) !important;
+      border: 1px solid var(--card-modal-border, rgba(9, 30, 66, 0.13));
+      border-radius: 8px;
       box-sizing: border-box;
-      color: #333;
+      color: var(--card-modal-text, #333) !important;
       display: block;
       font-size: 14px;
-      line-height: 1.4;
+      line-height: 19px;
       margin: 0 !important;
       overflow: hidden;
-      padding: 8px 12px;
+      padding: 8px 10px !important;
       resize: none;
 
       &:focus {
+        border-color: var(--card-modal-accent, #2563eb);
+        box-shadow: 0 0 0 3px
+          var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16));
         outline: none;
       }
     }
   }
 
   .mention {
-    background-color: #f1f8ff;
+    background-color: var(--card-modal-accent-soft, #f1f8ff);
     border-radius: 3px;
   }
 

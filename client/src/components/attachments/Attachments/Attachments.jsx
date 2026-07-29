@@ -3,19 +3,19 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useContext } from 'react';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { Gallery } from 'react-photoswipe-gallery';
-import { Button } from 'semantic-ui-react';
-import { useToggle } from '../../../lib/hooks';
+import React, { useCallback, useContext } from "react";
+import PropTypes from "prop-types";
+import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import { Gallery } from "react-photoswipe-gallery";
+import { Button, Icon } from "semantic-ui-react";
+import { useToggle } from "../../../lib/hooks";
 
-import selectors from '../../../selectors';
-import { ClosableContext } from '../../../contexts';
-import Item from './Item';
+import selectors from "../../../selectors";
+import { ClosableContext } from "../../../contexts";
+import Item from "./Item";
 
-import styles from './Attachments.module.scss';
+import styles from "./Attachments.module.scss";
 
 const INITIALLY_VISIBLE = 4;
 
@@ -27,14 +27,14 @@ const Attachments = React.memo(({ hideImagesWhenNotAllVisible }) => {
   const [activateClosable, deactivateClosable] = useContext(ClosableContext);
 
   const handleBeforeGalleryOpen = useCallback(
-    gallery => {
+    (gallery) => {
       activateClosable();
 
-      gallery.on('destroy', () => {
+      gallery.on("destroy", () => {
         deactivateClosable();
       });
     },
-    [activateClosable, deactivateClosable]
+    [activateClosable, deactivateClosable],
   );
 
   const handleToggleAllVisibleClick = useCallback(() => {
@@ -43,7 +43,7 @@ const Attachments = React.memo(({ hideImagesWhenNotAllVisible }) => {
 
   let visibleTotal = 0;
 
-  const itemsNode = attachments.map(attachment => {
+  const itemsNode = attachments.map((attachment) => {
     let isVisible = false;
     if (isAllVisible || visibleTotal < INITIALLY_VISIBLE) {
       if (
@@ -71,13 +71,13 @@ const Attachments = React.memo(({ hideImagesWhenNotAllVisible }) => {
         withDownloadButton
         options={{
           wheelToZoom: true,
-          showHideAnimationType: 'none',
-          closeTitle: '',
-          zoomTitle: '',
-          arrowPrevTitle: '',
-          arrowNextTitle: '',
-          errorMsg: '',
-          paddingFn: viewportSize => {
+          showHideAnimationType: "none",
+          closeTitle: "",
+          zoomTitle: "",
+          arrowPrevTitle: "",
+          arrowNextTitle: "",
+          errorMsg: "",
+          paddingFn: (viewportSize) => {
             const paddingX = viewportSize.x / 20;
             const paddingY = viewportSize.y / 20;
 
@@ -96,16 +96,26 @@ const Attachments = React.memo(({ hideImagesWhenNotAllVisible }) => {
       {(isAllVisible ? attachments.length > hiddenTotal : hiddenTotal > 0) && (
         <Button
           fluid
-          content={
-            isAllVisible
-              ? t('action.showFewerAttachments')
-              : t('action.showAllAttachments', {
-                  hidden: hiddenTotal,
-                })
-          }
+          aria-expanded={isAllVisible}
           className={styles.toggleButton}
           onClick={handleToggleAllVisibleClick}
-        />
+        >
+          <span className={styles.toggleContent}>
+            <span className={styles.toggleText}>
+              {isAllVisible
+                ? t("action.showFewerAttachments")
+                : t("action.showAllAttachments", {
+                    hidden: hiddenTotal,
+                  })}
+            </span>
+            <Icon
+              fitted
+              aria-hidden="true"
+              className={styles.toggleIcon}
+              name={isAllVisible ? "chevron up" : "chevron down"}
+            />
+          </span>
+        </Button>
       )}
     </>
   );

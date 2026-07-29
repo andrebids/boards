@@ -8,6 +8,8 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Icon, Button, Loader } from 'semantic-ui-react';
 
+import { CloseButton } from '../../../lib/custom-ui';
+
 import styles from './FilePreviewModal.module.scss';
 
 const PdfPreview = ({ file, onClose }) => {
@@ -52,7 +54,7 @@ const PdfPreview = ({ file, onClose }) => {
             {t('common.openInNewTab')}
           </Button>
           <Button onClick={handleDownload}>{t('common.download')}</Button>
-          <Button onClick={onClose}>{t('common.close')}</Button>
+          <Button onClick={onClose}>{t('action.close')}</Button>
         </div>
       </div>
     );
@@ -82,11 +84,10 @@ const PdfPreview = ({ file, onClose }) => {
             title={t('common.download')}
           />
 
-          <Button
-            icon="close"
-            size="mini"
+          <CloseButton
+            ariaLabel={t('action.close')}
             onClick={onClose}
-            title={t('common.close')}
+            title={t('action.close')}
           />
         </div>
       </div>

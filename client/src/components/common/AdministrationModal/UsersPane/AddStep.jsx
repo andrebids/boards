@@ -70,7 +70,7 @@ const AddStep = React.memo(({ onClose }) => {
   const [data, handleFieldChange] = useForm(() => ({
     email: '',
     name: '',
-    language: 'pt-PT',
+    language: '',
     ...defaultData,
   }));
 
@@ -93,6 +93,10 @@ const AddStep = React.memo(({ onClose }) => {
 
     if (!isEmail(cleanData.email)) {
       emailFieldRef.current.select();
+      return;
+    }
+
+    if (!cleanData.language) {
       return;
     }
 
@@ -213,6 +217,7 @@ const AddStep = React.memo(({ onClose }) => {
             options={languageOptions}
             value={data.language}
             disabled={isSubmitting}
+            placeholder={t('common.welcomeEmailLanguage')}
             className={styles.field}
             onChange={handleFieldChange}
           />
@@ -221,7 +226,7 @@ const AddStep = React.memo(({ onClose }) => {
               positive
               content={t('action.addUser')}
               loading={isSubmitting}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !data.language}
               className={styles.button}
             />
           </div>

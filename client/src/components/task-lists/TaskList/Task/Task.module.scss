@@ -8,8 +8,8 @@
     display: flex;
     gap: 2px;
     position: absolute;
-    right: 0;
-    top: 4px;
+    right: 4px;
+    top: 3px;
   }
 
   .actionsEditable {
@@ -22,7 +22,9 @@
 
   .button {
     background: transparent;
+    border-radius: 7px;
     box-shadow: none;
+    color: var(--card-modal-muted, #8a94a3) !important;
     line-height: 28px;
     margin: 0;
     min-height: auto;
@@ -31,62 +33,116 @@
     width: 28px;
 
     &:hover {
-      background: rgba(9, 30, 66, 0.08);
+      background: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16));
+      color: var(--card-modal-accent, #2563eb) !important;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px
+        var(--card-modal-accent-soft, rgba(37, 99, 235, 0.2));
+      color: var(--card-modal-accent, #2563eb) !important;
+      opacity: 1;
+      outline: none;
     }
   }
 
   .checkboxWrapper {
-    display: inline-block;
-    padding: 10px 15px 0px 8px;
-    position: absolute;
-    text-align: center;
-    top: 0;
-    left: 0;
-    vertical-align: top;
-    z-index: 2000;
-    line-height: 1;
+    align-items: center;
+    display: flex;
     height: 100%;
+    justify-content: center;
+    left: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    width: 36px;
+    z-index: 2;
   }
 
-  /* Make the Semantic UI checkbox checkmark green when checked, only in task list */
   :global(.ui.checkbox).checkbox {
+    min-height: 16px;
+    min-width: 16px;
+
+    label:before {
+      background: var(--card-modal-surface-hover, #e8ecf1) !important;
+      border: none !important;
+      border-radius: 5px !important;
+      box-shadow: none;
+      height: 16px !important;
+      transition:
+        background-color 160ms ease-out,
+        box-shadow 160ms ease-out,
+        transform 100ms ease-out;
+      width: 16px !important;
+    }
+
+    &:active {
+      label:before {
+        transform: scale(0.94);
+      }
+    }
+
+    input:checked ~ label:before,
+    input:checked ~ .box:before {
+      background: var(--card-modal-accent, #2563eb) !important;
+      box-shadow: none;
+    }
+
     input:checked ~ label:after,
     input:checked ~ .box:after {
-      color: #21ba45 !important; /* semantic-ui green */
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      color: transparent !important;
+      content: '' !important;
+      height: 8px !important;
+      left: 6px !important;
+      top: 3px !important;
+      transform: rotate(45deg);
+      width: 4px !important;
+    }
+
+    &:focus-within {
+      label:before {
+        box-shadow:
+          0 0 0 2px var(--card-modal-background, #111827),
+          0 0 0 4px var(--card-modal-accent, #2563eb) !important;
+      }
+    }
+
+    &.disabled {
+      opacity: 0.5;
     }
   }
 
-  .contentHoverable:hover {
-    background: rgba(9, 30, 66, 0.04);
-
-    .button {
-      opacity: 1;
-    }
+  .contentHoverable {
+    min-height: 34px;
   }
 
-  .task {
+  .wrapper .task {
+    color: var(--card-modal-text, #344054) !important;
     display: inline-block;
     overflow: hidden;
     overflow-wrap: break-word;
-    padding: 8px 0;
+    padding: 7px 0;
     vertical-align: top;
     width: 100%;
   }
 
-  .taskCompleted {
-    color: #aaa;
+  .wrapper .taskCompleted {
+    color: var(--card-modal-muted, #8a94a3) !important;
     text-decoration: line-through;
+    text-decoration-color: var(--card-modal-muted, #aab2bd);
   }
 
   .text {
     background: transparent;
-    border-radius: 3px;
-    color: #17394d;
+    border-radius: 10px;
+    color: var(--card-modal-text, #344054);
     display: inline-block;
-    font-size: 15px;
-    line-height: 1.5;
-    min-height: 32px;
-    padding: 0 34px 0 40px;
+    font-size: 14px;
+    line-height: 20px;
+    min-height: 34px;
+    padding: 0 34px 0 36px;
     width: 100%;
   }
 
@@ -96,15 +152,37 @@
   }
 
   .wrapper {
-    border-radius: 3px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    box-sizing: border-box;
     cursor: auto;
-    margin-left: -40px;
-    min-height: 32px;
+    min-height: 34px;
     position: relative;
-    width: calc(100% + 40px);
+    transition:
+      background 120ms ease,
+      border-color 120ms ease,
+      box-shadow 120ms ease;
+    width: 100%;
+
+    &:hover {
+      background: var(--card-modal-surface-hover, #fff);
+      border-color: var(--card-modal-border, #e3e7ec);
+
+      .button {
+        opacity: 1;
+      }
+    }
+
+    &:focus-within {
+      background: var(--card-modal-surface-hover, #fff);
+      border-color: var(--card-modal-accent, #bfdbfe);
+    }
   }
 
   .wrapperDragging {
-    background: rgba(247, 246, 247, 0.8);
+    background: var(--card-modal-surface, #fff);
+    border-color: var(--card-modal-accent, #bfdbfe);
+    box-shadow: 0 8px 24px rgba(31, 41, 55, 0.12);
   }
 }

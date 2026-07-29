@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+import { CloseButton } from '../../../lib/custom-ui';
 
 import styles from './ChatHeader.module.scss';
 
@@ -24,14 +25,7 @@ const ChatHeader = React.memo(({ memberCount, meta, projectName, title, onClose 
           )}
         </p>
       </div>
-      <button
-        type="button"
-        className={styles.closeButton}
-        aria-label={t('chat.closeConversations')}
-        onClick={onClose}
-      >
-        <X aria-hidden="true" size={20} strokeWidth={2} />
-      </button>
+      <CloseButton ariaLabel={t('chat.closeConversations')} onClick={onClose} />
     </header>
   );
 });

@@ -42,6 +42,7 @@ const Communication = React.memo(() => {
     <div className={styles.wrapper}>
       <Tab
         menu={{
+          className: styles.tabList,
           secondary: true,
           pointing: true,
         }}

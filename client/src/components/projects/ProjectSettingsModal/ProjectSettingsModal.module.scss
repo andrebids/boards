@@ -39,33 +39,6 @@
       padding: 0;
     }
 
-    > :global(i.close.icon) {
-      align-items: center;
-      background: var(--project-settings-surface-raised);
-      border: 1px solid var(--project-settings-border);
-      border-radius: 9px;
-      color: var(--project-settings-muted);
-      display: flex;
-      height: 32px;
-      justify-content: center;
-      padding: 0;
-      right: 14px;
-      top: 13px;
-      transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
-      width: 32px;
-    }
-
-    > :global(i.close.icon:hover) {
-      background: var(--project-settings-field-hover);
-      border-color: var(--project-settings-border-strong);
-      color: var(--project-settings-text);
-    }
-
-    > :global(i.close.icon:focus-visible) {
-      box-shadow: 0 0 0 3px rgba(95, 126, 232, 0.28);
-      outline: none;
-    }
-
     :global(.ui.pointing.secondary.menu) {
       align-items: stretch;
       background: var(--project-settings-surface);

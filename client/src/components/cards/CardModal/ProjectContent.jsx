@@ -20,6 +20,16 @@ import { BoardMembershipRoles, CardTypes, ListTypes } from '../../../constants/E
 import { CardTypeIcons } from '../../../constants/Icons';
 import { ClosableContext } from '../../../contexts';
 import CardImageCarousel from './CardImageCarousel';
+import CardModalLayout, {
+  CardModalActionButton,
+  CardModalActionGroup,
+  CardModalBody,
+  CardModalMain,
+  CardModalMetadata,
+  CardModalMetadataAddButton,
+  CardModalMetadataItem,
+  CardModalSidebar,
+} from './CardModalLayout';
 import NameField from './NameField';
 import TaskLists from './TaskLists';
 import CustomFieldGroups from './CustomFieldGroups';
@@ -315,167 +325,142 @@ const ProjectContent = React.memo(({ onClose }) => {
   const ConfirmationPopup = usePopupInClosableContext(ConfirmationStep);
 
   return (
-    <div className={styles.wrapper}>
-      <header className={styles.header}>
-        <Icon name={CardTypeIcons[CardTypes.PROJECT]} className={styles.headerIcon} />
-        <div className={styles.headerTitleWrapper}>
-          {canEditName ? (
-            <NameField defaultValue={card.name} onUpdate={handleNameUpdate} />
-          ) : (
-            <div className={styles.headerTitle}>{card.name}</div>
-          )}
-        </div>
-      </header>
-      <div className={styles.metadataBar}>
+    <CardModalLayout
+      icon={CardTypeIcons[CardTypes.PROJECT]}
+      title={
+        canEditName ? (
+          <NameField defaultValue={card.name} onUpdate={handleNameUpdate} />
+        ) : (
+          card.name
+        )
+      }
+    >
+      <CardModalMetadata>
         {board.alwaysDisplayCardCreator && (
-          <div className={styles.metadataItem}>
-            <div className={styles.text}>
-              {t('common.creator', {
+          <CardModalMetadataItem
+            label={t('common.creator', {
                 context: 'title',
-              })}
-            </div>
-            <span className={styles.metadataValue}>
-              <CreationDetailsPopup userId={card.creatorUserId}>
-                <UserAvatar withCreatorIndicator id={card.creatorUserId} />
-              </CreationDetailsPopup>
-            </span>
-          </div>
+            })}
+          >
+            <CreationDetailsPopup userId={card.creatorUserId}>
+              <UserAvatar withCreatorIndicator id={card.creatorUserId} />
+            </CreationDetailsPopup>
+          </CardModalMetadataItem>
         )}
         {userIds.length > 0 && (
-          <div className={styles.metadataItem}>
-            <div className={styles.text}>
-              {t('common.members', {
+          <CardModalMetadataItem
+            label={t('common.members', {
                 context: 'title',
-              })}
-            </div>
-            <div className={styles.metadataAvatars}>
-              {userIds.map((userId) => (
-                <span key={userId} className={styles.metadataAvatar}>
-                  {canUseMembers ? (
-                    <BoardMembershipsPopup
-                      currentUserIds={userIds}
-                      onUserSelect={handleUserSelect}
-                      onUserDeselect={handleUserDeselect}
-                    >
-                      <UserAvatar id={userId} />
-                    </BoardMembershipsPopup>
-                  ) : (
+            })}
+          >
+            {userIds.map((userId) => (
+              <span key={userId}>
+                {canUseMembers ? (
+                  <BoardMembershipsPopup
+                    currentUserIds={userIds}
+                    onUserSelect={handleUserSelect}
+                    onUserDeselect={handleUserDeselect}
+                  >
                     <UserAvatar id={userId} />
-                  )}
-                </span>
-              ))}
-              {canUseMembers && (
-                <BoardMembershipsPopup
-                  currentUserIds={userIds}
-                  onUserSelect={handleUserSelect}
-                  onUserDeselect={handleUserDeselect}
-                >
-                  <button type="button" className={styles.metadataAdd}>
-                    <Icon fitted name="add" size="small" />
-                  </button>
-                </BoardMembershipsPopup>
-              )}
-            </div>
-          </div>
+                  </BoardMembershipsPopup>
+                ) : (
+                  <UserAvatar id={userId} />
+                )}
+              </span>
+            ))}
+            {canUseMembers && (
+              <BoardMembershipsPopup
+                currentUserIds={userIds}
+                onUserSelect={handleUserSelect}
+                onUserDeselect={handleUserDeselect}
+              >
+                <CardModalMetadataAddButton ariaLabel={t('action.addMember')} />
+              </BoardMembershipsPopup>
+            )}
+          </CardModalMetadataItem>
         )}
         {labelIds.length > 0 && (
-          <div className={styles.metadataItem}>
-            <div className={styles.text}>
-              {t('common.labels', {
+          <CardModalMetadataItem
+            label={t('common.labels', {
                 context: 'title',
-              })}
-            </div>
-            <div className={styles.metadataLabels}>
-              {labelIds.map((labelId) => (
-                <span key={labelId} className={styles.metadataValue}>
-                  {canUseLabels ? (
-                    <LabelsPopup
-                      currentIds={labelIds}
-                      cardId={card.id}
-                      onSelect={handleLabelSelect}
-                      onDeselect={handleLabelDeselect}
-                    >
-                      <LabelChip id={labelId} />
-                    </LabelsPopup>
-                  ) : (
+            })}
+          >
+            {labelIds.map((labelId) => (
+              <span key={labelId}>
+                {canUseLabels ? (
+                  <LabelsPopup
+                    currentIds={labelIds}
+                    cardId={card.id}
+                    onSelect={handleLabelSelect}
+                    onDeselect={handleLabelDeselect}
+                  >
                     <LabelChip id={labelId} />
-                  )}
-                </span>
-              ))}
-              {canUseLabels && (
-                <LabelsPopup
-                  currentIds={labelIds}
-                  cardId={card.id}
-                  onSelect={handleLabelSelect}
-                  onDeselect={handleLabelDeselect}
-                >
-                  <button type="button" className={styles.metadataAdd}>
-                    <Icon fitted name="add" size="small" />
-                  </button>
-                </LabelsPopup>
-              )}
-            </div>
-          </div>
+                  </LabelsPopup>
+                ) : (
+                  <LabelChip id={labelId} />
+                )}
+              </span>
+            ))}
+            {canUseLabels && (
+              <LabelsPopup
+                currentIds={labelIds}
+                cardId={card.id}
+                onSelect={handleLabelSelect}
+                onDeselect={handleLabelDeselect}
+              >
+                <CardModalMetadataAddButton ariaLabel={t('action.addLabel')} />
+              </LabelsPopup>
+            )}
+          </CardModalMetadataItem>
         )}
         {card.dueDate && (
-          <div className={styles.metadataItem}>
-            <div className={styles.text}>
-              {t('common.dueDate', {
+          <CardModalMetadataItem
+            label={t('common.dueDate', {
                 context: 'title',
-              })}
-            </div>
-            <span className={styles.metadataValue}>
-              {canEditDueDate ? (
-                <EditDueDatePopup cardId={card.id}>
-                  <DueDateChip
-                    withStatusIcon
-                    value={card.dueDate}
-                    withStatus={
-                      list.type !== ListTypes.CLOSED && !isInArchiveList && !isInTrashList
-                    }
-                  />
-                </EditDueDatePopup>
-              ) : (
+            })}
+          >
+            {canEditDueDate ? (
+              <EditDueDatePopup cardId={card.id}>
                 <DueDateChip
                   withStatusIcon
                   value={card.dueDate}
-                  withStatus={list.type !== ListTypes.CLOSED && !isInArchiveList && !isInTrashList}
+                  withStatus={
+                    list.type !== ListTypes.CLOSED && !isInArchiveList && !isInTrashList
+                  }
                 />
-              )}
-            </span>
-          </div>
+              </EditDueDatePopup>
+            ) : (
+              <DueDateChip
+                withStatusIcon
+                value={card.dueDate}
+                withStatus={list.type !== ListTypes.CLOSED && !isInArchiveList && !isInTrashList}
+              />
+            )}
+          </CardModalMetadataItem>
         )}
         {card.stopwatch && (
-          <div className={styles.metadataItem}>
-            <div className={styles.text}>
-              {t('common.stopwatch', {
+          <CardModalMetadataItem
+            label={t('common.stopwatch', {
                 context: 'title',
-              })}
-            </div>
-            <div className={styles.metadataValueRow}>
-              <span className={styles.metadataValue}>
-                {canEditStopwatch ? (
-                  <EditStopwatchPopup cardId={card.id}>
-                    <StopwatchChip value={card.stopwatch} />
-                  </EditStopwatchPopup>
-                ) : (
-                  <StopwatchChip value={card.stopwatch} />
-                )}
-              </span>
-              {canEditStopwatch && (
-                <button
-                  type="button"
-                  className={styles.metadataAdd}
-                  onClick={handleToggleStopwatchClick}
-                >
-                  <Icon fitted name={card.stopwatch.startedAt ? 'pause' : 'play'} size="small" />
-                </button>
-              )}
-            </div>
-          </div>
+            })}
+          >
+            {canEditStopwatch ? (
+              <EditStopwatchPopup cardId={card.id}>
+                <StopwatchChip value={card.stopwatch} />
+              </EditStopwatchPopup>
+            ) : (
+              <StopwatchChip value={card.stopwatch} />
+            )}
+            {canEditStopwatch && (
+              <CardModalMetadataAddButton
+                ariaLabel={t('common.stopwatch')}
+                icon={card.stopwatch.startedAt ? 'pause' : 'play'}
+                onClick={handleToggleStopwatchClick}
+              />
+            )}
+          </CardModalMetadataItem>
         )}
-        <div className={styles.metadataItem}>
-          <div className={styles.text}>{t('common.list')}</div>
+        <CardModalMetadataItem label={t('common.list')}>
           {canUseLists ? (
             <ListsPopup currentId={list.id} onSelect={handleListSelect}>
               <button type="button" className={styles.listButton}>
@@ -491,10 +476,10 @@ const ProjectContent = React.memo(({ onClose }) => {
               <span className={styles.hidable}>{list.name || t(`common.${list.type}`)}</span>
             </span>
           )}
-        </div>
-      </div>
-      <div className={styles.bodyGrid}>
-        <main className={styles.mainContent}>
+        </CardModalMetadataItem>
+      </CardModalMetadata>
+      <CardModalBody>
+        <CardModalMain>
           <CardImageCarousel />
           {(card.description || canEditDescription) && (
             <div className={classNames(styles.contentModule, styles.contentModuleDescription)}>
@@ -561,8 +546,8 @@ const ProjectContent = React.memo(({ onClose }) => {
               <Communication />
             </div>
           </div>
-        </main>
-        <aside className={styles.actionRail}>
+        </CardModalMain>
+        <CardModalSidebar>
           {(canEditDueDate ||
             canEditStopwatch ||
             canUseMembers ||
@@ -570,18 +555,16 @@ const ProjectContent = React.memo(({ onClose }) => {
             canAddTaskList ||
             canAddAttachment ||
             canAddCustomFieldGroup) && (
-            <div className={styles.actions}>
-              <span className={styles.actionsTitle}>{t('action.addToCard')}</span>
+            <CardModalActionGroup title={t('action.addToCard')}>
               {canUseMembers && (
                 <BoardMembershipsPopup
                   currentUserIds={userIds}
                   onUserSelect={handleUserSelect}
                   onUserDeselect={handleUserDeselect}
                 >
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="user outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="user outline">
                     {t('common.members')}
-                  </Button>
+                  </CardModalActionButton>
                 </BoardMembershipsPopup>
               )}
               {canUseLabels && (
@@ -591,59 +574,53 @@ const ProjectContent = React.memo(({ onClose }) => {
                   onSelect={handleLabelSelect}
                   onDeselect={handleLabelDeselect}
                 >
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="bookmark outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="bookmark outline">
                     {t('common.labels')}
-                  </Button>
+                  </CardModalActionButton>
                 </LabelsPopup>
               )}
               {canEditDueDate && (
                 <EditDueDatePopup cardId={card.id}>
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="calendar check outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="calendar check outline">
                     {t('common.dueDate', {
                       context: 'title',
                     })}
-                  </Button>
+                  </CardModalActionButton>
                 </EditDueDatePopup>
               )}
               {canEditStopwatch && (
                 <EditStopwatchPopup cardId={card.id}>
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="clock outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="clock outline">
                     {t('common.stopwatch')}
-                  </Button>
+                  </CardModalActionButton>
                 </EditStopwatchPopup>
               )}
               {canAddTaskList && (
                 <AddTaskListPopup>
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="check square outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="check square outline">
                     {t('common.taskList', {
                       context: 'title',
                     })}
-                  </Button>
+                  </CardModalActionButton>
                 </AddTaskListPopup>
               )}
               {canAddAttachment && (
                 <AddAttachmentPopup>
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="attach" className={styles.actionIcon} />
+                  <CardModalActionButton icon="attach">
                     {t('common.attachment')}
-                  </Button>
+                  </CardModalActionButton>
                 </AddAttachmentPopup>
               )}
               {canAddCustomFieldGroup && (
                 <AddCustomFieldGroupPopup onCreate={handleCustomFieldGroupCreate}>
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="sticky note outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="sticky note outline">
                     {t('common.customField', {
                       context: 'title',
                     })}
-                  </Button>
+                  </CardModalActionButton>
                 </AddCustomFieldGroupPopup>
               )}
-            </div>
+            </CardModalActionGroup>
           )}
           {((!board.limitCardTypesToDefaultOne && canEditType) ||
             canSubscribe ||
@@ -653,43 +630,31 @@ const ProjectContent = React.memo(({ onClose }) => {
             (canRestore && (isInArchiveList || isInTrashList)) ||
             (canArchive && !isInArchiveList) ||
             canDelete) && (
-            <div className={styles.actions}>
-              <span className={styles.actionsTitle}>{t('common.actions')}</span>
+            <CardModalActionGroup title={t('common.actions')}>
               {canJoin && (
-                <Button
-                  fluid
-                  className={classNames(styles.actionButton, styles.hidable)}
+                <CardModalActionButton
+                  icon={isJoined ? 'flag outline' : 'flag checkered'}
                   onClick={handleToggleJointClick}
                 >
-                  <Icon
-                    name={isJoined ? 'flag outline' : 'flag checkered'}
-                    className={styles.actionIcon}
-                  />
                   {isJoined ? t('action.leave') : t('action.join')}
-                </Button>
+                </CardModalActionButton>
               )}
               {canSubscribe && (
-                <Button
-                  fluid
+                <CardModalActionButton
+                  icon={
+                    board.isSubscribed || card.isSubscribed
+                      ? 'bell slash outline'
+                      : 'bell outline'
+                  }
                   disabled={board.isSubscribed}
-                  className={classNames(styles.actionButton, styles.hidable)}
                   onClick={handleToggleSubscriptionClick}
                 >
-                  {board.isSubscribed ? (
-                    <>
-                      <Icon name="bell slash outline" className={styles.actionIcon} />
-                      {t('common.boardSubscribed')}
-                    </>
-                  ) : (
-                    <>
-                      <Icon
-                        name={card.isSubscribed ? 'bell slash outline' : 'bell outline'}
-                        className={styles.actionIcon}
-                      />
-                      {card.isSubscribed ? t('action.unsubscribe') : t('action.subscribe')}
-                    </>
-                  )}
-                </Button>
+                  {board.isSubscribed
+                    ? t('common.boardSubscribed')
+                    : card.isSubscribed
+                      ? t('action.unsubscribe')
+                      : t('action.subscribe')}
+                </CardModalActionButton>
               )}
               {!board.limitCardTypesToDefaultOne && canEditType && (
                 <SelectCardTypePopup
@@ -699,46 +664,40 @@ const ProjectContent = React.memo(({ onClose }) => {
                   buttonContent="action.save"
                   onSelect={handleTypeSelect}
                 >
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="map outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="map outline">
                     {t('action.editType', {
                       context: 'title',
                     })}
-                  </Button>
+                  </CardModalActionButton>
                 </SelectCardTypePopup>
               )}
               {canDuplicate && (
-                <Button
-                  fluid
-                  className={classNames(styles.actionButton, styles.hidable)}
+                <CardModalActionButton
+                  icon="copy outline"
                   onClick={handleDuplicateClick}
                 >
-                  <Icon name="copy outline" className={styles.actionIcon} />
                   {t('action.duplicate')}
-                </Button>
+                </CardModalActionButton>
               )}
               {canMove && (
                 <MoveCardPopup id={card.id}>
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="share square outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="share square outline">
                     {t('action.move')}
-                  </Button>
+                  </CardModalActionButton>
                 </MoveCardPopup>
               )}
               {canRestore && (isInArchiveList || isInTrashList) && (
-                <Button
-                  fluid
+                <CardModalActionButton
+                  icon="undo alternate"
                   disabled={!prevList}
-                  className={classNames(styles.actionButton, styles.hidable)}
                   onClick={handleRestoreClick}
                 >
-                  <Icon name="undo alternate" className={styles.actionIcon} />
                   {prevList
                     ? t('action.restoreToList', {
                         list: prevList.name || t(`common.${prevList.type}`),
                       })
                     : t('common.selectListToRestoreThisCard')}
-                </Button>
+                </CardModalActionButton>
               )}
               {canArchive && !isInArchiveList && (
                 <ConfirmationPopup
@@ -747,10 +706,9 @@ const ProjectContent = React.memo(({ onClose }) => {
                   buttonContent="action.archiveCard"
                   onConfirm={handleArchiveConfirm}
                 >
-                  <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
-                    <Icon name="folder open outline" className={styles.actionIcon} />
+                  <CardModalActionButton icon="folder open outline">
                     {t('action.archive')}
-                  </Button>
+                  </CardModalActionButton>
                 </ConfirmationPopup>
               )}
               {canDelete && (
@@ -764,28 +722,23 @@ const ProjectContent = React.memo(({ onClose }) => {
                   buttonContent={isInTrashList ? 'action.deleteCardForever' : 'action.deleteCard'}
                   onConfirm={handleDeleteConfirm}
                 >
-                  <Button
-                    fluid
-                    className={classNames(
-                      styles.actionButton,
-                      styles.actionButtonDanger,
-                      styles.hidable,
-                    )}
+                  <CardModalActionButton
+                    danger
+                    icon="trash alternate outline"
                   >
-                    <Icon name="trash alternate outline" className={styles.actionIcon} />
                     {isInTrashList
                       ? t('action.deleteForever', {
                           context: 'title',
                         })
                       : t('action.delete')}
-                  </Button>
+                  </CardModalActionButton>
                 </ConfirmationPopup>
               )}
-            </div>
+            </CardModalActionGroup>
           )}
-        </aside>
-      </div>
-    </div>
+        </CardModalSidebar>
+      </CardModalBody>
+    </CardModalLayout>
   );
 });
 

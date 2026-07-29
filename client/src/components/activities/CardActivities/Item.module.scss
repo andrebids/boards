@@ -5,12 +5,12 @@
 
 :global(#app) {
   .author {
-    color: #17394d;
+    color: var(--card-modal-text, #17394d);
     font-weight: bold;
   }
 
   .content {
-    border-bottom: 1px solid #092d4221;
+    border-bottom: 1px solid var(--card-modal-border, #092d4221);
     display: inline-block;
     line-height: 20px;
     padding-bottom: 14px;
@@ -20,7 +20,7 @@
   }
 
   .date {
-    color: #6b808c;
+    color: var(--card-modal-muted, #6b808c);
     font-size: 12px;
   }
 
@@ -33,13 +33,13 @@
   .commentText {
     margin-top: 8px;
     padding: 8px 12px;
-    background-color: #f4f5f7;
+    background-color: var(--card-modal-surface, #f4f5f7);
     border-radius: 4px;
     border-left: 3px solid #0079bf;
   }
 
   .commentContent {
-    color: #17394d;
+    color: var(--card-modal-text, #17394d);
     font-size: 14px;
     line-height: 1.4;
     word-wrap: break-word;
@@ -50,7 +50,7 @@
   }
 
   .mention {
-    color: #0079bf;
+    color: var(--card-modal-accent, #0079bf);
     font-weight: 500;
     margin-right: 4px;
   }
@@ -58,15 +58,15 @@
   .deletedComment {
     margin-top: 8px;
     padding: 8px 12px;
-    background-color: #f4f5f7;
+    background-color: var(--card-modal-surface, #f4f5f7);
     border-radius: 4px;
     border-left: 3px solid #eb5a46;
-    color: #6b808c;
+    color: var(--card-modal-muted, #6b808c);
     font-style: italic;
   }
 
   .cardName {
-    color: #0079bf;
+    color: var(--card-modal-accent, #0079bf);
     font-weight: 500;
   }
 }

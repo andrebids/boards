@@ -5,55 +5,105 @@
 
 :global(#app) {
   .menuItem {
-    display: block;
-    margin: 0;
+    align-items: center;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    color: #e8eef6 !important;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    margin: 0 0 2px !important;
+    min-height: 46px;
     overflow: hidden;
-    padding: 4px 6px;
-    color: #ffffff;
-    transition: all 0.2s ease;
+    padding: 6px 8px !important;
+    position: relative;
+    text-align: left;
+    transition:
+      background-color 150ms ease-out,
+      border-color 150ms ease-out,
+      color 150ms ease-out;
+    width: 100%;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08) !important;
-      color: #eaf2ff;
-      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.07) !important;
+      color: #ffffff !important;
+    }
+
+    &:focus-visible {
+      border-color: rgba(96, 165, 250, 0.72) !important;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+      outline: none;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
     }
   }
 
   .menuItemActive {
-    background: rgba(59, 130, 246, 0.2) !important;
-    border-radius: 12px;
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3) inset;
-    
+    background: rgba(59, 130, 246, 0.14) !important;
+    border-color: rgba(96, 165, 250, 0.32) !important;
+
     &:hover {
-      background: rgba(59, 130, 246, 0.25) !important;
+      background: rgba(59, 130, 246, 0.2) !important;
     }
   }
 
   .menuItemText {
-    display: inline-block;
-    line-height: 32px;
-    width: calc(100% - 40px);
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.25;
+    min-width: 0;
   }
 
-  .menuItemTextActive:before {
-    bottom: 2px;
-    color: #60a5fa;
-    content: "Г";
-    font-size: 18px;
-    font-weight: normal;
-    line-height: 36px;
-    position: absolute;
-    right: 2px;
-    text-align: center;
-    transform: rotate(-135deg);
-    width: 36px;
-    text-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+  .selectionIndicator {
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: #ffffff;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 20px;
+    justify-content: center;
+    width: 20px;
+  }
+
+  .selectionIndicatorActive {
+    background: #3b82f6;
+    border-color: #60a5fa;
   }
 
   .user {
-    display: inline-block;
-    line-height: 32px;
-    padding-right: 8px;
-    width: 40px;
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+
+  .userName,
+  .userUsername {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .userName {
+    color: inherit;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .userUsername {
+    color: #93a4b8;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menuItem {
+      transition: none;
+    }
   }
 }

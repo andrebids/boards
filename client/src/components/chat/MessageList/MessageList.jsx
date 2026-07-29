@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { CloseButton } from '../../../lib/custom-ui';
 import entryActions from '../../../entry-actions';
 import UserAvatar from '../../users/UserAvatar';
 import Config from '../../../constants/Config';
@@ -179,9 +180,7 @@ function AttachmentPreview({ attachment, onClose }) {
             <a href={url} target="_blank" rel="noreferrer" aria-label={t('chat.downloadFile')}>
               <Download aria-hidden="true" size={17} />
             </a>
-            <button type="button" aria-label={t('chat.close')} onClick={onClose}>
-              <X aria-hidden="true" size={18} />
-            </button>
+            <CloseButton ariaLabel={t('chat.close')} onClick={onClose} />
           </span>
         </header>
         <div className={styles.previewBody}>
@@ -556,7 +555,7 @@ const MessageList = React.memo(
                       aria-label={t('chat.cancel')}
                       onClick={() => setEditingMessageId(null)}
                     >
-                      <X aria-hidden="true" size={14} />
+                      <X aria-hidden="true" size={14} strokeWidth={1.5} />
                     </button>
                     <button type="button" aria-label={t('chat.save')} onClick={saveEdit}>
                       <Check aria-hidden="true" size={14} />

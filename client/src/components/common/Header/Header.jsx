@@ -181,10 +181,10 @@ const Header = React.memo(() => {
             </Menu.Item>
           </Menu.Menu>
         )}
-        <Menu.Menu position="right">
+        <Menu.Menu position="right" className={styles.actions}>
           {withFavoritesToggler && (
             <Menu.Item
-              className={classNames(styles.item, styles.itemHoverable)}
+              className={classNames(styles.item, styles.itemHoverable, styles.actionItem)}
               onClick={handleToggleFavoritesClick}
             >
               <Icon
@@ -196,7 +196,7 @@ const Header = React.memo(() => {
           )}
           {withEditModeToggler && (
             <Menu.Item
-              className={classNames(styles.item, styles.itemHoverable)}
+              className={classNames(styles.item, styles.itemHoverable, styles.actionItem)}
               onClick={handleToggleEditModeClick}
             >
               <Icon
@@ -208,10 +208,12 @@ const Header = React.memo(() => {
           )}
           <NotificationsPopup>
             <Menu.Item
+              as="button"
+              type="button"
               aria-label={t('common.notifications', {
                 context: 'title',
               })}
-              className={classNames(styles.item, styles.itemHoverable)}
+              className={classNames(styles.item, styles.itemHoverable, styles.actionItem)}
             >
               <Icon fitted name="bell" />
               {notificationIds.length > 0 && (
@@ -220,7 +222,9 @@ const Header = React.memo(() => {
             </Menu.Item>
           </NotificationsPopup>
           <UserPopup>
-            <Menu.Item className={classNames(styles.item, styles.itemHoverable)}>
+            <Menu.Item
+              className={classNames(styles.item, styles.itemHoverable, styles.profileItem)}
+            >
               <span className={styles.userName}>{user.name}</span>
               <UserAvatar id={user.id} size="small" />
             </Menu.Item>

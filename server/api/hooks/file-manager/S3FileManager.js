@@ -42,14 +42,31 @@ class S3FileManager {
     await this.client.send(command);
   }
 
-  async read(filePathSegment) {
+  async read(filePathSegment, { start, end } = {}) {
+    const hasRange = Number.isInteger(start);
     const command = new GetObjectCommand({
       Bucket: sails.config.custom.s3Bucket,
       Key: filePathSegment,
+      ...(hasRange
+        ? {
+            Range: `bytes=${start}-${Number.isInteger(end) ? end : ''}`,
+          }
+        : {}),
     });
 
     const result = await this.client.send(command);
     return result.Body;
+  }
+
+  async saveFromPath(filePathSegment, sourceFilePath, contentType) {
+    const command = new PutObjectCommand({
+      Bucket: sails.config.custom.s3Bucket,
+      Key: filePathSegment,
+      Body: fs.createReadStream(sourceFilePath),
+      ContentType: contentType,
+    });
+
+    await this.client.send(command);
   }
 
   async getSizeInBytes(filePathSegment) {

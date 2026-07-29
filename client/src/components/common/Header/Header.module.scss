@@ -44,6 +44,52 @@
     background: rgba(0, 0, 0, 0.32);
   }
 
+  .actions {
+    align-items: center;
+    display: flex;
+    gap: 4px;
+    padding-right: 8px;
+  }
+
+  .actionItem,
+  .profileItem {
+    border: 0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.85) !important;
+      outline: none;
+    }
+  }
+
+  .actionItem {
+    align-items: center;
+    appearance: none;
+    background: transparent !important;
+    display: flex !important;
+    height: 36px;
+    justify-content: center;
+    min-width: 36px;
+    padding: 0 !important;
+    width: 36px;
+  }
+
+  .profileItem {
+    align-items: center;
+    display: flex !important;
+    min-height: 40px;
+    padding: 3px 6px 3px 10px !important;
+  }
+
   .itemIconEnabled {
     color: #bdff22;
   }
@@ -243,7 +289,7 @@
   }
 
   .userName {
-    margin-right: 10px;
+    margin-right: 8px;
 
     @media only screen and (width < 768px) {
       display: none;

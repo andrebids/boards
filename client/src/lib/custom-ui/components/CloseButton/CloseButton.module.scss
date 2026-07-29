@@ -1,0 +1,65 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+.button {
+  align-items: center;
+  appearance: none;
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  backdrop-filter: blur(8px) saturate(120%);
+  background: rgba(100, 116, 139, 0.12) !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  color: #667085 !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  flex: 0 0 auto;
+  height: 24px !important;
+  justify-content: center;
+  margin: 0 !important;
+  min-height: 24px !important;
+  min-width: 24px !important;
+  opacity: 1 !important;
+  padding: 4px !important;
+  transition:
+    transform 150ms ease-out,
+    color 150ms ease-out,
+    background-color 100ms ease-out,
+    box-shadow 150ms ease-out !important;
+  width: 24px !important;
+
+  &:hover {
+    background: rgba(100, 116, 139, 0.2) !important;
+    color: #667085 !important;
+  }
+
+  &:active {
+    transform: scale(0.93);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22) !important;
+    outline: none;
+  }
+}
+
+.icon {
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
+:global(.ui.modal) > .button:global(.close) {
+  position: absolute;
+  right: 14px !important;
+  top: 14px !important;
+  z-index: 3000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none !important;
+  }
+}

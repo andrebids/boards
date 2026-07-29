@@ -4,15 +4,41 @@
  */
 
 :global(#app) {
+  .composer {
+    padding-top: 10px;
+  }
+
+  .conversation {
+    min-width: 0;
+  }
+
   .items {
+    margin: 0;
     max-width: none;
   }
 
-  .itemsWrapper {
-    margin: 14px 0;
+  .loaderWrapper {
+    min-height: 1px;
+    padding: 12px 0 2px;
   }
 
-  .loaderWrapper {
-    margin-top: 14px;
+  .timeline {
+    max-height: min(500px, 50dvh);
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-top: 14px;
+    scrollbar-color: var(--card-modal-muted, #7b8494) transparent;
+    scrollbar-width: thin;
+  }
+
+  @media only screen and (width < 768px) {
+    .composer {
+      padding-top: 9px;
+    }
+
+    .timeline {
+      max-height: min(500px, 52dvh);
+      padding-top: 12px;
+    }
   }
 }

@@ -4,48 +4,144 @@
  */
 
 :global(#app) {
-  .button {
-    white-space: nowrap;
-  }
-
-  .controls {
-    align-items: center;
+  .composerRow {
+    align-items: flex-end;
     display: flex;
-    font-size: 12px;
-    margin-top: 6px;
+    gap: 6px;
   }
 
-  .field {
-    textarea {
-      background: #fff !important;
-      border: 1px solid #dfe3e8;
-      border-radius: 8px;
-      box-sizing: border-box;
-      color: #333;
-      display: block;
-      font-size: 14px;
-      line-height: 1.4;
+  .form:global(.ui.form) {
+    margin: 0;
+  }
+
+  .inputShell {
+    background: var(--card-modal-background, #fff);
+    border: 1px solid var(--card-modal-border, #dfe3e8);
+    border-radius: 8px;
+    color: var(--card-modal-text, #333);
+    flex: 1 1 auto;
+    min-height: 38px;
+    min-width: 0;
+    width: 0;
+
+    &:focus-within {
+      border-color: var(--card-modal-accent, #2563eb);
+      box-shadow: 0 0 0 3px
+        var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16));
+
+      :global(.mentions-input-comments__control),
+      :global(.mentions-input-comments__input),
+      :global(.mentions-input-comments__highlighter) {
+        min-height: 79px !important;
+      }
+    }
+
+    > div {
+      width: 100% !important;
+    }
+
+    :global(.mentions-input-comments__control) {
+      color: var(--card-modal-text, #333) !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      line-height: 19px !important;
+      padding: 0 !important;
+    }
+
+    :global(.mentions-input-comments__input),
+    :global(.mentions-input-comments__highlighter) {
+      box-sizing: border-box !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      line-height: 19px !important;
+      max-height: 96px;
+      min-height: 37px !important;
+      padding: 8px 10px !important;
+    }
+
+    :global(.mentions-input-comments__input) {
+      background: transparent !important;
+      border: 0 !important;
+      color: var(--card-modal-text, #333) !important;
       margin: 0 !important;
-      overflow: hidden;
-      padding: 8px 12px;
+      outline: none !important;
+      overflow-y: auto !important;
       resize: none;
 
-      &:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
-        outline: none;
+      &::placeholder {
+        color: var(--card-modal-muted, #6b7280) !important;
+        font-weight: 400 !important;
+      }
+    }
+
+    :global(.mentions-input-comments__highlighter) {
+      color: transparent !important;
+
+      mark {
+        background: var(
+          --card-modal-accent-soft,
+          rgba(37, 99, 235, 0.16)
+        ) !important;
+        border-radius: 4px;
+        color: transparent !important;
+        padding: 0 2px;
       }
     }
   }
 
   .mention {
-    background-color: #f1f8ff;
-    border-radius: 3px;
+    background: var(--card-modal-accent-soft, #f1f8ff);
+    border-radius: 4px;
+  }
+
+  .sendButton {
+    align-items: center;
+    background: var(--card-modal-accent, #2563eb);
+    border: 0;
+    border-radius: 8px;
+    color: var(--card-modal-text, #fff);
+    cursor: pointer;
+    display: inline-flex;
+    flex: 0 0 38px;
+    height: 38px;
+    justify-content: center;
+    padding: 0;
+    transition:
+      filter 120ms ease,
+      transform 120ms ease;
+    width: 38px;
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px
+        var(--card-modal-accent-soft, rgba(37, 99, 235, 0.2));
+      outline: none;
+    }
+
+    &:disabled {
+      background: var(--card-modal-surface-hover, #e5e7eb);
+      color: var(--card-modal-muted, #94a3b8);
+      cursor: default;
+      filter: none;
+    }
   }
 
   .suggestion {
     align-items: center;
     display: flex;
     gap: 8px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sendButton {
+      transition: none;
+    }
   }
 }

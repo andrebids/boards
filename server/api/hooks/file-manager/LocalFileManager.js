@@ -32,7 +32,7 @@ class LocalFileManager {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async read(filePathSegment) {
+  async read(filePathSegment, { start, end } = {}) {
     const filePath = buildPath(filePathSegment);
     const isFileExists = await fse.pathExists(filePath);
 
@@ -40,7 +40,18 @@ class LocalFileManager {
       throw new Error('File does not exist');
     }
 
-    return fs.createReadStream(filePath);
+    return fs.createReadStream(filePath, {
+      ...(Number.isInteger(start) ? { start } : {}),
+      ...(Number.isInteger(end) ? { end } : {}),
+    });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async saveFromPath(filePathSegment, sourceFilePath) {
+    const filePath = buildPath(filePathSegment);
+
+    await fse.ensureDir(path.dirname(filePath));
+    await fse.copy(sourceFilePath, filePath);
   }
 
   // eslint-disable-next-line class-methods-use-this

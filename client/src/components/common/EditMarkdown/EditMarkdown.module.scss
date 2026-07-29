@@ -6,6 +6,49 @@
 :global(#app) {
   .controls {
     clear: both;
-    margin-top: 6px;
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+
+    :global(.ui.button) {
+      min-height: 32px;
+      margin: 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      box-shadow: none;
+      font-size: 13px;
+      line-height: 16px;
+    }
+  }
+
+  .submitButton {
+    background: var(--card-modal-accent, #3b82f6) !important;
+    color: #fff !important;
+  }
+
+  .submitButton:hover,
+  .submitButton:focus {
+    background: #2563eb !important;
+  }
+
+  .submitButton:focus-visible,
+  .cancelButton:focus-visible {
+    box-shadow: 0 0 0 3px var(--card-modal-accent-soft, rgba(59, 130, 246, 0.2)) !important;
+  }
+
+  .submitButton:disabled {
+    background: var(--card-modal-surface-hover, #202a38) !important;
+    color: var(--card-modal-muted, rgba(240, 243, 247, 0.75)) !important;
+  }
+
+  .cancelButton {
+    background: var(--card-modal-surface, #141922) !important;
+    color: var(--card-modal-text, #f0f3f7) !important;
+  }
+
+  .cancelButton:hover,
+  .cancelButton:focus {
+    background: var(--card-modal-surface-hover, #202a38) !important;
+    color: var(--card-modal-text, #f0f3f7) !important;
   }
 }

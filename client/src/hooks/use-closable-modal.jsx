@@ -5,12 +5,16 @@
 
 import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Modal } from 'semantic-ui-react';
 
 import useClosable from './use-closable';
 import { ClosableContext } from '../contexts';
+import { CloseButton } from '../lib/custom-ui';
 
 export default initialClosableValue => {
+  const [t] = useTranslation();
+
   const [
     isClosableActiveRef,
     activateClosable,
@@ -55,7 +59,11 @@ export default initialClosableValue => {
             open
             {...props}
             className={mergedClassName}
-            closeIcon={closeIcon}
+            closeIcon={
+              closeIcon ? (
+                <CloseButton ariaLabel={t('action.close')} className="close" />
+              ) : undefined
+            }
             onClose={handleClose}
             dimmer={{ inverted: true, className: 'glass-dimmer' }}
           />
@@ -78,7 +86,7 @@ export default initialClosableValue => {
     ClosableModal.Actions = Modal.Actions;
 
     return ClosableModal;
-  }, [isClosableActiveRef, closableContextValue]);
+  }, [isClosableActiveRef, closableContextValue, t]);
 
   return [
     ClosableModal,

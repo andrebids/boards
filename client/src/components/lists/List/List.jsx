@@ -31,6 +31,28 @@ import { processSupportedFiles } from '../../../utils/file-helpers';
 import styles from './List.module.scss';
 import globalStyles from '../../../styles.module.scss';
 
+const LIGHT_LIST_COLORS = new Set([
+  'light-mud',
+  'bright-moss',
+  'antique-blue',
+  'dark-granite',
+  'hufflepuff-gold',
+  'golden-snitch',
+  'magical-silver',
+  'unicorn-white',
+  'dusty-rose',
+  'vibrant-sunset',
+  'cool-sky',
+  'soft-pink',
+  'lavender',
+  'powder-blue',
+  'mint-green',
+  'peach',
+  'lilac',
+  'pale-dogwood',
+  'blue-white-stripes',
+]);
+
 const List = React.memo(({ id, index }) => {
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
 
@@ -281,6 +303,13 @@ const List = React.memo(({ id, index }) => {
             ref={wrapperRef}
             className={classNames(
               styles.outerWrapper,
+              list.color &&
+                globalStyles[
+                  `background${upperFirst(camelCase(list.color))}`
+                ],
+              list.color &&
+                LIGHT_LIST_COLORS.has(list.color) &&
+                styles.outerWrapperLight,
               isFavoritesActive && styles.outerWrapperWithFavorites,
               isDragOver && styles.outerWrapperFileDragOver
             )}
@@ -304,18 +333,7 @@ const List = React.memo(({ id, index }) => {
                 <EditName listId={id} onClose={handleEditNameClose} />
               ) : (
                 <div className={styles.headerContent}>
-                  <span
-                    className={classNames(
-                      styles.headerIndicator,
-                      list.color
-                        ? globalStyles[
-                            `background${upperFirst(camelCase(list.color))}`
-                          ]
-                        : styles.headerIndicatorDefault
-                    )}
-                  />
                   <div className={styles.headerName}>{list.name}</div>
-                  <span className={styles.headerCount}>{cardIds.length}</span>
                 </div>
               )}
               {list.type !== ListTypes.ACTIVE && (

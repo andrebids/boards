@@ -48,7 +48,7 @@
       white-space: nowrap;
     }
 
-    button {
+    button:not([data-platform-close-button]) {
       align-items: center;
       background: transparent;
       border: 0;

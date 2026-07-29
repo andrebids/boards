@@ -40,6 +40,10 @@ module.exports = {
       data: {
         ..._.omit(record.data, ['fileReferenceId', 'filename', 'image.thumbnailsExtension']),
         url: `${baseUrl}/download`,
+        playbackUrl:
+          record.data.video && record.data.video.status === 'ready' && record.data.video.playback
+            ? `${baseUrl}/stream`
+            : null,
         thumbnailUrls,
       },
     };

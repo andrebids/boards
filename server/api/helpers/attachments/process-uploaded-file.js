@@ -11,7 +11,6 @@ const sharp = require('sharp');
 
 const filenamify = require('../../../utils/filenamify');
 const { MAX_SIZE_IN_BYTES_TO_GET_ENCODING } = require('../../../constants');
-const videoThumbnailGenerator = require('./video-thumbnail-generator');
 
 module.exports = {
   inputs: {
@@ -165,31 +164,22 @@ module.exports = {
         data.image = null;
       }
 
-      // Verificar se é vídeo e processar thumbnails
+      // Video analysis, thumbnails and browser-compatible playback files are
+      // generated asynchronously after the attachment is persisted.
       if (mimeType && mimeType.startsWith('video/')) {
-        try {
-          const outputDir = `${dirPathSegment}/video-thumbnails`;
-
-          const videoResult = await videoThumbnailGenerator.fn({
-            videoPath: sourceFilePath,
-            outputDir,
-          });
-
-          data.video = {
-            duration: videoResult.metadata.duration,
-            width: videoResult.metadata.width,
-            height: videoResult.metadata.height,
-            format: videoResult.metadata.format,
-            thumbnails: videoResult.thumbnails,
-          };
-        } catch (error) {
-          sails.log.error('[UPLOAD][VIDEO] thumbnail generation failed', {
-            filename,
-            mimeType,
-            error: error.message,
-          });
-          data.video = null;
-        }
+        data.video = {
+          status: 'pending',
+          duration: null,
+          width: null,
+          height: null,
+          rotation: null,
+          format: null,
+          videoCodec: null,
+          audioCodec: null,
+          playback: null,
+          thumbnails: [],
+          errorCode: null,
+        };
       }
 
       if (!filePath) {

@@ -3,10 +3,26 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import { all, takeEvery } from 'redux-saga/effects';
+import { buffers } from 'redux-saga';
+import { actionChannel, all, call, take, takeEvery } from 'redux-saga/effects';
 
 import services from '../services';
 import EntryActionTypes from '../../../constants/EntryActionTypes';
+
+export function* createCardWithAttachmentWatcher() {
+  const channel = yield actionChannel(
+    EntryActionTypes.CARD_WITH_ATTACHMENT_CREATE,
+    buffers.expanding(),
+  );
+
+  while (true) {
+    const {
+      payload: { listId, cardData, attachmentFile },
+    } = yield take(channel);
+
+    yield call(services.createCardWithAttachment, listId, cardData, attachmentFile);
+  }
+}
 
 export default function* cardsWatchers() {
   yield all([
@@ -33,11 +49,7 @@ export default function* cardsWatchers() {
       ({ payload: { data, autoOpen } }) =>
         services.createCardInFirstFiniteList(data, autoOpen)
     ),
-    takeEvery(
-      EntryActionTypes.CARD_WITH_ATTACHMENT_CREATE,
-      ({ payload: { listId, cardData, attachmentFile } }) =>
-        services.createCardWithAttachment(listId, cardData, attachmentFile)
-    ),
+    call(createCardWithAttachmentWatcher),
     takeEvery(EntryActionTypes.CARD_CREATE_HANDLE, ({ payload: { card } }) =>
       services.handleCardCreate(card)
     ),

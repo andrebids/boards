@@ -25,19 +25,19 @@
     width: 28px;
 
     &:hover {
-      background: rgba(9, 30, 66, 0.08);
+      background: var(--card-modal-surface-hover, rgba(9, 30, 66, 0.08));
     }
   }
 
   .information {
     display: block;
-    color: #6b808c;
+    color: var(--card-modal-muted, #6b808c);
     line-height: 20px;
     margin-bottom: 6px;
   }
 
   .name {
-    color: #17394d;
+    color: var(--card-modal-text, #17394d);
     font-size: 14px;
     font-weight: bold;
     line-height: 20px;
@@ -47,7 +47,7 @@
   .option {
     background: none;
     border: none;
-    color: #6b808c;
+    color: var(--card-modal-muted, #6b808c);
     cursor: pointer;
     outline: none;
     padding: 0;
@@ -57,7 +57,7 @@
     }
 
     &:hover {
-      color: #172b4d;
+      color: var(--card-modal-text, #172b4d);
     }
   }
 
@@ -71,13 +71,13 @@
 
   .options {
     display: block;
-    color: #6b808c;
+    color: var(--card-modal-muted, #6b808c);
     line-height: 20px;
   }
 
   .thumbnail {
     align-items: center;
-    background: rgba(9, 30, 66, 0.04);
+    background: var(--card-modal-surface-hover, rgba(9, 30, 66, 0.04));
     border-radius: 3px;
     display: flex;
     height: 80px;
@@ -89,7 +89,7 @@
   }
 
   .thumbnailExtension {
-    color: #5e6c84;
+    color: var(--card-modal-muted, #5e6c84);
     display: block;
     font-size: 18px;
     font-weight: bold;
@@ -115,7 +115,7 @@
 
     &:hover {
       .details {
-        background: rgba(9, 30, 66, 0.04);
+        background: var(--card-modal-surface, rgba(9, 30, 66, 0.04));
       }
 
       .editButton {
@@ -125,6 +125,6 @@
   }
 
   .wrapperSubmitting {
-    background: rgba(9, 30, 66, 0.04);
+    background: var(--card-modal-surface, rgba(9, 30, 66, 0.04));
   }
 }

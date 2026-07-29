@@ -6,6 +6,7 @@
 :global(#app) {
   .editButton {
     background: transparent;
+    border-radius: 7px;
     box-shadow: none;
     line-height: 28px;
     margin: 0;
@@ -18,12 +19,19 @@
     width: 28px;
 
     &:hover {
-      background: rgba(9, 30, 66, 0.08);
+      background: var(--card-modal-surface-hover, rgba(9, 30, 66, 0.08));
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px
+        var(--card-modal-accent-soft, rgba(37, 99, 235, 0.2));
+      opacity: 1;
+      outline: none;
     }
   }
 
   .moduleHeader {
-    color: #1f2937;
+    color: var(--card-modal-text, #1f2937);
     display: flex;
     font-size: 16px;
     font-weight: bold;
@@ -44,11 +52,12 @@
 
   .moduleHeaderTitle {
     min-width: 0;
+    text-wrap: balance;
     word-wrap: break-word;
   }
 
   .moduleIcon {
-    color: #64748b;
+    color: var(--card-modal-muted, #64748b);
     font-size: 17px;
     height: 32px;
     left: 0;
@@ -71,6 +80,7 @@
   }
 
   .wrapperDragging {
-    background: rgba(247, 246, 247, 0.8);
+    background: var(--card-modal-surface-hover, rgba(247, 246, 247, 0.8));
+    box-shadow: 0 10px 28px rgba(7, 12, 20, 0.28);
   }
 }

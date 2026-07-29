@@ -9,7 +9,7 @@ const initialState = {
   data: {
     email: '',
     name: '',
-    language: 'pt-PT',
+    language: '',
   },
   isSubmitting: false,
   error: null,

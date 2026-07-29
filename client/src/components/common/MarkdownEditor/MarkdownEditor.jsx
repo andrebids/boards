@@ -3,22 +3,23 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import React, { useCallback, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
+import classNames from "classnames";
 import {
   useMarkdownEditor,
   wysiwygToolbarConfigs,
   MarkdownEditorView,
-} from '@gravity-ui/markdown-editor';
+} from "@gravity-ui/markdown-editor";
+import { ThemeProvider } from "@gravity-ui/uikit";
 /* eslint-disable import/no-unresolved */
-import { full as toolbarsPreset } from '@gravity-ui/markdown-editor/_/modules/toolbars/presets';
-import { ActionName } from '@gravity-ui/markdown-editor/_/bundle/config/action-names';
+import { full as toolbarsPreset } from "@gravity-ui/markdown-editor/_/modules/toolbars/presets";
+import { ActionName } from "@gravity-ui/markdown-editor/_/bundle/config/action-names";
 /* eslint-enable import/no-unresolved */
 
-import { EditorModes } from '../../../constants/Enums';
+import { EditorModes } from "../../../constants/Enums";
 
-import styles from './MarkdownEditor.module.scss';
+import styles from "./MarkdownEditor.module.scss";
 
 const removedActionNamesSet = new Set([
   ActionName.checkbox,
@@ -27,23 +28,23 @@ const removedActionNamesSet = new Set([
   ActionName.tabs,
 ]);
 
-removedActionNamesSet.forEach(actionName => {
+removedActionNamesSet.forEach((actionName) => {
   delete toolbarsPreset.items[actionName];
 
   Object.entries(toolbarsPreset.orders).forEach(([orderName, order]) => {
     order.forEach((actions, actionsIndex) => {
       toolbarsPreset.orders[orderName][actionsIndex] = actions.filter(
-        action => action.id || action !== actionName
+        (action) => action.id || action !== actionName,
       );
     });
   });
 });
 
 const commandMenuActions = wysiwygToolbarConfigs.wCommandMenuConfig.filter(
-  action => !removedActionNamesSet.has(action.id)
+  (action) => !removedActionNamesSet.has(action.id),
 );
 
-export const fileToBase64Data = file =>
+export const fileToBase64Data = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -51,7 +52,7 @@ export const fileToBase64Data = file =>
     reader.onerror = reject;
   });
 
-const fileUploadHandler = async file => {
+const fileUploadHandler = async (file) => {
   const base64Data = await fileToBase64Data(file);
   return { url: base64Data };
 };
@@ -68,21 +69,21 @@ const MarkdownEditor = React.forwardRef(
       onModeChange,
       ...props
     },
-    ref
+    ref,
   ) => {
     const wrapperRef = useRef(null);
 
     const handleWrapperRef = useCallback(
-      element => {
+      (element) => {
         wrapperRef.current = element;
 
-        if (typeof ref === 'function') {
+        if (typeof ref === "function") {
           ref(element);
         } else if (ref) {
           ref.current = element; // eslint-disable-line no-param-reassign
         }
       },
-      [ref]
+      [ref],
     );
 
     const editor = useMarkdownEditor({
@@ -125,30 +126,30 @@ const MarkdownEditor = React.forwardRef(
         }
       };
 
-      editor.on('change', handleChange);
-      editor.on('submit', handleSubmit);
-      editor.on('cancel', handleCancel);
-      editor.on('change-editor-mode', handleModeChange);
+      editor.on("change", handleChange);
+      editor.on("submit", handleSubmit);
+      editor.on("cancel", handleCancel);
+      editor.on("change-editor-mode", handleModeChange);
 
       return () => {
-        editor.off('change', handleChange);
-        editor.off('submit', handleSubmit);
-        editor.off('cancel', handleCancel);
-        editor.off('change-editor-mode', handleModeChange);
+        editor.off("change", handleChange);
+        editor.off("submit", handleSubmit);
+        editor.off("cancel", handleCancel);
+        editor.off("change-editor-mode", handleModeChange);
       };
     }, [onChange, onSubmit, onCancel, onModeChange, editor]);
 
     useEffect(() => {
       const { current: wrapperElement } = wrapperRef;
 
-      const handlePaste = event => {
+      const handlePaste = (event) => {
         event.stopPropagation();
       };
 
-      wrapperElement.addEventListener('paste', handlePaste);
+      wrapperElement.addEventListener("paste", handlePaste);
 
       return () => {
-        wrapperElement.removeEventListener('paste', handlePaste);
+        wrapperElement.removeEventListener("paste", handlePaste);
       };
     }, []);
 
@@ -158,16 +159,18 @@ const MarkdownEditor = React.forwardRef(
         ref={handleWrapperRef}
         className={classNames(styles.wrapper, isError && styles.wrapperError)}
       >
-        <MarkdownEditorView
-          autofocus
-          stickyToolbar
-          editor={editor}
-          toolbarsPreset={toolbarsPreset}
-          className={styles.editor}
-        />
+        <ThemeProvider theme="dark" rootClassName={styles.theme}>
+          <MarkdownEditorView
+            autofocus
+            stickyToolbar
+            editor={editor}
+            toolbarsPreset={toolbarsPreset}
+            className={styles.editor}
+          />
+        </ThemeProvider>
       </div>
     );
-  }
+  },
 );
 
 MarkdownEditor.propTypes = {

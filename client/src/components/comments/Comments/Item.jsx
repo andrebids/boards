@@ -9,6 +9,7 @@ import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Comment } from 'semantic-ui-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useDidUpdate } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
@@ -26,22 +27,52 @@ import UserAvatar from '../../users/UserAvatar';
 
 import styles from './Item.module.scss';
 
-const Item = React.memo(({ id }) => {
-  const selectCommentById = useMemo(
-    () => selectors.makeSelectCommentById(),
-    []
+const GROUP_WINDOW = 5 * 60 * 1000;
+
+const isSameDay = (firstDate, secondDate) =>
+  firstDate.getFullYear() === secondDate.getFullYear() &&
+  firstDate.getMonth() === secondDate.getMonth() &&
+  firstDate.getDate() === secondDate.getDate();
+
+const areCommentsGrouped = (newerComment, olderComment) => {
+  if (!newerComment || !olderComment || newerComment.userId !== olderComment.userId) {
+    return false;
+  }
+
+  const newerDate = new Date(newerComment.createdAt);
+  const olderDate = new Date(olderComment.createdAt);
+  const difference = newerDate - olderDate;
+
+  return (
+    !Number.isNaN(newerDate.getTime()) &&
+    !Number.isNaN(olderDate.getTime()) &&
+    isSameDay(newerDate, olderDate) &&
+    difference >= 0 &&
+    difference < GROUP_WINDOW
   );
+};
+
+const Item = React.memo(({ id, aboveId, belowId }) => {
+  const selectCommentById = useMemo(() => selectors.makeSelectCommentById(), []);
+  const selectAboveCommentById = useMemo(() => selectors.makeSelectCommentById(), []);
+  const selectBelowCommentById = useMemo(() => selectors.makeSelectCommentById(), []);
   const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
 
-  const comment = useSelector(state => selectCommentById(state, id));
-  const user = useSelector(state => selectUserById(state, comment.userId));
+  const comment = useSelector((state) => selectCommentById(state, id));
+  const aboveComment = useSelector((state) =>
+    aboveId ? selectAboveCommentById(state, aboveId) : null,
+  );
+  const belowComment = useSelector((state) =>
+    belowId ? selectBelowCommentById(state, belowId) : null,
+  );
+  const user = useSelector((state) => selectUserById(state, comment.userId));
 
   const isCurrentUser = useSelector(
-    state => comment.userId === selectors.selectCurrentUserId(state)
+    (state) => comment.userId === selectors.selectCurrentUserId(state),
   );
 
-  const { canEdit, canDelete } = useSelector(state => {
+  const { canEdit, canDelete } = useSelector((state) => {
     const { listId } = selectors.selectCurrentCard(state);
     const list = selectListById(state, listId);
 
@@ -52,10 +83,8 @@ const Item = React.memo(({ id }) => {
       };
     }
 
-    const isManager =
-      selectors.selectIsCurrentUserManagerForCurrentProject(state);
-    const boardMembership =
-      selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    const isManager = selectors.selectIsCurrentUserManagerForCurrentProject(state);
+    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
 
     let isMember = false;
     let isEditor = false;
@@ -73,9 +102,7 @@ const Item = React.memo(({ id }) => {
       canDelete:
         isManager ||
         isEditor ||
-        (isMember &&
-          comment.userId === boardMembership.userId &&
-          boardMembership.canComment),
+        (isMember && comment.userId === boardMembership.userId && boardMembership.canComment),
     };
   }, shallowEqual);
 
@@ -101,69 +128,89 @@ const Item = React.memo(({ id }) => {
   }, [isEditOpened]);
 
   const ConfirmationPopup = usePopupInClosableContext(ConfirmationStep);
+  const continuesAbove = areCommentsGrouped(aboveComment, comment);
+  const continuesBelow = areCommentsGrouped(comment, belowComment);
+  const userName =
+    user.id === StaticUserIds.DELETED
+      ? t(`common.${user.name}`, {
+          context: 'title',
+        })
+      : user.name;
 
   return (
-    <Comment>
-      {!isCurrentUser && (
-        <span className={styles.user}>
-          <UserAvatar id={comment.userId} />
-        </span>
+    <Comment
+      className={classNames(
+        styles.item,
+        isCurrentUser && styles.own,
+        continuesAbove && styles.continuesAbove,
+        continuesBelow && styles.continuesBelow,
       )}
-      <div
-        className={classNames(
-          styles.content,
-          isCurrentUser && styles.contentWithoutUser
+    >
+      {!isCurrentUser &&
+        (continuesAbove ? (
+          <span className={styles.avatarSpacer} />
+        ) : (
+          <span className={styles.avatar}>
+            <UserAvatar id={comment.userId} size="tiny" />
+          </span>
+        ))}
+      <div className={classNames(styles.content, isEditOpened && styles.contentEditing)}>
+        {!continuesAbove && (
+          <div className={styles.meta}>
+            {!isCurrentUser && (
+              <>
+                <span className={styles.author}>{userName}</span>
+                <span aria-hidden="true" className={styles.metaSeparator}>
+                  ·
+                </span>
+              </>
+            )}
+            <span className={styles.date}>
+              <TimeAgo date={comment.createdAt} />
+            </span>
+          </div>
         )}
-      >
         {isEditOpened ? (
           <Edit commentId={id} onClose={handleEditClose} />
         ) : (
-          <div
-            className={classNames(
-              styles.bubble,
-              isCurrentUser && styles.bubbleRight
-            )}
-          >
-            <div className={styles.header}>
-              {user.id === StaticUserIds.DELETED
-                ? t(`common.${user.name}`, {
-                    context: 'title',
-                  })
-                : user.name}
+          <>
+            <div className={styles.bubble}>
+              <Markdown>{comment.text}</Markdown>
             </div>
-            <Markdown>{comment.text}</Markdown>
-            <Comment.Actions className={styles.information}>
-              <span className={styles.date}>
-                <TimeAgo date={comment.createdAt} />
-              </span>
-              {(canEdit || canDelete) && (
-                <span className={styles.actions}>
-                  {canEdit && (
-                    <Comment.Action
-                      as="button"
-                      content={t('action.edit')}
+            {(canEdit || canDelete) && (
+              <span className={styles.actions}>
+                {canEdit && (
+                  <button
+                    type="button"
+                    aria-label={t('action.edit')}
+                    title={t('action.edit')}
+                    disabled={!comment.isPersisted}
+                    onClick={handleEditClick}
+                  >
+                    <Pencil aria-hidden="true" size={14} strokeWidth={2} />
+                  </button>
+                )}
+                {canDelete && (
+                  <ConfirmationPopup
+                    title="common.deleteComment"
+                    content="common.areYouSureYouWantToDeleteThisComment"
+                    buttonContent="action.deleteComment"
+                    onConfirm={handleDeleteConfirm}
+                  >
+                    <button
+                      type="button"
+                      aria-label={t('action.delete')}
+                      title={t('action.delete')}
                       disabled={!comment.isPersisted}
-                      onClick={handleEditClick}
-                    />
-                  )}
-                  {canDelete && (
-                    <ConfirmationPopup
-                      title="common.deleteComment"
-                      content="common.areYouSureYouWantToDeleteThisComment"
-                      buttonContent="action.deleteComment"
-                      onConfirm={handleDeleteConfirm}
+                      className={styles.deleteButton}
                     >
-                      <Comment.Action
-                        as="button"
-                        content={t('action.delete')}
-                        disabled={!comment.isPersisted}
-                      />
-                    </ConfirmationPopup>
-                  )}
-                </span>
-              )}
-            </Comment.Actions>
-          </div>
+                      <Trash2 aria-hidden="true" size={14} strokeWidth={2} />
+                    </button>
+                  </ConfirmationPopup>
+                )}
+              </span>
+            )}
+          </>
         )}
       </div>
     </Comment>
@@ -172,6 +219,13 @@ const Item = React.memo(({ id }) => {
 
 Item.propTypes = {
   id: PropTypes.string.isRequired,
+  aboveId: PropTypes.string,
+  belowId: PropTypes.string,
+};
+
+Item.defaultProps = {
+  aboveId: undefined,
+  belowId: undefined,
 };
 
 export default Item;

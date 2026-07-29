@@ -6,13 +6,17 @@
 import { ResizeObserver } from '@juggle/resize-observer';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Popup as SemanticUIPopup } from 'semantic-ui-react';
+import { useTranslation } from 'react-i18next';
+import { Popup as SemanticUIPopup } from 'semantic-ui-react';
+
+import CloseButton from '../custom-ui/components/CloseButton';
 
 import styles from './Popup.module.css';
 
 export default (Step, { position, onOpen, onClose, variantClass } = {}) => {
   return useMemo(() => {
     const Popup = React.memo(({ children, ...stepProps }) => {
+      const [t] = useTranslation();
       const [isOpened, setIsOpened] = useState(false);
 
       const wrapperRef = useRef(null);
@@ -106,10 +110,10 @@ export default (Step, { position, onOpen, onClose, variantClass } = {}) => {
           onClick={handleClick}
         >
           <div ref={handleContentRef}>
-            <Button
-              icon="close"
+            <CloseButton
+              ariaLabel={t('action.close')}
               onClick={handleClose}
-              className={styles.closeButton}
+              className={styles.closeButtonPosition}
             />
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <Step {...stepProps} onClose={handleClose} />

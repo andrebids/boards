@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Modal, Icon, Button } from 'semantic-ui-react';
 
+import { CloseButton } from '../../../lib/custom-ui';
 import { getFileType, canPreviewFile } from '../../../utils/fileTypeUtils';
 import ImagePreview from './ImagePreview';
 import PdfPreview from './PdfPreview';
@@ -63,7 +64,7 @@ const FilePreviewModal = ({ file, isOpen, onClose }) => {
       onClose={handleClose}
       size="large"
       className={`${styles.filePreviewModal} glass-panel`}
-      closeIcon
+      closeIcon={<CloseButton ariaLabel={t('action.close')} className="close" />}
       closeOnDimmerClick
       closeOnEscape
     >
@@ -80,11 +81,10 @@ const FilePreviewModal = ({ file, isOpen, onClose }) => {
           </div>
 
           <div className={styles.modalActions}>
-            <Button
-              icon="close"
-              size="mini"
+            <CloseButton
+              ariaLabel={t('action.close')}
               onClick={handleClose}
-              title={t('common.close')}
+              title={t('action.close')}
             />
           </div>
         </div>

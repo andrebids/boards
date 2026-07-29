@@ -3,45 +3,45 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
-import { useClickAwayListener } from '../../../lib/hooks';
+import React, { useCallback, useRef, useState } from "react";
+import PropTypes from "prop-types";
+import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import { Button, Form } from "semantic-ui-react";
+import { useClickAwayListener } from "../../../lib/hooks";
 
-import selectors from '../../../selectors';
-import entryActions from '../../../entry-actions';
-import { useNestedRef } from '../../../hooks';
-import MarkdownEditor from '../MarkdownEditor';
+import selectors from "../../../selectors";
+import entryActions from "../../../entry-actions";
+import { useNestedRef } from "../../../hooks";
+import MarkdownEditor from "../MarkdownEditor";
 
-import styles from './EditMarkdown.module.scss';
+import styles from "./EditMarkdown.module.scss";
 
 const MAX_LENGTH = 1048576;
 
 const EditMarkdown = React.memo(
   ({ defaultValue, draftValue, onUpdate, onClose }) => {
     const defaultMode = useSelector(
-      state => selectors.selectCurrentUser(state).defaultEditorMode
+      (state) => selectors.selectCurrentUser(state).defaultEditorMode,
     );
 
     const dispatch = useDispatch();
     const [t] = useTranslation();
-    const [value, setValue] = useState(() => draftValue || defaultValue || '');
+    const [value, setValue] = useState(() => draftValue || defaultValue || "");
 
     const fieldRef = useRef(null);
     const [submitButtonRef, handleSubmitButtonRef] = useNestedRef();
     const [cancelButtonRef, handleCancelButtonRef] = useNestedRef();
 
     const handleModeChange = useCallback(
-      mode => {
+      (mode) => {
         dispatch(
           entryActions.updateCurrentUser({
             defaultEditorMode: mode,
-          })
+          }),
         );
       },
-      [dispatch]
+      [dispatch],
     );
 
     const isExceeded = value.length > MAX_LENGTH;
@@ -56,7 +56,7 @@ const EditMarkdown = React.memo(
       onClose(isExceeded ? cleanValue : null);
     }, [onUpdate, onClose, defaultValue, value, isExceeded]);
 
-    const handleChange = useCallback(nextValue => {
+    const handleChange = useCallback((nextValue) => {
       setValue(nextValue);
     }, []);
 
@@ -79,7 +79,7 @@ const EditMarkdown = React.memo(
     const clickAwayProps = useClickAwayListener(
       [fieldRef, submitButtonRef, cancelButtonRef],
       submit,
-      handleClickAwayCancel
+      handleClickAwayCancel,
     );
 
     return (
@@ -101,12 +101,13 @@ const EditMarkdown = React.memo(
               {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
               positive
               ref={handleSubmitButtonRef}
+              className={styles.submitButton}
               content={
                 isExceeded
-                  ? t('common.contentExceedsLimit', {
-                      limit: '1MB',
+                  ? t("common.contentExceedsLimit", {
+                      limit: "1MB",
                     })
-                  : t('action.save')
+                  : t("action.save")
               }
               disabled={isExceeded}
             />
@@ -114,14 +115,15 @@ const EditMarkdown = React.memo(
               {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
               ref={handleCancelButtonRef}
               type="button"
-              content={t('action.cancel')}
+              className={styles.cancelButton}
+              content={t("action.cancel")}
               onClick={handleCancelClick}
             />
           </div>
         </Form>
       </>
     );
-  }
+  },
 );
 
 EditMarkdown.propTypes = {

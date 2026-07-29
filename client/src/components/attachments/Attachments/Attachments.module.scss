@@ -5,19 +5,64 @@
 
 :global(#app) {
   .toggleButton {
-    background: transparent;
-    box-shadow: none;
-    color: #6b808c;
-    font-weight: normal;
-    margin-top: 8px;
-    padding: 6px 11px;
+    min-height: 40px;
+    margin-top: 8px !important;
+    padding: 9px 12px !important;
+    background: var(--card-modal-surface, #f4f5f7) !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    color: var(--card-modal-text, #172b4d) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
     text-align: left;
-    text-decoration: underline;
-    transition: none;
+    text-decoration: none;
 
     &:hover {
-      background: rgba(9, 30, 66, 0.08);
-      color: #092d42;
+      background: var(
+        --card-modal-surface-hover,
+        rgba(9, 30, 66, 0.08)
+      ) !important;
+      color: var(--card-modal-text, #172b4d) !important;
     }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px
+        var(--card-modal-accent-soft, rgba(59, 130, 246, 0.2)) !important;
+    }
+
+    &:active {
+      background: var(
+        --card-modal-surface-hover,
+        rgba(9, 30, 66, 0.08)
+      ) !important;
+    }
+  }
+
+  .toggleContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .toggleText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .toggleIcon {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 16px !important;
+    height: 16px;
+    margin: 0 !important;
+    color: var(--card-modal-muted, #6b808c);
+    font-size: 11px;
+    line-height: 1;
   }
 }

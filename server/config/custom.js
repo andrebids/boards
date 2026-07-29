@@ -79,6 +79,17 @@ module.exports.custom = {
     5,
   ),
 
+  videoProcessingEnabled: process.env.VIDEO_PROCESSING_ENABLED !== 'false',
+  videoProcessingPollIntervalSeconds: envToPositiveNumber(
+    process.env.VIDEO_PROCESSING_POLL_INTERVAL_SECONDS,
+    5,
+  ),
+  videoProcessingMaxJobsPerRun: envToPositiveNumber(
+    process.env.VIDEO_PROCESSING_MAX_JOBS_PER_RUN,
+    1,
+  ),
+  videoProcessingMaxAttempts: envToPositiveNumber(process.env.VIDEO_PROCESSING_MAX_ATTEMPTS, 3),
+
   defaultAdminEmail:
     process.env.DEFAULT_ADMIN_EMAIL && process.env.DEFAULT_ADMIN_EMAIL.toLowerCase(),
 

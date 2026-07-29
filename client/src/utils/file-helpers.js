@@ -55,8 +55,10 @@ export const SUPPORTED_FILE_TYPES = [
   'application/x-rar-compressed',
 ];
 
-export const MAX_IMAGES_PER_DROP = 10;
-export const MAX_FILES_PER_DROP = 10;
+const fileNameCollator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: 'base',
+});
 
 export const isImageFile = file => {
   return IMAGE_TYPES.includes(file.type);
@@ -113,18 +115,23 @@ export const getFileNameWithoutExtension = filename => {
   return filename.replace(/\.[^/.]+$/, '');
 };
 
+export const preventFileDropPropagation = event => {
+  event.preventDefault();
+  event.stopPropagation();
+};
+
 export const validateImageFiles = files => {
-  const imageFiles = files.filter(file => isImageFile(file));
-  return imageFiles.slice(0, MAX_IMAGES_PER_DROP);
+  return files.filter(file => isImageFile(file));
 };
 
 export const validateSupportedFiles = files => {
-  const supportedFiles = files.filter(file => isSupportedFile(file));
-  return supportedFiles.slice(0, MAX_FILES_PER_DROP);
+  return files.filter(file => isSupportedFile(file));
 };
 
 export const processImageFiles = files => {
-  const validFiles = validateImageFiles(files);
+  const validFiles = validateImageFiles(files).sort((file1, file2) =>
+    fileNameCollator.compare(file1.name, file2.name)
+  );
 
   return validFiles.map(file => ({
     file,
@@ -135,7 +142,9 @@ export const processImageFiles = files => {
 };
 
 export const processSupportedFiles = files => {
-  const validFiles = validateSupportedFiles(files);
+  const validFiles = validateSupportedFiles(files).sort((file1, file2) =>
+    fileNameCollator.compare(file1.name, file2.name)
+  );
 
   return validFiles.map(file => ({
     file,

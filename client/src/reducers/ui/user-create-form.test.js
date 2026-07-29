@@ -2,6 +2,15 @@ import ActionTypes from '../../constants/ActionTypes';
 import reducer from './user-create-form';
 
 describe('user create form reducer', () => {
+  it('does not silently preselect a welcome email language', () => {
+    const state = reducer(undefined, {
+      type: '@@INIT',
+      payload: {},
+    });
+
+    expect(state.data.language).toBe('');
+  });
+
   it('keeps the created user available when the welcome email fails', () => {
     const state = reducer(undefined, {
       type: ActionTypes.USER_CREATE__SUCCESS,
@@ -21,7 +30,7 @@ describe('user create form reducer', () => {
   it('clears a completed creation when the popup closes', () => {
     const state = reducer(
       {
-        data: { name: '', email: '', language: 'pt-PT' },
+        data: { name: '', email: '', language: 'fr-FR' },
         isSubmitting: false,
         error: null,
         createdUserId: '42',
@@ -35,6 +44,6 @@ describe('user create form reducer', () => {
 
     expect(state.createdUserId).toBeNull();
     expect(state.welcomeEmailSent).toBeNull();
-    expect(state.data.language).toBe('pt-PT');
+    expect(state.data.language).toBe('');
   });
 });

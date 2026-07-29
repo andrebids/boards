@@ -6,14 +6,14 @@
 :global(#app) {
   .controls {
     clear: both;
-    margin-top: 6px;
+    margin-top: 8px;
   }
 
   .field {
-    background: #fff;
-    border: 1px solid rgba(9, 30, 66, 0.08);
-    border-radius: 3px;
-    color: #17394d;
+    background: var(--card-modal-surface, #fff);
+    border: 1px solid var(--card-modal-border, #d8dee6);
+    border-radius: 8px;
+    color: var(--card-modal-text, #344054);
     display: block;
     line-height: 1.5;
     font-size: 14px;
@@ -21,6 +21,27 @@
     overflow: hidden;
     padding: 8px 12px;
     resize: none;
+
+    &:focus {
+      border-color: var(--card-modal-accent, #2563eb);
+      box-shadow: 0 0 0 3px
+        var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16));
+      outline: none;
+    }
+  }
+
+  .submitButton {
+    background: var(--card-modal-accent, #2563eb) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+
+    &:hover {
+      background: color-mix(
+        in oklch,
+        var(--card-modal-accent, #2563eb) 88%,
+        white 12%
+      ) !important;
+    }
   }
 
   .wrapper {

@@ -1,11 +1,22 @@
 :root {
+  /* Escala escura partilhada: canvas -> superfície -> estado interativo. */
+  --app-dark-canvas: oklch(0.177 0.013 264.15);
+  --app-dark-surface: oklch(0.213 0.019 262.066);
+  --app-dark-surface-hover: oklch(0.282 0.029 256.846);
+  --app-dark-border: oklch(0.943 0.011 243.657 / 0.1);
+  --app-dark-text: oklch(0.943 0.011 243.657);
+  --app-dark-text-muted: oklch(0.943 0.011 243.657 / 0.75);
+  --app-accent: oklch(0.623 0.188 259.815);
+  --app-accent-soft: oklch(0.623 0.188 259.815 / 0.2);
+  --app-danger: oklch(0.711 0.166 22.216);
+  --app-danger-soft: oklch(0.711 0.166 22.216 / 0.14);
   --glass-bg-rgb: 14, 17, 23;
   --glass-bg-strong-rgb: 20, 25, 34;
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border: var(--app-dark-border);
   --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
-  --text-primary: #e6edf3;
-  --text-secondary: rgba(230, 237, 243, 0.75);
-  --accent: #3b82f6;
+  --text-primary: var(--app-dark-text);
+  --text-secondary: var(--app-dark-text-muted);
+  --accent: var(--app-accent);
 }
 
 /* Superfícies escuras e opacas. O glass fica reservado aos modais. */
@@ -47,20 +58,22 @@
   );
 }
 
-  /* Compatibilidade para componentes existentes que ainda usam esta classe. */
-  .glass-perfect-card {
-    position: relative;
-    border-radius: 8px;
-    background: rgb(var(--glass-bg-strong-rgb));
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);
-    transition: background-color 0.16s ease, border-color 0.16s ease;
-  }
+/* Compatibilidade para componentes existentes que ainda usam esta classe. */
+.glass-perfect-card {
+  position: relative;
+  border-radius: 8px;
+  background: rgb(var(--glass-bg-strong-rgb));
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
 
-  .glass-perfect-card:hover {
-    background: #202a38;
-    border-color: rgba(255, 255, 255, 0.16);
-  }
+.glass-perfect-card:hover {
+  background: #202a38;
+  border-color: rgba(255, 255, 255, 0.16);
+}
 
 /* Toggle Checkbox - Texto claro para fundos escuros */
 .ui.toggle.checkbox input:checked ~ label,

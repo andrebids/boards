@@ -7,6 +7,7 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
+import { Check } from 'lucide-react';
 import { Menu } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
@@ -15,18 +16,11 @@ import UserAvatar from '../../users/UserAvatar';
 import styles from './Item.module.scss';
 
 const Item = React.memo(({ id, isActive, onUserSelect, onUserDeselect }) => {
-  const selectBoardMembershipById = useMemo(
-    () => selectors.makeSelectBoardMembershipById(),
-    []
-  );
+  const selectBoardMembershipById = useMemo(() => selectors.makeSelectBoardMembershipById(), []);
   const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
 
-  const boardMembership = useSelector(state =>
-    selectBoardMembershipById(state, id)
-  );
-  const user = useSelector(state =>
-    selectUserById(state, boardMembership.userId)
-  );
+  const boardMembership = useSelector((state) => selectBoardMembershipById(state, id));
+  const user = useSelector((state) => selectUserById(state, boardMembership.userId));
 
   const handleToggleClick = useCallback(() => {
     if (isActive) {
@@ -40,7 +34,11 @@ const Item = React.memo(({ id, isActive, onUserSelect, onUserDeselect }) => {
 
   return (
     <Menu.Item
+      as="button"
+      type="button"
       active={isActive}
+      role="menuitemcheckbox"
+      aria-checked={isActive}
       disabled={!boardMembership.isPersisted}
       className={classNames(styles.menuItem, isActive && styles.menuItemActive)}
       onClick={handleToggleClick}
@@ -48,14 +46,19 @@ const Item = React.memo(({ id, isActive, onUserSelect, onUserDeselect }) => {
       <span className={styles.user}>
         <UserAvatar id={boardMembership.userId} />
       </span>
-      <div
+      <div className={styles.menuItemText}>
+        <span className={styles.userName}>{user.name}</span>
+        {user.username && <span className={styles.userUsername}>@{user.username}</span>}
+      </div>
+      <span
+        aria-hidden="true"
         className={classNames(
-          styles.menuItemText,
-          isActive && styles.menuItemTextActive
+          styles.selectionIndicator,
+          isActive && styles.selectionIndicatorActive,
         )}
       >
-        {user.name}
-      </div>
+        {isActive && <Check size={14} strokeWidth={2.6} />}
+      </span>
     </Menu.Item>
   );
 });

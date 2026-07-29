@@ -7,61 +7,173 @@
   .clearButton {
     background: transparent;
     box-shadow: none;
-    color: #cfe3ff;
-    font-weight: normal;
-    margin-top: 8px;
-    padding: 6px 11px;
+    color: #9dc7ff;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 6px;
+    min-height: 34px;
+    padding: 7px 10px;
     text-align: left;
-    text-decoration: underline;
-    transition: none;
+    text-decoration: none;
+    transition:
+      background-color 150ms ease-out,
+      color 150ms ease-out;
 
     &:hover {
-      background: rgba(30, 58, 138, 0.18);
+      background: rgba(59, 130, 246, 0.12);
       color: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22),
-        0 0 0 1px rgba(96, 165, 250, 0.18) inset;
+      border-radius: 9px;
+      box-shadow: none;
+    }
+
+    &:focus-visible {
+      border-radius: 9px;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.65) !important;
+      outline: none;
     }
   }
 
-  .menu {
-    margin: 8px auto 0;
-    max-height: 300px; // Limite fixo para garantir scrollbar
-    overflow-x: hidden;
-    overflow-y: scroll !important; // Sempre mostrar scroll
-    width: 100%;
-    color: #e6edf3;
+  .clearSearchButton {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    color: #9aa9ba;
+    cursor: pointer;
+    display: inline-flex;
+    height: 26px;
+    justify-content: center;
+    padding: 0;
+    position: absolute;
+    right: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition:
+      background-color 150ms ease-out,
+      color 150ms ease-out;
+    width: 26px;
 
-    // Scrollbar personalizada - bem visível
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f8fafc;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.65);
+      outline: none;
+    }
+  }
+
+  .emptyState {
+    align-items: center;
+    color: #9aa9ba;
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    gap: 8px;
+    justify-content: center;
+    min-height: 112px;
+    padding: 20px 12px;
+    text-align: center;
+  }
+
+  .emptyStateIcon {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    color: #c3cfdd;
+    display: inline-flex;
+    height: 36px;
+    justify-content: center;
+    width: 36px;
+  }
+
+  .menu {
+    margin: 8px 0 0 !important;
+    max-height: 280px;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    padding: 3px !important;
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent !important;
+    scrollbar-width: thin !important;
+    width: 100%;
+
     &::-webkit-scrollbar {
-      width: 12px !important;
+      width: 8px;
     }
 
     &::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.3) !important;
-      border-radius: 6px;
-      margin: 4px 0;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: transparent;
     }
 
     &::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2) !important;
-      border-radius: 6px;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      
+      background: rgba(255, 255, 255, 0.2);
+      background-clip: padding-box;
+      border: 2px solid transparent;
+      border-radius: 999px;
+
       &:hover {
-        background: rgba(255, 255, 255, 0.3) !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      }
-      
-      &:active {
-        background: rgba(255, 255, 255, 0.4) !important;
+        background: rgba(255, 255, 255, 0.34);
+        background-clip: padding-box;
       }
     }
-    
-    // Firefox
-    scrollbar-width: auto !important;
-    scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .searchField {
+    position: relative;
+  }
+
+  .searchIcon {
+    color: #8fa2b7;
+    left: 12px;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+  }
+
+  .searchInput {
+    width: 100%;
+
+    :global(input) {
+      background: rgba(9, 14, 23, 0.34) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 10px !important;
+      box-shadow: none !important;
+      color: #f3f6fa !important;
+      font-size: 14px;
+      height: 40px;
+      padding: 9px 40px 9px 38px !important;
+      transition:
+        background-color 150ms ease-out,
+        border-color 150ms ease-out,
+        box-shadow 150ms ease-out;
+
+      &::placeholder {
+        color: #8998aa !important;
+        opacity: 1;
+      }
+
+      &:hover {
+        background: rgba(9, 14, 23, 0.46) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+      }
+
+      &:focus {
+        background: rgba(9, 14, 23, 0.58) !important;
+        border-color: rgba(96, 165, 250, 0.75) !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18) !important;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .clearButton,
+    .clearSearchButton,
+    .searchInput :global(input) {
+      transition: none;
+    }
   }
 }

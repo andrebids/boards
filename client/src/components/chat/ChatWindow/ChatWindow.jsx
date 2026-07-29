@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, AtSign, Bell, BellOff, LogOut, UserPlus, X } from 'lucide-react';
+import { ArrowLeft, AtSign, Bell, BellOff, LogOut, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { CloseButton } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useChat } from '../ChatContext';
@@ -251,9 +252,7 @@ const ChatWindow = React.memo(({ id }) => {
               strokeWidth={hasConfiguredNotifications ? 2.2 : 2}
             />
           </button>
-          <button type="button" aria-label={t('chat.close')} onClick={handleCloseClick}>
-            <X aria-hidden="true" size={18} strokeWidth={2} />
-          </button>
+          <CloseButton ariaLabel={t('chat.close')} onClick={handleCloseClick} />
         </div>
         {isOptionsOpen && (
           <div className={styles.headerMenu} role="menu">

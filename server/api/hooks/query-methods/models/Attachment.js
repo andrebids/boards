@@ -85,8 +85,20 @@ const createOne = (values) => {
         .usingConnection(db);
 
       if (queryResult.rowCount === 0) {
-        console.error('❌ [Attachment.createOne] fileReferenceNotFound para fileReferenceId:', fileReferenceId);
+        // eslint-disable-next-line no-console
+        console.error(
+          '❌ [Attachment.createOne] fileReferenceNotFound para fileReferenceId:',
+          fileReferenceId,
+        );
         throw 'fileReferenceNotFound';
+      }
+
+      if (values.data.video && values.data.video.status === 'pending') {
+        await sails.helpers.videoProcessing.enqueue.with({
+          fileReferenceId,
+          sourceFilename: values.data.filename,
+          connection: db,
+        });
       }
 
       return attachment;

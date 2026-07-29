@@ -163,6 +163,7 @@ const Card = React.memo(({ id, isInline }) => {
     <div
       className={classNames(
         styles.wrapper,
+        !isInline && card.type === CardTypes.STORY && styles.wrapperStory,
         isHighlightedAsRecent && styles.wrapperRecent,
         isFileDragOver && styles.wrapperFileDragOver,
         'card'
@@ -190,7 +191,11 @@ const Card = React.memo(({ id, isInline }) => {
           </div>
           {canUseActions && (
             <ActionsPopup cardId={id} onNameEdit={handleNameEdit}>
-              <Button className={styles.actionsButton}>
+              <Button
+                aria-label={t('action.edit')}
+                title={t('action.edit')}
+                className={styles.actionsButton}
+              >
                 <Icon fitted name="pencil" size="small" />
               </Button>
             </ActionsPopup>

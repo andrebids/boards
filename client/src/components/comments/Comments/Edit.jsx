@@ -22,15 +22,10 @@ import UserAvatar from '../../users/UserAvatar';
 import styles from './Edit.module.scss';
 
 const Edit = React.memo(({ commentId, onClose }) => {
-  const selectCommentById = useMemo(
-    () => selectors.makeSelectCommentById(),
-    []
-  );
+  const selectCommentById = useMemo(() => selectors.makeSelectCommentById(), []);
 
-  const comment = useSelector(state => selectCommentById(state, commentId));
-  const boardMemberships = useSelector(
-    selectors.selectMembershipsForCurrentBoard
-  );
+  const comment = useSelector((state) => selectCommentById(state, commentId));
+  const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -39,7 +34,7 @@ const Edit = React.memo(({ commentId, onClose }) => {
     () => ({
       text: comment.text,
     }),
-    [comment.text]
+    [comment.text],
   );
 
   const [data, , setData] = useForm(() => ({
@@ -76,11 +71,11 @@ const Edit = React.memo(({ commentId, onClose }) => {
         text,
       });
     },
-    [setData]
+    [setData],
   );
 
   const handleFieldKeyDown = useCallback(
-    event => {
+    (event) => {
       if (event.key === 'Enter') {
         if (isModifierKeyPressed(event)) {
           submit();
@@ -94,7 +89,7 @@ const Edit = React.memo(({ commentId, onClose }) => {
         onClose();
       }
     },
-    [onClose, submit]
+    [onClose, submit],
   );
 
   const handleCancelClick = useCallback(() => {
@@ -108,7 +103,7 @@ const Edit = React.memo(({ commentId, onClose }) => {
   const clickAwayProps = useClickAwayListener(
     [textFieldRef, submitButtonRef, cancelButtonRef],
     submit,
-    handleClickAwayCancel
+    handleClickAwayCancel,
   );
 
   const suggestionRenderer = useCallback(
@@ -118,7 +113,7 @@ const Edit = React.memo(({ commentId, onClose }) => {
         {highlightedDisplay}
       </div>
     ),
-    []
+    [],
   );
 
   useEffect(() => {

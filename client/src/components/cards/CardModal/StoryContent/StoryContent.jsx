@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Grid, Icon } from 'semantic-ui-react';
+import { Button, Icon } from 'semantic-ui-react';
 import { useDidUpdate } from '../../../../lib/hooks';
 
 import selectors from '../../../../selectors';
@@ -23,6 +23,16 @@ import {
 import { CardTypeIcons } from '../../../../constants/Icons';
 import { ClosableContext } from '../../../../contexts';
 import CardImageCarousel from '../CardImageCarousel';
+import CardModalLayout, {
+  CardModalActionButton,
+  CardModalActionGroup,
+  CardModalBody,
+  CardModalMain,
+  CardModalMetadata,
+  CardModalMetadataAddButton,
+  CardModalMetadataItem,
+  CardModalSidebar,
+} from '../CardModalLayout';
 import NameField from '../NameField';
 import CustomFieldGroups from '../CustomFieldGroups';
 import Communication from '../Communication';
@@ -297,95 +307,129 @@ const StoryContent = React.memo(({ onClose }) => {
   const ConfirmationPopup = usePopupInClosableContext(ConfirmationStep);
 
   return (
-    <Grid className={styles.wrapper}>
-      <Grid.Row className={styles.headerPadding}>
-        <Grid.Column width={16} className={styles.headerPadding}>
-          <div className={styles.headerWrapper}>
-            <Icon
-              name={CardTypeIcons[CardTypes.STORY]}
-              className={classNames(styles.moduleIcon, styles.moduleIconTitle)}
-            />
-            <div className={styles.headerTitleWrapper}>
-              {canEditName ? (
-                <NameField
-                  defaultValue={card.name}
-                  size="large"
-                  onUpdate={handleNameUpdate}
-                />
-              ) : (
-                <div className={styles.headerTitle}>{card.name}</div>
-              )}
-            </div>
-          </div>
-        </Grid.Column>
-      </Grid.Row>
-      <Grid.Row className={styles.modalPadding}>
-        <Grid.Column width={12} className={styles.contentPadding}>
-          <CardImageCarousel />
-          {(board.alwaysDisplayCardCreator || labelIds.length > 0) && (
-            <div
-              className={classNames(
-                styles.moduleWrapper,
-                styles.moduleWrapperAttachments
-              )}
-            >
-              {board.alwaysDisplayCardCreator && (
-                <div className={styles.attachments}>
-                  <span className={styles.attachment}>
-                    <CreationDetailsPopup userId={card.creatorUserId}>
-                      <UserAvatar
-                        withCreatorIndicator
-                        id={card.creatorUserId}
-                        size="tiny"
-                      />
-                    </CreationDetailsPopup>
+    <CardModalLayout
+      icon={CardTypeIcons[CardTypes.STORY]}
+      title={
+        canEditName ? (
+          <NameField defaultValue={card.name} onUpdate={handleNameUpdate} />
+        ) : (
+          card.name
+        )
+      }
+    >
+      <CardModalMetadata>
+        {board.alwaysDisplayCardCreator && (
+          <CardModalMetadataItem
+            label={t('common.creator', {
+                context: 'title',
+            })}
+          >
+            <CreationDetailsPopup userId={card.creatorUserId}>
+              <UserAvatar withCreatorIndicator id={card.creatorUserId} />
+            </CreationDetailsPopup>
+          </CardModalMetadataItem>
+        )}
+        {userIds.length > 0 && (
+          <CardModalMetadataItem
+            label={t('common.members', {
+                context: 'title',
+            })}
+          >
+            {userIds.map(userId => (
+              <span key={userId}>
+                {canUseMembers ? (
+                  <BoardMembershipsPopup
+                    currentUserIds={userIds}
+                    onUserSelect={handleUserSelect}
+                    onUserDeselect={handleUserDeselect}
+                  >
+                    <UserAvatar id={userId} />
+                  </BoardMembershipsPopup>
+                ) : (
+                  <UserAvatar id={userId} />
+                )}
+              </span>
+            ))}
+            {canUseMembers && (
+              <BoardMembershipsPopup
+                currentUserIds={userIds}
+                onUserSelect={handleUserSelect}
+                onUserDeselect={handleUserDeselect}
+              >
+                <CardModalMetadataAddButton ariaLabel={t('action.addMember')} />
+              </BoardMembershipsPopup>
+            )}
+          </CardModalMetadataItem>
+        )}
+        {labelIds.length > 0 && (
+          <CardModalMetadataItem
+            label={t('common.labels', {
+                context: 'title',
+            })}
+          >
+            {labelIds.map(labelId => (
+              <span key={labelId}>
+                {canUseLabels ? (
+                  <LabelsPopup
+                    currentIds={labelIds}
+                    cardId={card.id}
+                    onSelect={handleLabelSelect}
+                    onDeselect={handleLabelDeselect}
+                  >
+                    <LabelChip id={labelId} />
+                  </LabelsPopup>
+                ) : (
+                  <LabelChip id={labelId} />
+                )}
+              </span>
+            ))}
+            {canUseLabels && (
+              <LabelsPopup
+                currentIds={labelIds}
+                cardId={card.id}
+                onSelect={handleLabelSelect}
+                onDeselect={handleLabelDeselect}
+              >
+                <CardModalMetadataAddButton ariaLabel={t('action.addLabel')} />
+              </LabelsPopup>
+            )}
+          </CardModalMetadataItem>
+        )}
+        <CardModalMetadataItem label={t('common.list')}>
+          {canUseLists ? (
+            <ListsPopup currentId={list.id} onSelect={handleListSelect}>
+              <button type="button" className={styles.listButton}>
+                <span
+                  className={classNames(styles.list, styles.listHoverable)}
+                >
+                  <Icon
+                    name="columns"
+                    size="small"
+                    className={styles.listIcon}
+                  />
+                  <span className={styles.hidable}>
+                    {list.name || t(`common.${list.type}`)}
                   </span>
-                </div>
-              )}
-              {labelIds.length > 0 && (
-                <div className={styles.attachments}>
-                  {labelIds.map(labelId => (
-                    <span key={labelId} className={styles.attachment}>
-                      {canUseLabels ? (
-                        <LabelsPopup
-                          currentIds={labelIds}
-                          cardId={card.id}
-                          onSelect={handleLabelSelect}
-                          onDeselect={handleLabelDeselect}
-                        >
-                          <LabelChip id={labelId} size="small" />
-                        </LabelsPopup>
-                      ) : (
-                        <LabelChip id={labelId} size="small" />
-                      )}
-                    </span>
-                  ))}
-                  {canUseLabels && (
-                    <LabelsPopup
-                      currentIds={labelIds}
-                      cardId={card.id}
-                      onSelect={handleLabelSelect}
-                      onDeselect={handleLabelDeselect}
-                    >
-                      <button
-                        type="button"
-                        className={classNames(
-                          styles.attachment,
-                          styles.dueDate
-                        )}
-                      >
-                        <Icon
-                          name="add"
-                          size="small"
-                          className={styles.addAttachment}
-                        />
-                      </button>
-                    </LabelsPopup>
-                  )}
-                </div>
-              )}
-            </div>
+                </span>
+              </button>
+            </ListsPopup>
+          ) : (
+            <span className={styles.list}>
+              <Icon
+                name="columns"
+                size="small"
+                className={styles.listIcon}
+              />
+              <span className={styles.hidable}>
+                {list.name || t(`common.${list.type}`)}
+              </span>
+            </span>
           )}
+        </CardModalMetadataItem>
+      </CardModalMetadata>
+      <CardModalBody>
+        <CardModalMain>
+          <CardImageCarousel />
           {(card.description || canEditDescription) && (
             <div
               className={classNames(
@@ -394,6 +438,17 @@ const StoryContent = React.memo(({ onClose }) => {
               )}
             >
               <div className={styles.moduleWrapper}>
+                <Icon name="align left" className={styles.moduleIcon} />
+                <div className={styles.moduleHeader}>
+                  {t('common.description')}
+                  {canEditDescription &&
+                    !isEditDescriptionOpened &&
+                    descriptionDraft && (
+                      <span className={styles.draftChip}>
+                        {t('common.unsavedChanges')}
+                      </span>
+                    )}
+                </div>
                 {canEditDescription &&
                   (isEditDescriptionOpened ? (
                     <EditMarkdown
@@ -405,11 +460,6 @@ const StoryContent = React.memo(({ onClose }) => {
                     />
                   ) : (
                     <>
-                      {descriptionDraft && (
-                        <span className={styles.draftChip}>
-                          {t('common.unsavedChanges')}
-                        </span>
-                      )}
                       {card.description ? (
                         /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                                     jsx-a11y/no-static-element-interactions */
@@ -464,61 +514,24 @@ const StoryContent = React.memo(({ onClose }) => {
               <Communication />
             </div>
           </div>
-        </Grid.Column>
-        <Grid.Column width={4} className={styles.sidebarPadding}>
-          <div className={styles.sticky}>
-            <div className={styles.actions}>
-              <div
-                className={classNames(
-                  styles.attachments,
-                  styles.attachmentsList
-                )}
-              >
-                <div className={classNames(styles.text, styles.textList)}>
-                  {t('common.list')}
-                </div>
-                {canUseLists ? (
-                  <ListsPopup currentId={list.id} onSelect={handleListSelect}>
-                    <button type="button" className={styles.listButton}>
-                      <span
-                        className={classNames(
-                          styles.list,
-                          styles.listHoverable
-                        )}
-                      >
-                        <Icon
-                          name="columns"
-                          size="small"
-                          className={styles.listIcon}
-                        />
-                        <span className={styles.hidable}>
-                          {list.name || t(`common.${list.type}`)}
-                        </span>
-                      </span>
-                    </button>
-                  </ListsPopup>
-                ) : (
-                  <span className={styles.list}>
-                    <Icon
-                      name="columns"
-                      size="small"
-                      className={styles.listIcon}
-                    />
-                    <span className={styles.hidable}>
-                      {list.name || t(`common.${list.type}`)}
-                    </span>
-                  </span>
-                )}
-              </div>
-            </div>
+        </CardModalMain>
+        <CardModalSidebar>
             {(canUseMembers ||
               canUseLabels ||
               canAddAttachment ||
               canAddCustomFieldGroup) && (
-              <div className={styles.actions}>
-                <span className={styles.actionsTitle}>
-                  {t('action.addToCard')}
-                </span>
+              <CardModalActionGroup title={t('action.addToCard')}>
+                {canUseMembers && (
+                  <BoardMembershipsPopup
+                    currentUserIds={userIds}
+                    onUserSelect={handleUserSelect}
+                    onUserDeselect={handleUserDeselect}
+                  >
+                    <CardModalActionButton icon="user outline">
+                      {t('common.members')}
+                    </CardModalActionButton>
+                  </BoardMembershipsPopup>
+                )}
                 {canUseLabels && (
                   <LabelsPopup
                     currentIds={labelIds}
@@ -526,75 +539,30 @@ const StoryContent = React.memo(({ onClose }) => {
                     onSelect={handleLabelSelect}
                     onDeselect={handleLabelDeselect}
                   >
-                    <Button
-                      fluid
-                      className={classNames(
-                        styles.actionButton,
-                        styles.hidable
-                      )}
-                    >
-                      <Icon
-                        name="bookmark outline"
-                        className={styles.actionIcon}
-                      />
+                    <CardModalActionButton icon="bookmark outline">
                       {t('common.labels')}
-                    </Button>
+                    </CardModalActionButton>
                   </LabelsPopup>
                 )}
                 {canAddAttachment && (
                   <AddAttachmentPopup>
-                    <Button
-                      fluid
-                      className={classNames(
-                        styles.actionButton,
-                        styles.hidable
-                      )}
-                    >
-                      <Icon name="attach" className={styles.actionIcon} />
+                    <CardModalActionButton icon="attach">
                       {t('common.attachment')}
-                    </Button>
+                    </CardModalActionButton>
                   </AddAttachmentPopup>
                 )}
                 {canAddCustomFieldGroup && (
                   <AddCustomFieldGroupPopup
                     onCreate={handleCustomFieldGroupCreate}
                   >
-                    <Button
-                      fluid
-                      className={classNames(
-                        styles.actionButton,
-                        styles.hidable
-                      )}
-                    >
-                      <Icon
-                        name="sticky note outline"
-                        className={styles.actionIcon}
-                      />
+                    <CardModalActionButton icon="sticky note outline">
                       {t('common.customField', {
                         context: 'title',
                       })}
-                    </Button>
+                    </CardModalActionButton>
                   </AddCustomFieldGroupPopup>
                 )}
-                {canUseMembers && (
-                  <BoardMembershipsPopup
-                    currentUserIds={userIds}
-                    onUserSelect={handleUserSelect}
-                    onUserDeselect={handleUserDeselect}
-                  >
-                    <Button
-                      fluid
-                      className={classNames(
-                        styles.actionButton,
-                        styles.hidable
-                      )}
-                    >
-                      <Icon name="user outline" className={styles.actionIcon} />
-                      {t('common.members')}
-                    </Button>
-                  </BoardMembershipsPopup>
-                )}
-              </div>
+              </CardModalActionGroup>
             )}
             {((!board.limitCardTypesToDefaultOne && canEditType) ||
               canSubscribe ||
@@ -604,54 +572,31 @@ const StoryContent = React.memo(({ onClose }) => {
               (canRestore && (isInArchiveList || isInTrashList)) ||
               (canArchive && !isInArchiveList) ||
               canDelete) && (
-              <div className={styles.actions}>
-                <span className={styles.actionsTitle}>
-                  {t('common.actions')}
-                </span>
+              <CardModalActionGroup title={t('common.actions')}>
                 {canJoin && (
-                  <Button
-                    fluid
-                    className={classNames(styles.actionButton, styles.hidable)}
+                  <CardModalActionButton
+                    icon={isJoined ? 'flag outline' : 'flag checkered'}
                     onClick={handleToggleJointClick}
                   >
-                    <Icon
-                      name={isJoined ? 'flag outline' : 'flag checkered'}
-                      className={styles.actionIcon}
-                    />
                     {isJoined ? t('action.leave') : t('action.join')}
-                  </Button>
+                  </CardModalActionButton>
                 )}
                 {canSubscribe && (
-                  <Button
-                    fluid
+                  <CardModalActionButton
+                    icon={
+                      board.isSubscribed || card.isSubscribed
+                        ? 'bell slash outline'
+                        : 'bell outline'
+                    }
                     disabled={board.isSubscribed}
-                    className={classNames(styles.actionButton, styles.hidable)}
                     onClick={handleToggleSubscriptionClick}
                   >
-                    {board.isSubscribed ? (
-                      <>
-                        <Icon
-                          name="bell slash outline"
-                          className={styles.actionIcon}
-                        />
-                        {t('common.boardSubscribed')}
-                      </>
-                    ) : (
-                      <>
-                        <Icon
-                          name={
-                            card.isSubscribed
-                              ? 'bell slash outline'
-                              : 'bell outline'
-                          }
-                          className={styles.actionIcon}
-                        />
-                        {card.isSubscribed
-                          ? t('action.unsubscribe')
-                          : t('action.subscribe')}
-                      </>
-                    )}
-                  </Button>
+                    {board.isSubscribed
+                      ? t('common.boardSubscribed')
+                      : card.isSubscribed
+                        ? t('action.unsubscribe')
+                        : t('action.subscribe')}
+                  </CardModalActionButton>
                 )}
                 {!board.limitCardTypesToDefaultOne && canEditType && (
                   <SelectCardTypePopup
@@ -661,61 +606,40 @@ const StoryContent = React.memo(({ onClose }) => {
                     buttonContent="action.save"
                     onSelect={handleTypeSelect}
                   >
-                    <Button
-                      fluid
-                      className={classNames(
-                        styles.actionButton,
-                        styles.hidable
-                      )}
-                    >
-                      <Icon name="map outline" className={styles.actionIcon} />
+                    <CardModalActionButton icon="map outline">
                       {t('action.editType', {
                         context: 'title',
                       })}
-                    </Button>
+                    </CardModalActionButton>
                   </SelectCardTypePopup>
                 )}
                 {canDuplicate && (
-                  <Button
-                    fluid
-                    className={classNames(styles.actionButton, styles.hidable)}
+                  <CardModalActionButton
+                    icon="copy outline"
                     onClick={handleDuplicateClick}
                   >
-                    <Icon name="copy outline" className={styles.actionIcon} />
                     {t('action.duplicate')}
-                  </Button>
+                  </CardModalActionButton>
                 )}
                 {canMove && (
                   <MoveCardPopup id={card.id}>
-                    <Button
-                      fluid
-                      className={classNames(
-                        styles.actionButton,
-                        styles.hidable
-                      )}
-                    >
-                      <Icon
-                        name="share square outline"
-                        className={styles.actionIcon}
-                      />
+                    <CardModalActionButton icon="share square outline">
                       {t('action.move')}
-                    </Button>
+                    </CardModalActionButton>
                   </MoveCardPopup>
                 )}
                 {canRestore && (isInArchiveList || isInTrashList) && (
-                  <Button
-                    fluid
+                  <CardModalActionButton
+                    icon="undo alternate"
                     disabled={!prevList}
-                    className={classNames(styles.actionButton, styles.hidable)}
                     onClick={handleRestoreClick}
                   >
-                    <Icon name="undo alternate" className={styles.actionIcon} />
                     {prevList
                       ? t('action.restoreToList', {
                           list: prevList.name || t(`common.${prevList.type}`),
                         })
                       : t('common.selectListToRestoreThisCard')}
-                  </Button>
+                  </CardModalActionButton>
                 )}
                 {canArchive && !isInArchiveList && (
                   <ConfirmationPopup
@@ -724,19 +648,9 @@ const StoryContent = React.memo(({ onClose }) => {
                     buttonContent="action.archiveCard"
                     onConfirm={handleArchiveConfirm}
                   >
-                    <Button
-                      fluid
-                      className={classNames(
-                        styles.actionButton,
-                        styles.hidable
-                      )}
-                    >
-                      <Icon
-                        name="folder open outline"
-                        className={styles.actionIcon}
-                      />
+                    <CardModalActionButton icon="folder open outline">
                       {t('action.archive')}
-                    </Button>
+                    </CardModalActionButton>
                   </ConfirmationPopup>
                 )}
                 {canDelete && (
@@ -758,31 +672,23 @@ const StoryContent = React.memo(({ onClose }) => {
                     }
                     onConfirm={handleDeleteConfirm}
                   >
-                    <Button
-                      fluid
-                      className={classNames(
-                        styles.actionButton,
-                        styles.hidable
-                      )}
+                    <CardModalActionButton
+                      danger
+                      icon="trash alternate outline"
                     >
-                      <Icon
-                        name="trash alternate outline"
-                        className={styles.actionIcon}
-                      />
                       {isInTrashList
                         ? t('action.deleteForever', {
                             context: 'title',
                           })
                         : t('action.delete')}
-                    </Button>
+                    </CardModalActionButton>
                   </ConfirmationPopup>
                 )}
-              </div>
+              </CardModalActionGroup>
             )}
-          </div>
-        </Grid.Column>
-      </Grid.Row>
-    </Grid>
+        </CardModalSidebar>
+      </CardModalBody>
+    </CardModalLayout>
   );
 });
 

@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Draggable } from '@hello-pangea/dnd';
 import { Button, Checkbox, Icon } from 'semantic-ui-react';
 import { useDidUpdate } from '../../../../lib/hooks';
@@ -27,12 +28,13 @@ import UserAvatar from '../../../users/UserAvatar';
 import styles from './Task.module.scss';
 
 const Task = React.memo(({ id, index }) => {
+  const [t] = useTranslation();
   const selectTaskById = useMemo(() => selectors.makeSelectTaskById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
 
-  const task = useSelector(state => selectTaskById(state, id));
+  const task = useSelector((state) => selectTaskById(state, id));
 
-  const { canEdit, canToggle } = useSelector(state => {
+  const { canEdit, canToggle } = useSelector((state) => {
     const { listId } = selectors.selectCurrentCard(state);
     const list = selectListById(state, listId);
 
@@ -43,10 +45,8 @@ const Task = React.memo(({ id, index }) => {
       };
     }
 
-    const boardMembership =
-      selectors.selectCurrentUserMembershipForCurrentBoard(state);
-    const isEditor =
-      !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
+    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    const isEditor = !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
 
     return {
       canEdit: isEditor,
@@ -62,26 +62,26 @@ const Task = React.memo(({ id, index }) => {
     dispatch(
       entryActions.updateTask(id, {
         isCompleted: !task.isCompleted,
-      })
+      }),
     );
   }, [id, task.isCompleted, dispatch]);
 
   const handleUserSelect = useCallback(
-    userId => {
+    (userId) => {
       dispatch(
         entryActions.updateTask(id, {
           assigneeUserId: userId,
-        })
+        }),
       );
     },
-    [id, dispatch]
+    [id, dispatch],
   );
 
   const handleUserDeselect = useCallback(() => {
     dispatch(
       entryActions.updateTask(id, {
         assigneeUserId: null,
-      })
+      }),
     );
   }, [id, dispatch]);
 
@@ -120,13 +120,11 @@ const Task = React.memo(({ id, index }) => {
             {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
             {...dragHandleProps} // eslint-disable-line react/jsx-props-no-spreading
             ref={innerRef}
-            className={classNames(
-              styles.wrapper,
-              isDragging && styles.wrapperDragging
-            )}
+            className={classNames(styles.wrapper, isDragging && styles.wrapperDragging)}
           >
             <span className={styles.checkboxWrapper}>
               <Checkbox
+                aria-label={task.name}
                 checked={task.isCompleted}
                 disabled={!task.isPersisted || !canToggle}
                 className={styles.checkbox}
@@ -140,28 +138,17 @@ const Task = React.memo(({ id, index }) => {
                 {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                              jsx-a11y/no-static-element-interactions */}
                 <span
-                  className={classNames(
-                    styles.text,
-                    canEdit && styles.textEditable
-                  )}
+                  className={classNames(styles.text, canEdit && styles.textEditable)}
                   onClick={handleClick}
                 >
                   <span
-                    className={classNames(
-                      styles.task,
-                      task.isCompleted && styles.taskCompleted
-                    )}
+                    className={classNames(styles.task, task.isCompleted && styles.taskCompleted)}
                   >
                     <Linkify linkStopPropagation>{task.name}</Linkify>
                   </span>
                 </span>
                 {(task.assigneeUserId || isEditable) && (
-                  <div
-                    className={classNames(
-                      styles.actions,
-                      isEditable && styles.actionsEditable
-                    )}
-                  >
+                  <div className={classNames(styles.actions, isEditable && styles.actionsEditable)}>
                     {isEditable ? (
                       <>
                         <SelectAssigneePopup
@@ -176,13 +163,23 @@ const Task = React.memo(({ id, index }) => {
                               className={styles.assigneeUserAvatar}
                             />
                           ) : (
-                            <Button className={styles.button}>
+                            <Button
+                              type="button"
+                              aria-label={t('action.addMember')}
+                              title={t('action.addMember')}
+                              className={styles.button}
+                            >
                               <Icon fitted name="add user" size="small" />
                             </Button>
                           )}
                         </SelectAssigneePopup>
                         <ActionsPopup taskId={id} onNameEdit={handleNameEdit}>
-                          <Button className={styles.button}>
+                          <Button
+                            type="button"
+                            aria-label={t('action.edit')}
+                            title={t('action.edit')}
+                            className={styles.button}
+                          >
                             <Icon fitted name="pencil" size="small" />
                           </Button>
                         </ActionsPopup>
@@ -201,9 +198,7 @@ const Task = React.memo(({ id, index }) => {
           </div>
         );
 
-        return isDragging
-          ? ReactDOM.createPortal(contentNode, document.body)
-          : contentNode;
+        return isDragging ? ReactDOM.createPortal(contentNode, document.body) : contentNode;
       }}
     </Draggable>
   );

@@ -82,7 +82,8 @@ const EditName = React.memo(({ taskId, onClose }) => {
         as={TextareaAutosize}
         value={value}
         maxLength={1024}
-        minRows={2}
+        minRows={1}
+        maxRows={6}
         spellCheck={false}
         className={styles.field}
         onKeyDown={handleFieldKeyDown}
@@ -92,8 +93,11 @@ const EditName = React.memo(({ taskId, onClose }) => {
         <Button
           {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
           ref={handleButtonRef}
+          type="submit"
+          compact
           positive
           content={t('action.save')}
+          className={styles.saveButton}
         />
       </div>
     </Form>

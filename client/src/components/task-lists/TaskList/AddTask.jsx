@@ -9,11 +9,7 @@ import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Button, Form, TextArea } from 'semantic-ui-react';
-import {
-  useClickAwayListener,
-  useDidUpdate,
-  useToggle,
-} from '../../../lib/hooks';
+import { useClickAwayListener, useDidUpdate, useToggle } from '../../../lib/hooks';
 
 import entryActions from '../../../entry-actions';
 import { useForm, useNestedRef } from '../../../hooks';
@@ -50,12 +46,12 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
       }
 
       if (isMultiple) {
-        cleanData.name.split(MULTIPLE_REGEX).forEach(name => {
+        cleanData.name.split(MULTIPLE_REGEX).forEach((name) => {
           dispatch(
             entryActions.createTask(taskListId, {
               ...cleanData,
               name,
-            })
+            }),
           );
         });
       } else {
@@ -65,7 +61,7 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
       setData(DEFAULT_DATA);
       focusNameField();
     },
-    [taskListId, dispatch, data, setData, focusNameField, nameFieldRef]
+    [taskListId, dispatch, data, setData, focusNameField, nameFieldRef],
   );
 
   const handleSubmit = useCallback(() => {
@@ -73,7 +69,7 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
   }, [submit]);
 
   const handleFieldKeyDown = useCallback(
-    event => {
+    (event) => {
       if (event.key === 'Enter') {
         event.preventDefault();
         submit(isModifierKeyPressed(event));
@@ -81,7 +77,7 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
         onClose();
       }
     },
-    [onClose, submit]
+    [onClose, submit],
   );
 
   const handleClickAwayCancel = useCallback(() => {
@@ -91,7 +87,7 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
   const clickAwayProps = useClickAwayListener(
     [nameFieldRef, buttonRef],
     onClose,
-    handleClickAwayCancel
+    handleClickAwayCancel,
   );
 
   useEffect(() => {
@@ -130,6 +126,7 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
           positive
           ref={handleButtonRef}
           content={t('action.addTask')}
+          className={styles.submitButton}
         />
       </div>
     </Form>

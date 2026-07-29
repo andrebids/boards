@@ -138,7 +138,7 @@ const ChatLauncher = React.memo(() => {
       >
         <span className={styles.iconStack} aria-hidden="true">
           <MessageCircle className={styles.messageIcon} size={22} strokeWidth={2} />
-          <X className={styles.closeIcon} size={22} strokeWidth={2} />
+          <X className={styles.closeIcon} size={22} strokeWidth={1.5} />
         </span>
         {unreadTotal > 0 && <span className={styles.badge}>{Math.min(unreadTotal, 99)}</span>}
         {isAlerting && <span className={styles.alertStatus}>{t('chat.newMessageAlert')}</span>}

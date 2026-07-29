@@ -73,68 +73,6 @@
   color: #e6edf3;
 }
 
-/* Botão fechar estilo vidro */
-.ui.modal.glass > i.close.icon {
-  position: absolute;
-  right: 6px;
-  top: 6px;
-  width: 28px;
-  height: 28px;
-  border-radius: 16px;
-  padding: 4px !important;
-  background: transparent;
-  color: #d7e7ff;
-  cursor: pointer;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.ui.modal.glass > i.close.icon:hover {
-  background: rgba(59, 130, 246, 0.12);
-  color: #ffffff;
-}
-
-/* Botão fechar específico para cartões - Estilo glass sobrio */
-.ui.modal.glass.card-modal > i.close.icon {
-  color: rgba(230, 237, 243, 0.9) !important; /* Cor clara mais visível */
-  background: rgba(
-    55,
-    65,
-    81,
-    0.4
-  ) !important; /* Fundo cinza mais transparente */
-  border: 1px solid rgba(75, 85, 99, 0.3) !important; /* Borda cinza */
-  border-radius: 50% !important; /* Consistente com o modal */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important; /* Sombra mais forte */
-  transition: all 0.2s ease !important; /* Transição suave */
-  display: flex !important; /* Para centralizar o ícone */
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.ui.modal.glass.card-modal > i.close.icon:hover {
-  color: #374151 !important; /* Cinza escuro no hover */
-  background: rgba(
-    55,
-    65,
-    81,
-    0.4
-  ) !important; /* Fundo cinza mais transparente */
-  border-color: rgba(
-    75,
-    85,
-    99,
-    0.5
-  ) !important; /* Borda cinza mais transparente */
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    inset 0 1px 3px rgba(255, 255, 255, 0.1) !important; /* Sombra externa + interna */
-  display: flex !important; /* Manter flexbox no hover */
-  align-items: center !important; /* Manter centralização vertical */
-  justify-content: center !important; /* Manter centralização horizontal */
-}
-
 /* Texto interno (labels/checks) com contraste melhor */
 .ui.modal.glass:not(.project-settings) label,
 .ui.modal.glass:not(.project-settings) .ui.checkbox label,
@@ -258,12 +196,26 @@
 }
 
 /* Cartões usam uma superfície de aplicação limpa em vez do efeito de vidro. */
+.ui.modal.glass.card-modal {
+  --card-modal-background: var(--app-dark-canvas);
+  --card-modal-surface: var(--app-dark-surface);
+  --card-modal-surface-hover: var(--app-dark-surface-hover);
+  --card-modal-border: var(--app-dark-border);
+  --card-modal-text: var(--app-dark-text);
+  --card-modal-muted: var(--app-dark-text-muted);
+  --card-modal-accent: var(--app-accent);
+  --card-modal-accent-soft: var(--app-accent-soft);
+  --card-modal-danger: var(--app-danger);
+  --card-modal-danger-soft: var(--app-danger-soft);
+  color-scheme: dark;
+}
+
 .ui.modal.glass.card-modal > .content {
-  background: #ffffff !important;
-  border: 1px solid #e3e6ea !important;
+  background: var(--card-modal-background) !important;
+  border: 1px solid var(--card-modal-border) !important;
   border-radius: 8px !important;
-  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24) !important;
-  color: #1f2937;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.44) !important;
+  color: var(--card-modal-text);
   overflow: hidden;
 }
 
@@ -272,51 +224,15 @@
   display: none;
 }
 
-.ui.modal.glass.card-modal > i.close.icon {
-  background: #eef0f2 !important;
-  border: 0 !important;
-  border-radius: 12px !important;
-  box-shadow: none !important;
-  box-sizing: border-box;
-  color: #667085 !important;
-  font-size: 16px;
-  height: 24px;
-  line-height: 1;
-  opacity: 1;
-  padding: 4px !important;
-  right: 14px;
-  top: 14px;
-  transition:
-    transform 150ms ease-out,
-    color 150ms ease-out,
-    background-color 100ms ease-out,
-    box-shadow 150ms ease-out !important;
-  width: 24px;
-}
-
-.ui.modal.glass.card-modal > i.close.icon:hover {
-  background: #e4e7eb !important;
-  color: #1f2937 !important;
-}
-
-.ui.modal.glass.card-modal > i.close.icon:active {
-  transform: scale(0.93);
-}
-
-.ui.modal.glass.card-modal > i.close.icon:focus-visible {
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22) !important;
-  outline: none;
-}
-
 .ui.modal.glass.card-modal label,
 .ui.modal.glass.card-modal .ui.checkbox label,
 .ui.modal.glass.card-modal .ui.toggle.checkbox label,
 .ui.modal.glass.card-modal .ui.header {
-  color: #1f2937 !important;
+  color: var(--card-modal-text) !important;
 }
 
 .ui.modal.glass.card-modal .ui.pointing.secondary.menu {
-  border-color: #e3e6ea;
+  border-color: var(--card-modal-border);
   gap: 20px;
 }
 
@@ -330,7 +246,7 @@
   background: transparent !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  color: #64748b !important;
+  color: var(--card-modal-muted) !important;
   margin: 0 !important;
   padding: 10px 0 !important;
 }
@@ -339,6 +255,57 @@
 .ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item,
 #app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .item.active,
 #app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item {
-  border-color: #2563eb !important;
-  color: #1f2937 !important;
+  border-color: var(--card-modal-accent) !important;
+  color: var(--card-modal-text) !important;
+}
+
+.ui.modal.glass.card-modal [data-platform-close-button="true"] {
+  background: transparent !important;
+  color: var(--card-modal-muted) !important;
+}
+
+.ui.modal.glass.card-modal [data-platform-close-button="true"]:hover {
+  background: var(--card-modal-surface-hover) !important;
+  color: var(--card-modal-text) !important;
+}
+
+.ui.modal.glass.card-modal [data-platform-close-button="true"]:focus-visible {
+  box-shadow: 0 0 0 3px var(--card-modal-accent-soft) !important;
+}
+
+.ui.modal.glass.card-modal .ui.input input,
+.ui.modal.glass.card-modal input[type="text"],
+.ui.modal.glass.card-modal textarea,
+.ui.modal.glass.card-modal .ui.dropdown > .text,
+.ui.modal.glass.card-modal .ui.selection.dropdown {
+  color: var(--card-modal-text) !important;
+}
+
+.ui.modal.glass.card-modal .ui.selection.dropdown,
+.ui.modal.glass.card-modal .ui.input > input,
+.ui.modal.glass.card-modal input[type="text"],
+.ui.modal.glass.card-modal textarea {
+  background: var(--card-modal-surface) !important;
+  border-color: var(--card-modal-border) !important;
+}
+
+.ui.modal.glass.card-modal input::placeholder,
+.ui.modal.glass.card-modal textarea::placeholder {
+  color: var(--card-modal-muted) !important;
+  opacity: 1;
+}
+
+.ui.modal.glass.card-modal .ui.dropdown .menu {
+  background: var(--card-modal-surface) !important;
+  border-color: var(--card-modal-border) !important;
+}
+
+.ui.modal.glass.card-modal .ui.dropdown .menu > .item {
+  border-color: var(--card-modal-border) !important;
+  color: var(--card-modal-text) !important;
+}
+
+.ui.modal.glass.card-modal .ui.dropdown .menu > .item:hover,
+.ui.modal.glass.card-modal .ui.dropdown .menu > .selected.item {
+  background: var(--card-modal-surface-hover) !important;
 }

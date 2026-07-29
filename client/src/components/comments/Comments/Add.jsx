@@ -7,16 +7,13 @@ import React, { useCallback, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Mention, MentionsInput } from 'react-mentions';
-import { Button, Form } from 'semantic-ui-react';
-import {
-  useClickAwayListener,
-  useDidUpdate,
-  useToggle,
-} from '../../../lib/hooks';
+import { Send } from 'lucide-react';
+import { Form } from 'semantic-ui-react';
+import { useClickAwayListener, useDidUpdate, useToggle } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
-import { useEscapeInterceptor, useForm, useNestedRef } from '../../../hooks';
+import { useEscapeInterceptor, useForm } from '../../../hooks';
 import { isModifierKeyPressed } from '../../../utils/event-helpers';
 import UserAvatar from '../../users/UserAvatar';
 
@@ -27,9 +24,7 @@ const DEFAULT_DATA = {
 };
 
 const Add = React.memo(() => {
-  const boardMemberships = useSelector(
-    selectors.selectMembershipsForCurrentBoard
-  );
+  const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -40,7 +35,7 @@ const Add = React.memo(() => {
   const textFieldRef = useRef(null);
   const textMentionsRef = useRef(null);
   const textInputRef = useRef(null);
-  const [buttonRef, handleButtonRef] = useNestedRef();
+  const buttonRef = useRef(null);
 
   const submit = useCallback(() => {
     const cleanData = {
@@ -85,16 +80,16 @@ const Add = React.memo(() => {
         text,
       });
     },
-    [setData]
+    [setData],
   );
 
   const handleFieldKeyDown = useCallback(
-    event => {
+    (event) => {
       if (isModifierKeyPressed(event) && event.key === 'Enter') {
         submit();
       }
     },
-    [submit]
+    [submit],
   );
 
   const handleAwayClick = useCallback(() => {
@@ -108,7 +103,7 @@ const Add = React.memo(() => {
   const clickAwayProps = useClickAwayListener(
     [textFieldRef, buttonRef],
     handleAwayClick,
-    handleClickAwayCancel
+    handleClickAwayCancel,
   );
 
   const suggestionRenderer = useCallback(
@@ -118,7 +113,7 @@ const Add = React.memo(() => {
         {highlightedDisplay}
       </div>
     ),
-    []
+    [],
   );
 
   useDidUpdate(() => {
@@ -134,55 +129,56 @@ const Add = React.memo(() => {
   }, [selectTextFieldState]);
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <div ref={textFieldRef} className={styles.field}>
-        <MentionsInput
-          {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-          allowSpaceInQuery
-          allowSuggestionsAboveCursor
-          ref={textMentionsRef}
-          inputRef={textInputRef}
-          value={data.text}
-          placeholder={t('common.writeComment')}
-          maxLength={1048576}
-          rows={isOpened ? 3 : 1}
-          className="mentions-input-comments"
-          style={{
-            control: {
-              minHeight: isOpened ? '79px' : '37px',
-            },
-            suggestions: {
-              maxHeight: '300px',
-              overflowY: 'auto',
-            },
-          }}
-          onFocus={handleFieldFocus}
-          onChange={handleFieldChange}
-          onKeyDown={handleFieldKeyDown}
-        >
-          <Mention
-            appendSpaceOnAdd
-            data={boardMemberships.map(({ user }) => ({
-              id: user.id,
-              display: user.username || user.name,
-            }))}
-            displayTransform={(_, display) => `@${display}`}
-            renderSuggestion={suggestionRenderer}
-            className={styles.mention}
-          />
-        </MentionsInput>
-      </div>
-      {isOpened && (
-        <div className={styles.controls}>
-          <Button
+    <Form className={styles.form} onFocusCapture={handleFieldFocus} onSubmit={handleSubmit}>
+      <div className={styles.composerRow}>
+        <div ref={textFieldRef} className={styles.inputShell}>
+          <MentionsInput
             {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-            positive
-            ref={handleButtonRef}
-            content={t('action.addComment')}
-            className={styles.button}
-          />
+            allowSpaceInQuery
+            allowSuggestionsAboveCursor
+            ref={textMentionsRef}
+            inputRef={textInputRef}
+            value={data.text}
+            placeholder={t('common.writeComment')}
+            maxLength={1048576}
+            rows={isOpened ? 3 : 1}
+            className="mentions-input-comments"
+            style={{
+              control: {
+                minHeight: isOpened ? '79px' : '37px',
+              },
+              suggestions: {
+                maxHeight: '300px',
+                overflowY: 'auto',
+              },
+            }}
+            onChange={handleFieldChange}
+            onKeyDown={handleFieldKeyDown}
+          >
+            <Mention
+              appendSpaceOnAdd
+              data={boardMemberships.map(({ user }) => ({
+                id: user.id,
+                display: user.username || user.name,
+              }))}
+              displayTransform={(_, display) => `@${display}`}
+              renderSuggestion={suggestionRenderer}
+              className={styles.mention}
+            />
+          </MentionsInput>
         </div>
-      )}
+        <button
+          {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
+          ref={buttonRef}
+          type="submit"
+          aria-label={t('action.addComment')}
+          title={t('action.addComment')}
+          className={styles.sendButton}
+          disabled={!data.text.trim()}
+        >
+          <Send aria-hidden="true" size={17} strokeWidth={2} />
+        </button>
+      </div>
     </Form>
   );
 });

@@ -13,101 +13,146 @@
     width: 100%;
   }
 
-  .dot {
-    background: #c4cad2;
-    border: 0;
-    border-radius: 999px;
-    cursor: pointer;
-    height: 7px;
-    padding: 0;
-    transition:
-      background-color 160ms ease,
-      transform 160ms ease;
-    width: 7px;
-
-    &:hover {
-      background: #8f98a5;
-      transform: scale(1.12);
-    }
-
-    &:focus-visible {
-      box-shadow: 0 0 0 3px rgba(37, 150, 255, 0.32);
-      outline: none;
-    }
-  }
-
-  .dotSelected {
-    background: #168ef1;
-    transform: scale(1.12);
-  }
-
-  .dots {
-    align-items: center;
-    display: flex;
-    gap: 7px;
-    justify-content: center;
-    min-height: 7px;
-    padding: 12px 0;
-  }
-
   .image {
+    background: var(--card-modal-surface-hover, #eef1f4);
     display: block;
     height: 100%;
     object-fit: contain;
     width: 100%;
   }
 
-  .navigation {
+  .video {
+    background: #09090b;
+    display: block;
+    grid-area: 1 / 1;
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
+  }
+
+  .videoPlayer {
+    background: #09090b;
+    display: grid;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .videoPlayButton {
     align-items: center;
-    background: rgba(15, 23, 42, 0.76);
-    border: 0;
+    align-self: center;
+    backdrop-filter: blur(10px);
+    background: rgba(var(--glass-bg-strong-rgb), 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.72);
     border-radius: 50%;
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.26),
+      0 1px 2px rgba(0, 0, 0, 0.32);
     color: #fff;
     cursor: pointer;
     display: flex;
-    height: 34px;
+    font-size: 17px;
+    grid-area: 1 / 1;
+    height: 52px;
     justify-content: center;
-    margin-top: -17px;
-    opacity: 0.92;
-    padding: 0;
-    position: absolute;
-    top: 50%;
-    transform: scale(1);
+    justify-self: center;
+    padding: 0 0 0 3px;
+    position: relative;
     transition:
       background-color 160ms ease,
-      opacity 160ms ease,
       transform 160ms ease;
-    width: 34px;
+    width: 52px;
     z-index: 2;
 
     &:hover {
-      background: rgba(15, 23, 42, 0.94);
-      opacity: 1;
+      background: var(--card-modal-surface-hover, rgba(39, 39, 42, 0.96));
+      transform: scale(1.04);
+    }
+
+    &:active {
+      transform: scale(0.96);
     }
 
     &:focus-visible {
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
-      opacity: 1;
-      outline: 2px solid #fff;
-      outline-offset: 2px;
+      box-shadow:
+        0 0 0 2px #09090b,
+        0 0 0 5px #60a5fa;
+      outline: none;
+    }
+  }
+
+  .videoPlaybackError {
+    background: rgba(var(--glass-bg-strong-rgb), 0.92);
+    border-radius: 8px;
+    bottom: 54px;
+    color: #fafafa;
+    font-size: 12px;
+    left: 50%;
+    line-height: 16px;
+    max-width: calc(100% - 32px);
+    padding: 7px 10px;
+    position: absolute;
+    text-align: center;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+
+  .videoSlide {
+    background: #09090b;
+    cursor: default;
+  }
+
+  .navigation {
+    align-items: center;
+    background: rgba(var(--glass-bg-strong-rgb), 0.94);
+    border: 1px solid var(--card-modal-border, transparent);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.14);
+    color: var(--card-modal-text, #1f2937);
+    cursor: pointer;
+    display: flex;
+    height: 36px;
+    justify-content: center;
+    margin-top: -18px;
+    padding: 0;
+    position: absolute;
+    top: 50%;
+    transition:
+      background-color 160ms ease,
+      transform 160ms ease;
+    width: 36px;
+    z-index: 2;
+
+    &:hover {
+      background: var(--card-modal-surface-hover, #e5e7eb);
+      transform: scale(1.04);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px var(--card-modal-accent-soft, rgba(37, 99, 235, 0.35));
+      outline: none;
     }
   }
 
   .next {
-    right: 14px;
+    right: -48px;
   }
 
   .previous {
-    left: 14px;
+    left: -48px;
   }
 
   .slide {
     background: transparent;
     border: 0;
+    border-radius: 14px;
+    box-shadow: inset 0 0 0 1px var(--card-modal-border, rgba(15, 23, 42, 0.1));
     cursor: zoom-in;
     height: 100%;
     inset: 0;
     opacity: 0;
+    overflow: hidden;
     padding: 0;
     pointer-events: none;
     position: absolute;
@@ -139,21 +184,23 @@
   }
 
   .thumbnail {
-    background: #fff;
-    border: 2px solid #e2e5e9;
-    border-radius: 11px;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 13px;
     cursor: pointer;
     flex: 0 0 66px;
-    height: 54px;
+    height: 58px;
     overflow: hidden;
-    padding: 2px;
+    padding: 0;
+    position: relative;
     scroll-snap-align: start;
     transition:
       border-color 160ms ease,
+      opacity 160ms ease,
       transform 160ms ease;
 
     &:hover {
-      transform: translateY(-1px);
+      opacity: 0.84;
     }
 
     &:focus-visible {
@@ -163,22 +210,54 @@
   }
 
   .thumbnailImage {
-    border-radius: 7px;
+    border-radius: 10px;
     display: block;
     height: 100%;
     object-fit: cover;
+    pointer-events: none;
     width: 100%;
   }
 
+  .thumbnailFallback {
+    align-items: center;
+    background: var(--card-modal-surface, #18181b);
+    border-radius: 10px;
+    color: var(--card-modal-muted, #d4d4d8);
+    display: flex;
+    font-size: 18px;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .thumbnailVideoIndicator {
+    align-items: center;
+    background: rgba(9, 9, 11, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    font-size: 9px;
+    height: 22px;
+    justify-content: center;
+    left: 50%;
+    padding-left: 1px;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 22px;
+  }
+
   .thumbnailSelected {
-    border-color: #168ef1;
+    border-color: var(--card-modal-accent, #168ef1);
   }
 
   .thumbnails {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+    justify-content: safe center;
     overflow-x: auto;
-    padding: 2px 0 3px;
+    padding: 18px 3px 4px;
     scroll-snap-type: x proximity;
     scrollbar-color: #b6bec4 transparent;
     scrollbar-width: thin;
@@ -186,93 +265,281 @@
 
   .viewport {
     aspect-ratio: 16 / 9;
-    background: #eef1f4;
-    border: 1px solid #e2e5e9;
-    border-radius: 10px;
-    overflow: hidden;
+    background: transparent;
+    margin: 0 52px;
+    overflow: visible;
     position: relative;
     touch-action: pan-y;
-
-    &:hover {
-      .navigation {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
   }
 
-  .coverButton {
+  .actionToolbar {
     align-items: center;
-    backdrop-filter: blur(8px);
-    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    background: rgba(var(--glass-bg-strong-rgb), 0.94);
     border: 0;
-    border-radius: 8px;
-    color: #273444;
-    cursor: pointer;
+    border-radius: 12px;
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.24),
+      0 1px 2px rgba(0, 0, 0, 0.3);
     display: inline-flex;
-    font-size: 12px;
-    font-weight: 600;
-    gap: 7px;
-    line-height: 16px;
-    min-height: 32px;
-    padding: 8px 10px;
+    gap: 3px;
+    padding: 4px;
     position: absolute;
     right: 12px;
     top: 12px;
-    transition:
-      background 120ms ease,
-      color 120ms ease;
     z-index: 3;
+  }
+
+  .actionButton {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    color: var(--card-modal-muted, #d4d4d8);
+    cursor: pointer;
+    display: flex;
+    flex: 0 0 auto;
+    height: 32px;
+    justify-content: center;
+    padding: 0;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease,
+      transform 120ms ease;
+    width: 32px;
 
     &:hover {
-      background: #fff;
-      color: #111827;
+      background: var(--card-modal-surface-hover, rgba(255, 255, 255, 0.09));
+      color: var(--card-modal-text, #fafafa);
+    }
+
+    &:active {
+      transform: scale(0.96);
     }
 
     &:focus-visible {
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.38);
-      outline: 2px solid #fff;
-      outline-offset: 1px;
+      box-shadow:
+        0 0 0 2px #18181b,
+        0 0 0 4px #60a5fa;
+      outline: none;
     }
   }
 
-  .coverButtonActive {
-    background: rgba(219, 234, 254, 0.94);
-    color: #1d4ed8;
+  .actionDivider {
+    background: var(--card-modal-border, rgba(255, 255, 255, 0.12));
+    height: 18px;
+    margin: 0 1px;
+    width: 1px;
+  }
+
+  .actionLabel {
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .actionButtonActive {
+    background: var(--card-modal-accent-soft, rgba(59, 130, 246, 0.2));
+    color: #bfdbfe;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.3);
+      color: #dbeafe;
+    }
+  }
+
+  .coverActionButton {
+    font-size: 12px;
+    font-weight: 600;
+    gap: 7px;
+    padding: 0 10px;
+    width: auto;
+  }
+
+  .actionsMenu {
+    animation: actionsMenuEnter 120ms ease both;
+    background: rgba(var(--glass-bg-strong-rgb), 0.98);
+    border: 1px solid var(--card-modal-border, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.32),
+      0 2px 6px rgba(0, 0, 0, 0.24);
+    color: var(--card-modal-text, #f4f4f5);
+    min-width: 184px;
+    padding: 6px;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 7px);
+    z-index: 4;
+  }
+
+  .actionsMenuConfirmation {
+    min-width: 248px;
+    padding: 12px;
+  }
+
+  .actionsMenuDivider {
+    background: var(--card-modal-border, rgba(255, 255, 255, 0.1));
+    display: block;
+    height: 1px;
+    margin: 5px 4px;
+  }
+
+  .actionsMenuItem {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    color: var(--card-modal-muted, #d4d4d8);
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-size: 13px;
+    gap: 10px;
+    min-height: 34px;
+    padding: 7px 9px;
+    text-align: left;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease;
+    width: 100%;
+
+    i {
+      flex: 0 0 16px;
+      margin: 0;
+      width: 16px;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: var(--card-modal-surface-hover, rgba(255, 255, 255, 0.09));
+      color: var(--card-modal-text, #fafafa);
+      outline: none;
+    }
+  }
+
+  .actionsMenuItemDanger {
+    color: var(--card-modal-danger, #fda4af);
+
+    &:hover,
+    &:focus-visible {
+      background: var(--card-modal-danger-soft, rgba(244, 63, 94, 0.16));
+      color: var(--card-modal-danger, #fecdd3);
+    }
+  }
+
+  .confirmationMessage {
+    color: var(--card-modal-text, #e4e4e7);
+    font-size: 13px;
+    line-height: 19px;
+    margin: 0 0 12px;
+  }
+
+  .confirmationActions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .confirmationCancelButton,
+  .confirmationDeleteButton {
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    min-height: 32px;
+    padding: 7px 11px;
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px #60a5fa;
+      outline: none;
+    }
+  }
+
+  .confirmationCancelButton {
+    background: var(--card-modal-surface-hover, rgba(255, 255, 255, 0.08));
+    color: var(--card-modal-text, #e4e4e7);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.13);
+    }
+  }
+
+  .confirmationDeleteButton {
+    background: var(--card-modal-danger, #e11d48);
+    color: #fff;
+
+    &:hover {
+      background: #be123c;
+    }
+  }
+
+  @keyframes actionsMenuEnter {
+    from {
+      opacity: 0;
+      transform: translateY(-3px) scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .coverButton,
-    .dot,
+    .actionButton,
+    .actionsMenu,
     .navigation,
     .slide,
-    .thumbnail {
+    .thumbnail,
+    .videoPlayButton {
+      animation: none;
       transition: none;
     }
   }
 
   @media only screen and (width < 768px) {
-    .navigation {
-      opacity: 1;
-      transform: scale(1);
-    }
-
     .next {
-      right: 10px;
+      right: -40px;
     }
 
     .previous {
-      left: 10px;
+      left: -40px;
     }
 
     .thumbnail {
       flex-basis: 60px;
-      height: 48px;
+      height: 52px;
     }
 
-    .coverButton {
+    .videoPlayButton {
+      font-size: 15px;
+      height: 46px;
+      width: 46px;
+    }
+
+    .actionToolbar {
       right: 10px;
       top: 10px;
+    }
+
+    .viewport {
+      margin: 0 44px;
+    }
+  }
+
+  @media only screen and (width < 480px) {
+    .next {
+      right: 8px;
+    }
+
+    .previous {
+      left: 8px;
+    }
+
+    .viewport {
+      margin: 0;
     }
   }
 }

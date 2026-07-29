@@ -25,7 +25,10 @@ import { isModifierKeyPressed } from '../../../utils/event-helpers';
 import { CardTypeIcons } from '../../../constants/Icons';
 import { MentionPlaceholders } from '../../../constants/Enums';
 import MentionTriggers from '../../../constants/MentionTriggers';
-import { processSupportedFiles } from '../../../utils/file-helpers';
+import {
+  preventFileDropPropagation,
+  processSupportedFiles,
+} from '../../../utils/file-helpers';
 import SelectCardTypeStep from '../SelectCardTypeStep';
 import UserAvatar from '../../users/UserAvatar';
 import LabelChip from '../../labels/LabelChip';
@@ -441,7 +444,7 @@ const AddCard = React.memo(
 
     const handleDrop = useCallback(
       async e => {
-        e.preventDefault();
+        preventFileDropPropagation(e);
         setIsDragOver(false);
 
         const files = Array.from(e.dataTransfer.files);

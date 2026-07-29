@@ -8,6 +8,8 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Icon, Button, Loader } from 'semantic-ui-react';
 
+import { CloseButton } from '../../../lib/custom-ui';
+
 import styles from './FilePreviewModal.module.scss';
 
 const ImagePreview = ({ file, onClose }) => {
@@ -87,7 +89,7 @@ const ImagePreview = ({ file, onClose }) => {
       <div className={styles.errorContainer}>
         <Icon name="exclamation triangle" size="huge" />
         <p>{t('common.errorLoadingImage')}</p>
-        <Button onClick={onClose}>{t('common.close')}</Button>
+        <Button onClick={onClose}>{t('action.close')}</Button>
       </div>
     );
   }
@@ -130,11 +132,10 @@ const ImagePreview = ({ file, onClose }) => {
             title={t('common.download')}
           />
 
-          <Button
-            icon="close"
-            size="mini"
+          <CloseButton
+            ariaLabel={t('action.close')}
             onClick={onClose}
-            title={t('common.close')}
+            title={t('action.close')}
           />
         </div>
       </div>

@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Droppable } from '@hello-pangea/dnd';
-import { Progress } from 'semantic-ui-react';
+import { Icon, Progress } from 'semantic-ui-react';
 import { useDidUpdate } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
@@ -22,20 +22,14 @@ import AddTask from './AddTask';
 import styles from './TaskList.module.scss';
 
 const TaskList = React.memo(({ id }) => {
-  const selectTaskListById = useMemo(
-    () => selectors.makeSelectTaskListById(),
-    []
-  );
+  const selectTaskListById = useMemo(() => selectors.makeSelectTaskListById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
-  const selectTasksByTaskListId = useMemo(
-    () => selectors.makeSelectTasksByTaskListId(),
-    []
-  );
+  const selectTasksByTaskListId = useMemo(() => selectors.makeSelectTasksByTaskListId(), []);
 
-  const taskList = useSelector(state => selectTaskListById(state, id));
-  const tasks = useSelector(state => selectTasksByTaskListId(state, id));
+  const taskList = useSelector((state) => selectTaskListById(state, id));
+  const tasks = useSelector((state) => selectTasksByTaskListId(state, id));
 
-  const canEdit = useSelector(state => {
+  const canEdit = useSelector((state) => {
     const { listId } = selectors.selectCurrentCard(state);
     const list = selectListById(state, listId);
 
@@ -43,11 +37,8 @@ const TaskList = React.memo(({ id }) => {
       return false;
     }
 
-    const boardMembership =
-      selectors.selectCurrentUserMembershipForCurrentBoard(state);
-    return (
-      !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR
-    );
+    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
   });
 
   const [t] = useTranslation();
@@ -56,12 +47,8 @@ const TaskList = React.memo(({ id }) => {
 
   // TODO: move to selector?
   const completedTasksTotal = useMemo(
-    () =>
-      tasks.reduce(
-        (result, task) => (task.isCompleted ? result + 1 : result),
-        0
-      ),
-    [tasks]
+    () => tasks.reduce((result, task) => (task.isCompleted ? result + 1 : result), 0),
+    [tasks],
   );
 
   const handleAddClick = useCallback(() => {
@@ -79,21 +66,24 @@ const TaskList = React.memo(({ id }) => {
   return (
     <>
       {tasks.length > 0 && (
-        <>
+        <div className={styles.progressRow}>
           <span className={styles.progressWrapper}>
             <Progress
-              autoSuccess
               value={completedTasksTotal}
               total={tasks.length}
               color="blue"
               size="tiny"
+              aria-label={`${taskList.name}: ${completedTasksTotal}/${tasks.length}`}
+              aria-valuemin={0}
+              aria-valuemax={tasks.length}
+              aria-valuenow={completedTasksTotal}
               className={styles.progress}
             />
           </span>
-          <span className={styles.count}>
+          <span className={styles.count} aria-hidden="true">
             {completedTasksTotal}/{tasks.length}
           </span>
-        </>
+        </div>
       )}
       <Droppable
         droppableId={`task-list:${id}`}
@@ -102,7 +92,13 @@ const TaskList = React.memo(({ id }) => {
       >
         {({ innerRef, droppableProps, placeholder }) => (
           // eslint-disable-next-line react/jsx-props-no-spreading
-          <div {...droppableProps} ref={innerRef} className={styles.tasks}>
+          <div
+            {...droppableProps}
+            ref={innerRef}
+            role="group"
+            aria-label={taskList.name}
+            className={styles.tasks}
+          >
             {tasks.map((task, index) => (
               <Task key={task.id} id={task.id} index={index} />
             ))}
@@ -111,21 +107,16 @@ const TaskList = React.memo(({ id }) => {
         )}
       </Droppable>
       {canEdit && (
-        <AddTask
-          taskListId={id}
-          isOpened={isAddOpened}
-          onClose={handleAddClose}
-        >
+        <AddTask taskListId={id} isOpened={isAddOpened} onClose={handleAddClose}>
           <button
             type="button"
             disabled={!taskList.isPersisted}
             className={styles.taskButton}
             onClick={handleAddClick}
           >
+            <Icon fitted name="add" size="small" />
             <span className={styles.taskButtonText}>
-              {tasks.length > 0
-                ? t('action.addAnotherTask')
-                : t('action.addTask')}
+              {tasks.length > 0 ? t('action.addAnotherTask') : t('action.addTask')}
             </span>
           </button>
         </AddTask>

@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Draggable } from '@hello-pangea/dnd';
 import { Button, Icon } from 'semantic-ui-react';
 
@@ -20,6 +21,7 @@ import TaskList from '../../../task-lists/TaskList';
 import styles from './Item.module.scss';
 
 const Item = React.memo(({ id, index }) => {
+  const [t] = useTranslation();
   const selectTaskListById = useMemo(
     () => selectors.makeSelectTaskListById(),
     []
@@ -48,7 +50,10 @@ const Item = React.memo(({ id, index }) => {
           <div
             {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
             ref={innerRef}
-            className={classNames(styles.wrapper, styles.wrapperDragging)}
+            className={classNames(
+              styles.wrapper,
+              isDragging && styles.wrapperDragging
+            )}
           >
             <div className={styles.moduleWrapper}>
               <Icon name="check square outline" className={styles.moduleIcon} />
@@ -62,7 +67,12 @@ const Item = React.memo(({ id, index }) => {
                 >
                   {taskList.isPersisted && canEdit && (
                     <EditPopup taskListId={taskList.id}>
-                      <Button className={styles.editButton}>
+                      <Button
+                        type="button"
+                        aria-label={t('action.edit')}
+                        title={t('action.edit')}
+                        className={styles.editButton}
+                      >
                         <Icon fitted name="pencil" size="small" />
                       </Button>
                     </EditPopup>

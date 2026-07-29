@@ -5,11 +5,11 @@
 
 :global(#app) {
   .field {
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    box-shadow: none;
-    color: #17394d;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 6px;
+    box-shadow: none !important;
+    color: var(--card-modal-text, #17394d);
     font-weight: bold;
     margin: -5px;
     overflow: hidden;
@@ -18,9 +18,9 @@
     width: 100%;
 
     &:focus {
-      background: #fff;
-      border-color: #5ba4cf;
-      box-shadow: 0 0 2px 0 #5ba4cf;
+      background: var(--card-modal-surface-hover, #fff) !important;
+      box-shadow: 0 0 0 2px
+        var(--card-modal-accent-soft, rgba(91, 164, 207, 0.22)) !important;
       outline: 0;
     }
   }

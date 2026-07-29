@@ -5,54 +5,92 @@
 
 :global(#app) {
   .count {
-    color: #8c8c8c;
-    display: inline-block;
-    font-size: 14px;
-    line-height: 14px;
+    color: var(--card-modal-muted, #7b8494);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 16px;
+    white-space: nowrap;
     text-align: right;
-    vertical-align: top;
-    width: 50px;
   }
 
   .progress {
-    margin: 0 0 16px;
+    background: var(--card-modal-surface-hover, #e3e7ec) !important;
+    border-radius: 999px !important;
+    height: 5px !important;
+    margin: 0 !important;
+    overflow: hidden;
+    width: 100% !important;
+
+    :global(.bar) {
+      background: var(--card-modal-accent, #2563eb) !important;
+      border-radius: 999px !important;
+      min-width: 0 !important;
+    }
   }
 
   .progressWrapper {
-    display: inline-block;
-    padding: 3px 0;
-    vertical-align: top;
-    width: calc(100% - 50px);
+    min-width: 0;
+  }
+
+  .progressRow {
+    align-items: center;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin: 2px 0 10px;
   }
 
   .tasks {
+    display: grid;
+    gap: 2px;
     min-height: 1px;
   }
 
   .taskButton {
+    align-items: center;
     background: transparent;
     border: none;
-    border-radius: 3px;
-    color: #6b808c;
+    border-radius: 8px;
+    color: var(--card-modal-muted, #667085);
     cursor: pointer;
-    display: block;
-    margin-top: 6px;
-    min-height: 54px;
+    display: flex;
+    font-size: 14px;
+    font-weight: 500;
+    gap: 8px;
+    margin-top: 4px;
+    min-height: 32px;
     outline: none;
-    padding: 8px 12px;
-    position: relative;
+    padding: 6px 8px;
     text-align: left;
     text-decoration: none;
+    transition:
+      background 120ms ease,
+      color 120ms ease;
     width: 100%;
 
     &:hover {
-      background: rgba(9, 30, 66, 0.04);
-      color: #092d42;
+      background: var(--card-modal-surface-hover, #eef1f4);
+      color: var(--card-modal-text, #1f2937);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px
+        var(--card-modal-accent-soft, rgba(37, 99, 235, 0.2));
+      outline: none;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
     }
   }
 
   .taskButtonText {
-    position: absolute;
-    top: 12px;
+    line-height: 20px;
   }
 }

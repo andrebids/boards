@@ -208,39 +208,6 @@
     }
   }
 
-  .closeGroupFormButton {
-    align-items: center;
-    background: transparent;
-    border: 0;
-    border-radius: 7px;
-    color: var(--chat-muted);
-    cursor: pointer;
-    display: inline-flex;
-    flex: 0 0 auto;
-    height: 30px;
-    justify-content: center;
-    padding: 0;
-    transition:
-      background-color var(--chat-motion-fast) var(--chat-ease),
-      color var(--chat-motion-fast) var(--chat-ease),
-      transform var(--chat-motion-fast) var(--chat-ease);
-    width: 30px;
-
-    &:hover {
-      background: var(--chat-default-hover);
-      color: var(--chat-foreground);
-    }
-
-    &:active {
-      transform: scale(0.94);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--chat-accent);
-      outline-offset: 1px;
-    }
-  }
-
   .groupTitleField {
     display: flex;
     flex: 0 0 auto;

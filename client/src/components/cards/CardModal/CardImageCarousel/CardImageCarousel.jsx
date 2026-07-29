@@ -5,6 +5,7 @@
 
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Gallery, Item as GalleryItem } from 'react-photoswipe-gallery';
@@ -19,6 +20,95 @@ import { BoardMembershipRoles } from '../../../../constants/Enums';
 import styles from './CardImageCarousel.module.scss';
 
 const SWIPE_THRESHOLD = 48;
+
+const isVideoAttachment = (attachment) =>
+  Boolean(
+    attachment.data.video ||
+      (attachment.data.mimeType && attachment.data.mimeType.startsWith('video/')),
+  );
+
+const getThumbnailUrl = (attachment, preferredSize = '720') => {
+  if (!attachment.data.thumbnailUrls) {
+    return null;
+  }
+
+  const fallbackSize = preferredSize === '720' ? '360' : '720';
+
+  return (
+    attachment.data.thumbnailUrls[`outside${preferredSize}`] ||
+    attachment.data.thumbnailUrls[`outside${fallbackSize}`] ||
+    null
+  );
+};
+
+const VideoPlayer = React.memo(({ attachment, posterUrl }) => {
+  const [t] = useTranslation();
+  const videoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasPlaybackError, setHasPlaybackError] = useState(false);
+
+  const handlePlayClick = useCallback(() => {
+    if (!videoRef.current) {
+      return;
+    }
+
+    setHasPlaybackError(false);
+
+    const playPromise = videoRef.current.play();
+
+    if (playPromise) {
+      playPromise.catch(() => {
+        setIsPlaying(false);
+      });
+    }
+  }, []);
+
+  return (
+    <div className={styles.videoPlayer}>
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+      <video
+        ref={videoRef}
+        src={attachment.data.url}
+        poster={posterUrl || undefined}
+        controls
+        controlsList="nodownload"
+        playsInline
+        preload="metadata"
+        aria-label={attachment.name}
+        className={styles.video}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onError={() => setHasPlaybackError(true)}
+      />
+      {!isPlaying && (
+        <button
+          type="button"
+          className={styles.videoPlayButton}
+          aria-label={t('action.playVideo', {
+            name: attachment.name,
+          })}
+          onClick={handlePlayClick}
+        >
+          <Icon fitted name="play" aria-hidden="true" />
+        </button>
+      )}
+      {hasPlaybackError && (
+        <span className={styles.videoPlaybackError} role="alert">
+          {t('common.videoPlaybackFailed')}
+        </span>
+      )}
+    </div>
+  );
+});
+
+VideoPlayer.propTypes = {
+  attachment: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  posterUrl: PropTypes.string,
+};
+
+VideoPlayer.defaultProps = {
+  posterUrl: undefined,
+};
 
 const CardImageCarousel = React.memo(() => {
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
@@ -38,38 +128,42 @@ const CardImageCarousel = React.memo(() => {
   });
 
   const images = useMemo(() => {
-    const imageAttachments = attachments.filter(
+    const visualAttachments = attachments.filter(
       (attachment) =>
         attachment.isPersisted !== false &&
         attachment.data &&
-        attachment.data.image &&
-        attachment.data.thumbnailUrls &&
-        attachment.data.url,
+        attachment.data.url &&
+        ((attachment.data.image && attachment.data.thumbnailUrls) || isVideoAttachment(attachment)),
     );
 
     if (!card.coverAttachmentId) {
-      return imageAttachments;
+      return visualAttachments;
     }
 
-    const coverAttachment = imageAttachments.find(
+    const coverAttachment = visualAttachments.find(
       (attachment) => attachment.id === card.coverAttachmentId,
     );
 
     if (!coverAttachment) {
-      return imageAttachments;
+      return visualAttachments;
     }
 
     return [
       coverAttachment,
-      ...imageAttachments.filter((attachment) => attachment.id !== coverAttachment.id),
+      ...visualAttachments.filter((attachment) => attachment.id !== coverAttachment.id),
     ];
   }, [attachments, card.coverAttachmentId]);
 
   const [t] = useTranslation();
   const dispatch = useDispatch();
   const [selectedId, setSelectedId] = useState(null);
+  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [activateClosable, deactivateClosable] = useContext(ClosableContext);
   const rootRef = useRef(null);
+  const actionToolbarRef = useRef(null);
+  const actionsButtonRef = useRef(null);
+  const actionsMenuRef = useRef(null);
   const pointerStartXRef = useRef(null);
   const didSwipeRef = useRef(false);
 
@@ -79,6 +173,7 @@ const CardImageCarousel = React.memo(() => {
   );
   const selectedImage = images[selectedIndex];
   const hasMultipleImages = images.length > 1;
+  const selectedIsVideo = selectedImage ? isVideoAttachment(selectedImage) : false;
   const isCover = selectedImage?.id === card.coverAttachmentId;
 
   useEffect(() => {
@@ -91,6 +186,49 @@ const CardImageCarousel = React.memo(() => {
       setSelectedId(images[0].id);
     }
   }, [images, selectedId]);
+
+  useEffect(() => {
+    setIsActionsMenuOpen(false);
+    setIsDeleteConfirmationOpen(false);
+  }, [selectedId]);
+
+  useEffect(() => {
+    if (!isActionsMenuOpen) {
+      return undefined;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      actionsMenuRef.current?.querySelector('button')?.focus();
+    });
+
+    const handleDocumentPointerDown = (event) => {
+      if (!actionToolbarRef.current?.contains(event.target)) {
+        setIsActionsMenuOpen(false);
+        setIsDeleteConfirmationOpen(false);
+      }
+    };
+
+    const handleDocumentKeyDown = (event) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      setIsActionsMenuOpen(false);
+      setIsDeleteConfirmationOpen(false);
+      actionsButtonRef.current?.focus();
+    };
+
+    document.addEventListener('pointerdown', handleDocumentPointerDown);
+    document.addEventListener('keydown', handleDocumentKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      document.removeEventListener('pointerdown', handleDocumentPointerDown);
+      document.removeEventListener('keydown', handleDocumentKeyDown);
+    };
+  }, [isActionsMenuOpen, isDeleteConfirmationOpen]);
 
   const selectIndex = useCallback(
     (index) => {
@@ -148,19 +286,11 @@ const CardImageCarousel = React.memo(() => {
       event.stopPropagation();
       selectIndex(nextIndex);
 
-      const controlType = event.target.hasAttribute('data-carousel-thumbnail')
-        ? 'thumbnail'
-        : event.target.hasAttribute('data-carousel-dot')
-          ? 'dot'
-          : null;
-
-      if (controlType) {
+      if (event.target.hasAttribute('data-carousel-thumbnail')) {
         const normalizedIndex = (nextIndex + images.length) % images.length;
 
         requestAnimationFrame(() => {
-          rootRef.current
-            ?.querySelector(`[data-carousel-${controlType}="${normalizedIndex}"]`)
-            ?.focus();
+          rootRef.current?.querySelector(`[data-carousel-thumbnail="${normalizedIndex}"]`)?.focus();
         });
       }
     },
@@ -207,7 +337,7 @@ const CardImageCarousel = React.memo(() => {
       event.preventDefault();
       event.stopPropagation();
 
-      if (!selectedImage) {
+      if (!selectedImage || selectedIsVideo) {
         return;
       }
 
@@ -217,12 +347,112 @@ const CardImageCarousel = React.memo(() => {
         }),
       );
     },
-    [dispatch, isCover, selectedImage],
+    [dispatch, isCover, selectedImage, selectedIsVideo],
   );
+
+  const handleDownloadClick = useCallback(
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!selectedImage) {
+        return;
+      }
+
+      const linkElement = document.createElement('a');
+      linkElement.href = selectedImage.data.url;
+      linkElement.download = selectedImage.data.filename || selectedImage.name;
+      linkElement.target = '_blank';
+      linkElement.click();
+    },
+    [selectedImage],
+  );
+
+  const handleActionsMenuToggleClick = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsActionsMenuOpen((isOpen) => {
+      if (isOpen) {
+        setIsDeleteConfirmationOpen(false);
+      }
+
+      return !isOpen;
+    });
+  }, []);
+
+  const handleActionsMenuDownloadClick = useCallback(
+    (event) => {
+      handleDownloadClick(event);
+      setIsActionsMenuOpen(false);
+      setIsDeleteConfirmationOpen(false);
+      window.requestAnimationFrame(() => {
+        actionsButtonRef.current?.focus();
+      });
+    },
+    [handleDownloadClick],
+  );
+
+  const handleDeleteRequestClick = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDeleteConfirmationOpen(true);
+  }, []);
+
+  const handleDeleteCancelClick = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDeleteConfirmationOpen(false);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (!selectedImage) {
+      return;
+    }
+
+    setIsActionsMenuOpen(false);
+    setIsDeleteConfirmationOpen(false);
+    dispatch(entryActions.deleteAttachment(selectedImage.id));
+  }, [dispatch, selectedImage]);
+
+  const handleActionsMenuKeyDown = useCallback((event) => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      return;
+    }
+
+    const buttons = Array.from(actionsMenuRef.current?.querySelectorAll('button') || []);
+    const currentIndex = buttons.indexOf(document.activeElement);
+
+    if (!buttons.length) {
+      return;
+    }
+
+    let nextIndex;
+    if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = buttons.length - 1;
+    } else if (event.key === 'ArrowDown') {
+      nextIndex = (currentIndex + 1) % buttons.length;
+    } else {
+      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    buttons[nextIndex].focus();
+  }, []);
 
   if (!selectedImage) {
     return null;
   }
+
+  const coverActionLabel = isCover
+    ? t('action.removeCover', {
+        context: 'title',
+      })
+    : t('action.makeCover', {
+        context: 'title',
+      });
 
   return (
     <Gallery
@@ -250,7 +480,7 @@ const CardImageCarousel = React.memo(() => {
       }}
       onBeforeOpen={handleBeforeGalleryOpen}
     >
-      <section ref={rootRef} className={styles.carousel} aria-label={t('common.cardImages')}>
+      <section ref={rootRef} className={styles.carousel} aria-label={t('common.cardMedia')}>
         <div
           className={styles.viewport}
           onPointerDown={handlePointerDown}
@@ -259,6 +489,23 @@ const CardImageCarousel = React.memo(() => {
         >
           {images.map((image, index) => {
             const isSelected = index === selectedIndex;
+            const isVideo = isVideoAttachment(image);
+            const thumbnailUrl = getThumbnailUrl(image);
+
+            if (isVideo) {
+              return (
+                <div
+                  key={image.id}
+                  className={classNames(
+                    styles.slide,
+                    styles.videoSlide,
+                    isSelected && styles.slideSelected,
+                  )}
+                >
+                  {isSelected && <VideoPlayer attachment={image} posterUrl={thumbnailUrl} />}
+                </div>
+              );
+            }
 
             return (
               <GalleryItem
@@ -290,11 +537,7 @@ const CardImageCarousel = React.memo(() => {
                     }}
                   >
                     <img
-                      src={
-                        image.data.thumbnailUrls.outside720 ||
-                        image.data.thumbnailUrls.outside360 ||
-                        image.data.url
-                      }
+                      src={getThumbnailUrl(image) || image.data.url}
                       alt={image.name}
                       className={styles.image}
                     />
@@ -308,7 +551,7 @@ const CardImageCarousel = React.memo(() => {
               <button
                 type="button"
                 className={classNames(styles.navigation, styles.previous)}
-                aria-label={t('action.previousImage')}
+                aria-label={t('action.previousMedia')}
                 onKeyDown={handleKeyDown}
                 onClick={selectPrevious}
               >
@@ -317,7 +560,7 @@ const CardImageCarousel = React.memo(() => {
               <button
                 type="button"
                 className={classNames(styles.navigation, styles.next)}
-                aria-label={t('action.nextImage')}
+                aria-label={t('action.nextMedia')}
                 onKeyDown={handleKeyDown}
                 onClick={selectNext}
               >
@@ -325,91 +568,181 @@ const CardImageCarousel = React.memo(() => {
               </button>
             </>
           )}
-          {canEdit && (
+          <div
+            ref={actionToolbarRef}
+            className={styles.actionToolbar}
+            role="group"
+            aria-label={t('common.actions')}
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
+          >
+            {canEdit && !selectedIsVideo && (
+              <button
+                type="button"
+                className={classNames(
+                  styles.actionButton,
+                  styles.coverActionButton,
+                  isCover && styles.actionButtonActive,
+                )}
+                aria-label={coverActionLabel}
+                aria-pressed={isCover}
+                title={coverActionLabel}
+                onClick={handleToggleCoverClick}
+              >
+                <Icon fitted name={isCover ? 'check circle' : 'image outline'} aria-hidden="true" />
+                <span className={styles.actionLabel}>{t('common.cover')}</span>
+              </button>
+            )}
+            {canEdit && !selectedIsVideo && (
+              <span className={styles.actionDivider} aria-hidden="true" />
+            )}
             <button
+              ref={actionsButtonRef}
               type="button"
-              className={classNames(styles.coverButton, isCover && styles.coverButtonActive)}
-              aria-pressed={isCover}
-              onPointerDown={(event) => event.stopPropagation()}
-              onPointerUp={(event) => event.stopPropagation()}
-              onClick={handleToggleCoverClick}
+              className={styles.actionButton}
+              aria-label={t('common.actions')}
+              aria-controls={isActionsMenuOpen ? 'card-media-actions-menu' : undefined}
+              aria-expanded={isActionsMenuOpen}
+              aria-haspopup="menu"
+              title={t('common.actions')}
+              onClick={handleActionsMenuToggleClick}
             >
-              <Icon fitted name={isCover ? 'check' : 'image outline'} aria-hidden="true" />
-              <span>
-                {isCover
-                  ? t('action.removeCover', {
-                      context: 'title',
-                    })
-                  : t('action.makeCover', {
-                      context: 'title',
-                    })}
-              </span>
+              <Icon fitted name="ellipsis horizontal" aria-hidden="true" />
             </button>
-          )}
+            {isActionsMenuOpen && isDeleteConfirmationOpen && (
+              <div
+                ref={actionsMenuRef}
+                id="card-media-actions-menu"
+                className={classNames(styles.actionsMenu, styles.actionsMenuConfirmation)}
+                role="alertdialog"
+                aria-label={t('common.deleteAttachment', {
+                  context: 'title',
+                })}
+                aria-modal="true"
+                tabIndex={-1}
+              >
+                <p className={styles.confirmationMessage}>
+                  {t('common.areYouSureYouWantToDeleteThisAttachment')}
+                </p>
+                <div className={styles.confirmationActions}>
+                  <button
+                    type="button"
+                    className={styles.confirmationCancelButton}
+                    onClick={handleDeleteCancelClick}
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.confirmationDeleteButton}
+                    onClick={handleDeleteConfirm}
+                  >
+                    {t('action.deleteAttachment')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isActionsMenuOpen && !isDeleteConfirmationOpen && (
+              <div
+                ref={actionsMenuRef}
+                id="card-media-actions-menu"
+                className={styles.actionsMenu}
+                role="menu"
+                aria-label={t('common.actions')}
+                tabIndex={-1}
+                onKeyDown={handleActionsMenuKeyDown}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={styles.actionsMenuItem}
+                  onClick={handleActionsMenuDownloadClick}
+                >
+                  <Icon fitted name="download" aria-hidden="true" />
+                  <span>{t('common.download')}</span>
+                </button>
+                {canEdit && (
+                  <>
+                    <span className={styles.actionsMenuDivider} aria-hidden="true" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className={classNames(styles.actionsMenuItem, styles.actionsMenuItemDanger)}
+                      onClick={handleDeleteRequestClick}
+                    >
+                      <Icon fitted name="trash alternate outline" aria-hidden="true" />
+                      <span>
+                        {t('common.deleteAttachment', {
+                          context: 'title',
+                        })}
+                      </span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         <div className={styles.status} aria-live="polite">
-          {t('common.imagePosition', {
+          {t('common.mediaPosition', {
             current: selectedIndex + 1,
             total: images.length,
           })}
         </div>
         {hasMultipleImages && (
-          <>
-            <div className={styles.dots} role="group" aria-label={t('common.cardImages')}>
-              {images.map((image, index) => {
-                const isSelected = index === selectedIndex;
+          <div className={styles.thumbnails} role="group" aria-label={t('common.cardMedia')}>
+            {images.map((image, index) => {
+              const isSelected = index === selectedIndex;
+              const isVideo = isVideoAttachment(image);
+              const thumbnailUrl = getThumbnailUrl(image, '360');
+              let thumbnailNode;
 
-                return (
-                  <button
-                    key={image.id}
-                    type="button"
-                    tabIndex={isSelected ? 0 : -1}
-                    aria-current={isSelected ? 'true' : undefined}
-                    aria-label={t('common.imagePosition', {
-                      current: index + 1,
-                      total: images.length,
-                    })}
-                    data-carousel-dot={index}
-                    className={classNames(styles.dot, isSelected && styles.dotSelected)}
-                    onKeyDown={handleKeyDown}
-                    onClick={() => setSelectedId(image.id)}
+              if (thumbnailUrl) {
+                thumbnailNode = <img src={thumbnailUrl} alt="" className={styles.thumbnailImage} />;
+              } else if (isVideo) {
+                thumbnailNode = (
+                  <video
+                    src={image.data.url}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    aria-hidden="true"
+                    className={styles.thumbnailImage}
                   />
                 );
-              })}
-            </div>
-            <div className={styles.thumbnails} role="group" aria-label={t('common.cardImages')}>
-              {images.map((image, index) => {
-                const isSelected = index === selectedIndex;
-
-                return (
-                  <button
-                    key={image.id}
-                    type="button"
-                    tabIndex={isSelected ? 0 : -1}
-                    aria-current={isSelected ? 'true' : undefined}
-                    aria-label={t('common.imagePosition', {
-                      current: index + 1,
-                      total: images.length,
-                    })}
-                    data-carousel-thumbnail={index}
-                    className={classNames(styles.thumbnail, isSelected && styles.thumbnailSelected)}
-                    onKeyDown={handleKeyDown}
-                    onClick={() => setSelectedId(image.id)}
-                  >
-                    <img
-                      src={
-                        image.data.thumbnailUrls.outside360 ||
-                        image.data.thumbnailUrls.outside720 ||
-                        image.data.url
-                      }
-                      alt=""
-                      className={styles.thumbnailImage}
-                    />
-                  </button>
+              } else {
+                thumbnailNode = (
+                  <span className={styles.thumbnailFallback} aria-hidden="true">
+                    <Icon fitted name="file image outline" />
+                  </span>
                 );
-              })}
-            </div>
-          </>
+              }
+
+              return (
+                <button
+                  key={image.id}
+                  type="button"
+                  tabIndex={isSelected ? 0 : -1}
+                  aria-current={isSelected ? 'true' : undefined}
+                  aria-label={t('common.mediaPosition', {
+                    current: index + 1,
+                    total: images.length,
+                  })}
+                  data-carousel-thumbnail={index}
+                  className={classNames(styles.thumbnail, isSelected && styles.thumbnailSelected)}
+                  onKeyDown={handleKeyDown}
+                  onClick={() => setSelectedId(image.id)}
+                >
+                  {thumbnailNode}
+                  {isVideo && (
+                    <span className={styles.thumbnailVideoIndicator} aria-hidden="true">
+                      <Icon fitted name="play" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         )}
       </section>
     </Gallery>

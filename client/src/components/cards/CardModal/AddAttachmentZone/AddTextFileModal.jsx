@@ -7,7 +7,7 @@ import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Button, Form, Header, Modal } from 'semantic-ui-react';
-import { Input } from '../../../../lib/custom-ui';
+import { CloseButton, Input } from '../../../../lib/custom-ui';
 
 import { useForm, useNestedRef } from '../../../../hooks';
 
@@ -46,7 +46,13 @@ const AddTextFileModal = React.memo(({ content, onCreate, onClose }) => {
   }, [nameFieldRef]);
 
   return (
-    <Modal open basic closeIcon size="tiny" onClose={onClose}>
+    <Modal
+      open
+      basic
+      closeIcon={<CloseButton ariaLabel={t('action.close')} className="close" />}
+      size="tiny"
+      onClose={onClose}
+    >
       <Modal.Content>
         <Header inverted size="huge">
           {t('common.createTextFile', {

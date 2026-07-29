@@ -4,37 +4,133 @@
  */
 
 :global(#app) {
+  .theme {
+    --g-color-base-background: var(--card-modal-surface, #141922);
+    --g-color-base-generic: var(--card-modal-surface-hover, #202a38);
+    --g-color-base-generic-hover: var(--card-modal-surface-hover, #202a38);
+    --g-color-base-simple-hover: var(--card-modal-surface-hover, #202a38);
+    --g-color-base-selection: var(
+      --card-modal-accent-soft,
+      rgba(59, 130, 246, 0.2)
+    );
+    --g-color-base-selection-hover: var(
+      --card-modal-accent-soft,
+      rgba(59, 130, 246, 0.2)
+    );
+    --g-color-base-float: var(--card-modal-surface, #141922);
+    --g-color-base-float-hover: var(--card-modal-surface-hover, #202a38);
+    --g-color-base-modal: var(--card-modal-surface, #141922);
+    --g-color-text-primary: var(--card-modal-text, #f0f3f7);
+    --g-color-text-secondary: var(
+      --card-modal-muted,
+      rgba(240, 243, 247, 0.75)
+    );
+    --g-color-text-hint: var(--card-modal-muted, rgba(240, 243, 247, 0.75));
+    --g-color-text-link: var(--card-modal-accent, #3b82f6);
+    --g-color-text-link-hover: var(--card-modal-accent, #3b82f6);
+    --g-color-line-generic: var(--card-modal-border, rgba(240, 243, 247, 0.1));
+    --g-color-line-generic-hover: var(
+      --card-modal-border,
+      rgba(240, 243, 247, 0.1)
+    );
+    --g-color-line-generic-active: var(--card-modal-accent, #3b82f6);
+    --g-color-line-generic-solid: var(
+      --card-modal-border,
+      rgba(240, 243, 247, 0.1)
+    );
+
+    color: var(--card-modal-text, #f0f3f7);
+  }
+
   .editor {
     min-height: 200px;
+    color: var(--card-modal-text, #f0f3f7);
 
     :global {
-
       .g-md-markup-editor__editor,
       .g-md-wysiwyg-editor__editor {
-        background: #fff;
+        background: transparent;
+        color: var(--card-modal-text, #f0f3f7);
       }
 
+      .g-md-markup-editor__toolbar,
       .g-md-wysiwyg-editor__toolbar {
-        background: #f5f6f7;
+        background: var(--card-modal-surface, #141922);
+        border-bottom: 1px solid
+          var(--card-modal-border, rgba(240, 243, 247, 0.1));
         z-index: 2000;
       }
 
       .yfm-editor {
         height: 100%;
+        color: var(--card-modal-text, #f0f3f7);
+      }
+
+      .yfm,
+      .ProseMirror {
+        --yfm-color-text-private: var(--card-modal-text, #f0f3f7) !important;
+
+        color: var(--card-modal-text, #f0f3f7);
+      }
+
+      .ProseMirror p.is-editor-empty:first-child::before {
+        color: var(--card-modal-muted, rgba(240, 243, 247, 0.75));
+      }
+
+      .CodeMirror,
+      .CodeMirror-gutters {
+        background: transparent;
       }
     }
   }
 
   .wrapper {
-    --g-md-editor-padding: 6px 12px;
-    --g-md-toolbar-padding: 6px 12px;
+    --g-md-editor-padding: 12px;
+    --g-md-toolbar-padding: 6px 8px;
     --g-md-toolbar-sticky-offset: -21px;
 
-    border: 1px solid rgba(9, 30, 66, 0.13);
-    border-radius: 3px;
+    overflow: hidden;
+    background: var(--card-modal-surface, #141922);
+    border: 1px solid var(--card-modal-border, rgba(240, 243, 247, 0.1));
+    border-radius: 8px;
+    color-scheme: dark;
+    transition:
+      border-color 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+
+  .wrapper:focus-within {
+    border-color: var(--card-modal-accent, #3b82f6);
+    box-shadow: 0 0 0 3px var(--card-modal-accent-soft, rgba(59, 130, 246, 0.2));
   }
 
   .wrapperError {
-    border: 1px solid #cf513d;
+    border-color: var(--card-modal-danger, #f87171);
   }
+
+  .wrapperError:focus-within {
+    box-shadow: 0 0 0 3px
+      var(--card-modal-danger-soft, rgba(248, 113, 113, 0.14));
+  }
+}
+
+:global(.g-root_theme_dark.g-portal__theme-wrapper) {
+  --g-color-base-background: var(--app-dark-surface);
+  --g-color-base-generic: var(--app-dark-surface-hover);
+  --g-color-base-generic-hover: var(--app-dark-surface-hover);
+  --g-color-base-simple-hover: var(--app-dark-surface-hover);
+  --g-color-base-selection: var(--app-accent-soft);
+  --g-color-base-selection-hover: var(--app-accent-soft);
+  --g-color-base-float: var(--app-dark-surface);
+  --g-color-base-float-hover: var(--app-dark-surface-hover);
+  --g-color-base-modal: var(--app-dark-surface);
+  --g-color-text-primary: var(--app-dark-text);
+  --g-color-text-secondary: var(--app-dark-text-muted);
+  --g-color-text-hint: var(--app-dark-text-muted);
+  --g-color-text-link: var(--app-accent);
+  --g-color-text-link-hover: var(--app-accent);
+  --g-color-line-generic: var(--app-dark-border);
+  --g-color-line-generic-hover: var(--app-dark-border);
+  --g-color-line-generic-active: var(--app-accent);
+  --g-color-line-generic-solid: var(--app-dark-border);
 }

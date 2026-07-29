@@ -3,9 +3,10 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { Search, X } from 'lucide-react';
 import { Button, Menu } from 'semantic-ui-react';
 import { Input, Popup } from '../../../lib/custom-ui';
 
@@ -26,7 +27,7 @@ const PureBoardMembershipsStep = React.memo(
     onBack,
   }) => {
     const [t] = useTranslation();
-    const [search, handleSearchChange] = useField('');
+    const [search, handleSearchChange, setSearch] = useField('');
     const cleanSearch = useMemo(() => search.trim().toLowerCase(), [search]);
 
     const filteredItems = useMemo(
@@ -34,9 +35,9 @@ const PureBoardMembershipsStep = React.memo(
         items.filter(
           ({ user }) =>
             user.name.toLowerCase().includes(cleanSearch) ||
-            (user.username && user.username.includes(cleanSearch))
+            (user.username && user.username.includes(cleanSearch)),
         ),
-      [items, cleanSearch]
+      [items, cleanSearch],
     );
 
     const [searchFieldRef, handleSearchFieldRef] = useNestedRef('inputRef');
@@ -47,6 +48,13 @@ const PureBoardMembershipsStep = React.memo(
       });
     }, [searchFieldRef]);
 
+    const handleSearchClear = useCallback(() => {
+      setSearch('');
+      searchFieldRef.current.focus({
+        preventScroll: true,
+      });
+    }, [searchFieldRef, setSearch]);
+
     return (
       <>
         <Popup.Header onBack={onBack}>
@@ -55,18 +63,32 @@ const PureBoardMembershipsStep = React.memo(
           })}
         </Popup.Header>
         <Popup.Content>
-          <Input
-            fluid
-            ref={handleSearchFieldRef}
-            value={search}
-            placeholder={t('common.searchMembers')}
-            maxLength={128}
-            icon="search"
-            onChange={handleSearchChange}
-          />
+          <div className={styles.searchField}>
+            <Search aria-hidden="true" className={styles.searchIcon} size={16} strokeWidth={2} />
+            <Input
+              fluid
+              ref={handleSearchFieldRef}
+              aria-label={t('common.searchMembers')}
+              className={styles.searchInput}
+              value={search}
+              placeholder={t('common.searchMembers')}
+              maxLength={128}
+              onChange={handleSearchChange}
+            />
+            {search && (
+              <button
+                type="button"
+                aria-label={t('action.clear')}
+                className={styles.clearSearchButton}
+                onClick={handleSearchClear}
+              >
+                <X aria-hidden="true" size={14} strokeWidth={1.5} />
+              </button>
+            )}
+          </div>
           {filteredItems.length > 0 && (
             <Menu secondary vertical className={styles.menu}>
-              {filteredItems.map(boardMembership => (
+              {filteredItems.map((boardMembership) => (
                 <Item
                   key={boardMembership.id}
                   id={boardMembership.id}
@@ -76,6 +98,14 @@ const PureBoardMembershipsStep = React.memo(
                 />
               ))}
             </Menu>
+          )}
+          {filteredItems.length === 0 && (
+            <div className={styles.emptyState} role="status">
+              <span className={styles.emptyStateIcon}>
+                <Search aria-hidden="true" size={18} strokeWidth={1.8} />
+              </span>
+              <span>{t('chat.noMembersFound')}</span>
+            </div>
           )}
           {currentUserIds.length > 0 && onClear && (
             <Button
@@ -88,7 +118,7 @@ const PureBoardMembershipsStep = React.memo(
         </Popup.Content>
       </>
     );
-  }
+  },
 );
 
 PureBoardMembershipsStep.propTypes = {

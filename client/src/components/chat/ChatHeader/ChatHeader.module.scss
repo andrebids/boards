@@ -5,9 +5,4 @@
   .copy p { align-items: center; color: var(--chat-muted); display: flex; font-size: var(--chat-font-meta); gap: 5px; line-height: 16px; margin: 2px 0 0; min-width: 0;
     span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   }
-  .closeButton { align-items: center; background: transparent; border: 0; border-radius: var(--chat-radius-control); color: var(--chat-muted); cursor: pointer; display: inline-flex; flex: 0 0 auto; height: 36px; justify-content: center; transition: background-color var(--chat-motion-fast) var(--chat-ease), color var(--chat-motion-fast) var(--chat-ease), transform var(--chat-motion-fast) var(--chat-ease); width: 36px;
-    &:hover { background: var(--chat-default); color: var(--chat-foreground); }
-    &:active { transform: scale(0.96); }
-    &:focus-visible { outline: 2px solid var(--chat-accent); outline-offset: 1px; }
-  }
 }

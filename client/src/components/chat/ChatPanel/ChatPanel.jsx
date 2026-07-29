@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Check, Folder, Inbox, Plus, Users, X } from 'lucide-react';
+import { Check, Folder, Inbox, Plus, Users } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import { CloseButton } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useChat } from '../ChatContext';
@@ -338,14 +339,7 @@ const ChatPanel = React.memo(
                       <strong>{t('chat.createGroup')}</strong>
                       <small>{t('chat.createGroupDescription')}</small>
                     </span>
-                    <button
-                      type="button"
-                      className={styles.closeGroupFormButton}
-                      aria-label={t('chat.cancel')}
-                      onClick={handleGroupFormClose}
-                    >
-                      <X aria-hidden="true" size={16} />
-                    </button>
+                    <CloseButton ariaLabel={t('chat.cancel')} onClick={handleGroupFormClose} />
                   </header>
                   <label className={styles.groupTitleField} htmlFor="chat-group-title">
                     <span>{t('chat.groupName')}</span>

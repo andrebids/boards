@@ -111,6 +111,8 @@ module.exports.routes = {
   'POST /api/chat-messages/:messageId/reactions': 'chat-message-reactions/toggle',
   'POST /api/chat-messages/:messageId/attachments': 'chat-message-attachments/create',
   'GET /api/chat-message-attachments/:id/download': 'chat-message-attachments/download',
+  'GET /api/chat-message-attachments/:id/stream': 'chat-message-attachments/stream',
+  'HEAD /api/chat-message-attachments/:id/stream': 'chat-message-attachments/stream',
   'POST /api/chat-diagnostics': 'chat-diagnostics/create',
 
   'POST /api/projects/:projectId/project-managers': 'project-managers/create',
@@ -256,6 +258,16 @@ module.exports.routes = {
 
   'GET /attachments/:id/download/:filename': {
     action: 'file-attachments/download',
+    skipAssets: false,
+  },
+
+  'GET /attachments/:id/stream': {
+    action: 'file-attachments/stream',
+    skipAssets: false,
+  },
+
+  'HEAD /attachments/:id/stream': {
+    action: 'file-attachments/stream',
     skipAssets: false,
   },
 

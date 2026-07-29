@@ -45,9 +45,19 @@ const createOne = (values, { maxAttachmentsPerMessage } = {}) =>
       throw 'fileReferenceNotFound';
     }
 
-    return ChatMessageAttachment.create({ ...values })
+    const attachment = await ChatMessageAttachment.create({ ...values })
       .fetch()
       .usingConnection(db);
+
+    if (values.data.video && values.data.video.status === 'pending') {
+      await sails.helpers.videoProcessing.enqueue.with({
+        fileReferenceId: values.fileReferenceId,
+        sourceFilename: values.data.filename,
+        connection: db,
+      });
+    }
+
+    return attachment;
   });
 
 const getByMessageIds = (messageIds) => defaultFind({ messageId: messageIds });

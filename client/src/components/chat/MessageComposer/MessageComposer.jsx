@@ -6,6 +6,7 @@ import { useDropzone } from 'react-dropzone';
 import { Paperclip, Send, Smile, Upload, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { CloseButton } from '../../../lib/custom-ui';
 import entryActions from '../../../entry-actions';
 import selectors from '../../../selectors';
 import FilePicker from '../../../lib/custom-ui/components/FilePicker/FilePicker';
@@ -295,9 +296,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
             <strong>{t('chat.replyingTo', { name: replyAuthorName })}</strong>
             <small>{replyTarget.deletedAt ? t('chat.messageDeleted') : replyTarget.text}</small>
           </span>
-          <button type="button" aria-label={t('chat.cancelReply')} onClick={cancelReply}>
-            <X aria-hidden="true" size={14} strokeWidth={2} />
-          </button>
+          <CloseButton ariaLabel={t('chat.cancelReply')} onClick={cancelReply} />
         </div>
       )}
       {files.length > 0 && (
@@ -311,7 +310,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
                 aria-label={t('chat.removeAttachment', { name: file.name })}
                 onClick={() => removeFile(index)}
               >
-                <X aria-hidden="true" size={13} strokeWidth={2} />
+                <X aria-hidden="true" size={13} strokeWidth={1.5} />
               </button>
             </span>
           ))}
