@@ -29,41 +29,14 @@
     margin-right: 4px;
   }
 
-  .attachmentRight {
-    margin-left: 2px;
-  }
-
   .attachments {
     display: inline-block;
     padding-bottom: 2px;
   }
 
-  .attachmentsRight {
-    float: right;
-    line-height: 0;
-    margin-top: 6px;
-
-    // Sobreposição dos avatares dos membros (como nos projetos)
-    .attachmentRight {
-      margin-left: -6px;
-    }
-
-    // O primeiro avatar não deve ter margem negativa
-    .attachmentRight:first-of-type {
-      margin-left: 0;
-    }
-
-    // Não mostrar o divisor do criador quando os avatares estão sobrepostos
-    .creatorDivider {
-      display: none;
-    }
-  }
-
   .cover {
     max-height: 340px;
     object-fit: cover;
-    transform-origin: bottom;
-    transition: all .6s cubic-bezier(0.25, 0.1, 0.25, 1);
     vertical-align: middle;
     width: 100%;
   }
@@ -74,12 +47,23 @@
     overflow: hidden;
   }
 
-  .creatorDivider {
-    background: #6b7280;
-    display: inline-block;
-    height: 24px;
-    margin: 2px 2px 0 4px;
-    width: 1px;
+  .footer {
+    align-items: flex-end;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    min-height: 24px;
+    padding-bottom: 6px;
+
+    .attachment {
+      margin-bottom: 0;
+    }
+
+    .attachments {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding-bottom: 0;
+    }
   }
 
   .labels {
@@ -94,7 +78,8 @@
   .name {
     color: #f3f4f6;
     font-size: 14px;
-    line-height: 18px;
+    font-weight: 600;
+    line-height: 20px;
     margin-bottom: 8px;
     word-wrap: break-word;
   }
@@ -104,19 +89,12 @@
   }
 
   .wrapper {
-    padding: 6px 8px 0;
+    padding: 8px 8px 0;
 
     &:after {
       clear: both;
       content: "";
       display: table;
-    }
-  }
-
-  :global(.card):hover {
-    .cover {
-      filter: brightness(1.2) contrast(1.1);
-      transform: scale(1.05);
     }
   }
 }

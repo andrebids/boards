@@ -29,6 +29,7 @@ import PlusMathIcon from '../../../assets/images/plus-math-icon.svg?react';
 import { processSupportedFiles } from '../../../utils/file-helpers';
 
 import styles from './List.module.scss';
+import globalStyles from '../../../styles.module.scss';
 
 const List = React.memo(({ id, index }) => {
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
@@ -280,8 +281,6 @@ const List = React.memo(({ id, index }) => {
             ref={wrapperRef}
             className={classNames(
               styles.outerWrapper,
-              list.color &&
-                styles[`outerWrapper${upperFirst(camelCase(list.color))}`],
               isFavoritesActive && styles.outerWrapperWithFavorites,
               isDragOver && styles.outerWrapperFileDragOver
             )}
@@ -304,7 +303,20 @@ const List = React.memo(({ id, index }) => {
               {isEditNameOpened ? (
                 <EditName listId={id} onClose={handleEditNameClose} />
               ) : (
-                <div className={styles.headerName}>{list.name}</div>
+                <div className={styles.headerContent}>
+                  <span
+                    className={classNames(
+                      styles.headerIndicator,
+                      list.color
+                        ? globalStyles[
+                            `background${upperFirst(camelCase(list.color))}`
+                          ]
+                        : styles.headerIndicatorDefault
+                    )}
+                  />
+                  <div className={styles.headerName}>{list.name}</div>
+                  <span className={styles.headerCount}>{cardIds.length}</span>
+                </div>
               )}
               {list.type !== ListTypes.ACTIVE && (
                 <Icon
@@ -325,7 +337,7 @@ const List = React.memo(({ id, index }) => {
                     onCardAdd={handleCardAdd}
                   >
                     <Button className={styles.headerButton}>
-                      <Icon fitted name="pencil" size="small" />
+                      <Icon fitted name="ellipsis horizontal" size="small" />
                     </Button>
                   </ActionsPopup>
                 ) : (
@@ -347,8 +359,6 @@ const List = React.memo(({ id, index }) => {
                 disabled={!list.isPersisted || isProcessing}
                 className={classNames(
                   styles.addCardButton,
-                  list.color &&
-                    styles[`addCardButton${upperFirst(camelCase(list.color))}`],
                   isDragOver && styles.addCardButtonDragOver,
                   isProcessing && styles.addCardButtonProcessing
                 )}

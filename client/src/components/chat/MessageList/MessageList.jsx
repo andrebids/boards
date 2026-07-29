@@ -100,6 +100,29 @@ const getReactionEmojiPickerPosition = (element) => {
   };
 };
 
+const emojiSegmenter =
+  typeof Intl.Segmenter === 'function'
+    ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+    : null;
+const emojiGraphemePattern =
+  /^(?:\p{Regional_Indicator}{2}|[#*0-9]\uFE0F?\u20E3|\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E|\p{Emoji_Modifier}|\u200D(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E|\p{Emoji_Modifier})?)*$/u;
+
+const isEmojiOnlyMessage = (text) => {
+  const normalizedText = String(text || '').trim();
+  if (!normalizedText) return false;
+
+  const graphemes = emojiSegmenter
+    ? Array.from(emojiSegmenter.segment(normalizedText), ({ segment }) => segment)
+    : Array.from(normalizedText);
+  const visibleGraphemes = graphemes.filter((grapheme) => !/^\s+$/u.test(grapheme));
+
+  return (
+    visibleGraphemes.length > 0 &&
+    visibleGraphemes.length <= 3 &&
+    visibleGraphemes.every((grapheme) => emojiGraphemePattern.test(grapheme))
+  );
+};
+
 const renderMessageText = (text, currentUserId) => {
   const parts = String(text).split(/(@\[[^\]]+\]\([^)]*\))/g);
   let offset = 0;
@@ -504,6 +527,10 @@ const MessageList = React.memo(
             const hasTextBubble =
               !hasImageAttachments &&
               (message.deletedAt || message.text || editingMessageId === message.id);
+            const isEmojiOnly =
+              !message.deletedAt &&
+              editingMessageId !== message.id &&
+              isEmojiOnlyMessage(message.text);
             let messageBody;
             if (message.deletedAt) {
               messageBody = <em>{t('chat.messageDeleted')}</em>;
@@ -790,7 +817,12 @@ const MessageList = React.memo(
                       </div>
                     ) : (
                       hasTextBubble && (
-                        <div className={styles.bubble} dir="auto">
+                        <div
+                          className={`${styles.bubble} ${
+                            isEmojiOnly ? styles.emojiOnlyBubble : ''
+                          }`}
+                          dir="auto"
+                        >
                           {messageBody}
                         </div>
                       )

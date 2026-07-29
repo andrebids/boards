@@ -21,9 +21,9 @@ import {
 import TaskList from './TaskList';
 import DueDateChip from '../DueDateChip';
 import StopwatchChip from '../StopwatchChip';
-import UserAvatar from '../../users/UserAvatar';
 import LabelChip from '../../labels/LabelChip';
 import CustomFieldValueChip from '../../custom-field-values/CustomFieldValueChip';
+import CardMembers from './CardMembers';
 
 import styles from './ProjectContent.module.scss';
 
@@ -145,33 +145,7 @@ const ProjectContent = React.memo(({ cardId }) => {
     taskListIds.length === 0 &&
     !hasInformation;
 
-  const usersNode =
-    userIds.length > 0 || withCreator ? (
-      <span className={classNames(styles.attachments, styles.attachmentsRight)}>
-        {withCreator && (
-          <>
-            <span
-              className={classNames(styles.attachment, styles.attachmentRight)}
-            >
-              <UserAvatar
-                withCreatorIndicator
-                id={card.creatorUserId}
-                size="small"
-              />
-            </span>
-            {userIds.length > 0 && <span className={styles.creatorDivider} />}
-          </>
-        )}
-        {userIds.map(userId => (
-          <span
-            key={userId}
-            className={classNames(styles.attachment, styles.attachmentRight)}
-          >
-            <UserAvatar id={userId} size="small" />
-          </span>
-        ))}
-      </span>
-    ) : null;
+  const hasFooter = hasInformation || userIds.length > 0 || withCreator;
 
   return (
     <div className={styles.wrapper}>
@@ -213,92 +187,117 @@ const ProjectContent = React.memo(({ cardId }) => {
           ))}
         </span>
       )}
-      {isCompact && usersNode}
       {taskListIds.map(taskListId => (
         <TaskList key={taskListId} id={taskListId} />
       ))}
-      {hasInformation && (
-        <span className={styles.attachments}>
-          {notificationsTotal > 0 && (
-            <span
-              className={classNames(
-                styles.attachment,
-                styles.attachmentLeft
+      {hasFooter && (
+        <div className={styles.footer}>
+          {hasInformation && (
+            <span className={styles.attachments}>
+              {notificationsTotal > 0 && (
+                <span
+                  className={classNames(
+                    styles.attachment,
+                    styles.attachmentLeft
+                  )}
+                >
+                  <span className={styles.attachmentContent}>
+                    <Icon name="bell" />
+                    {notificationsTotal}
+                  </span>
+                </span>
               )}
-            >
-              <span className={styles.attachmentContent}>
-                <Icon name="bell" />
-                {notificationsTotal}
-              </span>
+              {card.dueDate && (
+                <span
+                  className={classNames(
+                    styles.attachment,
+                    styles.attachmentLeft
+                  )}
+                >
+                  <DueDateChip
+                    value={card.dueDate}
+                    size="tiny"
+                    withStatus={!isInClosedList && !isListArchiveOrTrash(list)}
+                  />
+                </span>
+              )}
+              {card.stopwatch && (
+                <span
+                  className={classNames(
+                    styles.attachment,
+                    styles.attachmentLeft
+                  )}
+                >
+                  <StopwatchChip
+                    value={card.stopwatch}
+                    as="span"
+                    size="tiny"
+                    onClick={
+                      canEditStopwatch ? handleToggleStopwatchClick : undefined
+                    }
+                  />
+                </span>
+              )}
+              {listName && (
+                <span
+                  className={classNames(
+                    styles.attachment,
+                    styles.attachmentLeft
+                  )}
+                >
+                  <span className={styles.attachmentContent}>
+                    <Icon name="columns" />
+                    {listName}
+                  </span>
+                </span>
+              )}
+              {card.description && (
+                <span
+                  className={classNames(
+                    styles.attachment,
+                    styles.attachmentLeft
+                  )}
+                >
+                  <span className={styles.attachmentContent}>
+                    <Icon name="align left" />
+                  </span>
+                </span>
+              )}
+              {attachmentsTotal > 0 && (
+                <span
+                  className={classNames(
+                    styles.attachment,
+                    styles.attachmentLeft
+                  )}
+                >
+                  <span className={styles.attachmentContent}>
+                    <Icon name="attach" />
+                    {attachmentsTotal}
+                  </span>
+                </span>
+              )}
+              {card.commentsTotal > 0 && (
+                <span
+                  className={classNames(
+                    styles.attachment,
+                    styles.attachmentLeft
+                  )}
+                >
+                  <span className={styles.attachmentContent}>
+                    <Icon name="comment outline" />
+                    {card.commentsTotal}
+                  </span>
+                </span>
+              )}
             </span>
           )}
-          {card.dueDate && (
-            <span
-              className={classNames(styles.attachment, styles.attachmentLeft)}
-            >
-              <DueDateChip
-                value={card.dueDate}
-                size="tiny"
-                withStatus={!isInClosedList && !isListArchiveOrTrash(list)}
-              />
-            </span>
-          )}
-          {card.stopwatch && (
-            <span
-              className={classNames(styles.attachment, styles.attachmentLeft)}
-            >
-              <StopwatchChip
-                value={card.stopwatch}
-                as="span"
-                size="tiny"
-                onClick={
-                  canEditStopwatch ? handleToggleStopwatchClick : undefined
-                }
-              />
-            </span>
-          )}
-          {listName && (
-            <span
-              className={classNames(styles.attachment, styles.attachmentLeft)}
-            >
-              <span className={styles.attachmentContent}>
-                <Icon name="columns" />
-                {listName}
-              </span>
-            </span>
-          )}
-          {card.description && (
-            <span
-              className={classNames(styles.attachment, styles.attachmentLeft)}
-            >
-              <span className={styles.attachmentContent}>
-                <Icon name="align left" />
-              </span>
-            </span>
-          )}
-          {attachmentsTotal > 0 && (
-            <span
-              className={classNames(styles.attachment, styles.attachmentLeft)}
-            >
-              <span className={styles.attachmentContent}>
-                <Icon name="attach" />
-                {attachmentsTotal}
-              </span>
-            </span>
-          )}
-          {card.commentsTotal > 0 && (
-            <span
-              className={classNames(styles.attachment, styles.attachmentLeft)}
-            >
-              <span className={styles.attachmentContent}>
-                <Icon name="comment outline" />
-                {card.commentsTotal}
-              </span>
-            </span>
-          )}
-        </span>
+          <CardMembers
+            userIds={userIds}
+            creatorUserId={card.creatorUserId}
+            withCreator={withCreator}
+          />
+        </div>
       )}
-      {!isCompact && usersNode}
     </div>
   );
 });

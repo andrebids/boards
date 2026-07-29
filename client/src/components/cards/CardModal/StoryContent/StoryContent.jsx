@@ -8,7 +8,6 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Gallery, Item as GalleryItem } from 'react-photoswipe-gallery';
 import { Button, Grid, Icon } from 'semantic-ui-react';
 import { useDidUpdate } from '../../../../lib/hooks';
 
@@ -23,7 +22,7 @@ import {
 } from '../../../../constants/Enums';
 import { CardTypeIcons } from '../../../../constants/Icons';
 import { ClosableContext } from '../../../../contexts';
-import Thumbnail from './Thumbnail';
+import CardImageCarousel from '../CardImageCarousel';
 import NameField from '../NameField';
 import CustomFieldGroups from '../CustomFieldGroups';
 import Communication from '../Communication';
@@ -47,21 +46,12 @@ import styles from './StoryContent.module.scss';
 const StoryContent = React.memo(({ onClose }) => {
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
   const selectPrevListById = useMemo(() => selectors.makeSelectListById(), []);
-  const selectAttachmentById = useMemo(
-    () => selectors.makeSelectAttachmentById(),
-    []
-  );
-
   const card = useSelector(selectors.selectCurrentCard);
   const board = useSelector(selectors.selectCurrentBoard);
   const userIds = useSelector(selectors.selectUserIdsForCurrentCard);
   const labelIds = useSelector(selectors.selectLabelIdsForCurrentCard);
   const attachmentIds = useSelector(
     selectors.selectAttachmentIdsForCurrentCard
-  );
-
-  const imageAttachmentIdsExceptCover = useSelector(
-    selectors.selectImageAttachmentIdsExceptCoverForCurrentCard
   );
 
   const isJoined = useSelector(selectors.selectIsCurrentUserInCurrentCard);
@@ -71,10 +61,6 @@ const StoryContent = React.memo(({ onClose }) => {
   // TODO: check availability?
   const prevList = useSelector(
     state => card.prevListId && selectPrevListById(state, card.prevListId)
-  );
-
-  const coverAttachment = useSelector(state =>
-    selectAttachmentById(state, card.coverAttachmentId)
   );
 
   const isInArchiveList = list.type === ListTypes.ARCHIVE;
@@ -151,8 +137,7 @@ const StoryContent = React.memo(({ onClose }) => {
   const [t] = useTranslation();
   const [descriptionDraft, setDescriptionDraft] = useState(null);
   const [isEditDescriptionOpened, setIsEditDescriptionOpened] = useState(false);
-  const [activateClosable, deactivateClosable, setIsClosableActive] =
-    useContext(ClosableContext);
+  const [, , setIsClosableActive] = useContext(ClosableContext);
 
   const handleListSelect = useCallback(
     listId => {
@@ -289,17 +274,6 @@ const StoryContent = React.memo(({ onClose }) => {
     setIsEditDescriptionOpened(false);
   }, []);
 
-  const handleBeforeGalleryOpen = useCallback(
-    gallery => {
-      activateClosable();
-
-      gallery.on('destroy', () => {
-        deactivateClosable();
-      });
-    },
-    [activateClosable, deactivateClosable]
-  );
-
   useDidUpdate(() => {
     if (!canEditDescription) {
       setIsEditDescriptionOpened(false);
@@ -347,191 +321,131 @@ const StoryContent = React.memo(({ onClose }) => {
       </Grid.Row>
       <Grid.Row className={styles.modalPadding}>
         <Grid.Column width={12} className={styles.contentPadding}>
-          <Gallery
-            withCaption
-            withDownloadButton
-            options={{
-              wheelToZoom: true,
-              showHideAnimationType: 'none',
-              closeTitle: '',
-              zoomTitle: '',
-              arrowPrevTitle: '',
-              arrowNextTitle: '',
-              errorMsg: '',
-              paddingFn: viewportSize => {
-                const paddingX = viewportSize.x / 20;
-                const paddingY = viewportSize.y / 20;
-
-                return {
-                  top: paddingX,
-                  bottom: paddingX,
-                  left: paddingY,
-                  right: paddingY,
-                };
-              },
-            }}
-            onBeforeOpen={handleBeforeGalleryOpen}
-          >
-            {(board.alwaysDisplayCardCreator ||
-              labelIds.length > 0 ||
-              coverAttachment) && (
-              <div
-                className={classNames(
-                  styles.moduleWrapper,
-                  styles.moduleWrapperAttachments
-                )}
-              >
-                {coverAttachment && (
-                  <div className={styles.coverWrapper}>
-                    <GalleryItem
-                      src={coverAttachment.data.url}
-                      width={coverAttachment.data.image ? coverAttachment.data.image.width : undefined}
-                      height={coverAttachment.data.image ? coverAttachment.data.image.height : undefined}
-                      original={coverAttachment.data.url}
-                      caption={coverAttachment.name}
-                    >
-                      {({ ref, open }) => (
-                        /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
-                                                    jsx-a11y/no-noninteractive-element-interactions */
-                        <img
-                          ref={ref}
-                          src={coverAttachment.data.thumbnailUrls.outside720}
-                          alt={coverAttachment.name}
-                          className={styles.cover}
-                          onClick={open}
-                        />
-                      )}
-                    </GalleryItem>
-                  </div>
-                )}
-                {board.alwaysDisplayCardCreator && (
-                  <div className={styles.attachments}>
-                    <span className={styles.attachment}>
-                      <CreationDetailsPopup userId={card.creatorUserId}>
-                        <UserAvatar
-                          withCreatorIndicator
-                          id={card.creatorUserId}
-                          size="tiny"
-                        />
-                      </CreationDetailsPopup>
-                    </span>
-                  </div>
-                )}
-                {labelIds.length > 0 && (
-                  <div className={styles.attachments}>
-                    {labelIds.map(labelId => (
-                      <span key={labelId} className={styles.attachment}>
-                        {canUseLabels ? (
-                          <LabelsPopup
-                            currentIds={labelIds}
-                            cardId={card.id}
-                            onSelect={handleLabelSelect}
-                            onDeselect={handleLabelDeselect}
-                          >
-                            <LabelChip id={labelId} size="small" />
-                          </LabelsPopup>
-                        ) : (
-                          <LabelChip id={labelId} size="small" />
-                        )}
-                      </span>
-                    ))}
-                    {canUseLabels && (
-                      <LabelsPopup
-                        currentIds={labelIds}
-                        cardId={card.id}
-                        onSelect={handleLabelSelect}
-                        onDeselect={handleLabelDeselect}
-                      >
-                        <button
-                          type="button"
-                          className={classNames(
-                            styles.attachment,
-                            styles.dueDate
-                          )}
-                        >
-                          <Icon
-                            name="add"
-                            size="small"
-                            className={styles.addAttachment}
-                          />
-                        </button>
-                      </LabelsPopup>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-            {(card.description || canEditDescription) && (
-              <div
-                className={classNames(
-                  styles.contentModule,
-                  styles.contentModuleDescription
-                )}
-              >
-                <div className={styles.moduleWrapper}>
-                  {canEditDescription &&
-                    (isEditDescriptionOpened ? (
-                      <EditMarkdown
-                        defaultValue={card.description}
-                        draftValue={descriptionDraft}
-                        placeholder="common.enterDescription"
-                        onUpdate={handleDescriptionUpdate}
-                        onClose={handleEditDescriptionClose}
+          <CardImageCarousel />
+          {(board.alwaysDisplayCardCreator || labelIds.length > 0) && (
+            <div
+              className={classNames(
+                styles.moduleWrapper,
+                styles.moduleWrapperAttachments
+              )}
+            >
+              {board.alwaysDisplayCardCreator && (
+                <div className={styles.attachments}>
+                  <span className={styles.attachment}>
+                    <CreationDetailsPopup userId={card.creatorUserId}>
+                      <UserAvatar
+                        withCreatorIndicator
+                        id={card.creatorUserId}
+                        size="tiny"
                       />
-                    ) : (
-                      <>
-                        {descriptionDraft && (
-                          <span className={styles.draftChip}>
-                            {t('common.unsavedChanges')}
-                          </span>
+                    </CreationDetailsPopup>
+                  </span>
+                </div>
+              )}
+              {labelIds.length > 0 && (
+                <div className={styles.attachments}>
+                  {labelIds.map(labelId => (
+                    <span key={labelId} className={styles.attachment}>
+                      {canUseLabels ? (
+                        <LabelsPopup
+                          currentIds={labelIds}
+                          cardId={card.id}
+                          onSelect={handleLabelSelect}
+                          onDeselect={handleLabelDeselect}
+                        >
+                          <LabelChip id={labelId} size="small" />
+                        </LabelsPopup>
+                      ) : (
+                        <LabelChip id={labelId} size="small" />
+                      )}
+                    </span>
+                  ))}
+                  {canUseLabels && (
+                    <LabelsPopup
+                      currentIds={labelIds}
+                      cardId={card.id}
+                      onSelect={handleLabelSelect}
+                      onDeselect={handleLabelDeselect}
+                    >
+                      <button
+                        type="button"
+                        className={classNames(
+                          styles.attachment,
+                          styles.dueDate
                         )}
-                        {card.description ? (
-                          /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
-                                                      jsx-a11y/no-static-element-interactions */
-                          <div
-                            className={classNames(
-                              styles.descriptionText,
-                              styles.cursorPointer
-                            )}
-                            onClick={handleEditDescriptionClick}
-                          >
-                            <Button className={styles.editButton}>
-                              <Icon fitted name="pencil" size="small" />
-                            </Button>
-                            <Markdown>{card.description}</Markdown>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            className={styles.descriptionButton}
-                            onClick={handleEditDescriptionClick}
-                          >
-                            <span className={styles.descriptionButtonText}>
-                              {t('action.addMoreDetailedDescription')}
-                            </span>
-                          </button>
-                        )}
-                      </>
-                    ))}
-                  {!canEditDescription && (
-                    <div className={styles.descriptionText}>
-                      <Markdown>{card.description}</Markdown>
-                    </div>
-                  )}
-                  {imageAttachmentIdsExceptCover.length > 0 && (
-                    <div className={styles.thumbnails}>
-                      {imageAttachmentIdsExceptCover.map(attachmentId => (
-                        <Thumbnail
-                          key={attachmentId}
-                          attachmentId={attachmentId}
+                      >
+                        <Icon
+                          name="add"
+                          size="small"
+                          className={styles.addAttachment}
                         />
-                      ))}
-                    </div>
+                      </button>
+                    </LabelsPopup>
                   )}
                 </div>
+              )}
+            </div>
+          )}
+          {(card.description || canEditDescription) && (
+            <div
+              className={classNames(
+                styles.contentModule,
+                styles.contentModuleDescription
+              )}
+            >
+              <div className={styles.moduleWrapper}>
+                {canEditDescription &&
+                  (isEditDescriptionOpened ? (
+                    <EditMarkdown
+                      defaultValue={card.description}
+                      draftValue={descriptionDraft}
+                      placeholder="common.enterDescription"
+                      onUpdate={handleDescriptionUpdate}
+                      onClose={handleEditDescriptionClose}
+                    />
+                  ) : (
+                    <>
+                      {descriptionDraft && (
+                        <span className={styles.draftChip}>
+                          {t('common.unsavedChanges')}
+                        </span>
+                      )}
+                      {card.description ? (
+                        /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
+                                                    jsx-a11y/no-static-element-interactions */
+                        <div
+                          className={classNames(
+                            styles.descriptionText,
+                            styles.cursorPointer
+                          )}
+                          onClick={handleEditDescriptionClick}
+                        >
+                          <Button className={styles.editButton}>
+                            <Icon fitted name="pencil" size="small" />
+                          </Button>
+                          <Markdown>{card.description}</Markdown>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.descriptionButton}
+                          onClick={handleEditDescriptionClick}
+                        >
+                          <span className={styles.descriptionButtonText}>
+                            {t('action.addMoreDetailedDescription')}
+                          </span>
+                        </button>
+                      )}
+                    </>
+                  ))}
+                {!canEditDescription && (
+                  <div className={styles.descriptionText}>
+                    <Markdown>{card.description}</Markdown>
+                  </div>
+                )}
               </div>
-            )}
-          </Gallery>
+            </div>
+          )}
           <CustomFieldGroups />
           {attachmentIds.length > 0 && (
             <div className={styles.contentModule}>

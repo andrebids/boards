@@ -23,6 +23,7 @@ import {
 } from '../../../constants/Enums';
 import { CardTypeIcons } from '../../../constants/Icons';
 import { ClosableContext } from '../../../contexts';
+import CardImageCarousel from './CardImageCarousel';
 import NameField from './NameField';
 import TaskLists from './TaskLists';
 import CustomFieldGroups from './CustomFieldGroups';
@@ -349,6 +350,7 @@ const ProjectContent = React.memo(({ onClose }) => {
       </Grid.Row>
       <Grid.Row className={styles.modalPadding}>
         <Grid.Column width={12} className={styles.contentPadding}>
+          <CardImageCarousel />
           {(card.dueDate ||
             card.stopwatch ||
             board.alwaysDisplayCardCreator ||
@@ -604,7 +606,7 @@ const ProjectContent = React.memo(({ onClose }) => {
                 <div className={styles.moduleHeader}>
                   {t('common.attachments')}
                 </div>
-                <Attachments />
+                <Attachments hideImagesWhenNotAllVisible />
               </div>
             </div>
           )}

@@ -90,18 +90,6 @@
     }
   }
 
-  .cover {
-    border-radius: 3px;
-    cursor: pointer;
-    display: block;
-    max-height: 450px;
-    max-width: 100%;
-  }
-
-  .coverWrapper {
-    padding-bottom: 20px;
-  }
-
   .cursorPointer {
     cursor: pointer;
   }
@@ -318,18 +306,6 @@
 
   .textList {
     font-weight: normal;
-  }
-
-  .thumbnails {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 20px;
-
-    &::after {
-      content: '';
-      flex-grow: 10;
-    }
   }
 
   .wrapper {

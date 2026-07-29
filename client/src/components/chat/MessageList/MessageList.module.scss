@@ -386,6 +386,14 @@
     }
   }
 
+  .emojiOnlyBubble {
+    font-size: 24px;
+    line-height: 30px;
+    min-width: 40px;
+    padding: 5px 9px 6px;
+    text-align: center;
+  }
+
   .imageMessage {
     background: var(--chat-bubble-received);
     border: 1px solid var(--chat-border);
@@ -473,9 +481,18 @@
   }
 
   .own .mention {
-    background: rgba(4, 133, 247, 0.32);
-    border-color: rgba(4, 133, 247, 0.38);
+    background: rgba(255, 255, 255, 0.25);
+    border: 0;
+    border-radius: 999px;
     color: #ffffff;
+    cursor: pointer;
+    line-height: inherit;
+    padding: 1px 8px;
+    transition: background-color 160ms var(--chat-ease);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
   }
   .attachments {
     display: flex;

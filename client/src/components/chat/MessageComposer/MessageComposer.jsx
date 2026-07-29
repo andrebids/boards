@@ -357,7 +357,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
               setIsAttachmentMenuOpen(false);
             }}
           >
-            <Smile aria-hidden="true" size={17} strokeWidth={2} />
+            <Smile aria-hidden="true" size={20} strokeWidth={1.9} />
           </button>
           {isEmojiMenuOpen && (
             <div className={styles.emojiMenu} role="menu" aria-label={t('chat.chooseEmoji')}>

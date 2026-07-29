@@ -1,3 +1,5 @@
+name: boards-dev
+
 services:
   planka-server:
     build:
@@ -5,7 +7,6 @@ services:
       dockerfile: Dockerfile.dev
     image: planka-dev-video-test
     pull_policy: never
-    container_name: boards-server
     command: [ "bash", "-c", "if [ ! -f node_modules/.planka-dev-lock ] || ! sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1; then npm install && npm rebuild bcrypt lodepng --build-from-source --force && sha256sum package-lock.json > node_modules/.planka-dev-lock; fi && npm run db:init && npm start" ]
     restart: on-failure
     dns:
@@ -46,25 +47,26 @@ services:
   planka-client:
     image: planka-dev-video-test
     pull_policy: never
-    container_name: boards-client
     command: [ "bash", "-c", "if [ ! -f node_modules/.planka-dev-lock ] || ! sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1; then npm install && sha256sum package-lock.json > node_modules/.planka-dev-lock; fi && npx vite --host" ]
+    working_dir: /app/client
     restart: on-failure
     depends_on:
       planka-server:
         condition: service_healthy
     volumes:
-      - ./client:/app
+      - ./client:/app/client
+      - client-node-modules:/app/client/node_modules
     ports:
       - 3008:3008
     environment:
+      - PLANKA_SERVER_HOST=http://planka-server:1337
       - VITE_SENTRY_DSN=${VITE_SENTRY_DSN:-}
       - VITE_SENTRY_ENVIRONMENT=${VITE_SENTRY_ENVIRONMENT:-development}
       - VITE_SENTRY_RELEASE=${VITE_SENTRY_RELEASE:-}
       - VITE_SENTRY_TRACES_SAMPLE_RATE=${VITE_SENTRY_TRACES_SAMPLE_RATE:-0.1}
 
   postgres:
-    image: postgres:15-alpine
-    container_name: boards-postgres
+    image: postgres:16-alpine
     restart: on-failure
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -81,3 +83,4 @@ services:
 volumes:
   postgres:
   server-node-modules:
+  client-node-modules:

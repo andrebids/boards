@@ -740,6 +740,8 @@ export default {
       globalNotificationsActiveTitle: 'Sistema de Notificações Globais Ativo',
       globalNotificationsActiveDescription:
         'Todas as notificações são enviadas centralmente através do endereço de e-mail <strong>{{email}}</strong>. Não é necessária qualquer configuração adicional por parte do utilizador.',
+      cardImages: 'Imagens do cartão',
+      imagePosition: 'Imagem {{current}} de {{total}}',
       expandPanel: 'Expandir painel',
       collapsePanel: 'Recolher painel',
       openActivityHistory: 'Abrir histórico de atividades',
@@ -765,6 +767,9 @@ export default {
       addTaskList: 'Adicionar lista de tarefas',
       addToCard: 'Adicionar ao cartão',
       addUser: 'Adicionar utilizador',
+      previousImage: 'Imagem anterior',
+      nextImage: 'Imagem seguinte',
+      openImage: 'Abrir {{name}}',
       changePassword: 'Alterar password',
       close: 'Fechar',
       resendWelcomeEmail: 'Reenviar email de boas-vindas',

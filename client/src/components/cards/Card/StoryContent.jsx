@@ -14,7 +14,7 @@ import markdownToText from '../../../utils/markdown-to-text';
 import { BoardViews, ListTypes } from '../../../constants/Enums';
 import LabelChip from '../../labels/LabelChip';
 import CustomFieldValueChip from '../../custom-field-values/CustomFieldValueChip';
-import UserAvatar from '../../users/UserAvatar';
+import CardMembers from './CardMembers';
 
 import styles from './StoryContent.module.scss';
 
@@ -137,61 +137,56 @@ const StoryContent = React.memo(({ cardId }) => {
         {card.description && (
           <div className={styles.descriptionText}>{descriptionText}</div>
         )}
-        {(attachmentsTotal > 0 || notificationsTotal > 0 || listName || userIds.length > 0) && (
-          <span className={styles.attachments}>
-            {notificationsTotal > 0 && (
-              <span
-                className={classNames(
-                  styles.attachment,
-                  styles.attachmentLeft
-                )}
-              >
-                <span className={styles.attachmentContent}>
-                  <Icon name="bell" />
-                  {notificationsTotal}
-                </span>
-              </span>
-            )}
-            {listName && (
-              <span
-                className={classNames(styles.attachment, styles.attachmentLeft)}
-              >
-                <span className={styles.attachmentContent}>
-                  <Icon name="columns" />
-                  {listName}
-                </span>
-              </span>
-            )}
-            {attachmentsTotal > 0 && (
-              <span
-                className={classNames(styles.attachment, styles.attachmentLeft)}
-              >
-                <span className={styles.attachmentContent}>
-                  <Icon name="attach" />
-                  {attachmentsTotal}
-                </span>
-              </span>
-            )}
-            {userIds.length > 0 && (
-              <>
-                {userIds.map((userId) => (
+        {(attachmentsTotal > 0 ||
+          notificationsTotal > 0 ||
+          listName ||
+          userIds.length > 0) && (
+          <div className={styles.footer}>
+            {(attachmentsTotal > 0 || notificationsTotal > 0 || listName) && (
+              <span className={styles.attachments}>
+                {notificationsTotal > 0 && (
                   <span
-                    key={userId}
                     className={classNames(
                       styles.attachment,
-                      styles.attachmentRight
+                      styles.attachmentLeft
                     )}
                   >
-                    <UserAvatar
-                      id={userId}
-                      size="small"
-                      className={undefined}
-                    />
+                    <span className={styles.attachmentContent}>
+                      <Icon name="bell" />
+                      {notificationsTotal}
+                    </span>
                   </span>
-                ))}
-              </>
+                )}
+                {listName && (
+                  <span
+                    className={classNames(
+                      styles.attachment,
+                      styles.attachmentLeft
+                    )}
+                  >
+                    <span className={styles.attachmentContent}>
+                      <Icon name="columns" />
+                      {listName}
+                    </span>
+                  </span>
+                )}
+                {attachmentsTotal > 0 && (
+                  <span
+                    className={classNames(
+                      styles.attachment,
+                      styles.attachmentLeft
+                    )}
+                  >
+                    <span className={styles.attachmentContent}>
+                      <Icon name="attach" />
+                      {attachmentsTotal}
+                    </span>
+                  </span>
+                )}
+              </span>
             )}
-          </span>
+            <CardMembers userIds={userIds} />
+          </div>
         )}
       </div>
     </>
