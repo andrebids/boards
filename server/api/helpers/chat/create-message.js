@@ -50,6 +50,12 @@ module.exports = {
   },
 
   async fn(inputs) {
+    const recipientUserIds =
+      inputs.conversation.type === ChatConversation.Types.PROJECT_GROUP
+        ? inputs.memberUserIds
+        : inputs.participantUserIds;
+    const uniqueRecipientUserIds = [...new Set(recipientUserIds)];
+
     let wasCreated = false;
     const message = await sails.getDatastore().transaction(async (db) => {
       if (inputs.clientMessageId) {
@@ -100,6 +106,14 @@ module.exports = {
         )
         .usingConnection(db);
 
+      await sails.helpers.chatEmailNotifications.schedule.with({
+        message: createdMessage,
+        conversation: inputs.conversation,
+        recipientUserIds: uniqueRecipientUserIds,
+        senderUserId: inputs.user.id,
+        db,
+      });
+
       wasCreated = true;
       return createdMessage;
     });
@@ -124,9 +138,6 @@ module.exports = {
       inputs.request,
     );
 
-    const uniqueRecipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
-      inputs.conversation,
-    );
     const unreadCounts = await sails.helpers.chat.getUnreadCountsForUsers(
       inputs.conversation.id,
       uniqueRecipientUserIds,

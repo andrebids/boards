@@ -38,6 +38,9 @@ module.exports = {
     text: {
       type: 'string',
     },
+    messageId: {
+      type: 'string',
+    },
     data: {
       type: 'json',
     }, // Compatibilidade com os emails de notificação existentes
@@ -76,6 +79,7 @@ module.exports = {
         text: inputs.text || (inputs.data ? generatePlainText(inputs.data) : undefined),
         attachments: attachments.length > 0 ? attachments : undefined,
         from: sails.config.custom.smtpFrom,
+        messageId: inputs.messageId,
       };
 
       const info = await transporter.sendMail(mailOptions);

@@ -61,6 +61,23 @@ module.exports.custom = {
     10,
   ),
   chatExternalLinkPreviewsEnabled: process.env.CHAT_EXTERNAL_LINK_PREVIEWS_ENABLED === 'true',
+  chatEmailNotificationsEnabled: process.env.CHAT_EMAIL_NOTIFICATIONS_ENABLED === 'true',
+  chatEmailNotificationDelaySeconds: envToPositiveNumber(
+    process.env.CHAT_EMAIL_NOTIFICATION_DELAY_SECONDS,
+    60 * 60,
+  ),
+  chatEmailNotificationPollIntervalSeconds: envToPositiveNumber(
+    process.env.CHAT_EMAIL_NOTIFICATION_POLL_INTERVAL_SECONDS,
+    60,
+  ),
+  chatEmailNotificationMaxBatchesPerRun: envToPositiveNumber(
+    process.env.CHAT_EMAIL_NOTIFICATION_MAX_BATCHES_PER_RUN,
+    100,
+  ),
+  chatEmailNotificationMaxAttempts: envToPositiveNumber(
+    process.env.CHAT_EMAIL_NOTIFICATION_MAX_ATTEMPTS,
+    5,
+  ),
 
   defaultAdminEmail:
     process.env.DEFAULT_ADMIN_EMAIL && process.env.DEFAULT_ADMIN_EMAIL.toLowerCase(),

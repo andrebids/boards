@@ -16,6 +16,9 @@ module.exports = {
   },
 
   async fn(inputs) {
+    const recipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
+      inputs.targetConversation,
+    );
     const sourceAttachments = await ChatMessageAttachment.qm.getByMessageIds([
       inputs.sourceMessage.id,
     ]);
@@ -67,6 +70,14 @@ module.exports = {
         )
         .usingConnection(db);
 
+      await sails.helpers.chatEmailNotifications.schedule.with({
+        message: createdMessage,
+        conversation: inputs.targetConversation,
+        recipientUserIds,
+        senderUserId: inputs.user.id,
+        db,
+      });
+
       return createdMessage;
     });
 
@@ -86,14 +97,11 @@ module.exports = {
       inputs.request,
     );
 
-    const uniqueRecipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
-      inputs.targetConversation,
-    );
     const unreadCounts = await sails.helpers.chat.getUnreadCountsForUsers(
       inputs.targetConversation.id,
-      uniqueRecipientUserIds,
+      recipientUserIds,
     );
-    uniqueRecipientUserIds.forEach((userId) => {
+    recipientUserIds.forEach((userId) => {
       sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', {
         item: {
           id: inputs.targetConversation.id,
