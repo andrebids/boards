@@ -1,6 +1,6 @@
 # Reorganizar o modal de cartão Project com uma composição inspirada na HeroUI
 
-Written against: 60850dc30a5e67f3eab95319f79215909d3c2024
+Written against: ef561ad1070edaecc159f68f2190abb5352a5229
 
 ## Evidence chain
 
@@ -9,6 +9,8 @@ Written against: 60850dc30a5e67f3eab95319f79215909d3c2024
 - Problem: o cabeçalho contém apenas ícone e título; membros, rótulos e data ficam num bloco separado à esquerda, enquanto a lista fica no topo da barra lateral. A leitura faz um percurso em ziguezague antes de chegar à descrição e às tarefas.
 - Problem: todos os comandos da barra lateral usam a mesma caixa cinzenta, sombra e peso visual. Adicionar membro, duplicar, arquivar e eliminar parecem ter a mesma intenção e prioridade.
 - Problem: o modal usa uma grelha Semantic UI fixa de 12/4 colunas, largura base de 880 px e margens internas baseadas em deslocamentos de 40 px. A densidade resultante deixa a área principal estreita e depende de margens negativas nos comentários, atividades e tarefas.
+- Problem: na segunda captura fornecida, `CardImageCarousel` apresenta simultaneamente moldura cinzenta com sombra, pontos de paginação e miniaturas; `.carousel` ainda acrescenta um recuo esquerdo de 40 px. Estas camadas repetem seleção/posição e impedem a imagem de usar toda a largura útil.
+- Problem: definir ou remover uma imagem como capa continua disponível na lista de anexos, mas não no carousel onde a imagem está a ser comparada e selecionada.
 - Problem: `.wrapper` em `ProjectContent.module.scss` cria uma superfície clara dentro de um modal global `.glass` escuro. `glass-modal.css` ainda identifica modais de cartão através de `[class*="_wrapper_"]`, acoplando o resultado ao nome compilado de uma classe CSS Module.
 - Problem: a lista de ações mantém `position: sticky`, mas o modal não possui uma composição explícita de header fixo + body com scroll interno. Em cartões extensos, o contexto do título e o botão de fechar afastam-se do conteúdo em edição.
 - Design evidence: o MCP oficial da HeroUI v3 define `Modal.Header`, `Modal.Body`, `Modal.Footer`, scroll interno e tamanhos responsivos; a variante `cover` usa margens de 16 px em mobile e 40 px em desktop. Fonte consultada pelo MCP: `https://heroui.com/en/docs/react/components/modal`.
@@ -18,7 +20,7 @@ Written against: 60850dc30a5e67f3eab95319f79215909d3c2024
 - Design evidence local: `client/src/styles.module.scss` já aplica Plus Jakarta Sans globalmente e o projeto já usa raio de 8 px noutras superfícies.
 - Owner: shell e tipo de cartão em `CardModal.jsx`/`CardModal.module.scss`; composição Project em `ProjectContent.jsx`/`ProjectContent.module.scss`; overrides globais do modal em `client/src/styles/glass-modal.css`; tabs em `Communication.*`; tarefas e progresso em `TaskLists/Item.module.scss` e `task-lists/TaskList/*`; comentários em `comments/Comments/*`.
 - Scope and affected surfaces: apenas o modal do cartão Project no primeiro incremento. Story deve permanecer funcional e visualmente inalterado, exceto por regras partilhadas que sejam explicitamente verificadas.
-- Explicit exceptions: preservar o novo `CardImageCarousel` e `hideImagesWhenNotAllVisible`, que já são alterações locais não concluídas.
+- Explicit exceptions: reconciliar o novo `CardImageCarousel` e preservar o seu lightbox, teclado, swipe e `hideImagesWhenNotAllVisible`, que já são alterações locais não concluídas.
 - Uncertainty: o conteúdo e as permissões do cartão autenticado devem ser validados no browser durante a execução; a captura não cobre estados vazios, leitura, arquivo, lixo ou mobile.
 
 ## Design decision
@@ -30,7 +32,8 @@ Adotar uma composição de workspace clara e flat, inspirada na HeroUI, sem inst
 3. um body com scroll interno e grelha `conteúdo principal + rail de ações`;
 4. ações com variantes semânticas, sem caixas elevadas repetidas;
 5. secções principais alinhadas pela mesma coluna, sem margens negativas;
-6. tabs secundárias sublinhadas, progresso compacto e comentários tratados como superfícies de conteúdo.
+6. carousel reduzido a imagem, navegação necessária, miniaturas e uma ação contextual de capa;
+7. tabs secundárias sublinhadas, progresso compacto e comentários tratados como superfícies de conteúdo.
 
 Usar a linguagem visual da HeroUI como referência, mas continuar com React 18, Semantic UI, SCSS Modules e os componentes existentes. Não adicionar `@heroui/react`, Tailwind 4 ou React 19: essa migração é independente, aumenta muito o escopo e não é necessária para corrigir o layout.
 
@@ -46,6 +49,7 @@ Tese espacial:
 
 - `ClosableModal`, `ClosableContext` e o comportamento atual de close/ESC em `client/src/hooks/use-closable-modal.jsx`.
 - `NameField`, `UserAvatar`, `LabelChip`, `DueDateChip`, `StopwatchChip`, `CardImageCarousel`, `CustomFieldGroups`, `TaskLists`, `Attachments` e `Communication`.
+- Fluxo de capa já existente em `client/src/components/attachments/Attachments/ItemContent.jsx`: `entryActions.updateCurrentCard({ coverAttachmentId: isCover ? null : id })`, incluindo as traduções `action.makeCover` e `action.removeCover`.
 - Todos os popups, handlers, seletores, permissões e actions Redux existentes em `ProjectContent.jsx`.
 - `Button`, `Icon`, `Tab`, `Progress` e `Comment` de Semantic UI; a alteração é de composição e apresentação.
 - Tipografia Plus Jakarta Sans já aplicada globalmente.
@@ -73,7 +77,7 @@ Não criar um design system paralelo. Os tokens do modal devem ser custom proper
    - Change: manter o título editável e o ícone de tipo no `header`, reservando espaço à direita para o close icon do modal.
    - Change: mover o seletor de lista da barra lateral para `metadataBar`, depois de data/cronómetro, usando exatamente o `ListsPopup`, `listButton`, nome e permissões existentes.
    - Change: manter criador, membros, rótulos, data e cronómetro na mesma faixa de metadados, em itens auto-contidos que podem quebrar linha. Não ocultar labels textuais nem converter valores em icon-only.
-   - Change: manter `CardImageCarousel` como primeiro elemento de `mainContent` e preservar as alterações locais `hideImagesWhenNotAllVisible`.
+   - Change: manter `CardImageCarousel` como primeiro elemento de `mainContent`, agora sem recuo lateral, e preservar as alterações locais `hideImagesWhenNotAllVisible`.
    - Change: dividir o rail em `Adicionar ao cartão` e `Ações`; marcar apenas o botão de eliminar com `styles.actionButtonDanger`.
    - Change: manter o DOM do conteúdo principal antes do rail. Em mobile, o rail surge depois do conteúdo, evitando divergência entre ordem visual, teclado e leitores de ecrã.
    - Preserve: todos os handlers, popups, confirmações, Redux actions, permissões, estados de arquivo/lixo, drag-and-drop, edição de descrição, relógio e subscrição.
@@ -104,14 +108,30 @@ Não criar um design system paralelo. Os tokens do modal devem ser custom proper
    - Preserve: dimmer, stacking de popups e exceções de `project-settings` e `label-form-modal`.
    - Verify: nenhuma alteração visual aparece em Administration, User Settings, Project Settings ou formulários de labels.
 
-6. `client/src/components/cards/CardModal/Communication.jsx` e `Communication.module.scss`
+6. `client/src/components/cards/CardModal/CardImageCarousel/CardImageCarousel.jsx` e `CardImageCarousel.module.scss`
+   - Change: manter uma única hierarquia visível: viewport principal → miniaturas. Remover completamente a fila `.dots`, porque as miniaturas já comunicam quantidade, posição e seleção.
+   - Change: remover `margin-left:40px` de `.carousel`; usar `width:100%` e apenas `margin-bottom:24px`, alinhando o carousel com descrição, tarefas e comentários.
+   - Change: remover background cinzento, bordo e box-shadow de `.viewport`. Manter apenas clipping com raio de 8 px e background neutro escuro para imagens `object-fit:contain`, evitando que letterboxing pareça uma moldura clara.
+   - Change: manter o viewport com proporção previsível e altura limitada pela viewport. Não usar `object-fit:cover`, porque cortar anexos altera o conteúdo que o utilizador está a avaliar.
+   - Change: posicionar sobre o canto superior direito da imagem um botão contextual com ícone e texto. Para a imagem selecionada, mostrar `Tornar Capa` quando `selectedImage.id !== card.coverAttachmentId` e `Remover Capa` quando for a capa atual.
+   - Change: reutilizar exatamente `entryActions.updateCurrentCard({ coverAttachmentId: isCover ? null : selectedImage.id })`, as traduções `action.makeCover`/`action.removeCover` e a mesma regra de edição usada por `Attachments/ItemContent.jsx`.
+   - Change: impedir que o clique no botão de capa abra o lightbox ou acione swipe; a alteração deve manter a imagem selecionada.
+   - Change: mostrar o botão apenas a editores e fora de listas Archive/Trash. Em leitura, o carousel não reserva espaço vazio para a ação.
+   - Change: usar uma variante secondary/translúcida de 32–36 px sobre a imagem, com focus-visible e estado ativo claro; não introduzir menu, tooltip obrigatório ou segundo botão de confirmação.
+   - Change: manter setas e swipe somente quando `images.length > 1`. Manter thumbnails somente quando existirem várias imagens, diretamente sob o viewport com gap de 8 px e margem superior de 8 px.
+   - Change: reduzir as miniaturas para 64×48 px, sem elevação; seleção usa bordo accent de 2 px. Manter overflow horizontal e navegação por setas/Home/End.
+   - Preserve: ordenação da capa em primeiro lugar, seleção por ID, `GalleryItem`, caption, download, zoom, PhotoSwipe, teclado, `aria-live`, touch/pen swipe e `ClosableContext`.
+   - Verify: uma única imagem mostra apenas viewport e botão de capa; múltiplas imagens mostram viewport, setas e miniaturas; não existem pontos, recuo lateral ou moldura clara.
+   - Verify: tornar a segunda imagem capa move-a para primeiro lugar após o update sem perder seleção nem abrir o lightbox; remover a capa mantém todas as imagens disponíveis.
+
+7. `client/src/components/cards/CardModal/Communication.jsx` e `Communication.module.scss`
    - Change: adicionar classes locais à raiz do `Tab` e ao menu para controlar a composição sem depender apenas de overrides globais.
    - Change: manter o comportamento `secondary + pointing`, mas apresentá-lo como tabs secundárias HeroUI: fundo transparente, texto muted, ativo escuro, indicador azul de 2 px, sem caixas, bordos laterais ou sombra.
    - Change: usar altura de 36 px, gap de 4 px e painel com padding superior de 16 px.
    - Preserve: labels traduzidas, seleção inicial, montagem de `Comments` e `CardActivities`.
    - Verify: Comentários e Ações continuam navegáveis por teclado e o estado ativo não depende apenas da cor de fundo.
 
-7. `client/src/components/cards/CardModal/TaskLists/Item.module.scss`, `client/src/components/task-lists/TaskList/TaskList.module.scss` e `client/src/components/task-lists/TaskList/Task/Task.module.scss`
+8. `client/src/components/cards/CardModal/TaskLists/Item.module.scss`, `client/src/components/task-lists/TaskList/TaskList.module.scss` e `client/src/components/task-lists/TaskList/Task/Task.module.scss`
    - Change: alinhar título, progresso, contador, tarefas e “Adicionar outra tarefa” à mesma coluna do conteúdo, removendo offsets negativos que só compensavam o ícone a `left:-40px`.
    - Change: manter o ícone como elemento de header, agora em fluxo flex com 20×20 px; preservar o drag handle e o botão de editar.
    - Change: estilizar o progress track com 6 px, raio completo, background secundário e fill accent; manter o output `concluídas/total` à direita.
@@ -120,7 +140,7 @@ Não criar um design system paralelo. Os tokens do modal devem ser custom proper
    - Preserve: DnD de listas e tarefas, portal durante drag, edição, conclusão, assignee e criação.
    - Verify: 0, 1 e muitas tarefas, nomes longos, tarefa concluída e drag não alteram largura nem criam scroll horizontal.
 
-8. `client/src/components/comments/Comments/Comments.module.scss`, `Add.module.scss`, `Item.module.scss` e `client/src/components/activities/CardActivities/CardActivities.module.scss`
+9. `client/src/components/comments/Comments/Comments.module.scss`, `Add.module.scss`, `Item.module.scss` e `client/src/components/activities/CardActivities/CardActivities.module.scss`
    - Change: remover `margin-left:-40px` das listas de comentários e atividades; alinhar composer, feed e eventos com o painel das tabs.
    - Change: estilizar o composer como field branco com bordo discreto, raio de 8 px, padding de 10×12 px e focus ring accent.
    - Change: manter mensagens próprias à direita e restantes à esquerda, com largura máxima de 72%, raio de 8 px, bordo discreto e sem sombra forte. Mensagem própria usa success-soft; restante usa superfície branca.
@@ -143,6 +163,9 @@ Não criar um design system paralelo. Os tokens do modal devem ser custom proper
 - Product: confirmar close pelo X, backdrop e ESC; confirmar que setas esquerda/direita continuam a navegar entre cartões quando nenhum editor/popup está ativo.
 - Interface: validar no hot reload em `http://localhost:3008` a 1440×900, 1024×768, 768×1024, 390×844 e 320×568.
 - Interface: testar título curto e muito longo; sem/com muitos membros e labels; sem/com data e cronómetro; descrição vazia/extensa; 0/1/muitas task lists; 0/1/muitos anexos e comentários.
+- Interface: testar carousel com 1, 2 e muitas imagens; paisagem, retrato, fundo transparente e proporção extrema; capa inexistente, primeira imagem como capa e imagem intermédia como capa.
+- Interface: confirmar que pontos e moldura clara foram removidos, que a imagem usa toda a largura útil e que as miniaturas continuam a indicar seleção sem sombra.
+- Product: tornar e remover capa pelo botão do carousel e confirmar o mesmo resultado obtido pela ação existente na lista de anexos.
 - Interface: testar editor, leitura, lista fechada, arquivo e lixo; confirmar que ações ausentes não deixam lacunas.
 - Interface: validar zoom a 200%, locale pt-PT e en-US, scroll interno, rail sticky, tabs e foco visível.
 - Interface: abrir cada popup perto do topo e fundo do modal e confirmar que não é cortado pelo novo overflow; confirmar que carrossel e lightbox permanecem acima do modal.
@@ -155,6 +178,8 @@ Não criar um design system paralelo. Os tokens do modal devem ser custom proper
 
 - Stop if `Modal.Content` ou o wrapper real usado por Semantic UI não permitir header fixo + body com scroll sem cortar popups; resolver primeiro a ownership do overflow no shell, sem aplicar `overflow:visible` global.
 - Stop if o novo scroll cortar o lightbox/carrossel; preservar a alteração local e ajustar o portal/stacking antes de continuar o polimento.
+- Stop if a permissão para alterar capa divergir da regra de `Attachments/ItemContent.jsx`; extrair/reutilizar a decisão existente em vez de criar uma autorização paralela.
+- Stop if reordenar a capa para primeiro lugar fizer `selectedId` saltar para outra imagem; estabilizar primeiro a seleção por ID antes de polir a transição.
 - Stop if mover o seletor de lista alterar a âncora ou o contexto de `ListsPopup`; manter o comportamento atual e rever apenas a composição visual.
 - Stop if remover offsets de 40 px exigir alterar DnD, portal ou cálculo de largura das tarefas; separar essa correção num incremento posterior.
 - Stop if uma alteração necessária afetar Story de forma material; introduzir uma variante Project explícita em vez de alargar o redesign.

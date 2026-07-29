@@ -11,10 +11,19 @@
  */
 
 const Types = {
+  CREATE_CARD: 'createCard',
   MOVE_CARD: 'moveCard',
   COMMENT_CARD: 'commentCard',
   ADD_MEMBER_TO_CARD: 'addMemberToCard',
+  REMOVE_MEMBER_FROM_CARD: 'removeMemberFromCard',
   MENTION_IN_COMMENT: 'mentionInComment',
+  COMPLETE_TASK: 'completeTask',
+  UNCOMPLETE_TASK: 'uncompleteTask',
+  CREATE_TASK: 'createTask',
+  DELETE_TASK: 'deleteTask',
+  UPDATE_TASK: 'updateTask',
+  CREATE_TASK_LIST: 'createTaskList',
+  DELETE_TASK_LIST: 'deleteTaskList',
   ADD_LABEL_TO_CARD: 'addLabelToCard',
   REMOVE_LABEL_FROM_CARD: 'removeLabelFromCard',
   SET_DUE_DATE: 'setDueDate',

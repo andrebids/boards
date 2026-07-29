@@ -5,21 +5,37 @@
 
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Gallery, Item as GalleryItem } from 'react-photoswipe-gallery';
 import { Icon } from 'semantic-ui-react';
 
 import selectors from '../../../../selectors';
+import entryActions from '../../../../entry-actions';
 import { ClosableContext } from '../../../../contexts';
+import { isListArchiveOrTrash } from '../../../../utils/record-helpers';
+import { BoardMembershipRoles } from '../../../../constants/Enums';
 
 import styles from './CardImageCarousel.module.scss';
 
 const SWIPE_THRESHOLD = 48;
 
 const CardImageCarousel = React.memo(() => {
+  const selectListById = useMemo(() => selectors.makeSelectListById(), []);
+
   const card = useSelector(selectors.selectCurrentCard);
   const attachments = useSelector(selectors.selectAttachmentsForCurrentCard);
+  const canEdit = useSelector((state) => {
+    const list = selectListById(state, card.listId);
+
+    if (isListArchiveOrTrash(list)) {
+      return false;
+    }
+
+    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
+
+    return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
+  });
 
   const images = useMemo(() => {
     const imageAttachments = attachments.filter(
@@ -50,6 +66,7 @@ const CardImageCarousel = React.memo(() => {
   }, [attachments, card.coverAttachmentId]);
 
   const [t] = useTranslation();
+  const dispatch = useDispatch();
   const [selectedId, setSelectedId] = useState(null);
   const [activateClosable, deactivateClosable] = useContext(ClosableContext);
   const rootRef = useRef(null);
@@ -62,6 +79,7 @@ const CardImageCarousel = React.memo(() => {
   );
   const selectedImage = images[selectedIndex];
   const hasMultipleImages = images.length > 1;
+  const isCover = selectedImage?.id === card.coverAttachmentId;
 
   useEffect(() => {
     if (!images.length) {
@@ -130,11 +148,19 @@ const CardImageCarousel = React.memo(() => {
       event.stopPropagation();
       selectIndex(nextIndex);
 
-      if (event.target.hasAttribute('data-carousel-thumbnail')) {
+      const controlType = event.target.hasAttribute('data-carousel-thumbnail')
+        ? 'thumbnail'
+        : event.target.hasAttribute('data-carousel-dot')
+          ? 'dot'
+          : null;
+
+      if (controlType) {
         const normalizedIndex = (nextIndex + images.length) % images.length;
 
         requestAnimationFrame(() => {
-          rootRef.current?.querySelector(`[data-carousel-thumbnail="${normalizedIndex}"]`)?.focus();
+          rootRef.current
+            ?.querySelector(`[data-carousel-${controlType}="${normalizedIndex}"]`)
+            ?.focus();
         });
       }
     },
@@ -175,6 +201,24 @@ const CardImageCarousel = React.memo(() => {
   const handlePointerCancel = useCallback(() => {
     pointerStartXRef.current = null;
   }, []);
+
+  const handleToggleCoverClick = useCallback(
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!selectedImage) {
+        return;
+      }
+
+      dispatch(
+        entryActions.updateCurrentCard({
+          coverAttachmentId: isCover ? null : selectedImage.id,
+        }),
+      );
+    },
+    [dispatch, isCover, selectedImage],
+  );
 
   if (!selectedImage) {
     return null;
@@ -281,6 +325,27 @@ const CardImageCarousel = React.memo(() => {
               </button>
             </>
           )}
+          {canEdit && (
+            <button
+              type="button"
+              className={classNames(styles.coverButton, isCover && styles.coverButtonActive)}
+              aria-pressed={isCover}
+              onPointerDown={(event) => event.stopPropagation()}
+              onPointerUp={(event) => event.stopPropagation()}
+              onClick={handleToggleCoverClick}
+            >
+              <Icon fitted name={isCover ? 'check' : 'image outline'} aria-hidden="true" />
+              <span>
+                {isCover
+                  ? t('action.removeCover', {
+                      context: 'title',
+                    })
+                  : t('action.makeCover', {
+                      context: 'title',
+                    })}
+              </span>
+            </button>
+          )}
         </div>
         <div className={styles.status} aria-live="polite">
           {t('common.imagePosition', {
@@ -290,16 +355,27 @@ const CardImageCarousel = React.memo(() => {
         </div>
         {hasMultipleImages && (
           <>
-            <div className={styles.dots} aria-hidden="true">
-              {images.map((image) => (
-                <span
-                  key={image.id}
-                  className={classNames(
-                    styles.dot,
-                    image.id === selectedImage.id && styles.dotSelected,
-                  )}
-                />
-              ))}
+            <div className={styles.dots} role="group" aria-label={t('common.cardImages')}>
+              {images.map((image, index) => {
+                const isSelected = index === selectedIndex;
+
+                return (
+                  <button
+                    key={image.id}
+                    type="button"
+                    tabIndex={isSelected ? 0 : -1}
+                    aria-current={isSelected ? 'true' : undefined}
+                    aria-label={t('common.imagePosition', {
+                      current: index + 1,
+                      total: images.length,
+                    })}
+                    data-carousel-dot={index}
+                    className={classNames(styles.dot, isSelected && styles.dotSelected)}
+                    onKeyDown={handleKeyDown}
+                    onClick={() => setSelectedId(image.id)}
+                  />
+                );
+              })}
             </div>
             <div className={styles.thumbnails} role="group" aria-label={t('common.cardImages')}>
               {images.map((image, index) => {

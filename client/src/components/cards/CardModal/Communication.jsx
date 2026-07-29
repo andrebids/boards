@@ -39,13 +39,15 @@ const Communication = React.memo(() => {
   ];
 
   return (
-    <Tab
-      menu={{
-        secondary: true,
-        pointing: true,
-      }}
-      panes={panes}
-    />
+    <div className={styles.wrapper}>
+      <Tab
+        menu={{
+          secondary: true,
+          pointing: true,
+        }}
+        panes={panes}
+      />
+    </div>
   );
 });
 

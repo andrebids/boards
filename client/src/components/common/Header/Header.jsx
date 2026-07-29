@@ -8,6 +8,7 @@ import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Button, Icon, Menu } from 'semantic-ui-react';
+import { useTranslation } from 'react-i18next';
 import { usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
@@ -26,6 +27,7 @@ const POPUP_PROPS = {
 };
 
 const Header = React.memo(() => {
+  const [t] = useTranslation();
   const user = useSelector(selectors.selectCurrentUser);
   const project = useSelector(selectors.selectCurrentProject);
   const board = useSelector(selectors.selectCurrentBoard);
@@ -205,7 +207,12 @@ const Header = React.memo(() => {
             </Menu.Item>
           )}
           <NotificationsPopup>
-            <Menu.Item className={classNames(styles.item, styles.itemHoverable)}>
+            <Menu.Item
+              aria-label={t('common.notifications', {
+                context: 'title',
+              })}
+              className={classNames(styles.item, styles.itemHoverable)}
+            >
               <Icon fitted name="bell" />
               {notificationIds.length > 0 && (
                 <span className={styles.notification}>{notificationIds.length}</span>

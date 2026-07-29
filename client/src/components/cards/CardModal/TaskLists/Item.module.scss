@@ -23,7 +23,7 @@
   }
 
   .moduleHeader {
-    color: #17394d;
+    color: #1f2937;
     display: flex;
     font-size: 16px;
     font-weight: bold;
@@ -48,10 +48,10 @@
   }
 
   .moduleIcon {
-    color: #17394d;
+    color: #64748b;
     font-size: 17px;
     height: 32px;
-    left: -40px;
+    left: 0;
     line-height: 32px;
     margin-right: 0;
     position: absolute;
@@ -60,13 +60,14 @@
   }
 
   .moduleWrapper {
-    margin: 0 0 0 40px;
+    margin: 0;
+    padding-left: 36px;
     position: relative;
   }
 
   .wrapper {
-    border-radius: 3px;
-    margin-bottom: 24px;
+    border-radius: 8px;
+    margin-bottom: 28px;
   }
 
   .wrapperDragging {

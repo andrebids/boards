@@ -5,31 +5,49 @@
 
 :global(#app) {
   .carousel {
-    margin: 0 0 24px 40px;
+    background: transparent;
+    margin: 0 0 28px;
     max-width: 100%;
+    overflow: visible;
+    padding: 0;
+    width: 100%;
   }
 
   .dot {
-    background: #c7cdd1;
-    border-radius: 50%;
-    display: block;
+    background: #c4cad2;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
     height: 7px;
+    padding: 0;
     transition:
       background-color 160ms ease,
       transform 160ms ease;
     width: 7px;
+
+    &:hover {
+      background: #8f98a5;
+      transform: scale(1.12);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px rgba(37, 150, 255, 0.32);
+      outline: none;
+    }
   }
 
   .dotSelected {
-    background: #2185d0;
-    transform: scale(1.15);
+    background: #168ef1;
+    transform: scale(1.12);
   }
 
   .dots {
+    align-items: center;
     display: flex;
-    gap: 6px;
+    gap: 7px;
     justify-content: center;
-    margin-top: 12px;
+    min-height: 7px;
+    padding: 12px 0;
   }
 
   .image {
@@ -41,15 +59,15 @@
 
   .navigation {
     align-items: center;
-    background: rgba(23, 57, 77, 0.88);
+    background: rgba(15, 23, 42, 0.76);
     border: 0;
     border-radius: 50%;
     color: #fff;
     cursor: pointer;
     display: flex;
-    height: 36px;
+    height: 34px;
     justify-content: center;
-    margin-top: -18px;
+    margin-top: -17px;
     opacity: 0.92;
     padding: 0;
     position: absolute;
@@ -59,16 +77,16 @@
       background-color 160ms ease,
       opacity 160ms ease,
       transform 160ms ease;
-    width: 36px;
+    width: 34px;
     z-index: 2;
 
     &:hover {
-      background: #17394d;
+      background: rgba(15, 23, 42, 0.94);
       opacity: 1;
     }
 
     &:focus-visible {
-      box-shadow: 0 0 0 3px rgba(33, 133, 208, 0.35);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
       opacity: 1;
       outline: 2px solid #fff;
       outline-offset: 2px;
@@ -122,17 +140,16 @@
 
   .thumbnail {
     background: #fff;
-    border: 2px solid transparent;
-    border-radius: 9px;
+    border: 2px solid #e2e5e9;
+    border-radius: 11px;
     cursor: pointer;
-    flex: 0 0 72px;
-    height: 58px;
+    flex: 0 0 66px;
+    height: 54px;
     overflow: hidden;
     padding: 2px;
     scroll-snap-align: start;
     transition:
       border-color 160ms ease,
-      box-shadow 160ms ease,
       transform 160ms ease;
 
     &:hover {
@@ -140,13 +157,13 @@
     }
 
     &:focus-visible {
-      box-shadow: 0 0 0 3px rgba(33, 133, 208, 0.28);
+      box-shadow: 0 0 0 3px rgba(22, 142, 241, 0.34);
       outline: none;
     }
   }
 
   .thumbnailImage {
-    border-radius: 5px;
+    border-radius: 7px;
     display: block;
     height: 100%;
     object-fit: cover;
@@ -154,27 +171,24 @@
   }
 
   .thumbnailSelected {
-    border-color: #2185d0;
-    box-shadow: 0 1px 3px rgba(9, 30, 66, 0.18);
+    border-color: #168ef1;
   }
 
   .thumbnails {
     display: flex;
-    gap: 8px;
-    margin-top: 14px;
+    gap: 10px;
     overflow-x: auto;
-    padding: 3px 2px 7px;
+    padding: 2px 0 3px;
     scroll-snap-type: x proximity;
     scrollbar-color: #b6bec4 transparent;
     scrollbar-width: thin;
   }
 
   .viewport {
-    aspect-ratio: 16 / 10;
-    background: #e8ecef;
-    border: 1px solid rgba(9, 30, 66, 0.08);
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(9, 30, 66, 0.12);
+    aspect-ratio: 16 / 9;
+    background: #eef1f4;
+    border: 1px solid #e2e5e9;
+    border-radius: 10px;
     overflow: hidden;
     position: relative;
     touch-action: pan-y;
@@ -187,7 +201,48 @@
     }
   }
 
+  .coverButton {
+    align-items: center;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.9);
+    border: 0;
+    border-radius: 8px;
+    color: #273444;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 7px;
+    line-height: 16px;
+    min-height: 32px;
+    padding: 8px 10px;
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    transition:
+      background 120ms ease,
+      color 120ms ease;
+    z-index: 3;
+
+    &:hover {
+      background: #fff;
+      color: #111827;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.38);
+      outline: 2px solid #fff;
+      outline-offset: 1px;
+    }
+  }
+
+  .coverButtonActive {
+    background: rgba(219, 234, 254, 0.94);
+    color: #1d4ed8;
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    .coverButton,
     .dot,
     .navigation,
     .slide,
@@ -197,10 +252,6 @@
   }
 
   @media only screen and (width < 768px) {
-    .carousel {
-      margin-left: 40px;
-    }
-
     .navigation {
       opacity: 1;
       transform: scale(1);
@@ -215,8 +266,13 @@
     }
 
     .thumbnail {
-      flex-basis: 64px;
-      height: 52px;
+      flex-basis: 60px;
+      height: 48px;
+    }
+
+    .coverButton {
+      right: 10px;
+      top: 10px;
     }
   }
 }

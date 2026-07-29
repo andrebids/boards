@@ -16,33 +16,27 @@ import entryActions from '../../../entry-actions';
 import { formatTextWithMentions } from '../../../utils/mentions';
 import Paths from '../../../constants/Paths';
 import { StaticUserIds } from '../../../constants/StaticUsers';
-import { NotificationTypes } from '../../../constants/Enums';
+import { ActivityTypes, NotificationTypes } from '../../../constants/Enums';
 import TimeAgo from '../../common/TimeAgo';
 import UserAvatar from '../../users/UserAvatar';
 
 import styles from './Item.module.scss';
 
 const Item = React.memo(({ id, onClose }) => {
-  const selectNotificationById = useMemo(
-    () => selectors.makeSelectNotificationById(),
-    []
-  );
-  const selectCreatorUserById = useMemo(
-    () => selectors.makeSelectUserById(),
-    []
-  );
+  const selectNotificationById = useMemo(() => selectors.makeSelectNotificationById(), []);
+  const selectCreatorUserById = useMemo(() => selectors.makeSelectUserById(), []);
   const selectCardById = useMemo(() => selectors.makeSelectCardById(), []);
 
-  const notification = useSelector(state => selectNotificationById(state, id));
+  const notification = useSelector((state) => selectNotificationById(state, id));
 
-  const creatorUser = useSelector(state =>
-    selectCreatorUserById(state, notification.creatorUserId)
+  const creatorUser = useSelector((state) =>
+    selectCreatorUserById(state, notification.creatorUserId),
   );
 
-  const card = useSelector(state => selectCardById(state, notification.cardId));
+  const card = useSelector((state) => selectCardById(state, notification.cardId));
 
   const dispatch = useDispatch();
-  const [t] = useTranslation();
+  const [t, i18n] = useTranslation();
 
   const handleDeleteClick = useCallback(() => {
     dispatch(entryActions.deleteNotification(id));
@@ -55,7 +49,41 @@ const Item = React.memo(({ id, onClose }) => {
         })
       : creatorUser.name;
 
-  const cardName = card ? card.name : (notification.data.card ? notification.data.card.name : 'Card');
+  const cardName = card?.name || notification.data?.card?.name || 'Card';
+
+  const renderDetailNotification = ({
+    i18nKey,
+    detail,
+    beforeDetail,
+    afterDetail,
+    values = {},
+  }) => (
+    <Trans
+      i18nKey={i18nKey}
+      values={{
+        user: creatorUserName,
+        card: cardName,
+        ...values,
+      }}
+    >
+      <span className={styles.author}>{creatorUserName}</span>
+      {beforeDetail}
+      <strong>{detail}</strong>
+      {afterDetail}
+      <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+        {cardName}
+      </Link>
+    </Trans>
+  );
+
+  const formatDueDate = (value) => {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(i18n.language);
+  };
 
   let contentNode;
   switch (notification.type) {
@@ -77,10 +105,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {' moved '}
-          <Link
-            to={Paths.CARDS.replace(':id', notification.cardId)}
-            onClick={onClose}
-          >
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
             {cardName}
           </Link>
           {' from '}
@@ -93,9 +118,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case NotificationTypes.COMMENT_CARD: {
-      const commentText = truncate(
-        formatTextWithMentions(notification.data.text || '')
-      );
+      const commentText = truncate(formatTextWithMentions(notification.data.text || ''));
 
       contentNode = (
         <Trans
@@ -108,10 +131,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {` left a new comment «${commentText}» to `}
-          <Link
-            to={Paths.CARDS.replace(':id', notification.cardId)}
-            onClick={onClose}
-          >
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
             {cardName}
           </Link>
         </Trans>
@@ -130,10 +150,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {` added you to `}
-          <Link
-            to={Paths.CARDS.replace(':id', notification.cardId)}
-            onClick={onClose}
-          >
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
             {cardName}
           </Link>
         </Trans>
@@ -141,9 +158,7 @@ const Item = React.memo(({ id, onClose }) => {
 
       break;
     case NotificationTypes.MENTION_IN_COMMENT: {
-      const commentText = truncate(
-        formatTextWithMentions(notification.data.text || '')
-      );
+      const commentText = truncate(formatTextWithMentions(notification.data.text || ''));
 
       contentNode = (
         <Trans
@@ -156,10 +171,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {` mentioned you in «${commentText}» on `}
-          <Link
-            to={Paths.CARDS.replace(':id', notification.cardId)}
-            onClick={onClose}
-          >
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
             {cardName}
           </Link>
         </Trans>
@@ -167,14 +179,294 @@ const Item = React.memo(({ id, onClose }) => {
 
       break;
     }
-    default:
-      console.log('Unknown notification type:', notification.type, notification);
-      contentNode = null;
-  }
+    case ActivityTypes.CREATE_CARD: {
+      const list = notification.data?.list;
+      const listName = list?.name || t(`common.${list?.type || 'list'}`);
 
-  // Não renderizar notificações sem conteúdo
-  if (!contentNode) {
-    return null;
+      contentNode = (
+        <Trans
+          i18nKey="common.userAddedCardToList"
+          values={{
+            user: creatorUserName,
+            card: cardName,
+            list: listName,
+          }}
+        >
+          <span className={styles.author}>{creatorUserName}</span>
+          {' added '}
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+            {cardName}
+          </Link>
+          {' to '}
+          {listName}
+        </Trans>
+      );
+
+      break;
+    }
+    case ActivityTypes.REMOVE_MEMBER_FROM_CARD: {
+      const removedUserName =
+        notification.data?.user?.name ||
+        t('common.unknownUser', {
+          defaultValue: 'Unknown user',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userRemovedUserFromCard',
+        detail: removedUserName,
+        beforeDetail: ' removed ',
+        afterDetail: ' from ',
+        values: {
+          actorUser: creatorUserName,
+          removedUser: removedUserName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.CREATE_TASK: {
+      const taskName =
+        notification.data?.task?.name ||
+        t('common.task', {
+          defaultValue: 'task',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userCreatedTaskOnCard',
+        detail: taskName,
+        beforeDetail: ' created task ',
+        afterDetail: ' on ',
+        values: {
+          task: taskName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.DELETE_TASK: {
+      const taskName =
+        notification.data?.task?.name ||
+        t('common.task', {
+          defaultValue: 'task',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userDeletedTaskOnCard',
+        detail: taskName,
+        beforeDetail: ' deleted task ',
+        afterDetail: ' from ',
+        values: {
+          task: taskName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.UPDATE_TASK: {
+      const taskName =
+        notification.data?.task?.name ||
+        t('common.task', {
+          defaultValue: 'task',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userUpdatedTaskOnCard',
+        detail: taskName,
+        beforeDetail: ' updated task ',
+        afterDetail: ' on ',
+        values: {
+          task: taskName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.COMPLETE_TASK: {
+      const taskName =
+        notification.data?.task?.name ||
+        t('common.task', {
+          defaultValue: 'task',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userCompletedTaskOnCard',
+        detail: taskName,
+        beforeDetail: ' completed task ',
+        afterDetail: ' on ',
+        values: {
+          task: taskName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.UNCOMPLETE_TASK: {
+      const taskName =
+        notification.data?.task?.name ||
+        t('common.task', {
+          defaultValue: 'task',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userUncompletedTaskOnCard',
+        detail: taskName,
+        beforeDetail: ' marked task ',
+        afterDetail: ' incomplete on ',
+        values: {
+          task: taskName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.CREATE_TASK_LIST: {
+      const taskListName =
+        notification.data?.taskList?.name ||
+        t('common.taskList', {
+          defaultValue: 'task list',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userCreatedTaskListOnCard',
+        detail: taskListName,
+        beforeDetail: ' created task list ',
+        afterDetail: ' on ',
+        values: {
+          taskList: taskListName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.DELETE_TASK_LIST: {
+      const taskListName =
+        notification.data?.taskList?.name ||
+        t('common.taskList', {
+          defaultValue: 'task list',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userDeletedTaskListOnCard',
+        detail: taskListName,
+        beforeDetail: ' deleted task list ',
+        afterDetail: ' from ',
+        values: {
+          taskList: taskListName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.ADD_LABEL_TO_CARD: {
+      const labelName =
+        notification.data?.labelName ||
+        t('common.label', {
+          defaultValue: 'label',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userAddedLabelToCard',
+        detail: labelName,
+        beforeDetail: ' added label ',
+        afterDetail: ' to ',
+        values: {
+          label: labelName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.REMOVE_LABEL_FROM_CARD: {
+      const labelName =
+        notification.data?.labelName ||
+        t('common.label', {
+          defaultValue: 'label',
+        });
+
+      contentNode = renderDetailNotification({
+        i18nKey: 'common.userRemovedLabelFromCard',
+        detail: labelName,
+        beforeDetail: ' removed label ',
+        afterDetail: ' from ',
+        values: {
+          label: labelName,
+        },
+      });
+
+      break;
+    }
+    case ActivityTypes.SET_DUE_DATE: {
+      const oldDate = formatDueDate(notification.data?.oldDueDate);
+      const newDate = formatDueDate(notification.data?.newDueDate);
+
+      if (!oldDate && newDate) {
+        contentNode = renderDetailNotification({
+          i18nKey: 'common.userSetDueDateOnCard',
+          detail: newDate,
+          beforeDetail: ' set due date to ',
+          afterDetail: ' for ',
+          values: {
+            date: newDate,
+          },
+        });
+      } else if (oldDate && !newDate) {
+        contentNode = (
+          <Trans
+            i18nKey="common.userRemovedDueDateFromCard"
+            values={{
+              user: creatorUserName,
+              card: cardName,
+            }}
+          >
+            <span className={styles.author}>{creatorUserName}</span>
+            {' removed the due date from '}
+            <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+              {cardName}
+            </Link>
+          </Trans>
+        );
+      } else {
+        contentNode = (
+          <Trans
+            i18nKey="common.userChangedDueDateOfCard"
+            values={{
+              user: creatorUserName,
+              oldDate,
+              newDate,
+              card: cardName,
+            }}
+          >
+            <span className={styles.author}>{creatorUserName}</span>
+            {' changed the due date from '}
+            <strong>{oldDate}</strong>
+            {' to '}
+            <strong>{newDate}</strong>
+            {' for '}
+            <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+              {cardName}
+            </Link>
+          </Trans>
+        );
+      }
+
+      break;
+    }
+    default:
+      contentNode = (
+        <Trans
+          i18nKey="common.activityLogMessage"
+          values={{
+            user: creatorUserName,
+            card: cardName,
+          }}
+        >
+          <span className={styles.author}>{creatorUserName}</span>
+          {' updated '}
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+            {cardName}
+          </Link>
+        </Trans>
+      );
   }
 
   return (
@@ -189,6 +481,7 @@ const Item = React.memo(({ id, onClose }) => {
       <Button
         type="button"
         icon="trash alternate outline"
+        aria-label={t('action.delete')}
         className={styles.button}
         onClick={handleDeleteClick}
       />

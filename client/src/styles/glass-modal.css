@@ -32,19 +32,23 @@
 
 .ui.modal.glass:not(.project-settings) > .content::before,
 .ui.basic.modal.glass:not(.project-settings) > .content::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   border-radius: 16px;
   box-shadow: none;
-  background: radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.08), transparent 60%);
+  background: radial-gradient(
+    circle at 12% 12%,
+    rgba(255, 255, 255, 0.08),
+    transparent 60%
+  );
   pointer-events: none;
 }
 
 .ui.modal.glass:not(.project-settings) > .content::after,
 .ui.basic.modal.glass:not(.project-settings) > .content::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   z-index: -1; /* ficar atrás do conteúdo para não lavar texto */
@@ -92,9 +96,14 @@
 }
 
 /* Botão fechar específico para cartões - Estilo glass sobrio */
-.ui.modal.glass[class*="_wrapper_"] > i.close.icon {
+.ui.modal.glass.card-modal > i.close.icon {
   color: rgba(230, 237, 243, 0.9) !important; /* Cor clara mais visível */
-  background: rgba(55, 65, 81, 0.4) !important; /* Fundo cinza mais transparente */
+  background: rgba(
+    55,
+    65,
+    81,
+    0.4
+  ) !important; /* Fundo cinza mais transparente */
   border: 1px solid rgba(75, 85, 99, 0.3) !important; /* Borda cinza */
   border-radius: 50% !important; /* Consistente com o modal */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important; /* Sombra mais forte */
@@ -104,11 +113,21 @@
   justify-content: center !important;
 }
 
-.ui.modal.glass[class*="_wrapper_"] > i.close.icon:hover {
+.ui.modal.glass.card-modal > i.close.icon:hover {
   color: #374151 !important; /* Cinza escuro no hover */
-  background: rgba(55, 65, 81, 0.4) !important; /* Fundo cinza mais transparente */
-  border-color: rgba(75, 85, 99, 0.5) !important; /* Borda cinza mais transparente */
-  box-shadow: 
+  background: rgba(
+    55,
+    65,
+    81,
+    0.4
+  ) !important; /* Fundo cinza mais transparente */
+  border-color: rgba(
+    75,
+    85,
+    99,
+    0.5
+  ) !important; /* Borda cinza mais transparente */
+  box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.15),
     inset 0 1px 3px rgba(255, 255, 255, 0.1) !important; /* Sombra externa + interna */
   display: flex !important; /* Manter flexbox no hover */
@@ -125,7 +144,7 @@
 
 /* Inputs e dropdowns mais claros sobre vidro */
 .ui.modal.glass:not(.project-settings) .ui.input input,
-.ui.modal.glass:not(.project-settings) input[type='text'],
+.ui.modal.glass:not(.project-settings) input[type="text"],
 .ui.modal.glass:not(.project-settings) .ui.dropdown > .text,
 .ui.modal.glass:not(.project-settings) .ui.selection.dropdown {
   color: #0f172a; /* texto escuro em campos claros */
@@ -147,15 +166,22 @@
   color: rgba(230, 237, 243, 0.9);
 }
 
-.ui.modal.glass:not(.project-settings) .ui.pointing.secondary.menu .active.item {
+.ui.modal.glass:not(.project-settings)
+  .ui.pointing.secondary.menu
+  .active.item {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.22);
 }
 
 /* Tabs específicas para cartões - Estilo glass elegante */
-.ui.modal.glass[class*="_wrapper_"] .ui.pointing.secondary.menu .item {
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .item {
   color: #374151 !important; /* Cor escura */
-  background: rgba(255, 255, 255, 0.05) !important; /* Fundo glass muito sutil */
+  background: rgba(
+    255,
+    255,
+    255,
+    0.05
+  ) !important; /* Fundo glass muito sutil */
   border: 1px solid rgba(255, 255, 255, 0.08) !important; /* Borda glass transparente */
   border-radius: 8px 8px 0 0 !important; /* Bordas arredondadas no topo */
   transition: all 0.2s ease !important; /* Transição suave */
@@ -163,7 +189,7 @@
   padding: 8px 16px !important; /* Padding interno */
 }
 
-.ui.modal.glass[class*="_wrapper_"] .ui.pointing.secondary.menu .active.item {
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item {
   color: #1f2937 !important; /* Cinza muito escuro no ativo */
   background: rgba(255, 255, 255, 0.12) !important; /* Fundo glass mais claro */
   border-color: rgba(255, 255, 255, 0.2) !important; /* Borda mais clara */
@@ -171,8 +197,8 @@
 }
 
 /* Forçar cor escura para aba ativa - maior especificidade */
-.ui.modal.glass[class*="_wrapper_"] .ui.pointing.secondary.menu .item.active,
-.ui.modal.glass[class*="_wrapper_"] .ui.pointing.secondary.menu .active.item {
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .item.active,
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item {
   color: #1f2937 !important; /* Cinza muito escuro no ativo */
   background: rgba(255, 255, 255, 0.12) !important; /* Fundo glass mais claro */
   border-color: rgba(255, 255, 255, 0.2) !important; /* Borda mais clara */
@@ -180,19 +206,24 @@
 }
 
 /* Sobrescrever regras #app com especificidade máxima */
-#app .ui.modal.glass[class*="_wrapper_"] .ui.pointing.secondary.menu .item.active,
-#app .ui.modal.glass[class*="_wrapper_"] .ui.pointing.secondary.menu .active.item,
-#app .ui.modal.glass[class*="_wrapper_"] .ui.pointing.secondary.menu .active.item:hover {
+#app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .item.active,
+#app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item,
+#app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item:hover {
   color: #1f2937 !important; /* Cinza muito escuro no ativo */
   background: rgba(255, 255, 255, 0.12) !important; /* Fundo glass mais claro */
   border-color: rgba(255, 255, 255, 0.2) !important; /* Borda mais clara */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important; /* Sombra sutil */
 }
 
-.ui.modal.glass[class*="_wrapper_"] .ui.pointing.secondary.menu .item:hover {
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .item:hover {
   color: #4b5563 !important; /* Cinza médio no hover */
   background: rgba(255, 255, 255, 0.08) !important; /* Fundo glass no hover */
-  border-color: rgba(255, 255, 255, 0.15) !important; /* Borda mais clara no hover */
+  border-color: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ) !important; /* Borda mais clara no hover */
 }
 .ui.modal.glass:not(.project-settings) .ui.segment,
 .ui.modal.glass:not(.project-settings) .ui.segment.active,
@@ -224,4 +255,90 @@
 .ui.modal.glass:not(.project-settings) .ui.form .field > label,
 .ui.modal.glass:not(.project-settings) .field > label {
   color: rgba(230, 237, 243, 0.9) !important;
+}
+
+/* Cartões usam uma superfície de aplicação limpa em vez do efeito de vidro. */
+.ui.modal.glass.card-modal > .content {
+  background: #ffffff !important;
+  border: 1px solid #e3e6ea !important;
+  border-radius: 8px !important;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24) !important;
+  color: #1f2937;
+  overflow: hidden;
+}
+
+.ui.modal.glass.card-modal > .content::before,
+.ui.modal.glass.card-modal > .content::after {
+  display: none;
+}
+
+.ui.modal.glass.card-modal > i.close.icon {
+  background: #eef0f2 !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+  color: #667085 !important;
+  font-size: 16px;
+  height: 24px;
+  line-height: 1;
+  opacity: 1;
+  padding: 4px !important;
+  right: 14px;
+  top: 14px;
+  transition:
+    transform 150ms ease-out,
+    color 150ms ease-out,
+    background-color 100ms ease-out,
+    box-shadow 150ms ease-out !important;
+  width: 24px;
+}
+
+.ui.modal.glass.card-modal > i.close.icon:hover {
+  background: #e4e7eb !important;
+  color: #1f2937 !important;
+}
+
+.ui.modal.glass.card-modal > i.close.icon:active {
+  transform: scale(0.93);
+}
+
+.ui.modal.glass.card-modal > i.close.icon:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22) !important;
+  outline: none;
+}
+
+.ui.modal.glass.card-modal label,
+.ui.modal.glass.card-modal .ui.checkbox label,
+.ui.modal.glass.card-modal .ui.toggle.checkbox label,
+.ui.modal.glass.card-modal .ui.header {
+  color: #1f2937 !important;
+}
+
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu {
+  border-color: #e3e6ea;
+  gap: 20px;
+}
+
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .item,
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .item:hover,
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .item.active,
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item,
+#app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .item.active,
+#app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item,
+#app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item:hover {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #64748b !important;
+  margin: 0 !important;
+  padding: 10px 0 !important;
+}
+
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .item.active,
+.ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item,
+#app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .item.active,
+#app .ui.modal.glass.card-modal .ui.pointing.secondary.menu .active.item {
+  border-color: #2563eb !important;
+  color: #1f2937 !important;
 }

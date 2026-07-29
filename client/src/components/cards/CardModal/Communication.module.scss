@@ -5,6 +5,17 @@
 
 :global(#app) {
   .menuItem {
-    color: #17394d;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .wrapper {
+    :global(.ui.pointing.secondary.menu) {
+      margin-bottom: 12px;
+    }
+
+    :global(.ui.segment) {
+      padding: 0;
+    }
   }
 }

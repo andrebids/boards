@@ -18,8 +18,8 @@
   .field {
     textarea {
       background: #fff !important;
-      border: 1px solid rgba(9, 30, 66, 0.13);
-      border-radius: 3px;
+      border: 1px solid #dfe3e8;
+      border-radius: 8px;
       box-sizing: border-box;
       color: #333;
       display: block;
@@ -31,6 +31,8 @@
       resize: none;
 
       &:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
         outline: none;
       }
     }

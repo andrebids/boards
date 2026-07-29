@@ -31,18 +31,15 @@ const CardModal = React.memo(() => {
 
   const card = useSelector(selectors.selectCurrentCard);
 
-  const canEdit = useSelector(state => {
+  const canEdit = useSelector((state) => {
     const list = selectListById(state, card.listId);
 
     if (isListArchiveOrTrash(list)) {
       return false;
     }
 
-    const boardMembership =
-      selectors.selectCurrentUserMembershipForCurrentBoard(state);
-    return (
-      !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR
-    );
+    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
   });
 
   const dispatch = useDispatch();
@@ -54,7 +51,7 @@ const CardModal = React.memo(() => {
   const [ClosableModal, isClosableActiveRef] = useClosableModal();
 
   useEffect(() => {
-    const handleKeydown = event => {
+    const handleKeydown = (event) => {
       if (isClosableActiveRef.current) {
         return;
       }
@@ -96,8 +93,10 @@ const CardModal = React.memo(() => {
       closeIcon
       centered={false}
       className={classNames(
+        'card-modal',
         styles.wrapper,
-        card.type === CardTypes.STORY && styles.wrapperStory
+        card.type === CardTypes.PROJECT && styles.wrapperProject,
+        card.type === CardTypes.STORY && styles.wrapperStory,
       )}
       onClose={handleClose}
     >
