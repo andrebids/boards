@@ -8,8 +8,8 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
-import { Input, Popup } from '../../../lib/custom-ui';
+import { Form } from 'semantic-ui-react';
+import { Button, Input, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -114,13 +114,16 @@ const EditStep = React.memo(({ attachmentId, onClose }) => {
             className={styles.field}
             onChange={handleFieldChange}
           />
-          <Button positive content={t('action.save')} />
+          <div className={styles.actions}>
+            <Button type="submit" variant="primary" content={t('action.save')} />
+            <Button
+              type="button"
+              variant="danger-soft"
+              content={t('action.delete')}
+              onClick={handleDeleteClick}
+            />
+          </div>
         </Form>
-        <Button
-          content={t('action.delete')}
-          className={styles.deleteButton}
-          onClick={handleDeleteClick}
-        />
       </Popup.Content>
     </>
   );

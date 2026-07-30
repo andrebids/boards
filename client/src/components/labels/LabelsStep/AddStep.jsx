@@ -7,8 +7,8 @@ import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
-import { Popup } from '../../../lib/custom-ui';
+import { Form } from 'semantic-ui-react';
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import entryActions from '../../../entry-actions';
 import { useForm } from '../../../hooks';
@@ -50,7 +50,7 @@ const AddStep = React.memo(({ cardId, defaultData, onBack }) => {
       <Popup.Content>
         <Form onSubmit={handleSubmit}>
           <Editor data={data} onFieldChange={handleFieldChange} />
-          <Button positive content={t('action.createLabel')} />
+          <Button variant="primary" content={t('action.createLabel')} />
         </Form>
       </Popup.Content>
     </>

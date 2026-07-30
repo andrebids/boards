@@ -6,24 +6,24 @@
 import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Input } from 'semantic-ui-react';
-import { Popup } from '../../../lib/custom-ui';
+import { Form, Input } from 'semantic-ui-react';
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import { useForm, useNestedRef } from '../../../hooks';
 
 import styles from './ConfirmationStep.module.scss';
 
-const ButtonTypes = {
-  POSITIVE: 'positive',
-  NEGATIVE: 'negative',
+const ButtonVariants = {
+  DANGER: 'danger',
+  PRIMARY: 'primary',
 };
 
 const ConfirmationStep = React.memo(
   ({
     title,
     content,
-    buttonType,
     buttonContent,
+    variant,
     typeValue,
     typeContent,
     onConfirm,
@@ -85,10 +85,9 @@ const ConfirmationStep = React.memo(
               />
             )}
             <Button
-              {...{
-                [buttonType]: true,
-              }}
-              fluid
+              fullWidth
+              type="submit"
+              variant={variant}
               content={t(buttonContent)}
             />
           </Form>
@@ -101,19 +100,19 @@ const ConfirmationStep = React.memo(
 ConfirmationStep.propTypes = {
   title: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
-  buttonType: PropTypes.oneOf(Object.values(ButtonTypes)),
   buttonContent: PropTypes.string.isRequired,
   typeValue: PropTypes.string,
   typeContent: PropTypes.string,
   onConfirm: PropTypes.func.isRequired,
   onBack: PropTypes.func,
+  variant: PropTypes.oneOf(Object.values(ButtonVariants)),
 };
 
 ConfirmationStep.defaultProps = {
-  buttonType: ButtonTypes.NEGATIVE,
   typeValue: undefined,
   typeContent: undefined,
   onBack: undefined,
+  variant: ButtonVariants.DANGER,
 };
 
 export default ConfirmationStep;

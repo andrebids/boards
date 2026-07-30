@@ -8,9 +8,9 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Dropdown, Form, Message } from 'semantic-ui-react';
+import { Dropdown, Form, Message } from 'semantic-ui-react';
 import { useDidUpdate, usePrevious } from '../../../../lib/hooks';
-import { Input, Popup } from '../../../../lib/custom-ui';
+import { Button, Input, Popup } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -156,13 +156,13 @@ const AddStep = React.memo(({ onClose }) => {
             <Message error visible content={t('common.welcomeEmailResendFailed')} />
           )}
           <Button
-            positive
+            variant="primary"
             content={t('action.resendWelcomeEmail')}
             loading={resendForm?.isSubmitting}
             disabled={resendForm?.isSubmitting}
             onClick={handleResendClick}
           />
-          <Button content={t('action.close')} onClick={onClose} />
+          <Button variant="secondary" content={t('action.close')} onClick={onClose} />
         </Popup.Content>
       </>
     );
@@ -223,7 +223,7 @@ const AddStep = React.memo(({ onClose }) => {
           />
           <div className={styles.controls}>
             <Button
-              positive
+              variant="primary"
               content={t('action.addUser')}
               loading={isSubmitting}
               disabled={isSubmitting || !data.language}

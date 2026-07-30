@@ -8,7 +8,8 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Draggable } from '@hello-pangea/dnd';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 
@@ -45,7 +46,7 @@ const CustomField = React.memo(({ id, index, onEdit }) => {
               )}
               {customField.name}
             </span>
-            <Button
+            <Button variant="secondary"
               icon="pencil"
               size="small"
               floated="right"

@@ -8,8 +8,8 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
-import { Button } from 'semantic-ui-react';
-import { Input, Popup } from '../../../lib/custom-ui';
+
+import { Button, Input, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -223,19 +223,19 @@ const UnbasedContent = React.memo(({ id, onBack }) => {
             </Droppable>
           </DragDropContext>
         )}
-        <Button
+        <Button variant="secondary"
           fluid
           content={t('action.addCustomField')}
           className={styles.actionButton}
           onClick={handleCustomFieldAddClick}
         />
-        <Button
+        <Button variant="secondary"
           fluid
           content={t('action.editGroup')}
           className={styles.actionButton}
           onClick={handleEditClick}
         />
-        <Button
+        <Button variant="secondary"
           fluid
           content={t('action.deleteGroup')}
           className={styles.actionButton}

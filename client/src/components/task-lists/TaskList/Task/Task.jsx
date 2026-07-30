@@ -10,7 +10,8 @@ import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Draggable } from '@hello-pangea/dnd';
-import { Button, Checkbox, Icon } from 'semantic-ui-react';
+import { Checkbox, Icon } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 import { useDidUpdate } from '../../../../lib/hooks';
 
 import selectors from '../../../../selectors';
@@ -163,7 +164,7 @@ const Task = React.memo(({ id, index }) => {
                               className={styles.assigneeUserAvatar}
                             />
                           ) : (
-                            <Button
+                            <Button variant="secondary"
                               type="button"
                               aria-label={t('action.addMember')}
                               title={t('action.addMember')}
@@ -174,7 +175,7 @@ const Task = React.memo(({ id, index }) => {
                           )}
                         </SelectAssigneePopup>
                         <ActionsPopup taskId={id} onNameEdit={handleNameEdit}>
-                          <Button
+                          <Button variant="secondary"
                             type="button"
                             aria-label={t('action.edit')}
                             title={t('action.edit')}

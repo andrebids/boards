@@ -8,6 +8,9 @@ export const isDirectConversation = (conversation) => conversation?.type === 'pr
 
 export const hasUnreadMessages = (conversation) => (conversation?.unreadCount || 0) > 0;
 
+export const shouldConcealChatDock = (isConversationListOpen, isConversationListClosing) =>
+  isConversationListOpen && !isConversationListClosing;
+
 export const getChatParticipantMuteExpiration = (participant) => {
   if (!participant?.mutedUntil || participant.notificationLevel === 'none') {
     return null;

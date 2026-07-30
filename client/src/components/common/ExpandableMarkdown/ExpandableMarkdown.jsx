@@ -7,7 +7,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useToggle } from '../../../lib/hooks';
 
 import Markdown from '../Markdown';
@@ -64,7 +65,7 @@ const ExpandableMarkdown = React.memo(({ children }) => {
         </div>
       </div>
       {isOverflowing && (
-        <Button
+        <Button variant="secondary"
           fluid
           className={styles.toggleButton}
           onClick={handleToggleExpandClick}

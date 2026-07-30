@@ -5,7 +5,8 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Icon, Button } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { usePopup } from '../../../lib/popup';
 
 import { BoardMembershipRoleIcons } from '../../../constants/Icons';
@@ -45,7 +46,7 @@ const Group = React.memo(({ items, role, groupsTotal }) => {
       ))}
       {hiddenTotal > 0 && (
         <GroupItemsPopup items={items} title={`common.${role}s`}>
-          <Button className={styles.othersButton}>
+          <Button variant="secondary" className={styles.othersButton}>
             +{hiddenTotal < 99 ? hiddenTotal : 99}
           </Button>
         </GroupItemsPopup>

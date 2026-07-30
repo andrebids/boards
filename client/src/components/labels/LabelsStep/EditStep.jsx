@@ -8,8 +8,8 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
-import { Popup } from '../../../lib/custom-ui';
+import { Form } from 'semantic-ui-react';
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -93,8 +93,8 @@ const EditStep = React.memo(({ labelId, onBack }) => {
         <Form onSubmit={handleSubmit}>
           <Editor data={data} onFieldChange={handleFieldChange} />
           <div className={styles.actions}>
-            <Button positive content={t('action.save')} />
-            <Button
+            <Button variant="primary" content={t('action.save')} />
+            <Button variant="danger-soft"
               type="button"
               content={t('action.delete')}
               className={styles.deleteButton}

@@ -8,9 +8,9 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Message } from 'semantic-ui-react';
+import { Form, Message } from 'semantic-ui-react';
 import { useDidUpdate, usePrevious, useToggle } from '../../../lib/hooks';
-import { Input, Popup } from '../../../lib/custom-ui';
+import { Button, Input, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -189,7 +189,7 @@ const EditUserEmailStep = React.memo(
               </>
             )}
             <Button
-              positive
+              variant="primary"
               content={t('action.save')}
               loading={isSubmitting}
               disabled={isSubmitting}

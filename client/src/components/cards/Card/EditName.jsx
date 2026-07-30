@@ -8,7 +8,8 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Button, Form, TextArea } from 'semantic-ui-react';
+import { Form, TextArea } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useClickAwayListener } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
@@ -105,7 +106,7 @@ const EditName = React.memo(({ cardId, onClose }) => {
       <div>
         <Button
           {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-          positive
+          variant="primary"
           ref={handleButtonRef}
           content={t('action.save')}
           className={styles.submitButton}

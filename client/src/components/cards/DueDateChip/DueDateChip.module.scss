@@ -7,59 +7,167 @@
   .button {
     background: transparent;
     border: none;
+    border-radius: calc(var(--app-radius) * 1.5);
     cursor: pointer;
     display: inline-block;
     outline: none;
     padding: 0;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: var(--app-disabled-opacity);
+    }
+
+    &:focus-visible .wrapper {
+      box-shadow:
+        0 0 0 2px var(--card-modal-background, var(--app-dark-canvas)),
+        0 0 0 4px var(--app-focus);
+    }
   }
 
-  .statusIcon {
+  .leadingIcon {
+    font-size: 12px;
     line-height: 1;
-    margin: 0 0 0 8px;
+    margin: 0;
+  }
+
+  .iconSlot {
+    align-items: center;
+    background: color-mix(in oklab, var(--card-modal-text, var(--app-dark-text)) 8%, transparent);
+    border-radius: 7px;
+    color: var(--card-modal-muted, var(--app-dark-text-muted));
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 20px;
+    justify-content: center;
+    width: 20px;
+  }
+
+  .iconSlotDueSoon {
+    background: var(--app-warning-soft);
+    color: var(--app-warning);
+  }
+
+  .iconSlotOverdue {
+    background: var(--app-danger-soft);
+    color: var(--app-danger);
+  }
+
+  .label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .wrapper {
-    background: #dce0e4;
-    border-radius: 3px;
-    color: #6a808b;
-    display: inline-block;
-    transition: background 0.3s ease;
+    --due-date-background: var(--card-modal-surface-hover, var(--app-default));
+    --due-date-border: var(--card-modal-border, var(--app-dark-border));
+    --due-date-foreground: var(--card-modal-text, var(--app-dark-text));
+
+    align-items: center;
+    background: var(--due-date-background);
+    border: 1px solid var(--due-date-border);
+    border-radius: calc(var(--app-radius) * 1.5);
+    color: var(--due-date-foreground);
+    display: inline-flex;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    gap: 8px;
+    max-width: 100%;
+    transition:
+      background-color 120ms var(--app-ease-out),
+      border-color 120ms var(--app-ease-out),
+      color 120ms var(--app-ease-out);
     white-space: nowrap;
   }
 
   .wrapperHoverable:hover {
-    background: #d2d8dc;
-    color: #17394d;
+    background: color-mix(
+      in oklab,
+      var(--due-date-background) 88%,
+      var(--due-date-foreground) 12%
+    );
+    border-color: color-mix(
+      in oklab,
+      var(--due-date-border) 72%,
+      var(--due-date-foreground) 28%
+    );
+    color: var(--due-date-foreground);
   }
 
   /* Sizes */
 
   .wrapperTiny {
     font-size: 12px;
+    gap: 4px;
     line-height: 20px;
-    padding: 0px 6px;
+    padding: 0 6px;
   }
 
   .wrapperSmall {
     font-size: 12px;
-    line-height: 20px;
-    padding: 2px 8px;
+    min-height: 24px;
+    padding: 1px 8px;
   }
 
   .wrapperMedium {
-    line-height: 20px;
-    padding: 6px 12px;
+    min-height: 32px;
+    padding: 5px 10px;
   }
 
   /* Statuses */
 
   .wrapperDueSoon {
-    background: #f2711c;
-    color: #fff;
+    --due-date-background: color-mix(in oklab, var(--app-warning) 8%, var(--app-default));
+    --due-date-border: var(--app-warning-soft);
   }
 
   .wrapperOverdue {
-    background: #db2828;
-    color: #fff;
+    --due-date-background: color-mix(in oklab, var(--app-danger) 8%, var(--app-default));
+    --due-date-border: var(--app-danger-soft-hover);
+  }
+
+  /* Variants */
+
+  .wrapperMetadata {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    color: var(--text-secondary);
+    display: inline-flex;
+    font-variant-numeric: tabular-nums;
+    gap: 4px;
+    min-height: 0;
+    padding-left: 3px;
+    padding-right: 3px;
+    transition: none;
+
+    .iconSlot {
+      background: transparent;
+      border-radius: 0;
+      color: inherit;
+      height: auto;
+      width: auto;
+    }
+
+    &.wrapperDueSoon {
+      background: transparent;
+      border: 0;
+      color: var(--app-warning);
+    }
+
+    &.wrapperOverdue {
+      background: transparent;
+      border: 0;
+      color: var(--app-danger);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapper {
+      transition: none;
+    }
   }
 }

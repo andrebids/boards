@@ -6,8 +6,8 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'semantic-ui-react';
-import { FilePicker } from '../../../../../lib/custom-ui';
+
+import { Button, FilePicker } from '../../../../../lib/custom-ui';
 
 import selectors from '../../../../../selectors';
 import entryActions from '../../../../../entry-actions';
@@ -50,7 +50,7 @@ const Images = React.memo(() => {
       <div className={styles.actions}>
         <div className={styles.action}>
           <FilePicker accept="image/*" onSelect={handleFileSelect}>
-            <Button
+            <Button variant="secondary"
               ref={fieldRef}
               content={t('action.uploadNewImage', {
                 context: 'title',

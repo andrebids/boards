@@ -6,8 +6,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Divider, Tab, Table } from 'semantic-ui-react';
-import { Input } from '../../../../lib/custom-ui';
+import { Divider, Tab, Table } from 'semantic-ui-react';
+import { Button, Input } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import {
@@ -103,7 +103,7 @@ const UsersPane = React.memo(() => {
         </Table>
       </div>
       <div className={styles.actions}>
-        <Button
+        <Button variant="secondary"
           content={
             isDeactivatedVisible
               ? t('action.showActive')
@@ -116,7 +116,7 @@ const UsersPane = React.memo(() => {
         {canAdd && (
           <AddPopup>
             <Button
-              positive
+              variant="primary"
               disabled={
                 activeUsersLimit !== null &&
                 activeUsersTotal >= activeUsersLimit

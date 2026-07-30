@@ -7,7 +7,8 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'semantic-ui-react';
+
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -96,7 +97,7 @@ const ActionsStep = React.memo(({ projectManagerId, onClose }) => {
           <ConfirmationStep
             title="common.assignAsOwner"
             content="common.areYouSureYouWantToAssignThisProjectManagerAsOwner"
-            buttonType="positive"
+            variant="primary"
             buttonContent="action.assignAsOwner"
             onConfirm={handleAssignAsOwnerConfirm}
             onBack={handleBack}
@@ -136,7 +137,7 @@ const ActionsStep = React.memo(({ projectManagerId, onClose }) => {
         )}
       </span>
       {canAssignAsOwner && (
-        <Button
+        <Button variant="secondary"
           fluid
           content={t('action.assignAsOwner')}
           className={styles.button}
@@ -144,7 +145,7 @@ const ActionsStep = React.memo(({ projectManagerId, onClose }) => {
         />
       )}
       {canDelete && (
-        <Button
+        <Button variant="secondary"
           fluid
           content={
             isCurrentUser

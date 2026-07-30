@@ -7,7 +7,8 @@ import React, { useCallback, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { Button, Form } from "semantic-ui-react";
+import { Form } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useClickAwayListener } from "../../../lib/hooks";
 
 import selectors from "../../../selectors";
@@ -99,7 +100,7 @@ const EditMarkdown = React.memo(
           <div className={styles.controls}>
             <Button
               {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-              positive
+              variant="primary"
               ref={handleSubmitButtonRef}
               className={styles.submitButton}
               content={
@@ -111,7 +112,7 @@ const EditMarkdown = React.memo(
               }
               disabled={isExceeded}
             />
-            <Button
+            <Button variant="secondary"
               {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
               ref={handleCancelButtonRef}
               type="button"

@@ -6,7 +6,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Divider, Header, Tab } from 'semantic-ui-react';
+import { Divider, Header, Tab } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -52,7 +53,7 @@ const GeneralPane = React.memo(() => {
           typeContent="common.typeTitleToConfirm"
           onConfirm={handleDeleteConfirm}
         >
-          <Button className={styles.actionButton}>
+          <Button variant="secondary" className={styles.actionButton}>
             {t(`action.deleteBoard`, {
               context: 'title',
             })}

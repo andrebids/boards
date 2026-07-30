@@ -6,7 +6,8 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Radio, Tab } from 'semantic-ui-react';
+import { Form, Radio, Tab } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -127,7 +128,7 @@ const GeneralPane = React.memo(() => {
               buttonContent="action.deleteProject"
               onConfirm={handleDeleteConfirm}
             >
-              <Button disabled={hasBoards} className={styles.actionButton}>
+              <Button variant="secondary" disabled={hasBoards} className={styles.actionButton}>
                 {t('action.deleteProject', {
                   context: 'title',
                 })}

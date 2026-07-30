@@ -31,8 +31,9 @@
     }
 
     &:focus-visible {
-      border-color: rgba(96, 165, 250, 0.72) !important;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
       outline: none;
     }
 
@@ -44,9 +45,13 @@
 
   .menuItemActive {
     background: rgba(59, 130, 246, 0.14) !important;
-    border-color: rgba(96, 165, 250, 0.32) !important;
+    border-color: transparent !important;
 
     &:hover {
+      background: rgba(59, 130, 246, 0.2) !important;
+    }
+
+    &:focus-visible {
       background: rgba(59, 130, 246, 0.2) !important;
     }
   }

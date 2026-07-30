@@ -10,7 +10,8 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Mention, MentionsInput } from 'react-mentions';
-import { Button, Form, Icon, TextArea } from 'semantic-ui-react';
+import { Form, Icon, TextArea } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import {
   useClickAwayListener,
   useDidUpdate,
@@ -669,7 +670,7 @@ const AddCard = React.memo(
         <div className={styles.controls}>
           <Button
             {...clickAwayProps}
-            positive
+            variant="primary"
             ref={handleSubmitButtonRef}
             content={t('action.addCard')}
             className={styles.button}
@@ -679,7 +680,7 @@ const AddCard = React.memo(
             defaultValue={data.type}
             onSelect={handleTypeSelect}
           >
-            <Button
+            <Button variant="secondary"
               {...clickAwayProps}
               ref={handleSelectTypeButtonRef}
               type="button"

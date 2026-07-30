@@ -6,9 +6,9 @@
 import React, { useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Modal, Icon, Button } from 'semantic-ui-react';
+import { Modal, Icon } from 'semantic-ui-react';
 
-import { CloseButton } from '../../../lib/custom-ui';
+import { Button, CloseButton } from '../../../lib/custom-ui';
 import { getFileType, canPreviewFile } from '../../../utils/fileTypeUtils';
 import ImagePreview from './ImagePreview';
 import PdfPreview from './PdfPreview';
@@ -106,12 +106,12 @@ const FilePreviewModal = ({ file, isOpen, onClose }) => {
               </div>
 
               <div className={styles.documentActions}>
-                <Button
+                <Button variant="secondary"
                   icon="external alternate"
                   content={t('common.openInNewTab')}
                   onClick={() => window.open(file.data.url, '_blank')}
                 />
-                <Button
+                <Button variant="secondary"
                   icon="download"
                   content={t('common.download')}
                   onClick={() => {

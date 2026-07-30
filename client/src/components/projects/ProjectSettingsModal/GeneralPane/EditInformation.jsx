@@ -8,7 +8,8 @@ import React, { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Button, Form, Input, TextArea } from 'semantic-ui-react';
+import { Form, Input, TextArea } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -104,7 +105,7 @@ const EditInformation = React.memo(() => {
           onChange={handleFieldChange}
         />
       </div>
-      <Button
+      <Button variant="secondary"
         type="submit"
         disabled={dequal(cleanData, defaultData)}
         content={t('action.save')}

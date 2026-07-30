@@ -6,8 +6,8 @@
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
-import { Popup } from '../../lib/custom-ui';
+import { Form } from 'semantic-ui-react';
+import { Button, Popup } from '../../lib/custom-ui';
 
 import SelectCardType from './SelectCardType';
 
@@ -57,7 +57,7 @@ const SelectCardTypeStep = React.memo(
         <Popup.Content>
           <Form onSubmit={handleSubmit}>
             <SelectCardType value={value} onSelect={handleSelect} />
-            {withButton && <Button positive content={t(buttonContent)} />}
+            {withButton && <Button variant="primary" content={t(buttonContent)} />}
           </Form>
         </Popup.Content>
       </>

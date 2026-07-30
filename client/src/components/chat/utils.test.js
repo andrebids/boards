@@ -9,6 +9,7 @@ import {
   isChatParticipantMuted,
   isDirectConversation,
   isGeneralConversation,
+  shouldConcealChatDock,
 } from './utils';
 
 const members = [
@@ -36,6 +37,12 @@ describe('chat utils', () => {
     expect(hasUnreadMessages()).toBeFalsy();
     expect(hasUnreadMessages({ unreadCount: 0 })).toBeFalsy();
     expect(hasUnreadMessages({ unreadCount: 1 })).toBeTruthy();
+  });
+
+  test('reveals the chat dock while the conversation list is closing', () => {
+    expect(shouldConcealChatDock(true, false)).toBeTruthy();
+    expect(shouldConcealChatDock(true, true)).toBeFalsy();
+    expect(shouldConcealChatDock(false, false)).toBeFalsy();
   });
 
   test('derives temporary and permanent mute states from notification preferences', () => {

@@ -11,7 +11,8 @@ import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Draggable, Droppable } from '@hello-pangea/dnd';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useDidUpdate, useTransitioning } from '../../../lib/hooks';
 import { usePopup } from '../../../lib/popup';
 
@@ -354,14 +355,14 @@ const List = React.memo(({ id, index }) => {
                     onNameEdit={handleNameEdit}
                     onCardAdd={handleCardAdd}
                   >
-                    <Button className={styles.headerButton}>
+                    <Button variant="secondary" className={styles.headerButton}>
                       <Icon fitted name="ellipsis horizontal" size="small" />
                     </Button>
                   </ActionsPopup>
                 ) : (
                   canArchiveCards && (
                     <ArchiveCardsPopup listId={id}>
-                      <Button className={styles.headerButton}>
+                      <Button variant="secondary" className={styles.headerButton}>
                         <Icon fitted name="archive" size="small" />
                       </Button>
                     </ArchiveCardsPopup>

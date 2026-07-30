@@ -83,7 +83,7 @@
   .avatar {
     align-self: flex-start;
     display: inline-flex;
-    margin-top: 13px;
+    margin-top: 15px;
   }
 
   .bubble {
@@ -139,6 +139,7 @@
 
   .date {
     color: var(--card-modal-muted, #6b808c);
+    font-size: 10px;
     font-variant-numeric: tabular-nums;
   }
 
@@ -146,7 +147,7 @@
     align-items: flex-start;
     display: flex;
     gap: 7px;
-    margin: 6px 0 0;
+    margin: 8px 0 0;
     padding: 0;
 
     &:first-child {
@@ -169,7 +170,7 @@
   }
 
   .item.continuesAbove:global(.comment) {
-    margin-top: 1px;
+    margin-top: 3px;
   }
 
   .item.continuesAbove:not(.own) .bubble {
@@ -230,10 +231,10 @@
     align-items: center;
     color: var(--card-modal-muted, #6b808c);
     display: flex;
-    font-size: 10px;
+    font-size: 11px;
     gap: 4px;
-    line-height: 12px;
-    margin: 0 4px 1px;
+    line-height: 13px;
+    margin: 0 4px 2px;
   }
 
   .metaSeparator {

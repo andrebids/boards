@@ -7,7 +7,8 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import { usePopupInClosableContext } from '../../../../hooks';
@@ -64,7 +65,7 @@ const Item = React.memo(({ id, dragHandleProps }) => {
           >
             {customFieldGroup.isPersisted && canEdit && (
               <CustomFieldGroupPopup id={customFieldGroup.id}>
-                <Button className={styles.editButton}>
+                <Button variant="secondary" className={styles.editButton}>
                   <Icon fitted name="pencil" size="small" />
                 </Button>
               </CustomFieldGroupPopup>

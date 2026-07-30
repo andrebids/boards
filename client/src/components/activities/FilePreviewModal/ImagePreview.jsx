@@ -6,9 +6,9 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Icon, Button, Loader } from 'semantic-ui-react';
+import { Icon, Loader } from 'semantic-ui-react';
 
-import { CloseButton } from '../../../lib/custom-ui';
+import { Button, CloseButton } from '../../../lib/custom-ui';
 
 import styles from './FilePreviewModal.module.scss';
 
@@ -89,7 +89,7 @@ const ImagePreview = ({ file, onClose }) => {
       <div className={styles.errorContainer}>
         <Icon name="exclamation triangle" size="huge" />
         <p>{t('common.errorLoadingImage')}</p>
-        <Button onClick={onClose}>{t('action.close')}</Button>
+        <Button variant="secondary" onClick={onClose}>{t('action.close')}</Button>
       </div>
     );
   }
@@ -105,19 +105,19 @@ const ImagePreview = ({ file, onClose }) => {
 
         <div className={styles.imageControls}>
           <Button.Group size="mini">
-            <Button
+            <Button variant="secondary"
               icon="zoom out"
               onClick={handleZoomOut}
               disabled={zoom <= 0.5}
               title={t('common.zoomOut')}
             />
-            <Button
+            <Button variant="secondary"
               icon="zoom"
               onClick={handleResetZoom}
               disabled={zoom === 1}
               title={t('common.resetZoom')}
             />
-            <Button
+            <Button variant="secondary"
               icon="zoom in"
               onClick={handleZoomIn}
               disabled={zoom >= 3}
@@ -125,7 +125,7 @@ const ImagePreview = ({ file, onClose }) => {
             />
           </Button.Group>
 
-          <Button
+          <Button variant="secondary"
             icon="download"
             size="mini"
             onClick={handleDownload}

@@ -7,8 +7,8 @@ import React, { useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
-import { Popup } from '../../../lib/custom-ui';
+import { Form } from 'semantic-ui-react';
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import entryActions from '../../../entry-actions';
 import { useForm } from '../../../hooks';
@@ -64,7 +64,7 @@ const CustomFieldAddStep = React.memo(
               onFieldChange={handleFieldChange}
             />
             <Button
-              positive
+              variant="primary"
               content={t('action.addCustomField')}
               className={styles.submitButton}
             />

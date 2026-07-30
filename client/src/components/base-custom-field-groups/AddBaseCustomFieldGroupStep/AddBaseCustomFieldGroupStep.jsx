@@ -7,8 +7,8 @@ import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
-import { Input, Popup } from '../../../lib/custom-ui';
+import { Form } from 'semantic-ui-react';
+import { Button, Input, Popup } from '../../../lib/custom-ui';
 
 import entryActions from '../../../entry-actions';
 import { useForm, useNestedRef } from '../../../hooks';
@@ -67,7 +67,7 @@ const AddBaseCustomFieldGroupStep = React.memo(({ onClose }) => {
             className={styles.field}
             onChange={handleFieldChange}
           />
-          <Button positive content={t('action.createCustomFieldGroup')} />
+          <Button variant="primary" content={t('action.createCustomFieldGroup')} />
         </Form>
       </Popup.Content>
     </>

@@ -9,7 +9,8 @@ import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Draggable } from '@hello-pangea/dnd';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -97,7 +98,7 @@ const Item = React.memo(({ id, index }) => {
                   )}
                 </Link>
                 {canEdit && (
-                  <Button
+                  <Button variant="secondary"
                     className={styles.editButton}
                     onClick={handleEditClick}
                   >

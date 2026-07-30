@@ -5,7 +5,8 @@
 
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Button } from 'semantic-ui-react';
+
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import { usePopupInClosableContext } from '../../../hooks';
@@ -49,7 +50,7 @@ const ProjectManagers = React.memo(() => {
       ))}
       {canAdd && (
         <AddPopup>
-          <Button icon="add user" className={styles.addButton} />
+          <Button variant="secondary" icon="add user" className={styles.addButton} />
         </AddPopup>
       )}
     </div>

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useChat } from '../ChatContext';
 import ChatWindow from '../ChatWindow';
+import { shouldConcealChatDock } from '../utils';
 
 import styles from './ChatDock.module.scss';
 
@@ -21,7 +22,13 @@ const getLimit = (width) => {
 
 const ChatDock = React.memo(() => {
   const [t] = useTranslation();
-  const { isConversationListOpen, isEnabled, openConversation, windows } = useChat();
+  const {
+    isConversationListClosing,
+    isConversationListOpen,
+    isEnabled,
+    openConversation,
+    windows,
+  } = useChat();
   const [limit, setLimit] = useState(() => getLimit(window.innerWidth));
 
   useEffect(() => {
@@ -54,10 +61,12 @@ const ChatDock = React.memo(() => {
     return null;
   }
 
+  const isConcealed = shouldConcealChatDock(isConversationListOpen, isConversationListClosing);
+
   return (
     <aside
-      className={`${styles.dock} ${isConversationListOpen ? styles.concealed : ''}`}
-      aria-hidden={isConversationListOpen}
+      className={`${styles.dock} ${isConcealed ? styles.concealed : ''}`}
+      aria-hidden={isConcealed}
       aria-label={t('chat.openConversations')}
     >
       {hiddenWindows.length > 0 && (

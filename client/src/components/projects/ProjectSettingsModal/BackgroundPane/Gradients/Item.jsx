@@ -9,7 +9,8 @@ import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, Label } from 'semantic-ui-react';
+import { Label } from 'semantic-ui-react';
+import { Button } from '../../../../../lib/custom-ui';
 
 import selectors from '../../../../../selectors';
 import entryActions from '../../../../../entry-actions';
@@ -52,7 +53,7 @@ const Item = React.memo(({ name }) => {
     .join(' ');
 
   return (
-    <Button
+    <Button variant="secondary"
       type="button"
       className={classNames(
         styles.wrapper,

@@ -6,7 +6,8 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button, Icon, Label } from 'semantic-ui-react';
+import { Icon, Label } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import { usePopupInClosableContext } from '../../../../hooks';
 import ConfirmationStep from '../../../common/ConfirmationStep';
@@ -65,7 +66,7 @@ const Image = React.memo(({ url, isActive, onSelect, onDeselect, onDelete }) => 
           buttonContent="action.deleteBackgroundImage"
           onConfirm={onDelete}
         >
-          <Button className={styles.deleteButton}>
+          <Button variant="danger-soft" className={styles.deleteButton}>
             <Icon fitted name="trash alternate" size="small" />
           </Button>
         </ConfirmationPopup>

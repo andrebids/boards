@@ -198,7 +198,8 @@ const ChatPanel = React.memo(
 
     const handleGlobalConversationOpen = useCallback(
       (item) => {
-        onClose(() => onOpenGlobalConversation(item));
+        onOpenGlobalConversation(item);
+        onClose();
       },
       [onClose, onOpenGlobalConversation],
     );

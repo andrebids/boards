@@ -5,9 +5,10 @@
 
 import groupBy from 'lodash/groupBy';
 import React, { useMemo } from 'react';
-import classNames from 'classnames';
 import { useSelector } from 'react-redux';
-import { Button } from 'semantic-ui-react';
+import { useTranslation } from 'react-i18next';
+
+import { Button } from '../../../lib/custom-ui';
 import { usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
@@ -19,11 +20,10 @@ import AddStep from './AddStep';
 import styles from './BoardMemberships.module.scss';
 
 const BoardMemberships = React.memo(() => {
-  const boardMemberships = useSelector(
-    selectors.selectMembershipsForCurrentBoard
-  );
+  const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
+  const [t] = useTranslation();
 
-  const canAdd = useSelector(state => {
+  const canAdd = useSelector((state) => {
     const user = selectors.selectCurrentUser(state);
 
     if (!isUserAdminOrProjectOwner(user)) {
@@ -35,17 +35,17 @@ const BoardMemberships = React.memo(() => {
 
   const boardMembershipsByRole = useMemo(
     () => groupBy(boardMemberships, 'role'),
-    [boardMemberships]
+    [boardMemberships],
   );
 
   const AddPopup = usePopup(AddStep);
 
   return (
-    <>
+    <div className={styles.wrapper}>
       {boardMemberships.length > 0 && (
-        <div className={classNames(styles.segment, styles.groups)}>
+        <div className={styles.groups}>
           {[BoardMembershipRoles.EDITOR, BoardMembershipRoles.VIEWER].map(
-            role =>
+            (role) =>
               boardMembershipsByRole[role] && (
                 <Group
                   key={role}
@@ -53,19 +53,16 @@ const BoardMemberships = React.memo(() => {
                   role={role}
                   groupsTotal={Object.keys(boardMembershipsByRole).length}
                 />
-              )
+              ),
           )}
         </div>
       )}
       {canAdd && (
         <AddPopup>
-          <Button
-            icon="add user"
-            className={classNames(styles.segment, styles.addButton)}
-          />
+          <Button variant="secondary" aria-label={t('action.addMember')} icon="add user" className={styles.addButton} />
         </AddPopup>
       )}
-    </>
+    </div>
   );
 });
 

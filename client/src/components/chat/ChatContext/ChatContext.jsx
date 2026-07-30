@@ -13,13 +13,13 @@ import React, {
   useState,
 } from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import history from '../../../history';
-import Paths from '../../../constants/Paths';
+import { getGlobalConversationTarget } from '../navigation';
 
 import '../theme.scss';
 
@@ -74,6 +74,7 @@ const ChatProvider = React.memo(({ children }) => {
   const isChatAvailableForCurrentUser = useSelector(selectors.selectIsChatAvailableForCurrentUser);
 
   const dispatch = useDispatch();
+  const store = useStore();
   const { t } = useTranslation();
   const projectId = project?.id;
   const storageKey = `planka-chat-windows:${currentUser.id}:${projectId || 'none'}`;
@@ -86,6 +87,7 @@ const ChatProvider = React.memo(({ children }) => {
   const [windows, setWindows] = useState(() => readStoredWindows(storageKey));
   const [pendingConversation, setPendingConversation] = useState(null);
   const [isConversationListOpen, setIsConversationListOpen] = useState(false);
+  const [isConversationListClosing, setIsConversationListClosing] = useState(false);
   const [inboxScope, setInboxScope] = useState(() =>
     projectId && isCurrentUserChatMember ? 'project' : 'global',
   );
@@ -150,6 +152,7 @@ const ChatProvider = React.memo(({ children }) => {
     setWindows(readStoredWindows(storageKey));
     setPendingConversation(null);
     setIsConversationListOpen(false);
+    setIsConversationListClosing(false);
     setInboxScope(projectId && isCurrentUserChatMember ? 'project' : 'global');
     handledDeepLinkRef.current = null;
   }, [accessRevocationVersions, dispatch, isCurrentUserChatMember, projectId, storageKey]);
@@ -193,6 +196,7 @@ const ChatProvider = React.memo(({ children }) => {
     subscribedWindowIdsRef.current = new Set();
     setPendingConversation(null);
     setIsConversationListOpen(false);
+    setIsConversationListClosing(false);
     setWindows([]);
 
     try {
@@ -377,27 +381,42 @@ const ChatProvider = React.memo(({ children }) => {
 
   const openConversationList = useCallback(() => {
     setInboxScope(projectId && isCurrentUserChatMember ? 'project' : 'global');
+    setIsConversationListClosing(false);
     setIsConversationListOpen(true);
   }, [isCurrentUserChatMember, projectId]);
 
+  const startConversationListClose = useCallback(() => {
+    setIsConversationListClosing(true);
+  }, []);
+
   const closeConversationList = useCallback(() => {
     setIsConversationListOpen(false);
+    setIsConversationListClosing(false);
   }, []);
 
-  const openGlobalConversation = useCallback((item) => {
-    const conversationId = item?.conversationId || item?.id;
-    if (!item?.projectId || !conversationId) {
-      return;
-    }
+  const openGlobalConversation = useCallback(
+    (item) => {
+      const firstBoardId = item?.projectId
+        ? selectors.selectFirstBoardIdByProjectId(store.getState(), item.projectId)
+        : undefined;
+      const target = getGlobalConversationTarget({
+        currentPathname: window.location.pathname,
+        currentProjectId: projectId,
+        currentSearch: window.location.search,
+        firstBoardId,
+        item,
+      });
+      if (!target) {
+        return;
+      }
 
-    const parameters = new URLSearchParams();
-    parameters.set('chatConversation', conversationId);
-    if (item.firstUnreadMessageId) {
-      parameters.set('chatMessage', item.firstUnreadMessageId);
-    }
-
-    history.push(`${Paths.PROJECTS.replace(':id', item.projectId)}?${parameters.toString()}`);
-  }, []);
+      history.push(target.path);
+      if (target.isCurrentProject) {
+        openConversation(target.conversationId);
+      }
+    },
+    [openConversation, projectId, store],
+  );
 
   const value = useMemo(
     () => ({
@@ -405,6 +424,7 @@ const ChatProvider = React.memo(({ children }) => {
       closeConversation,
       conversations,
       inboxScope,
+      isConversationListClosing,
       isConversationListOpen,
       isEnabled,
       isProjectChatEnabled: isCurrentUserChatMember,
@@ -415,6 +435,7 @@ const ChatProvider = React.memo(({ children }) => {
       openGeneralConversation,
       openGlobalConversation,
       setInboxScope,
+      startConversationListClose,
       toggleConversationMinimized,
       windows,
     }),
@@ -423,6 +444,7 @@ const ChatProvider = React.memo(({ children }) => {
       closeConversation,
       conversations,
       inboxScope,
+      isConversationListClosing,
       isConversationListOpen,
       isEnabled,
       isCurrentUserChatMember,
@@ -432,6 +454,7 @@ const ChatProvider = React.memo(({ children }) => {
       openGeneralConversation,
       openGlobalConversation,
       pendingConversation,
+      startConversationListClose,
       toggleConversationMinimized,
       windows,
     ],

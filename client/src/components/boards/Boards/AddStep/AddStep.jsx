@@ -8,9 +8,9 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Icon } from 'semantic-ui-react';
+import { Form, Icon } from 'semantic-ui-react';
 import { useDidUpdate, useToggle } from '../../../../lib/hooks';
-import { Input, Popup } from '../../../../lib/custom-ui';
+import { Button, Input, Popup } from '../../../../lib/custom-ui';
 
 import entryActions from '../../../../entry-actions';
 import { useForm, useNestedRef, useSteps } from '../../../../hooks';
@@ -107,11 +107,11 @@ const AddStep = React.memo(({ onClose }) => {
           />
           <div className={styles.controls}>
             <Button
-              positive
+              variant="primary"
               content={t('action.createBoard')}
               className={styles.button}
             />
-            <Button
+            <Button variant="secondary"
               type="button"
               className={classNames(styles.button, styles.importButton)}
               onClick={handleImportClick}

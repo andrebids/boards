@@ -196,17 +196,9 @@
 
   .actionToolbar {
     align-items: center;
-    backdrop-filter: blur(12px);
-    background: rgba(var(--glass-bg-strong-rgb), 0.94);
-    border: 0;
-    border-radius: 12px;
-    box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.24),
-      0 1px 2px rgba(0, 0, 0, 0.3);
     display: flex;
     gap: 3px;
     margin: 10px 52px 0 auto;
-    padding: 4px;
     position: relative;
     width: max-content;
     z-index: 3;

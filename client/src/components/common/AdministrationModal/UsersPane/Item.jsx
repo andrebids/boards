@@ -8,7 +8,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon, Table } from 'semantic-ui-react';
+import { Icon, Table } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import { usePopupInClosableContext } from '../../../../hooks';
@@ -43,7 +44,7 @@ const Item = React.memo(({ id }) => {
       </Table.Cell>
       <Table.Cell textAlign="right">
         <ActionsPopup userId={id}>
-          <Button className={styles.button}>
+          <Button variant="secondary" className={styles.button}>
             <Icon fitted name="pencil" />
           </Button>
         </ActionsPopup>

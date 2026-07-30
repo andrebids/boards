@@ -8,9 +8,9 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
+import { Form } from 'semantic-ui-react';
 import { useDidUpdate, useToggle } from '../../../lib/hooks';
-import { Input, Popup } from '../../../lib/custom-ui';
+import { Button, Input, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -187,33 +187,33 @@ const EditStopwatchStep = React.memo(({ cardId, onBack, onClose }) => {
                 onChange={handleFieldChange}
               />
             </div>
-            <Button
+            <Button variant="secondary"
               type="button"
               icon={isEditing ? 'close' : 'edit'}
               className={styles.iconButton}
               onClick={handleToggleEditingClick}
             />
           </div>
-          {isEditing && <Button positive content={t('action.save')} />}
+          {isEditing && <Button variant="primary" content={t('action.save')} />}
         </Form>
         {!isEditing &&
           (defaultValue && defaultValue.startedAt ? (
             <Button
-              positive
+              variant="primary"
               content={t('action.stop')}
               icon="pause"
               onClick={handleStopClick}
             />
           ) : (
             <Button
-              positive
+              variant="primary"
               content={t('action.start')}
               icon="play"
               onClick={handleStartClick}
             />
           ))}
         <Button
-          negative
+          variant="danger"
           content={t('action.remove')}
           className={styles.deleteButton}
           onClick={handleClearClick}

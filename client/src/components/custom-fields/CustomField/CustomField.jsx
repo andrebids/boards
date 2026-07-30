@@ -6,7 +6,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -106,7 +107,7 @@ const CustomField = React.memo(({ id, customFieldGroupId }) => {
           </div>
         )}
         {customFieldValue && customFieldValue.content && (
-          <Button className={styles.copyButton} onClick={handleCopyClick}>
+          <Button variant="secondary" className={styles.copyButton} onClick={handleCopyClick}>
             <Icon fitted name={isCopied ? 'check' : 'copy'} />
           </Button>
         )}

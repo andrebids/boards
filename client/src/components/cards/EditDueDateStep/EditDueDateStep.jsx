@@ -8,9 +8,9 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import DatePicker from 'react-datepicker';
-import { Button, Form } from 'semantic-ui-react';
+import { Form } from 'semantic-ui-react';
 import { useDidUpdate, useToggle } from '../../../lib/hooks';
-import { Input, Popup } from '../../../lib/custom-ui';
+import { Button, Input, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -185,9 +185,9 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
             onChange={handleDatePickerChange}
           />
           <div className={styles.actionsWrapper}>
-            <Button positive content={t('action.save')} />
+            <Button variant="primary" content={t('action.save')} />
             <Button
-              negative
+              variant="danger"
               content={t('action.remove')}
               className={styles.deleteButton}
               onClick={handleClearClick}

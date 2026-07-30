@@ -9,8 +9,8 @@ import omit from 'lodash/omit';
 import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Icon, Menu, Radio, Segment } from 'semantic-ui-react';
-import { Popup } from '../../../lib/custom-ui';
+import { Form, Icon, Menu, Radio, Segment } from 'semantic-ui-react';
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import { useForm } from '../../../hooks';
 import { BoardMembershipRoles } from '../../../constants/Enums';
@@ -140,7 +140,7 @@ const SelectPermissionsStep = React.memo(
                 />
               </Segment>
             )}
-            <Button positive content={t(buttonContent)} />
+            <Button variant="primary" content={t(buttonContent)} />
           </Form>
         </Popup.Content>
       </>

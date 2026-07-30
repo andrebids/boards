@@ -6,7 +6,8 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Tab } from 'semantic-ui-react';
+import { Tab } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -57,7 +58,7 @@ const BackgroundPane = React.memo(() => {
           className={`${styles.activeTypeButtonGroup} project-background-type-selector`}
         >
           {[ProjectBackgroundTypes.GRADIENT, ProjectBackgroundTypes.IMAGE].map((type) => (
-            <Button
+            <Button variant="secondary"
               key={type}
               type="button"
               value={type}

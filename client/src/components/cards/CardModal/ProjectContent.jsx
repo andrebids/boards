@@ -8,7 +8,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useDidUpdate } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
@@ -374,7 +375,11 @@ const ProjectContent = React.memo(({ onClose }) => {
                 onUserSelect={handleUserSelect}
                 onUserDeselect={handleUserDeselect}
               >
-                <CardModalMetadataAddButton circular ariaLabel={t('action.addMember')} />
+                <CardModalMetadataAddButton
+                  circular
+                  ariaLabel={t('action.addMember')}
+                  icon="add user"
+                />
               </BoardMembershipsPopup>
             )}
           </CardModalMetadataItem>
@@ -507,7 +512,7 @@ const ProjectContent = React.memo(({ onClose }) => {
                         /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                                     jsx-a11y/no-static-element-interactions */
                         <div className={styles.cursorPointer} onClick={handleEditDescriptionClick}>
-                          <Button className={styles.editButton}>
+                          <Button variant="secondary" className={styles.editButton}>
                             <Icon fitted name="pencil" size="small" />
                           </Button>
                           <ExpandableMarkdown>{card.description}</ExpandableMarkdown>

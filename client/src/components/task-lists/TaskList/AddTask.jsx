@@ -8,7 +8,8 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Button, Form, TextArea } from 'semantic-ui-react';
+import { Form, TextArea } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useClickAwayListener, useDidUpdate, useToggle } from '../../../lib/hooks';
 
 import entryActions from '../../../entry-actions';
@@ -123,7 +124,7 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
       <div className={styles.controls}>
         <Button
           {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-          positive
+          variant="primary"
           ref={handleButtonRef}
           content={t('action.addTask')}
           className={styles.submitButton}

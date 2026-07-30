@@ -6,7 +6,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Header, Icon } from 'semantic-ui-react';
+import { Header, Icon } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import DefaultLabelItem from './DefaultLabelItem';
 import DefaultLabelForm from './DefaultLabelForm';
@@ -73,7 +74,7 @@ const DefaultLabelsPane = () => {
           </p>
         </div>
         <Button
-          primary
+          variant="primary"
           icon
           labelPosition="left"
           onClick={handleOpenCreateForm}

@@ -134,3 +134,10 @@
   --g-color-line-generic-active: var(--app-accent);
   --g-color-line-generic-solid: var(--app-dark-border);
 }
+
+:global(
+  .g-root_theme_dark.g-portal__theme-wrapper
+    > div:has([data-qa='g-md-settings-content'])
+) {
+  z-index: 10004 !important;
+}

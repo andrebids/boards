@@ -3,40 +3,39 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Mention, MentionsInput } from 'react-mentions';
 import { Send } from 'lucide-react';
 import { Form } from 'semantic-ui-react';
-import { useClickAwayListener, useDidUpdate, useToggle } from '../../../lib/hooks';
+import { useClickAwayListener } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
-import { useEscapeInterceptor, useForm } from '../../../hooks';
-import { isModifierKeyPressed } from '../../../utils/event-helpers';
-import UserAvatar from '../../users/UserAvatar';
+import { useForm } from '../../../hooks';
+import MarkdownEditor from '../../common/MarkdownEditor';
 
 import styles from './Add.module.scss';
+
+const MAX_LENGTH = 1048576;
 
 const DEFAULT_DATA = {
   text: '',
 };
 
 const Add = React.memo(({ onSubmit }) => {
-  const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
+  const defaultMode = useSelector((state) => selectors.selectCurrentUser(state).defaultEditorMode);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [data, , setData] = useForm(DEFAULT_DATA);
   const [isOpened, setIsOpened] = useState(false);
-  const [selectTextFieldState, selectTextField] = useToggle();
 
-  const textFieldRef = useRef(null);
-  const textMentionsRef = useRef(null);
-  const textInputRef = useRef(null);
+  const editorShellRef = useRef(null);
   const buttonRef = useRef(null);
+
+  const isExceeded = data.text.length > MAX_LENGTH;
 
   const submit = useCallback(() => {
     const cleanData = {
@@ -44,40 +43,30 @@ const Add = React.memo(({ onSubmit }) => {
       text: data.text.trim(),
     };
 
-    if (!cleanData.text) {
-      textInputRef.current.select();
+    if (!cleanData.text || isExceeded) {
       return;
     }
 
     onSubmit();
     dispatch(entryActions.createCommentInCurrentCard(cleanData));
     setData(DEFAULT_DATA);
-    selectTextField();
-  }, [dispatch, data, onSubmit, setData, selectTextField]);
-
-  const handleEscape = useCallback(() => {
-    if (textMentionsRef.current.isOpened()) {
-      textMentionsRef.current.clearSuggestions();
-      return;
-    }
-
     setIsOpened(false);
-    textInputRef.current.blur();
-  }, []);
-
-  const [activateEscapeInterceptor, deactivateEscapeInterceptor] =
-    useEscapeInterceptor(handleEscape);
+  }, [dispatch, data, isExceeded, onSubmit, setData]);
 
   const handleSubmit = useCallback(() => {
     submit();
   }, [submit]);
 
-  const handleFieldFocus = useCallback(() => {
+  const handleOpen = useCallback(() => {
     setIsOpened(true);
   }, []);
 
-  const handleFieldChange = useCallback(
-    (_, text) => {
+  const handleClose = useCallback(() => {
+    setIsOpened(false);
+  }, []);
+
+  const handleEditorChange = useCallback(
+    (text) => {
       setData({
         text,
       });
@@ -85,90 +74,49 @@ const Add = React.memo(({ onSubmit }) => {
     [setData],
   );
 
-  const handleFieldKeyDown = useCallback(
-    (event) => {
-      if (isModifierKeyPressed(event) && event.key === 'Enter') {
-        submit();
-      }
+  const handleModeChange = useCallback(
+    (mode) => {
+      dispatch(
+        entryActions.updateCurrentUser({
+          defaultEditorMode: mode,
+        }),
+      );
     },
-    [submit],
+    [dispatch],
   );
 
-  const handleAwayClick = useCallback(() => {
-    setIsOpened(false);
-  }, []);
-
-  const handleClickAwayCancel = useCallback(() => {
-    textInputRef.current.focus();
-  }, []);
+  const handleClickAwayCancel = useCallback(() => {}, []);
 
   const clickAwayProps = useClickAwayListener(
-    [textFieldRef, buttonRef],
-    handleAwayClick,
+    [editorShellRef, buttonRef],
+    handleClose,
     handleClickAwayCancel,
   );
 
-  const suggestionRenderer = useCallback(
-    (entry, _, highlightedDisplay) => (
-      <div className={styles.suggestion}>
-        <UserAvatar id={entry.id} size="tiny" />
-        {highlightedDisplay}
-      </div>
-    ),
-    [],
-  );
-
-  useDidUpdate(() => {
-    if (isOpened) {
-      activateEscapeInterceptor();
-    } else {
-      deactivateEscapeInterceptor();
-    }
-  }, [isOpened]);
-
-  useDidUpdate(() => {
-    textInputRef.current.focus();
-  }, [selectTextFieldState]);
-
   return (
-    <Form className={styles.form} onFocusCapture={handleFieldFocus} onSubmit={handleSubmit}>
+    <Form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.composerRow}>
-        <div ref={textFieldRef} className={styles.inputShell}>
-          <MentionsInput
+        {isOpened ? (
+          <div
             {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-            allowSpaceInQuery
-            allowSuggestionsAboveCursor
-            ref={textMentionsRef}
-            inputRef={textInputRef}
-            value={data.text}
-            placeholder={t('common.writeComment')}
-            maxLength={1048576}
-            rows={isOpened ? 3 : 1}
-            className="mentions-input-comments"
-            style={{
-              control: {
-                minHeight: isOpened ? '79px' : '37px',
-              },
-              suggestions: {
-                maxHeight: '300px',
-                overflowY: 'auto',
-              },
-            }}
-            onChange={handleFieldChange}
-            onKeyDown={handleFieldKeyDown}
+            ref={editorShellRef}
+            className={styles.editorShell}
           >
-            <Mention
-              appendSpaceOnAdd
-              data={boardMemberships.map(({ user }) => ({
-                id: user.id,
-                display: user.username || user.name,
-              }))}
-              displayTransform={(_, display) => `@${display}`}
-              renderSuggestion={suggestionRenderer}
-              className={styles.mention}
+            <MarkdownEditor
+              defaultValue={data.text}
+              defaultMode={defaultMode}
+              isError={isExceeded}
+              onChange={handleEditorChange}
+              onSubmit={handleSubmit}
+              onCancel={handleClose}
+              onModeChange={handleModeChange}
             />
-          </MentionsInput>
-        </div>
+          </div>
+        ) : (
+          <button type="button" className={styles.openEditorButton} onClick={handleOpen}>
+            {t('common.writeComment')}
+          </button>
+        )}
         <button
           {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
           ref={buttonRef}
@@ -176,7 +124,7 @@ const Add = React.memo(({ onSubmit }) => {
           aria-label={t('action.addComment')}
           title={t('action.addComment')}
           className={styles.sendButton}
-          disabled={!data.text.trim()}
+          disabled={!data.text.trim() || isExceeded}
         >
           <Send aria-hidden="true" size={17} strokeWidth={2} />
         </button>

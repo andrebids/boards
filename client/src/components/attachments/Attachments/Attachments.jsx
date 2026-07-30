@@ -7,7 +7,8 @@ import React, { useCallback, useContext } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Gallery } from "react-photoswipe-gallery";
-import { Button, Icon } from "semantic-ui-react";
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useToggle } from "../../../lib/hooks";
 
 import selectors from "../../../selectors";
@@ -59,7 +60,7 @@ const Attachments = React.memo(() => {
   return (
     <>
       {(isAllVisible ? attachments.length > hiddenTotal : hiddenTotal > 0) && (
-        <Button
+        <Button variant="secondary"
           fluid
           aria-expanded={isAllVisible}
           className={styles.toggleButton}

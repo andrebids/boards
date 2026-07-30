@@ -8,7 +8,8 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
-import { Button, Icon, Message } from 'semantic-ui-react';
+import { Icon, Message } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -35,7 +36,7 @@ const EmptyTrashToast = React.memo(({ id, listId }) => {
       <Icon name="checkmark" />
       {t('common.trashHasBeenSuccessfullyEmptied')}
       {isCurrentList && (
-        <Button
+        <Button variant="secondary"
           content={t(`action.returnToBoard`)}
           icon={BoardContextIcons[BoardContexts.BOARD]}
           size="mini"

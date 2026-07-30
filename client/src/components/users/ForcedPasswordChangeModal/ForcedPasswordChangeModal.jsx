@@ -6,9 +6,9 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Message, Modal } from 'semantic-ui-react';
+import { Form, Message, Modal } from 'semantic-ui-react';
 import { useDidUpdate, usePrevious } from '../../../lib/hooks';
-import { Input } from '../../../lib/custom-ui';
+import { Button, Input } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -147,7 +147,7 @@ const ForcedPasswordChangeModal = React.memo(() => {
             <div className={styles.error}>{t('common.passwordsDoNotMatch')}</div>
           )}
           <Button
-            positive
+            variant="primary"
             content={t('action.changePassword')}
             loading={isSubmitting}
             disabled={isSubmitting}

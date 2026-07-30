@@ -11,7 +11,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { Draggable } from '@hello-pangea/dnd';
-import { Button } from 'semantic-ui-react';
+
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import { BoardMembershipRoles } from '../../../constants/Enums';
@@ -74,7 +75,7 @@ const Item = React.memo(
                 {label.name}
               </span>
               {canEdit && (
-                <Button
+                <Button variant="secondary"
                   icon="pencil"
                   size="small"
                   floated="right"

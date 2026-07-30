@@ -10,7 +10,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { push } from '../../../lib/redux-router';
 import { usePopup } from '../../../lib/popup';
 
@@ -191,13 +192,16 @@ const Card = React.memo(({ id, isInline }) => {
           </div>
           {canUseActions && (
             <ActionsPopup cardId={id} onNameEdit={handleNameEdit}>
-              <Button
-                aria-label={t('action.edit')}
-                title={t('action.edit')}
-                className={styles.actionsButton}
-              >
-                <Icon fitted name="pencil" size="small" />
-              </Button>
+              <span className={styles.actionsTrigger}>
+                <Button
+                  variant="secondary"
+                  aria-label={t('action.edit')}
+                  title={t('action.edit')}
+                  className={styles.actionsButton}
+                >
+                  <Icon fitted name="pencil" size="small" />
+                </Button>
+              </span>
             </ActionsPopup>
           )}
         </>

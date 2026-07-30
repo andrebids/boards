@@ -6,8 +6,8 @@
 import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Header, Modal } from 'semantic-ui-react';
-import { CloseButton, Input } from '../../../../lib/custom-ui';
+import { Form, Header, Modal } from 'semantic-ui-react';
+import { Button, CloseButton, Input } from '../../../../lib/custom-ui';
 
 import { useForm, useNestedRef } from '../../../../hooks';
 
@@ -73,7 +73,7 @@ const AddTextFileModal = React.memo(({ content, onCreate, onClose }) => {
             className={styles.field}
             onChange={handleFieldChange}
           />
-          <Button
+          <Button variant="secondary"
             inverted
             color="green"
             icon="checkmark"

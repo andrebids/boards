@@ -6,7 +6,8 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Tab } from 'semantic-ui-react';
+import { Tab } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -51,11 +52,11 @@ const ManagersPane = React.memo(() => {
             <ConfirmationPopup
               title="common.makeProjectShared"
               content="common.areYouSureYouWantToMakeThisProjectShared"
-              buttonType="positive"
+              variant="primary"
               buttonContent="action.makeProjectShared"
               onConfirm={handleMakeSharedConfirm}
             >
-              <Button className={styles.actionButton}>
+              <Button variant="secondary" className={styles.actionButton}>
                 {t('action.makeProjectShared', {
                   context: 'title',
                 })}

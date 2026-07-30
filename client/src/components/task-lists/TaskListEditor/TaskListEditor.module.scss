@@ -46,6 +46,12 @@
     margin-bottom: 8px;
     width: 100%;
 
+    > label,
+    > input:checked ~ label,
+    > input:focus ~ label {
+      color: var(--app-dark-text, #e6edf3) !important;
+    }
+
     &:last-of-type {
       margin-bottom: 16px;
     }

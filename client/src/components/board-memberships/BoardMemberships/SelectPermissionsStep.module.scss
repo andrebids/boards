@@ -48,14 +48,12 @@
     &:hover {
       background: rgba(255, 255, 255, 0.08) !important;
       border-color: rgba(255, 255, 255, 0.28) !important;
-      box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.55) !important;
+      box-shadow: none !important;
     }
 
     &:focus-visible {
-      border-color: #6fca63 !important;
-      box-shadow:
-        0 0 0 2px rgba(111, 202, 99, 0.35),
-        inset 3px 0 0 #6fca63 !important;
+      border-color: rgba(96, 165, 250, 0.72) !important;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
       outline: none;
     }
 
@@ -85,7 +83,7 @@
   }
 
   .menuItemCheck {
-    color: #6fca63;
+    color: #60a5fa;
     line-height: 20px;
     margin: 0 !important;
   }
@@ -95,18 +93,18 @@
   }
 
   .menuItemSelected {
-    background: rgba(111, 202, 99, 0.1) !important;
-    border-color: rgba(111, 202, 99, 0.55) !important;
-    box-shadow: inset 3px 0 0 #6fca63 !important;
+    background: rgba(59, 130, 246, 0.14) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
 
     &:hover {
-      background: rgba(111, 202, 99, 0.15) !important;
-      border-color: rgba(111, 202, 99, 0.78) !important;
-      box-shadow: inset 3px 0 0 #6fca63 !important;
+      background: rgba(59, 130, 246, 0.2) !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
     }
 
     .menuItemIcon {
-      color: #8cdb82;
+      color: rgba(96, 165, 250, 0.9);
     }
   }
 

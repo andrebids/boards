@@ -9,7 +9,8 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Input } from 'semantic-ui-react';
+import { Form, Input } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -105,7 +106,7 @@ const EditUserInformation = React.memo(({ id, onUpdate }) => {
         onChange={handleFieldChange}
       />
       <Button
-        positive
+        variant="primary"
         disabled={dequal(cleanData, defaultData)}
         content={t('action.save')}
       />

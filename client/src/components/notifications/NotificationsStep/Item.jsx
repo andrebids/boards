@@ -9,7 +9,8 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation, Trans } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Button } from 'semantic-ui-react';
+
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -478,7 +479,7 @@ const Item = React.memo(({ id, onClose }) => {
           <TimeAgo date={notification.createdAt} />
         </span>
       </span>
-      <Button
+      <Button variant="secondary"
         type="button"
         icon="trash alternate outline"
         aria-label={t('action.delete')}

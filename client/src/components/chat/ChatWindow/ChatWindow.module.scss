@@ -109,6 +109,7 @@
   }
 
   .actions {
+    align-items: center;
     display: flex;
     flex: 0 0 auto;
     gap: 2px;
@@ -153,6 +154,32 @@
       &:hover {
         background: var(--chat-accent-soft);
         color: var(--chat-accent);
+      }
+    }
+
+    button[data-platform-close-button] {
+      background: transparent !important;
+      border-radius: var(--chat-radius-control) !important;
+      color: var(--chat-muted) !important;
+      height: 34px !important;
+      min-height: 34px !important;
+      min-width: 34px !important;
+      padding: 0 !important;
+      width: 34px !important;
+
+      &:hover {
+        background: var(--chat-default) !important;
+        color: var(--chat-foreground) !important;
+      }
+
+      &:active {
+        transform: scale(0.96);
+      }
+
+      &:focus-visible {
+        box-shadow: none !important;
+        outline: 2px solid var(--chat-accent);
+        outline-offset: -1px;
       }
     }
   }

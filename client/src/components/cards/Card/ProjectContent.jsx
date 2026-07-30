@@ -217,6 +217,7 @@ const ProjectContent = React.memo(({ cardId }) => {
                   <DueDateChip
                     value={card.dueDate}
                     size="tiny"
+                    variant="metadata"
                     withStatus={!isInClosedList && !isListArchiveOrTrash(list)}
                   />
                 </span>

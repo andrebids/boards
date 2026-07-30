@@ -6,7 +6,8 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from 'semantic-ui-react';
+import { Input } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 import { useClosableModal } from '../../../../hooks';
 
 import { LABEL_COLORS } from './label-colors';
@@ -150,10 +151,10 @@ const DefaultLabelForm = React.memo(({ isOpen, label, existingLabels, onClose, o
       </ClosableModal.Content>
 
       <ClosableModal.Actions className={styles.actions}>
-        <Button onClick={onClose} className={styles.cancelButton}>
+        <Button variant="secondary" onClick={onClose} className={styles.cancelButton}>
           {t('action.cancel', 'Cancelar')}
         </Button>
-        <Button primary onClick={handleSubmit} className={styles.submitButton}>
+        <Button variant="primary" onClick={handleSubmit} className={styles.submitButton}>
           {label ? t('action.save', 'Guardar') : t('action.add', 'Criar')}
         </Button>
       </ClosableModal.Actions>

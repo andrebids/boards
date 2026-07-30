@@ -21,6 +21,11 @@ const Sizes = {
   MEDIUM: 'medium',
 };
 
+const Variants = {
+  CHIP: 'chip',
+  METADATA: 'metadata',
+};
+
 const Statuses = {
   DUE_SOON: 'dueSoon',
   OVERDUE: 'overdue',
@@ -41,18 +46,14 @@ const FULL_DATE_FORMAT_BY_SIZE = {
 const STATUS_ICON_PROPS_BY_STATUS = {
   [Statuses.DUE_SOON]: {
     name: 'hourglass half',
-    color: 'orange',
   },
   [Statuses.OVERDUE]: {
     name: 'hourglass end',
-    color: 'red',
   },
 };
 
-const getStatus = date => {
-  const secondsLeft = Math.floor(
-    (date.getTime() - new Date().getTime()) / 1000
-  );
+const getStatus = (date) => {
+  const secondsLeft = Math.floor((date.getTime() - new Date().getTime()) / 1000);
 
   if (secondsLeft <= 0) {
     return Statuses.OVERDUE;
@@ -66,7 +67,7 @@ const getStatus = date => {
 };
 
 const DueDateChip = React.memo(
-  ({ value, size, isDisabled, withStatus, withStatusIcon, onClick }) => {
+  ({ value, size, variant, isDisabled, withStatus, withStatusIcon, onClick }) => {
     const [t] = useTranslation();
     const forceUpdate = useForceUpdate();
 
@@ -74,11 +75,14 @@ const DueDateChip = React.memo(
     statusRef.current = withStatus ? getStatus(value) : null;
 
     const intervalRef = useRef(null);
+    const isMetadata = variant === Variants.METADATA;
+    const currentStatus = statusRef.current;
+    const hasLeadingIcon = isMetadata || withStatusIcon;
 
     const dateFormat = getDateFormat(
       value,
       LONG_DATE_FORMAT_BY_SIZE[size],
-      FULL_DATE_FORMAT_BY_SIZE[size]
+      FULL_DATE_FORMAT_BY_SIZE[size],
     );
 
     useEffect(() => {
@@ -108,44 +112,51 @@ const DueDateChip = React.memo(
         className={classNames(
           styles.wrapper,
           styles[`wrapper${upperFirst(size)}`],
-          !withStatusIcon &&
-            statusRef.current &&
-            styles[`wrapper${upperFirst(statusRef.current)}`],
-          onClick && styles.wrapperHoverable
+          styles[`wrapper${upperFirst(variant)}`],
+          currentStatus && styles[`wrapper${upperFirst(currentStatus)}`],
+          onClick && styles.wrapperHoverable,
         )}
       >
-        {t(`format:${dateFormat}`, {
-          value,
-          postProcess: 'formatDate',
-        })}
-        {withStatusIcon && statusRef.current && (
-          // eslint-disable-next-line react/jsx-props-no-spreading
-          <Icon
-            {...STATUS_ICON_PROPS_BY_STATUS[statusRef.current]}
-            className={styles.statusIcon}
-          />
+        {hasLeadingIcon && (
+          <span
+            aria-hidden="true"
+            className={classNames(
+              styles.iconSlot,
+              currentStatus && styles[`iconSlot${upperFirst(currentStatus)}`],
+            )}
+          >
+            <Icon
+              fitted
+              name={
+                currentStatus ? STATUS_ICON_PROPS_BY_STATUS[currentStatus].name : 'calendar outline'
+              }
+              className={styles.leadingIcon}
+            />
+          </span>
         )}
+        <span className={styles.label}>
+          {t(`format:${dateFormat}`, {
+            value,
+            postProcess: 'formatDate',
+          })}
+        </span>
       </span>
     );
 
     return onClick ? (
-      <button
-        type="button"
-        disabled={isDisabled}
-        className={styles.button}
-        onClick={onClick}
-      >
+      <button type="button" disabled={isDisabled} className={styles.button} onClick={onClick}>
         {contentNode}
       </button>
     ) : (
       contentNode
     );
-  }
+  },
 );
 
 DueDateChip.propTypes = {
   value: PropTypes.instanceOf(Date).isRequired,
   size: PropTypes.oneOf(Object.values(Sizes)),
+  variant: PropTypes.oneOf(Object.values(Variants)),
   isDisabled: PropTypes.bool,
   withStatus: PropTypes.bool.isRequired,
   withStatusIcon: PropTypes.bool,
@@ -154,6 +165,7 @@ DueDateChip.propTypes = {
 
 DueDateChip.defaultProps = {
   size: Sizes.MEDIUM,
+  variant: Variants.CHIP,
   isDisabled: false,
   withStatusIcon: false,
   onClick: undefined,

@@ -7,7 +7,8 @@ import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Button, Icon, Menu } from 'semantic-ui-react';
+import { Icon, Menu } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useTranslation } from 'react-i18next';
 import { usePopup } from '../../../lib/popup';
 
@@ -174,7 +175,7 @@ const Header = React.memo(() => {
             <Menu.Item className={classNames(styles.item, styles.title)}>
               {project.name}
               {canEditProject && (
-                <Button className={styles.editButton} onClick={handleProjectSettingsClick}>
+                <Button variant="secondary" className={styles.editButton} onClick={handleProjectSettingsClick}>
                   <Icon fitted name="pencil" size="small" />
                 </Button>
               )}

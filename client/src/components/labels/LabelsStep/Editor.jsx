@@ -9,8 +9,8 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'semantic-ui-react';
-import { Input } from '../../../lib/custom-ui';
+
+import { Button, Input } from '../../../lib/custom-ui';
 
 import { useNestedRef } from '../../../hooks';
 import LABEL_COLORS from '../../../constants/LabelColors';
@@ -49,7 +49,7 @@ const Editor = React.memo(({ data, onFieldChange }) => {
       <div className={styles.text}>{t('common.color')}</div>
       <div className={styles.colorButtons}>
         {LABEL_COLORS.map(color => (
-          <Button
+          <Button variant="secondary"
             key={color}
             title={formatColorName(color)}
             aria-label={formatColorName(color)}

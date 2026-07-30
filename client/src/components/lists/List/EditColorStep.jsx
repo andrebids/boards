@@ -10,8 +10,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'semantic-ui-react';
-import { Popup } from '../../../lib/custom-ui';
+
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -68,7 +68,7 @@ const EditColorStep = React.memo(({ listId, onBack, onClose }) => {
       <Popup.Content>
         <div className={styles.colorButtons}>
           {LIST_COLORS.map(color => (
-            <Button
+            <Button variant="secondary"
               key={color}
               title={formatColorName(color)}
               aria-label={formatColorName(color)}
@@ -85,7 +85,7 @@ const EditColorStep = React.memo(({ listId, onBack, onClose }) => {
           ))}
         </div>
         {defaultValue && (
-          <Button
+          <Button variant="secondary"
             fluid
             content={t('action.removeColor')}
             className={styles.clearButton}

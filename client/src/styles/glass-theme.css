@@ -7,9 +7,37 @@
   --app-dark-text: oklch(0.943 0.011 243.657);
   --app-dark-text-muted: oklch(0.943 0.011 243.657 / 0.75);
   --app-accent: oklch(0.623 0.188 259.815);
+  --app-accent-foreground: oklch(0.985 0.002 247.839);
   --app-accent-soft: oklch(0.623 0.188 259.815 / 0.2);
+  --app-accent-hover: color-mix(
+    in oklab,
+    var(--app-accent) 88%,
+    var(--app-accent-foreground) 12%
+  );
+  --app-default: var(--app-dark-surface-hover);
+  --app-default-hover: color-mix(
+    in oklab,
+    var(--app-default) 88%,
+    var(--app-dark-text) 12%
+  );
+  --app-default-foreground: var(--app-dark-text);
   --app-danger: oklch(0.711 0.166 22.216);
+  --app-danger-foreground: oklch(0.985 0.002 247.839);
+  --app-danger-hover: color-mix(
+    in oklab,
+    var(--app-danger) 88%,
+    var(--app-danger-foreground) 12%
+  );
   --app-danger-soft: oklch(0.711 0.166 22.216 / 0.14);
+  --app-danger-soft-hover: oklch(0.711 0.166 22.216 / 0.22);
+  --app-warning: oklch(0.82 0.139 76.34);
+  --app-warning-soft: color-mix(in oklab, var(--app-warning) 15%, transparent);
+  --app-warning-soft-hover: color-mix(in oklab, var(--app-warning) 22%, transparent);
+  --app-focus: var(--app-accent);
+  --app-disabled-opacity: 0.5;
+  --app-radius: 0.5rem;
+  --app-ease-smooth: ease;
+  --app-ease-out: ease-out;
   --glass-bg-rgb: 14, 17, 23;
   --glass-bg-strong-rgb: 20, 25, 34;
   --glass-border: var(--app-dark-border);
@@ -17,6 +45,11 @@
   --text-primary: var(--app-dark-text);
   --text-secondary: var(--app-dark-text-muted);
   --accent: var(--app-accent);
+
+  /* Contrato transversal de botões, inspirado na arquitetura semântica HeroUI. */
+  --button-radius: calc(var(--app-radius) * 3);
+  --button-focus-offset: var(--app-dark-canvas);
+  --button-shadow: none;
 }
 
 /* Superfícies escuras e opacas. O glass fica reservado aos modais. */

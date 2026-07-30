@@ -6,7 +6,8 @@
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon, Label, Modal } from 'semantic-ui-react';
+import { Icon, Label, Modal } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import styles from './DefaultLabelItem.module.scss';
 import globalStyles from '../../../../styles.module.scss';
@@ -57,7 +58,7 @@ const DefaultLabelItem = React.memo(({ label, onEdit, onDelete }) => {
       </div>
 
       <div className={styles.actions}>
-        <Button
+        <Button variant="danger-soft"
           icon
           size="small"
           className={styles.editButton}
@@ -66,7 +67,7 @@ const DefaultLabelItem = React.memo(({ label, onEdit, onDelete }) => {
         >
           <Icon name="pencil" />
         </Button>
-        <Button
+        <Button variant="secondary"
           icon
           size="small"
           className={styles.deleteButton}
@@ -96,10 +97,10 @@ const DefaultLabelItem = React.memo(({ label, onEdit, onDelete }) => {
           </p>
         </Modal.Content>
         <Modal.Actions>
-          <Button onClick={handleDeleteCancel}>
+          <Button variant="secondary" onClick={handleDeleteCancel}>
             {t('action.cancel', 'Cancelar')}
           </Button>
-          <Button negative onClick={handleDeleteConfirm}>
+          <Button variant="danger" onClick={handleDeleteConfirm}>
             <Icon name="trash" />
             {t('action.delete', 'Eliminar')}
           </Button>
@@ -116,4 +117,3 @@ DefaultLabelItem.propTypes = {
 };
 
 export default DefaultLabelItem;
-

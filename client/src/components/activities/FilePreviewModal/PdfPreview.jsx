@@ -6,9 +6,9 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Icon, Button, Loader } from 'semantic-ui-react';
+import { Icon, Loader } from 'semantic-ui-react';
 
-import { CloseButton } from '../../../lib/custom-ui';
+import { Button, CloseButton } from '../../../lib/custom-ui';
 
 import styles from './FilePreviewModal.module.scss';
 
@@ -50,11 +50,11 @@ const PdfPreview = ({ file, onClose }) => {
         <Icon name="exclamation triangle" size="huge" />
         <p>{t('common.errorLoadingPdf')}</p>
         <div className={styles.errorActions}>
-          <Button onClick={handleOpenInNewTab}>
+          <Button variant="secondary" onClick={handleOpenInNewTab}>
             {t('common.openInNewTab')}
           </Button>
-          <Button onClick={handleDownload}>{t('common.download')}</Button>
-          <Button onClick={onClose}>{t('action.close')}</Button>
+          <Button variant="secondary" onClick={handleDownload}>{t('common.download')}</Button>
+          <Button variant="secondary" onClick={onClose}>{t('action.close')}</Button>
         </div>
       </div>
     );
@@ -70,14 +70,14 @@ const PdfPreview = ({ file, onClose }) => {
         </div>
 
         <div className={styles.pdfControls}>
-          <Button
+          <Button variant="secondary"
             icon="external alternate"
             size="mini"
             onClick={handleOpenInNewTab}
             title={t('common.openInNewTab')}
           />
 
-          <Button
+          <Button variant="secondary"
             icon="download"
             size="mini"
             onClick={handleDownload}

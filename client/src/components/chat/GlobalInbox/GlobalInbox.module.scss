@@ -10,7 +10,7 @@
   .search {
     align-items: center;
     background: var(--chat-background);
-    border: 1px solid var(--chat-border);
+    border: 0;
     border-radius: var(--chat-radius-control);
     color: var(--chat-muted);
     display: flex;
@@ -21,14 +21,12 @@
     padding: 0 10px;
     transition:
       background-color var(--chat-motion-fast) var(--chat-ease),
-      border-color var(--chat-motion-fast) var(--chat-ease),
       box-shadow var(--chat-motion-fast) var(--chat-ease),
       color var(--chat-motion-fast) var(--chat-ease);
 
     &:focus-within {
       background: var(--chat-surface-secondary);
-      border-color: var(--chat-accent);
-      box-shadow: 0 0 0 3px var(--chat-focus-ring);
+      box-shadow: inset 0 0 0 2px var(--chat-focus-ring);
       color: var(--chat-foreground);
     }
 

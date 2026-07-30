@@ -8,9 +8,9 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useInView } from 'react-intersection-observer';
 import { useTranslation } from 'react-i18next';
-import { Button, Loader } from 'semantic-ui-react';
+import { Loader } from 'semantic-ui-react';
 import { useWindowWidth } from '../../../lib/hooks';
-import { Masonry } from '../../../lib/custom-ui';
+import { Button, Masonry } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import { selectIsTimelinePanelExpanded } from '../../../selectors/timelinePanelSelectors';
@@ -77,7 +77,7 @@ const GridView = React.memo(
                 <AddCard onCreate={onCardCreate} onClose={handleAddCardClose} />
               </div>
             ) : (
-              <Button
+              <Button variant="secondary"
                 type="button"
                 disabled={!onCardCreate}
                 className={styles.addCardButton}

@@ -8,8 +8,8 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
-import { Button } from 'semantic-ui-react';
-import { Input, Popup } from '../../../lib/custom-ui';
+
+import { Button, Input, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -183,7 +183,7 @@ const LabelsStep = React.memo(
             </DragDropContext>
           )}
           {canAdd && (
-            <Button
+            <Button variant="secondary"
               fluid
               content={t('action.createNewLabel')}
               className={styles.addButton}

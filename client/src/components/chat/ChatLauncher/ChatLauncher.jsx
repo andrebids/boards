@@ -23,14 +23,15 @@ const ChatLauncher = React.memo(() => {
   const {
     closeConversationList,
     inboxScope,
+    isConversationListClosing,
     isConversationListOpen,
     isEnabled,
     openGlobalConversation,
     openConversationList,
     setInboxScope,
+    startConversationListClose,
     windows,
   } = useChat();
-  const [isPanelClosing, setIsPanelClosing] = useState(false);
   const [isAlerting, setIsAlerting] = useState(false);
   const closeTimeoutRef = useRef(null);
   const closeCompletionRef = useRef(null);
@@ -61,13 +62,11 @@ const ChatLauncher = React.memo(() => {
       closeTimeoutRef.current = null;
     }
     closeCompletionRef.current = null;
-    setIsPanelClosing(false);
     openConversationList();
   }, [openConversationList]);
 
   const finishClose = useCallback(() => {
     closeConversationList();
-    setIsPanelClosing(false);
     closeTimeoutRef.current = null;
 
     const onClosed = closeCompletionRef.current;
@@ -81,7 +80,7 @@ const ChatLauncher = React.memo(() => {
         closeCompletionRef.current = onClosed;
       }
 
-      if (isPanelClosing || closeTimeoutRef.current) {
+      if (isConversationListClosing || closeTimeoutRef.current) {
         return;
       }
 
@@ -90,10 +89,10 @@ const ChatLauncher = React.memo(() => {
         return;
       }
 
-      setIsPanelClosing(true);
+      startConversationListClose();
       closeTimeoutRef.current = window.setTimeout(finishClose, CLOSE_ANIMATION_MS);
     },
-    [finishClose, isPanelClosing],
+    [finishClose, isConversationListClosing, startConversationListClose],
   );
 
   const handleToggle = useCallback(() => {
@@ -108,7 +107,7 @@ const ChatLauncher = React.memo(() => {
     return null;
   }
 
-  const isPanelExpanded = isConversationListOpen && !isPanelClosing;
+  const isPanelExpanded = isConversationListOpen && !isConversationListClosing;
   let launcherLabel = t('chat.openConversations');
   if (isConversationListOpen) {
     launcherLabel = t('chat.closeConversations');
@@ -121,7 +120,7 @@ const ChatLauncher = React.memo(() => {
       {isConversationListOpen && (
         <ChatPanel
           inboxScope={inboxScope}
-          isClosing={isPanelClosing}
+          isClosing={isConversationListClosing}
           onClose={handleClose}
           onInboxScopeChange={setInboxScope}
           onOpenGlobalConversation={openGlobalConversation}

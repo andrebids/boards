@@ -7,8 +7,8 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Search, X } from 'lucide-react';
-import { Button, Menu } from 'semantic-ui-react';
-import { Input, Popup } from '../../../lib/custom-ui';
+import { Menu } from 'semantic-ui-react';
+import { Button, Input, Popup } from '../../../lib/custom-ui';
 
 import { useField, useNestedRef } from '../../../hooks';
 import Item from './Item';
@@ -108,7 +108,7 @@ const PureBoardMembershipsStep = React.memo(
             </div>
           )}
           {currentUserIds.length > 0 && onClear && (
-            <Button
+            <Button variant="secondary"
               fluid
               content={t(clearButtonContent)}
               className={styles.clearButton}

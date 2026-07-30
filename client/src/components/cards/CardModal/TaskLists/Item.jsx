@@ -10,7 +10,8 @@ import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Draggable } from '@hello-pangea/dnd';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import { usePopupInClosableContext } from '../../../../hooks';
@@ -67,7 +68,7 @@ const Item = React.memo(({ id, index }) => {
                 >
                   {taskList.isPersisted && canEdit && (
                     <EditPopup taskListId={taskList.id}>
-                      <Button
+                      <Button variant="secondary"
                         type="button"
                         aria-label={t('action.edit')}
                         title={t('action.edit')}

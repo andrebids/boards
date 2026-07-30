@@ -7,9 +7,9 @@ import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Button, Form, Header, Icon, TextArea } from 'semantic-ui-react';
+import { Form, Header, Icon, TextArea } from 'semantic-ui-react';
 import { usePopup } from '../../../lib/popup';
-import { Input } from '../../../lib/custom-ui';
+import { Button, Input } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -137,7 +137,7 @@ const AddProjectModal = React.memo(() => {
             onKeyDown={handleDescriptionKeyDown}
             onChange={handleFieldChange}
           />
-          <Button
+          <Button variant="secondary"
             inverted
             color="green"
             icon="checkmark"
@@ -146,7 +146,7 @@ const AddProjectModal = React.memo(() => {
             disabled={isSubmitting}
           />
           <SelectTypePopup value={data.type} onSelect={handleTypeSelect}>
-            <Button type="button" className={styles.selectTypeButton}>
+            <Button variant="secondary" type="button" className={styles.selectTypeButton}>
               <Icon
                 name={ProjectTypeIcons[data.type]}
                 className={styles.selectTypeButtonIcon}

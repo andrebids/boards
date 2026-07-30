@@ -8,5 +8,7 @@ import Popup from './components/Popup';
 import Masonry from './components/Masonry';
 import FilePicker from './components/FilePicker';
 import CloseButton from './components/CloseButton';
+import Button from './components/Button';
+import ButtonGroup from './components/ButtonGroup';
 
-export { Input, Popup, Masonry, FilePicker, CloseButton };
+export { Button, ButtonGroup, CloseButton, FilePicker, Input, Masonry, Popup };

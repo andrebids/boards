@@ -4,6 +4,16 @@
  */
 
 :global(#app) {
+  .actionsTrigger {
+    display: inline-flex;
+    height: 28px;
+    position: absolute;
+    right: 6px;
+    top: 4px;
+    width: 28px;
+    z-index: 2;
+  }
+
   .actionsButton {
     align-items: center;
     background: rgba(15, 23, 42, 0.82);
@@ -13,21 +23,22 @@
     box-sizing: border-box;
     color: #ffffff;
     display: inline-flex;
-    height: 32px;
+    height: 28px;
     justify-content: center;
     margin: 0;
     min-height: auto;
     opacity: 0.86;
     outline: none;
     padding: 0;
-    position: absolute;
-    right: 6px;
-    top: 2px;
+    position: static;
     transition:
       background-color 160ms ease,
       opacity 160ms ease;
-    width: 32px;
-    z-index: 2;
+    width: 28px;
+
+    > i {
+      font-size: 12px;
+    }
 
     &:hover {
       background: rgba(15, 23, 42, 0.96);
@@ -40,8 +51,6 @@
       opacity: 1;
     }
   }
-
-
 
   .content {
     cursor: pointer;

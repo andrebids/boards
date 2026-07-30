@@ -6,7 +6,8 @@
 import React, { useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
-import { Button } from 'semantic-ui-react';
+
+import { Button } from '../../../lib/custom-ui';
 import { closePopup, usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
@@ -82,7 +83,7 @@ const Boards = React.memo(() => {
                 {placeholder}
                 {canAdd && (
                   <AddPopup>
-                    <Button icon="plus" className={styles.addButton} />
+                    <Button variant="secondary" icon="plus" className={styles.addButton} />
                   </AddPopup>
                 )}
               </div>

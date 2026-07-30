@@ -47,6 +47,20 @@
           ]
         }
       ],
+      "no-restricted-imports": [
+        "error",
+        {
+          "paths": [
+            {
+              "name": "semantic-ui-react",
+              "importNames": [
+                "Button"
+              ],
+              "message": "Use Button from lib/custom-ui so variants, states and theme tokens remain consistent."
+            }
+          ]
+        }
+      ],
       "prettier/prettier": [
         "error",
         {

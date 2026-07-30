@@ -7,8 +7,8 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon } from 'semantic-ui-react';
-import { Popup } from '../../../lib/custom-ui';
+import { Icon } from 'semantic-ui-react';
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -142,7 +142,7 @@ const ActionsStep = React.memo(
           </div>
         )}
         <Button
-          basic
+          variant="outline"
           content={t('action.showCardsWithThisUser')}
           icon="filter"
           size="tiny"
@@ -153,7 +153,7 @@ const ActionsStep = React.memo(
           <>
             <hr className={styles.divider} />
             {canEdit && (
-              <Button
+              <Button variant="secondary"
                 fluid
                 content={t('action.editPermissions')}
                 className={styles.button}
@@ -161,14 +161,14 @@ const ActionsStep = React.memo(
               />
             )}
             {isCurrentUser ? (
-              <Button
+              <Button variant="secondary"
                 fluid
                 content={t(`action.leaveBoard`)}
                 className={styles.button}
                 onClick={handleDeleteClick}
               />
             ) : (
-              <Button
+              <Button variant="secondary"
                 fluid
                 content={t(`action.removeFromBoard`)}
                 className={styles.button}

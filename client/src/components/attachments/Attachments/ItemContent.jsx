@@ -8,7 +8,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Icon, Label, Loader } from 'semantic-ui-react';
+import { Icon, Label, Loader } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -186,7 +187,7 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
       </div>
       {canEdit && (
         <EditPopup attachmentId={id}>
-          <Button className={styles.editButton}>
+          <Button variant="secondary" className={styles.editButton}>
             <Icon fitted name="pencil" size="small" />
           </Button>
         </EditPopup>

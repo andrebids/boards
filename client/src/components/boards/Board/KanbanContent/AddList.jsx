@@ -8,7 +8,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Icon, Input } from 'semantic-ui-react';
+import { Form, Icon, Input } from 'semantic-ui-react';
+import { Button } from '../../../../lib/custom-ui';
 import {
   useClickAwayListener,
   useDidUpdate,
@@ -128,7 +129,7 @@ const AddList = React.memo(({ onClose }) => {
       <div className={styles.controls}>
         <Button
           {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-          positive
+          variant="primary"
           ref={handleSubmitButtonRef}
           content={t('action.addList')}
           className={styles.button}
@@ -137,7 +138,7 @@ const AddList = React.memo(({ onClose }) => {
           defaultValue={data.type}
           onSelect={handleTypeSelect}
         >
-          <Button
+          <Button variant="secondary"
             {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
             ref={handleSelectTypeButtonRef}
             type="button"

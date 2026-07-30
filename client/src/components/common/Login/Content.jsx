@@ -8,16 +8,9 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation, Trans } from 'react-i18next';
-import {
-  Button,
-  Divider,
-  Form,
-  Grid,
-  Header,
-  Message,
-} from 'semantic-ui-react';
+import { Divider, Form, Grid, Header, Message } from 'semantic-ui-react';
 import { useDidUpdate, usePrevious, useToggle } from '../../../lib/hooks';
-import { Input } from '../../../lib/custom-ui';
+import { Button, Input } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -256,7 +249,7 @@ const Content = React.memo(() => {
               {withOidc && (
                 <Button
                   fluid
-                  primary={isOidcEnforced}
+                  variant={isOidcEnforced ? 'primary' : 'secondary'}
                   icon={isOidcEnforced ? 'right arrow' : undefined}
                   labelPosition={isOidcEnforced ? 'right' : undefined}
                   content={t('action.logInWithSso')}

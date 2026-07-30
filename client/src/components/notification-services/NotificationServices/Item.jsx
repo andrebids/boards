@@ -6,7 +6,8 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, Dropdown, Form, Icon, Input } from 'semantic-ui-react';
+import { Dropdown, Form, Icon, Input } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 import { useDidUpdate, usePrevious, useToggle } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
@@ -185,7 +186,7 @@ const Item = React.memo(({ id }) => {
         onChange={handleFieldChange}
         onBlur={handleUrlBlur}
       />
-      <Button
+      <Button variant="secondary"
         type="button"
         loading={notificationService.isTesting}
         disabled={
@@ -202,7 +203,7 @@ const Item = React.memo(({ id }) => {
         buttonContent="action.deleteNotificationService"
         onConfirm={handleDeleteConfirm}
       >
-        <Button
+        <Button variant="secondary"
           type="button"
           disabled={!notificationService.isPersisted}
           className={styles.button}

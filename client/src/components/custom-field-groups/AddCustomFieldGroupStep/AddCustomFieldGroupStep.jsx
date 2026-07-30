@@ -7,9 +7,9 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Dropdown, Form } from 'semantic-ui-react';
+import { Dropdown, Form } from 'semantic-ui-react';
 import { useDidUpdate, useToggle } from '../../../lib/hooks';
-import { Popup } from '../../../lib/custom-ui';
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import { useForm } from '../../../hooks';
@@ -140,7 +140,7 @@ const AddCustomFieldGroupStep = React.memo(({ onCreate, onBack, onClose }) => {
             data={data}
             onFieldChange={handleFieldChange}
           />
-          <Button positive content={t('action.addCustomFieldGroup')} />
+          <Button variant="primary" content={t('action.addCustomFieldGroup')} />
         </Form>
       </Popup.Content>
     </>

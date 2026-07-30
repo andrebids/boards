@@ -7,8 +7,8 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'semantic-ui-react';
-import { FilePicker, Popup } from '../../../../lib/custom-ui';
+
+import { Button, FilePicker, Popup } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -62,7 +62,7 @@ const EditAvatarStep = React.memo(({ onClose }) => {
       <Popup.Content>
         <div className={styles.action}>
           <FilePicker accept="image/*" onSelect={handleFileSelect}>
-            <Button
+            <Button variant="secondary"
               ref={fieldRef}
               content={t('action.uploadNewAvatar')}
               className={styles.actionButton}
@@ -71,7 +71,7 @@ const EditAvatarStep = React.memo(({ onClose }) => {
         </div>
         {defaultValue && (
           <Button
-            negative
+            variant="danger"
             content={t('action.deleteAvatar')}
             onClick={handleDeleteClick}
           />

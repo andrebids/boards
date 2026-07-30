@@ -8,8 +8,8 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form } from 'semantic-ui-react';
-import { Popup } from '../../../lib/custom-ui';
+import { Form } from 'semantic-ui-react';
+import { Button, Popup } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -106,12 +106,12 @@ const CustomFieldEditStep = React.memo(({ id, onBack }) => {
             onFieldChange={handleFieldChange}
           />
           <Button
-            positive
+            variant="primary"
             content={t('action.save')}
             className={styles.submitButton}
           />
         </Form>
-        <Button
+        <Button variant="danger-soft"
           content={t('action.delete')}
           className={styles.deleteButton}
           onClick={handleDeleteClick}

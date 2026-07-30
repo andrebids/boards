@@ -9,6 +9,7 @@
     border-radius: 50%;
     box-shadow: none;
     color: #fff;
+    flex: 0 0 36px;
     line-height: 36px;
     margin: 0;
     padding: 0;
@@ -23,9 +24,13 @@
 
   .groups {
     display: flex;
+    flex: 0 0 auto;
   }
 
-  .segment:not(:last-child) {
-    margin-right: 10px;
+  .wrapper {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+    min-width: max-content;
   }
 }

@@ -166,7 +166,7 @@ const ActionsStep = React.memo(({ userId, onClose }) => {
           <ConfirmationStep
             title="common.activateUser"
             content="common.areYouSureYouWantToActivateThisUser"
-            buttonType="positive"
+            variant="primary"
             buttonContent="action.activateUser"
             onConfirm={handleActivateConfirm}
             onBack={handleBack}

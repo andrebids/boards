@@ -9,7 +9,8 @@ import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { useInView } from 'react-intersection-observer';
 import { useTranslation } from 'react-i18next';
-import { Button, Loader } from 'semantic-ui-react';
+import { Loader } from 'semantic-ui-react';
+import { Button } from '../../../lib/custom-ui';
 
 import selectors from '../../../selectors';
 import { BoardMembershipRoles } from '../../../constants/Enums';
@@ -64,7 +65,7 @@ const ListView = React.memo(
               <AddCard onCreate={onCardCreate} onClose={handleAddCardClose} />
             </div>
           ) : (
-            <Button
+            <Button variant="secondary"
               type="button"
               disabled={!onCardCreate}
               className={styles.addCardButton}
