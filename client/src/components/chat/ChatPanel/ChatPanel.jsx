@@ -259,11 +259,16 @@ const ChatPanel = React.memo(
           onClose={onClose}
         />
         {canUseProjectScope && (
-          <div className={styles.scopeSwitcher} role="tablist" aria-label={t('chat.chatScope')}>
+          <div
+            className={`${styles.scopeSwitcher} ${isGlobalScope ? styles.globalScope : ''}`}
+            role="tablist"
+            aria-label={t('chat.chatScope')}
+          >
             <button
               type="button"
               id="chat-scope-project"
               role="tab"
+              aria-controls="chat-scope-project-panel"
               aria-selected={!isGlobalScope}
               tabIndex={isGlobalScope ? -1 : 0}
               className={!isGlobalScope ? styles.activeScope : ''}
@@ -277,6 +282,7 @@ const ChatPanel = React.memo(
               type="button"
               id="chat-scope-global"
               role="tab"
+              aria-controls="chat-scope-global-panel"
               aria-selected={isGlobalScope}
               tabIndex={isGlobalScope ? 0 : -1}
               className={isGlobalScope ? styles.activeScope : ''}
@@ -297,172 +303,198 @@ const ChatPanel = React.memo(
             </button>
           </div>
         )}
-        {!isGlobalScope && (
-          <ChatSearch
-            ref={searchRef}
-            value={query}
-            placeholder={searchPlaceholder}
-            onChange={setQuery}
-          />
-        )}
-        {!isGlobalScope && !(activeTab === 'members' && isGroupFormOpen) && (
-          <ChatTabs activeTab={activeTab} onChange={setActiveTab} />
-        )}
-        <div className={`${styles.content} ${isGlobalScope ? styles.globalContent : ''}`}>
-          {isGlobalScope && <GlobalInbox onOpenConversation={handleGlobalConversationOpen} />}
-          {!isGlobalScope && activeTab === 'conversations' && (
-            <ConversationList
-              conversations={filteredConversations}
-              currentUser={currentUser}
-              members={members}
-              openConversationIds={openConversationIds}
-              isPending={isPending}
-              onConversationOpen={handleConversationOpen}
-              onGeneralOpen={handleGeneralOpen}
-            />
-          )}
-          {!isGlobalScope && activeTab !== 'conversations' && (
+        <div className={styles.scopeViewport}>
+          {!isGlobalScope && (
             <div
-              id="chat-tabpanel-members"
-              className={styles.membersContent}
+              id="chat-scope-project-panel"
               role="tabpanel"
-              aria-labelledby="chat-tab-members"
+              aria-labelledby="chat-scope-project"
+              className={`${styles.scopeView} ${styles.projectScopeView}`}
             >
-              {isGroupFormOpen ? (
-                <form className={styles.groupForm} onSubmit={handleGroupSubmit}>
-                  <header className={styles.groupFormHeader}>
-                    <span className={styles.groupFormIcon}>
-                      <Users aria-hidden="true" size={18} />
-                    </span>
-                    <span className={styles.groupFormCopy}>
-                      <strong>{t('chat.createGroup')}</strong>
-                      <small>{t('chat.createGroupDescription')}</small>
-                    </span>
-                    <CloseButton ariaLabel={t('chat.cancel')} onClick={handleGroupFormClose} />
-                  </header>
-                  <label className={styles.groupTitleField} htmlFor="chat-group-title">
-                    <span>{t('chat.groupName')}</span>
-                    <input
-                      ref={groupTitleRef}
-                      id="chat-group-title"
-                      value={groupTitle}
-                      maxLength={80}
-                      placeholder={t('chat.groupNamePlaceholder')}
-                      onChange={(event) => setGroupTitle(event.target.value)}
-                    />
-                  </label>
-                  <section className={styles.memberPicker}>
-                    <div className={styles.memberPickerHeader}>
-                      <span>
-                        <strong>{t('chat.chooseGroupMembers')}</strong>
-                        <small>
-                          {selectedMemberIds.length > 0
-                            ? t('chat.groupMemberCount', {
-                                count: selectedMemberIds.length,
-                              })
-                            : t('chat.selectAtLeastOneMember')}
-                        </small>
-                      </span>
-                      {selectedMembers.length > 0 && (
-                        <span
-                          className={styles.selectedAvatars}
-                          role="img"
-                          aria-label={t('chat.selectedGroupMembers', {
-                            count: selectedMembers.length,
-                          })}
-                        >
-                          {selectedMembers.slice(0, 5).map((member) => (
-                            <ChatAvatar key={member.id} user={member} />
-                          ))}
-                          {selectedMembers.length > 5 && (
-                            <span className={styles.selectedOverflow}>
-                              +{selectedMembers.length - 5}
-                            </span>
-                          )}
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className={styles.memberOptions}
-                      role="group"
-                      aria-label={t('chat.chooseGroupMembers')}
-                    >
-                      {filteredMembers.map((member) => {
-                        const isSelected = selectedMemberIds.includes(member.id);
-                        return (
-                          <button
-                            type="button"
-                            key={member.id}
-                            className={`${styles.memberOption} ${
-                              isSelected ? styles.memberOptionSelected : ''
-                            }`}
-                            aria-pressed={isSelected}
-                            onClick={() => handleGroupMemberToggle(member.id)}
-                          >
-                            <ChatAvatar user={member} isOnline={member.isOnline} />
-                            <span className={styles.memberOptionCopy}>
-                              <strong>{member.name}</strong>
+              <ChatSearch
+                ref={searchRef}
+                value={query}
+                placeholder={searchPlaceholder}
+                onChange={setQuery}
+              />
+              {!(activeTab === 'members' && isGroupFormOpen) && (
+                <ChatTabs activeTab={activeTab} onChange={setActiveTab} />
+              )}
+              <div className={styles.content}>
+                {activeTab === 'conversations' && (
+                  <ConversationList
+                    conversations={filteredConversations}
+                    currentUser={currentUser}
+                    members={members}
+                    openConversationIds={openConversationIds}
+                    isPending={isPending}
+                    onConversationOpen={handleConversationOpen}
+                    onGeneralOpen={handleGeneralOpen}
+                  />
+                )}
+                {activeTab !== 'conversations' && (
+                  <div
+                    id="chat-tabpanel-members"
+                    className={styles.membersContent}
+                    role="tabpanel"
+                    aria-labelledby="chat-tab-members"
+                  >
+                    {isGroupFormOpen ? (
+                      <form className={styles.groupForm} onSubmit={handleGroupSubmit}>
+                        <header className={styles.groupFormHeader}>
+                          <span className={styles.groupFormIcon}>
+                            <Users aria-hidden="true" size={18} />
+                          </span>
+                          <span className={styles.groupFormCopy}>
+                            <strong>{t('chat.createGroup')}</strong>
+                            <small>{t('chat.createGroupDescription')}</small>
+                          </span>
+                          <CloseButton
+                            ariaLabel={t('chat.cancel')}
+                            onClick={handleGroupFormClose}
+                          />
+                        </header>
+                        <label className={styles.groupTitleField} htmlFor="chat-group-title">
+                          <span>{t('chat.groupName')}</span>
+                          <input
+                            ref={groupTitleRef}
+                            id="chat-group-title"
+                            value={groupTitle}
+                            maxLength={80}
+                            placeholder={t('chat.groupNamePlaceholder')}
+                            onChange={(event) => setGroupTitle(event.target.value)}
+                          />
+                        </label>
+                        <section className={styles.memberPicker}>
+                          <div className={styles.memberPickerHeader}>
+                            <span>
+                              <strong>{t('chat.chooseGroupMembers')}</strong>
                               <small>
-                                {member.isOnline
-                                  ? t('chat.available')
-                                  : member.username || t('chat.memberOfProject')}
+                                {selectedMemberIds.length > 0
+                                  ? t('chat.groupMemberCount', {
+                                      count: selectedMemberIds.length,
+                                    })
+                                  : t('chat.selectAtLeastOneMember')}
                               </small>
                             </span>
-                            <span className={styles.memberSelectionIndicator} aria-hidden="true">
-                              {isSelected ? (
-                                <Check size={15} strokeWidth={2.6} />
-                              ) : (
-                                <Plus size={15} />
-                              )}
-                            </span>
+                            {selectedMembers.length > 0 && (
+                              <span
+                                className={styles.selectedAvatars}
+                                role="img"
+                                aria-label={t('chat.selectedGroupMembers', {
+                                  count: selectedMembers.length,
+                                })}
+                              >
+                                {selectedMembers.slice(0, 5).map((member) => (
+                                  <ChatAvatar key={member.id} user={member} />
+                                ))}
+                                {selectedMembers.length > 5 && (
+                                  <span className={styles.selectedOverflow}>
+                                    +{selectedMembers.length - 5}
+                                  </span>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          <div
+                            className={styles.memberOptions}
+                            role="group"
+                            aria-label={t('chat.chooseGroupMembers')}
+                          >
+                            {filteredMembers.map((member) => {
+                              const isSelected = selectedMemberIds.includes(member.id);
+                              return (
+                                <button
+                                  type="button"
+                                  key={member.id}
+                                  className={`${styles.memberOption} ${
+                                    isSelected ? styles.memberOptionSelected : ''
+                                  }`}
+                                  aria-pressed={isSelected}
+                                  onClick={() => handleGroupMemberToggle(member.id)}
+                                >
+                                  <ChatAvatar user={member} isOnline={member.isOnline} />
+                                  <span className={styles.memberOptionCopy}>
+                                    <strong>{member.name}</strong>
+                                    <small>
+                                      {member.isOnline
+                                        ? t('chat.available')
+                                        : member.username || t('chat.memberOfProject')}
+                                    </small>
+                                  </span>
+                                  <span
+                                    className={styles.memberSelectionIndicator}
+                                    aria-hidden="true"
+                                  >
+                                    {isSelected ? (
+                                      <Check size={15} strokeWidth={2.6} />
+                                    ) : (
+                                      <Plus size={15} />
+                                    )}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                            {filteredMembers.length === 0 && (
+                              <div className={styles.groupMembersEmpty}>
+                                {t('chat.noMembersFound')}
+                              </div>
+                            )}
+                          </div>
+                        </section>
+                        <footer className={styles.groupFormFooter}>
+                          <button type="button" onClick={handleGroupFormClose}>
+                            {t('chat.cancel')}
                           </button>
-                        );
-                      })}
-                      {filteredMembers.length === 0 && (
-                        <div className={styles.groupMembersEmpty}>{t('chat.noMembersFound')}</div>
-                      )}
-                    </div>
-                  </section>
-                  <footer className={styles.groupFormFooter}>
-                    <button type="button" onClick={handleGroupFormClose}>
-                      {t('chat.cancel')}
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={!groupTitle.trim() || selectedMemberIds.length === 0}
-                    >
-                      <Users aria-hidden="true" size={15} /> {t('chat.createGroup')}
-                    </button>
-                  </footer>
-                </form>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className={styles.createGroupButton}
-                    onClick={handleGroupFormOpen}
-                  >
-                    <Plus aria-hidden="true" size={16} />
-                    {t('chat.createGroup')}
+                          <button
+                            type="submit"
+                            disabled={!groupTitle.trim() || selectedMemberIds.length === 0}
+                          >
+                            <Users aria-hidden="true" size={15} /> {t('chat.createGroup')}
+                          </button>
+                        </footer>
+                      </form>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className={styles.createGroupButton}
+                          onClick={handleGroupFormOpen}
+                        >
+                          <Plus aria-hidden="true" size={16} />
+                          {t('chat.createGroup')}
+                        </button>
+                        <MemberList
+                          members={filteredMembers}
+                          isPending={isPending}
+                          onMemberOpen={handleMemberOpen}
+                        />
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              {activeTab === 'conversations' && (
+                <footer className={styles.footer}>
+                  <button type="button" onClick={handleNewConversation}>
+                    <Plus aria-hidden="true" size={16} strokeWidth={2.2} />
+                    {t('chat.newConversation')}
                   </button>
-                  <MemberList
-                    members={filteredMembers}
-                    isPending={isPending}
-                    onMemberOpen={handleMemberOpen}
-                  />
-                </>
+                </footer>
               )}
             </div>
           )}
+          {isGlobalScope && (
+            <div
+              id="chat-scope-global-panel"
+              role="tabpanel"
+              aria-labelledby="chat-scope-global"
+              className={`${styles.scopeView} ${styles.globalScopeView} ${styles.content} ${styles.globalContent}`}
+            >
+              <GlobalInbox onOpenConversation={handleGlobalConversationOpen} />
+            </div>
+          )}
         </div>
-        {!isGlobalScope && activeTab === 'conversations' && (
-          <footer className={styles.footer}>
-            <button type="button" onClick={handleNewConversation}>
-              <Plus aria-hidden="true" size={16} strokeWidth={2.2} />
-              {t('chat.newConversation')}
-            </button>
-          </footer>
-        )}
       </section>
     );
   },
