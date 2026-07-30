@@ -33,6 +33,15 @@
     padding: 0;
     width: 28px;
 
+    &:global(.ui.button) {
+      :global(i.icon) {
+        font-size: 12px;
+        height: 14px;
+        line-height: 14px;
+        width: 14px;
+      }
+    }
+
     &:hover {
       background: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16));
       color: var(--card-modal-accent, #2563eb) !important;
