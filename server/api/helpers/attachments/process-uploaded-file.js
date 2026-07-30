@@ -10,6 +10,7 @@ const mime = require('mime');
 const sharp = require('sharp');
 
 const filenamify = require('../../../utils/filenamify');
+const { isVideoFile } = require('../../../utils/video-file');
 const { MAX_SIZE_IN_BYTES_TO_GET_ENCODING } = require('../../../constants');
 
 module.exports = {
@@ -166,7 +167,7 @@ module.exports = {
 
       // Video analysis, thumbnails and browser-compatible playback files are
       // generated asynchronously after the attachment is persisted.
-      if (mimeType && mimeType.startsWith('video/')) {
+      if (isVideoFile(filename, mimeType)) {
         data.video = {
           status: 'pending',
           duration: null,

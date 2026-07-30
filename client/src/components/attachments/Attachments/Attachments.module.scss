@@ -6,7 +6,7 @@
 :global(#app) {
   .toggleButton {
     min-height: 40px;
-    margin-top: 8px !important;
+    margin: 8px 0 !important;
     padding: 9px 12px !important;
     background: var(--card-modal-surface, #f4f5f7) !important;
     border: 0 !important;

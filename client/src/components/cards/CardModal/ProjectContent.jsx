@@ -374,7 +374,7 @@ const ProjectContent = React.memo(({ onClose }) => {
                 onUserSelect={handleUserSelect}
                 onUserDeselect={handleUserDeselect}
               >
-                <CardModalMetadataAddButton ariaLabel={t('action.addMember')} />
+                <CardModalMetadataAddButton circular ariaLabel={t('action.addMember')} />
               </BoardMembershipsPopup>
             )}
           </CardModalMetadataItem>
@@ -536,7 +536,7 @@ const ProjectContent = React.memo(({ onClose }) => {
               <div className={styles.moduleWrapper}>
                 <Icon name="attach" className={styles.moduleIcon} />
                 <div className={styles.moduleHeader}>{t('common.attachments')}</div>
-                <Attachments hideImagesWhenNotAllVisible />
+                <Attachments />
               </div>
             </div>
           )}

@@ -139,6 +139,7 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
 
   return (
     <Comment
+      data-comment-id={id}
       className={classNames(
         styles.item,
         isCurrentUser && styles.own,

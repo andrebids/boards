@@ -17,6 +17,7 @@ import { AttachmentTypes } from '../../../constants/Enums';
 import ItemContent from './ItemContent';
 import ContentViewer from './ContentViewer';
 import CsvViewer from './CsvViewer';
+import VideoPlayer from '../../common/VideoPlayer';
 
 import styles from './Item.module.scss';
 
@@ -44,87 +45,88 @@ const Item = React.memo(({ id, isVisible }) => {
       };
     } else {
       let content;
-      switch (attachment.data.mimeType) {
-        case 'application/pdf':
-          content = (
-            // eslint-disable-next-line jsx-a11y/alt-text
-            <object
-              data={attachment.data.url}
-              type={attachment.data.mimeType}
-              className={classNames(styles.content, styles.contentViewer)}
-            />
-          );
+      if (
+        attachment.data.video ||
+        (attachment.data.mimeType && attachment.data.mimeType.startsWith('video/'))
+      ) {
+        content = (
+          <VideoPlayer
+            attachment={attachment}
+            posterUrl={
+              attachment.data.thumbnailUrls?.outside720 ||
+              attachment.data.thumbnailUrls?.outside360
+            }
+            className={classNames(styles.content, styles.videoPlayerContent)}
+          />
+        );
+      } else {
+        switch (attachment.data.mimeType) {
+          case 'application/pdf':
+            content = (
+              // eslint-disable-next-line jsx-a11y/alt-text
+              <object
+                data={attachment.data.url}
+                type={attachment.data.mimeType}
+                className={classNames(styles.content, styles.contentViewer)}
+              />
+            );
 
-          break;
-        case 'audio/mpeg':
-        case 'audio/wav':
-        case 'audio/ogg':
-        case 'audio/opus':
-        case 'audio/mp4':
-        case 'audio/x-aac':
-          content = (
-            // eslint-disable-next-line jsx-a11y/media-has-caption
-            <audio
-              controls
-              src={attachment.data.url}
-              className={styles.content}
-            />
-          );
+            break;
+          case 'audio/mpeg':
+          case 'audio/wav':
+          case 'audio/ogg':
+          case 'audio/opus':
+          case 'audio/mp4':
+          case 'audio/x-aac':
+            content = (
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <audio
+                controls
+                src={attachment.data.url}
+                className={styles.content}
+              />
+            );
 
-          break;
-        case 'video/mp4':
-        case 'video/ogg':
-        case 'video/webm':
-          content = (
-            // eslint-disable-next-line jsx-a11y/media-has-caption
-            <video
-              controls
-              preload="metadata"
-              controlsList="nodownload"
-              src={attachment.data.url}
-              className={classNames(styles.content, styles.videoContent)}
-            />
-          );
+            break;
+          case 'text/csv':
+            content = (
+              <CsvViewer
+                src={attachment.data.url}
+                className={classNames(styles.content, styles.contentViewer)}
+              />
+            );
 
-          break;
-        case 'text/csv':
-          content = (
-            <CsvViewer
-              src={attachment.data.url}
-              className={classNames(styles.content, styles.contentViewer)}
-            />
-          );
-
-          break;
-        default:
-          if (attachment.data.encoding === Encodings.UTF8) {
-            if (
-              attachment.data.sizeInBytes <=
-              Config.MAX_SIZE_IN_BYTES_TO_DISPLAY_CONTENT
-            ) {
-              content = (
-                <ContentViewer
-                  src={attachment.data.url}
-                  filename={attachment.data.filename}
-                  className={classNames(styles.content, styles.contentViewer)}
-                />
-              );
+            break;
+          default:
+            if (attachment.data.encoding === Encodings.UTF8) {
+              if (
+                attachment.data.sizeInBytes <=
+                Config.MAX_SIZE_IN_BYTES_TO_DISPLAY_CONTENT
+              ) {
+                content = (
+                  <ContentViewer
+                    src={attachment.data.url}
+                    filename={attachment.data.filename}
+                    className={classNames(styles.content, styles.contentViewer)}
+                  />
+                );
+              } else {
+                content = (
+                  <span
+                    className={classNames(styles.content, styles.contentError)}
+                  >
+                    {t('common.contentOfThisAttachmentIsTooBigToDisplay')}
+                  </span>
+                );
+              }
             } else {
               content = (
-                <span
-                  className={classNames(styles.content, styles.contentError)}
-                >
-                  {t('common.contentOfThisAttachmentIsTooBigToDisplay')}
+                <span className={classNames(styles.content, styles.contentError)}>
+                  {t('common.thereIsNoPreviewAvailableForThisAttachment')}
                 </span>
               );
             }
-          } else {
-            content = (
-              <span className={classNames(styles.content, styles.contentError)}>
-                {t('common.thereIsNoPreviewAvailableForThisAttachment')}
-              </span>
-            );
-          }
+        }
       }
 
       galleryItemProps = {

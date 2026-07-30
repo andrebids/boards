@@ -332,13 +332,8 @@ i18n.detectLanguage = () => {
   } = i18n;
 
   localStorage.removeItem(languageDetector.options.lookupLocalStorage);
-  const detectedLanguages = languageDetector.detect();
 
-  i18n.language = resolveDetectedLanguage(
-    detectedLanguages,
-    languageUtils,
-    FALLBACK_LANGUAGE,
-  );
+  i18n.language = resolveDetectedLanguage(languageDetector, languageUtils, FALLBACK_LANGUAGE);
   i18n.languages = languageUtils.toResolveHierarchy(i18n.language);
 
   i18n.resolvedLanguage = undefined;

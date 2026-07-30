@@ -108,6 +108,11 @@
     }
   }
 
+  .metadataAddButtonCircular {
+    background: var(--card-modal-surface-hover);
+    border-radius: 50%;
+  }
+
   .bodyGrid {
     align-items: start;
     background: var(--card-modal-background);

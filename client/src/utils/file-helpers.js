@@ -48,6 +48,12 @@ export const SUPPORTED_FILE_TYPES = [
   'video/x-flv',
   'video/x-matroska',
   'video/x-m4v',
+  'video/mpeg',
+  'video/3gpp',
+  'video/3gpp2',
+  'video/mp2t',
+  'video/x-ms-asf',
+  'application/mxf',
   // Outros
   'text/plain',
   'text/csv',
@@ -103,6 +109,17 @@ export const isSupportedFile = file => {
       'flv',
       'mkv',
       'm4v',
+      '3gp',
+      '3g2',
+      'mpeg',
+      'mpg',
+      'mpe',
+      'ts',
+      'mts',
+      'm2ts',
+      'vob',
+      'asf',
+      'mxf',
     ];
 
     return supportedExtensions.includes(extension);

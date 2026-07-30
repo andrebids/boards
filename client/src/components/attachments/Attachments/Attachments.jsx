@@ -4,7 +4,6 @@
  */
 
 import React, { useCallback, useContext } from "react";
-import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Gallery } from "react-photoswipe-gallery";
@@ -19,7 +18,7 @@ import styles from "./Attachments.module.scss";
 
 const INITIALLY_VISIBLE = 4;
 
-const Attachments = React.memo(({ hideImagesWhenNotAllVisible }) => {
+const Attachments = React.memo(() => {
   const attachments = useSelector(selectors.selectAttachmentsForCurrentCard);
 
   const [t] = useTranslation();
@@ -41,24 +40,17 @@ const Attachments = React.memo(({ hideImagesWhenNotAllVisible }) => {
     toggleAllVisible();
   }, [toggleAllVisible]);
 
-  let visibleTotal = 0;
+  const visibleTotal = isAllVisible
+    ? attachments.length
+    : Math.min(attachments.length, INITIALLY_VISIBLE);
 
-  const itemsNode = attachments.map((attachment) => {
-    let isVisible = false;
-    if (isAllVisible || visibleTotal < INITIALLY_VISIBLE) {
-      if (
-        isAllVisible ||
-        !hideImagesWhenNotAllVisible ||
-        !attachment.data ||
-        !attachment.data.image
-      ) {
-        visibleTotal += 1;
-        isVisible = true;
-      }
-    }
-
+  const itemsNode = attachments.map((attachment, index) => {
     return (
-      <Item key={attachment.id} id={attachment.id} isVisible={isVisible} />
+      <Item
+        key={attachment.id}
+        id={attachment.id}
+        isVisible={isAllVisible || index < INITIALLY_VISIBLE}
+      />
     );
   });
 
@@ -66,6 +58,30 @@ const Attachments = React.memo(({ hideImagesWhenNotAllVisible }) => {
 
   return (
     <>
+      {(isAllVisible ? attachments.length > hiddenTotal : hiddenTotal > 0) && (
+        <Button
+          fluid
+          aria-expanded={isAllVisible}
+          className={styles.toggleButton}
+          onClick={handleToggleAllVisibleClick}
+        >
+          <span className={styles.toggleContent}>
+            <span className={styles.toggleText}>
+              {isAllVisible
+                ? t("action.showFewerAttachments")
+                : t("action.showAllAttachments", {
+                    hidden: hiddenTotal,
+                  })}
+            </span>
+            <Icon
+              fitted
+              aria-hidden="true"
+              className={styles.toggleIcon}
+              name={isAllVisible ? "chevron up" : "chevron down"}
+            />
+          </span>
+        </Button>
+      )}
       <Gallery
         withCaption
         withDownloadButton
@@ -93,40 +109,8 @@ const Attachments = React.memo(({ hideImagesWhenNotAllVisible }) => {
       >
         {itemsNode}
       </Gallery>
-      {(isAllVisible ? attachments.length > hiddenTotal : hiddenTotal > 0) && (
-        <Button
-          fluid
-          aria-expanded={isAllVisible}
-          className={styles.toggleButton}
-          onClick={handleToggleAllVisibleClick}
-        >
-          <span className={styles.toggleContent}>
-            <span className={styles.toggleText}>
-              {isAllVisible
-                ? t("action.showFewerAttachments")
-                : t("action.showAllAttachments", {
-                    hidden: hiddenTotal,
-                  })}
-            </span>
-            <Icon
-              fitted
-              aria-hidden="true"
-              className={styles.toggleIcon}
-              name={isAllVisible ? "chevron up" : "chevron down"}
-            />
-          </span>
-        </Button>
-      )}
     </>
   );
 });
-
-Attachments.propTypes = {
-  hideImagesWhenNotAllVisible: PropTypes.bool,
-};
-
-Attachments.defaultProps = {
-  hideImagesWhenNotAllVisible: false,
-};
 
 export default Attachments;

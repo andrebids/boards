@@ -27,8 +27,26 @@
     overflow-x: hidden;
     overflow-y: auto;
     padding-top: 14px;
-    scrollbar-color: var(--card-modal-muted, #7b8494) transparent;
+    scrollbar-color: var(--chat-scrollbar, #465263) transparent;
     scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--chat-scrollbar, #465263);
+      border: 2px solid var(--card-modal-background, #12161d);
+      border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--chat-muted-subtle, #596576);
+    }
   }
 
   @media only screen and (width < 768px) {

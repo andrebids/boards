@@ -356,7 +356,7 @@ const StoryContent = React.memo(({ onClose }) => {
                 onUserSelect={handleUserSelect}
                 onUserDeselect={handleUserDeselect}
               >
-                <CardModalMetadataAddButton ariaLabel={t('action.addMember')} />
+                <CardModalMetadataAddButton circular ariaLabel={t('action.addMember')} />
               </BoardMembershipsPopup>
             )}
           </CardModalMetadataItem>
@@ -504,7 +504,7 @@ const StoryContent = React.memo(({ onClose }) => {
                 <div className={styles.moduleHeader}>
                   {t('common.attachments')}
                 </div>
-                <Attachments hideImagesWhenNotAllVisible />
+                <Attachments />
               </div>
             </div>
           )}

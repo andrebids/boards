@@ -246,9 +246,7 @@ const ChatPanel = React.memo(
         aria-label={t(isGlobalScope ? 'chat.globalInbox' : 'chat.openConversations')}
         aria-modal="false"
         tabIndex="-1"
-        className={`${styles.panel} ${isGlobalScope ? styles.globalPanel : ''} ${
-          activeTab === 'members' && isGroupFormOpen ? styles.groupFormPanel : ''
-        } ${isClosing ? styles.closing : ''}`}
+        className={`${styles.panel} ${isClosing ? styles.closing : ''}`}
       >
         <ChatHeader
           memberCount={members.length}

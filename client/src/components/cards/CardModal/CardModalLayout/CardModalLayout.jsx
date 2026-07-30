@@ -6,7 +6,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
 
 import styles from './CardModalLayout.module.scss';
 
@@ -31,11 +31,15 @@ CardModalMetadata.propTypes = {
 };
 
 const CardModalMetadataAddButton = React.forwardRef(
-  ({ ariaLabel, className, icon, onClick }, ref) => (
+  ({ ariaLabel, circular, className, icon, onClick }, ref) => (
     <button
       ref={ref}
       type="button"
-      className={classNames(styles.metadataAddButton, className)}
+      className={classNames(
+        styles.metadataAddButton,
+        circular && styles.metadataAddButtonCircular,
+        className,
+      )}
       aria-label={ariaLabel}
       onClick={onClick}
     >
@@ -46,12 +50,14 @@ const CardModalMetadataAddButton = React.forwardRef(
 
 CardModalMetadataAddButton.propTypes = {
   ariaLabel: PropTypes.string.isRequired,
+  circular: PropTypes.bool,
   className: PropTypes.string,
   icon: PropTypes.string,
   onClick: PropTypes.func,
 };
 
 CardModalMetadataAddButton.defaultProps = {
+  circular: false,
   className: undefined,
   icon: 'add',
   onClick: undefined,
@@ -70,22 +76,15 @@ CardModalActionGroup.propTypes = {
 };
 
 const CardModalActionButton = React.forwardRef(
-  (
-    {
-      icon,
-      children,
-      className,
-      danger,
-      disabled,
-      onClick,
-    },
-    ref,
-  ) => (
-    <Button
-      fluid
+  ({ icon, children, className, danger, disabled, onClick }, ref) => (
+    <button
+      type="button"
       ref={ref}
       disabled={disabled}
       className={classNames(
+        'ui',
+        'fluid',
+        'button',
         styles.actionButton,
         danger && styles.actionButtonDanger,
         className,
@@ -94,7 +93,7 @@ const CardModalActionButton = React.forwardRef(
     >
       <Icon name={icon} className={styles.actionIcon} />
       {children}
-    </Button>
+    </button>
   ),
 );
 

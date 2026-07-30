@@ -8,6 +8,7 @@
     color: var(--chat-foreground);
     display: flex;
     flex-direction: column;
+    height: min(640px, calc(100dvh - 96px));
     max-height: min(640px, calc(100dvh - 96px));
     outline: none;
     overflow: hidden;
@@ -17,14 +18,6 @@
     transform-origin: calc(100% - 26px) calc(100% + 34px);
     width: 380px;
     z-index: 1005;
-  }
-
-  .groupFormPanel {
-    height: min(640px, calc(100dvh - 96px));
-  }
-
-  .globalPanel {
-    height: min(640px, calc(100dvh - 96px));
   }
 
   .closing {
@@ -44,15 +37,14 @@
 
   .scopeSwitcher {
     align-items: center;
-    background: var(--chat-background);
-    border: 1px solid var(--chat-border);
-    border-radius: var(--chat-radius-control);
+    background: transparent;
+    border: 0;
     display: grid;
     flex: 0 0 auto;
-    gap: 3px;
+    gap: 4px;
     grid-template-columns: 1fr 1fr;
     margin: 10px 14px 0;
-    padding: 3px;
+    padding: 0;
 
     button {
       align-items: center;
@@ -66,7 +58,7 @@
       font-size: var(--chat-font-body);
       font-weight: 650;
       gap: 6px;
-      height: 32px;
+      height: 36px;
       justify-content: center;
       min-width: 0;
       padding: 0 8px;
@@ -76,6 +68,7 @@
         transform var(--chat-motion-fast) var(--chat-ease);
 
       &:hover {
+        background: var(--chat-default);
         color: var(--chat-foreground);
       }
 
@@ -107,6 +100,10 @@
     .activeScope {
       background: var(--chat-default);
       color: var(--chat-foreground);
+
+      &:hover {
+        background: var(--chat-default-hover);
+      }
     }
   }
 
@@ -119,8 +116,8 @@
 
   .createGroupButton {
     align-items: center;
-    background: transparent;
-    border: 1px solid var(--chat-border);
+    background: var(--chat-default);
+    border: 0;
     border-radius: var(--chat-radius-control);
     color: var(--chat-foreground);
     cursor: pointer;
@@ -135,12 +132,10 @@
     padding: 7px 10px;
     transition:
       background-color var(--chat-motion-fast) var(--chat-ease),
-      border-color var(--chat-motion-fast) var(--chat-ease),
       transform var(--chat-motion-fast) var(--chat-ease);
 
     &:hover {
       background: var(--chat-default-hover);
-      border-color: var(--chat-default-hover);
     }
     &:active {
       transform: scale(0.98);
@@ -557,16 +552,13 @@
   @media only screen and (max-width: 767px) {
     .panel {
       bottom: 76px;
+      height: auto;
       left: 12px;
       max-height: calc(100dvh - 92px);
       right: 12px;
       top: 16px;
       transform-origin: calc(100% - 30px) calc(100% + 34px);
       width: auto;
-    }
-
-    .groupFormPanel {
-      height: auto;
     }
   }
 

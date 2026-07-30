@@ -5,7 +5,6 @@
 
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
-import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Gallery, Item as GalleryItem } from 'react-photoswipe-gallery';
@@ -16,6 +15,7 @@ import entryActions from '../../../../entry-actions';
 import { ClosableContext } from '../../../../contexts';
 import { isListArchiveOrTrash } from '../../../../utils/record-helpers';
 import { BoardMembershipRoles } from '../../../../constants/Enums';
+import VideoPlayer from '../../../common/VideoPlayer';
 
 import styles from './CardImageCarousel.module.scss';
 
@@ -39,75 +39,6 @@ const getThumbnailUrl = (attachment, preferredSize = '720') => {
     attachment.data.thumbnailUrls[`outside${fallbackSize}`] ||
     null
   );
-};
-
-const VideoPlayer = React.memo(({ attachment, posterUrl }) => {
-  const [t] = useTranslation();
-  const videoRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasPlaybackError, setHasPlaybackError] = useState(false);
-
-  const handlePlayClick = useCallback(() => {
-    if (!videoRef.current) {
-      return;
-    }
-
-    setHasPlaybackError(false);
-
-    const playPromise = videoRef.current.play();
-
-    if (playPromise) {
-      playPromise.catch(() => {
-        setIsPlaying(false);
-      });
-    }
-  }, []);
-
-  return (
-    <div className={styles.videoPlayer}>
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <video
-        ref={videoRef}
-        src={attachment.data.url}
-        poster={posterUrl || undefined}
-        controls
-        controlsList="nodownload"
-        playsInline
-        preload="metadata"
-        aria-label={attachment.name}
-        className={styles.video}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onError={() => setHasPlaybackError(true)}
-      />
-      {!isPlaying && (
-        <button
-          type="button"
-          className={styles.videoPlayButton}
-          aria-label={t('action.playVideo', {
-            name: attachment.name,
-          })}
-          onClick={handlePlayClick}
-        >
-          <Icon fitted name="play" aria-hidden="true" />
-        </button>
-      )}
-      {hasPlaybackError && (
-        <span className={styles.videoPlaybackError} role="alert">
-          {t('common.videoPlaybackFailed')}
-        </span>
-      )}
-    </div>
-  );
-});
-
-VideoPlayer.propTypes = {
-  attachment: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
-  posterUrl: PropTypes.string,
-};
-
-VideoPlayer.defaultProps = {
-  posterUrl: undefined,
 };
 
 const CardImageCarousel = React.memo(() => {
@@ -502,7 +433,9 @@ const CardImageCarousel = React.memo(() => {
                     isSelected && styles.slideSelected,
                   )}
                 >
-                  {isSelected && <VideoPlayer attachment={image} posterUrl={thumbnailUrl} />}
+                  {isSelected && (
+                    <VideoPlayer attachment={image} autoPlay posterUrl={thumbnailUrl} />
+                  )}
                 </div>
               );
             }
@@ -568,120 +501,120 @@ const CardImageCarousel = React.memo(() => {
               </button>
             </>
           )}
-          <div
-            ref={actionToolbarRef}
-            className={styles.actionToolbar}
-            role="group"
-            aria-label={t('common.actions')}
-            onPointerDown={(event) => event.stopPropagation()}
-            onPointerUp={(event) => event.stopPropagation()}
-          >
-            {canEdit && !selectedIsVideo && (
-              <button
-                type="button"
-                className={classNames(
-                  styles.actionButton,
-                  styles.coverActionButton,
-                  isCover && styles.actionButtonActive,
-                )}
-                aria-label={coverActionLabel}
-                aria-pressed={isCover}
-                title={coverActionLabel}
-                onClick={handleToggleCoverClick}
-              >
-                <Icon fitted name={isCover ? 'check circle' : 'image outline'} aria-hidden="true" />
-                <span className={styles.actionLabel}>{t('common.cover')}</span>
-              </button>
-            )}
-            {canEdit && !selectedIsVideo && (
-              <span className={styles.actionDivider} aria-hidden="true" />
-            )}
+        </div>
+        <div
+          ref={actionToolbarRef}
+          className={styles.actionToolbar}
+          role="group"
+          aria-label={t('common.actions')}
+          onPointerDown={(event) => event.stopPropagation()}
+          onPointerUp={(event) => event.stopPropagation()}
+        >
+          {canEdit && !selectedIsVideo && (
             <button
-              ref={actionsButtonRef}
               type="button"
-              className={styles.actionButton}
-              aria-label={t('common.actions')}
-              aria-controls={isActionsMenuOpen ? 'card-media-actions-menu' : undefined}
-              aria-expanded={isActionsMenuOpen}
-              aria-haspopup="menu"
-              title={t('common.actions')}
-              onClick={handleActionsMenuToggleClick}
+              className={classNames(
+                styles.actionButton,
+                styles.coverActionButton,
+                isCover && styles.actionButtonActive,
+              )}
+              aria-label={coverActionLabel}
+              aria-pressed={isCover}
+              title={coverActionLabel}
+              onClick={handleToggleCoverClick}
             >
-              <Icon fitted name="ellipsis horizontal" aria-hidden="true" />
+              <Icon fitted name={isCover ? 'check circle' : 'image outline'} aria-hidden="true" />
+              <span className={styles.actionLabel}>{t('common.cover')}</span>
             </button>
-            {isActionsMenuOpen && isDeleteConfirmationOpen && (
-              <div
-                ref={actionsMenuRef}
-                id="card-media-actions-menu"
-                className={classNames(styles.actionsMenu, styles.actionsMenuConfirmation)}
-                role="alertdialog"
-                aria-label={t('common.deleteAttachment', {
-                  context: 'title',
-                })}
-                aria-modal="true"
-                tabIndex={-1}
-              >
-                <p className={styles.confirmationMessage}>
-                  {t('common.areYouSureYouWantToDeleteThisAttachment')}
-                </p>
-                <div className={styles.confirmationActions}>
-                  <button
-                    type="button"
-                    className={styles.confirmationCancelButton}
-                    onClick={handleDeleteCancelClick}
-                  >
-                    {t('common.cancel')}
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.confirmationDeleteButton}
-                    onClick={handleDeleteConfirm}
-                  >
-                    {t('action.deleteAttachment')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isActionsMenuOpen && !isDeleteConfirmationOpen && (
-              <div
-                ref={actionsMenuRef}
-                id="card-media-actions-menu"
-                className={styles.actionsMenu}
-                role="menu"
-                aria-label={t('common.actions')}
-                tabIndex={-1}
-                onKeyDown={handleActionsMenuKeyDown}
-              >
+          )}
+          {canEdit && !selectedIsVideo && (
+            <span className={styles.actionDivider} aria-hidden="true" />
+          )}
+          <button
+            ref={actionsButtonRef}
+            type="button"
+            className={styles.actionButton}
+            aria-label={t('common.actions')}
+            aria-controls={isActionsMenuOpen ? 'card-media-actions-menu' : undefined}
+            aria-expanded={isActionsMenuOpen}
+            aria-haspopup="menu"
+            title={t('common.actions')}
+            onClick={handleActionsMenuToggleClick}
+          >
+            <Icon fitted name="ellipsis horizontal" aria-hidden="true" />
+          </button>
+          {isActionsMenuOpen && isDeleteConfirmationOpen && (
+            <div
+              ref={actionsMenuRef}
+              id="card-media-actions-menu"
+              className={classNames(styles.actionsMenu, styles.actionsMenuConfirmation)}
+              role="alertdialog"
+              aria-label={t('common.deleteAttachment', {
+                context: 'title',
+              })}
+              aria-modal="true"
+              tabIndex={-1}
+            >
+              <p className={styles.confirmationMessage}>
+                {t('common.areYouSureYouWantToDeleteThisAttachment')}
+              </p>
+              <div className={styles.confirmationActions}>
                 <button
                   type="button"
-                  role="menuitem"
-                  className={styles.actionsMenuItem}
-                  onClick={handleActionsMenuDownloadClick}
+                  className={styles.confirmationCancelButton}
+                  onClick={handleDeleteCancelClick}
                 >
-                  <Icon fitted name="download" aria-hidden="true" />
-                  <span>{t('common.download')}</span>
+                  {t('common.cancel')}
                 </button>
-                {canEdit && (
-                  <>
-                    <span className={styles.actionsMenuDivider} aria-hidden="true" />
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className={classNames(styles.actionsMenuItem, styles.actionsMenuItemDanger)}
-                      onClick={handleDeleteRequestClick}
-                    >
-                      <Icon fitted name="trash alternate outline" aria-hidden="true" />
-                      <span>
-                        {t('common.deleteAttachment', {
-                          context: 'title',
-                        })}
-                      </span>
-                    </button>
-                  </>
-                )}
+                <button
+                  type="button"
+                  className={styles.confirmationDeleteButton}
+                  onClick={handleDeleteConfirm}
+                >
+                  {t('action.deleteAttachment')}
+                </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+          {isActionsMenuOpen && !isDeleteConfirmationOpen && (
+            <div
+              ref={actionsMenuRef}
+              id="card-media-actions-menu"
+              className={styles.actionsMenu}
+              role="menu"
+              aria-label={t('common.actions')}
+              tabIndex={-1}
+              onKeyDown={handleActionsMenuKeyDown}
+            >
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.actionsMenuItem}
+                onClick={handleActionsMenuDownloadClick}
+              >
+                <Icon fitted name="download" aria-hidden="true" />
+                <span>{t('common.download')}</span>
+              </button>
+              {canEdit && (
+                <>
+                  <span className={styles.actionsMenuDivider} aria-hidden="true" />
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={classNames(styles.actionsMenuItem, styles.actionsMenuItemDanger)}
+                    onClick={handleDeleteRequestClick}
+                  >
+                    <Icon fitted name="trash alternate outline" aria-hidden="true" />
+                    <span>
+                      {t('common.deleteAttachment', {
+                        context: 'title',
+                      })}
+                    </span>
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
         <div className={styles.status} aria-live="polite">
           {t('common.mediaPosition', {

@@ -4,6 +4,7 @@
  */
 
 import React, { useCallback, useState, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Mention, MentionsInput } from 'react-mentions';
@@ -23,7 +24,7 @@ const DEFAULT_DATA = {
   text: '',
 };
 
-const Add = React.memo(() => {
+const Add = React.memo(({ onSubmit }) => {
   const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
 
   const dispatch = useDispatch();
@@ -48,10 +49,11 @@ const Add = React.memo(() => {
       return;
     }
 
+    onSubmit();
     dispatch(entryActions.createCommentInCurrentCard(cleanData));
     setData(DEFAULT_DATA);
     selectTextField();
-  }, [dispatch, data, setData, selectTextField]);
+  }, [dispatch, data, onSubmit, setData, selectTextField]);
 
   const handleEscape = useCallback(() => {
     if (textMentionsRef.current.isOpened()) {
@@ -182,5 +184,13 @@ const Add = React.memo(() => {
     </Form>
   );
 });
+
+Add.propTypes = {
+  onSubmit: PropTypes.func,
+};
+
+Add.defaultProps = {
+  onSubmit: () => {},
+};
 
 export default Add;

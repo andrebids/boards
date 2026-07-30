@@ -1,0 +1,89 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .root {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .player {
+    --media-brand: #60a5fa;
+    --media-focus-ring-color: #60a5fa;
+
+    background: #050506;
+    border-radius: 14px;
+    height: auto;
+    max-height: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    width: 100%;
+
+    video {
+      object-fit: contain;
+    }
+  }
+
+  .fitHeight {
+    height: 100%;
+    width: auto;
+  }
+
+  .state {
+    background: #09090b;
+    border-radius: 14px;
+    color: #e4e4e7;
+    flex-direction: column;
+    font-size: 13px;
+    gap: 12px;
+    line-height: 19px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .state a {
+    color: #93c5fd;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .state a:focus-visible {
+    border-radius: 4px;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.42);
+    outline: none;
+  }
+
+  .failed {
+    color: #fecaca;
+  }
+
+  .spinner {
+    animation: videoPlayerSpin 800ms linear infinite;
+    border: 2px solid rgba(255, 255, 255, 0.22);
+    border-radius: 50%;
+    border-top-color: #fff;
+    height: 24px;
+    width: 24px;
+  }
+
+  @keyframes videoPlayerSpin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation: none;
+      border-color: rgba(255, 255, 255, 0.55);
+    }
+  }
+}

@@ -86,4 +86,9 @@
       visibility: visible !important;
     }
   }
+
+  .videoPlayerContent {
+    height: 90%;
+    width: MIN(90%, 1120px); // https://github.com/sass/node-sass/issues/2815
+  }
 }

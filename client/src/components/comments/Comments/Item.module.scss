@@ -83,28 +83,28 @@
   .avatar {
     align-self: flex-start;
     display: inline-flex;
-    margin-top: 17px;
+    margin-top: 13px;
   }
 
   .bubble {
-    background: var(--card-modal-surface, #fff);
-    border: 1px solid var(--card-modal-border, transparent);
-    border-radius: 8px;
+    background: var(--chat-bubble-received, var(--card-modal-surface, #fff));
+    border: 0;
+    border-radius: var(--chat-radius-control, 8px);
     box-shadow: none;
     box-sizing: border-box;
-    color: var(--card-modal-text, #17394d);
+    color: var(--chat-foreground, var(--card-modal-text, #17394d));
     display: block;
-    font-size: 14px;
-    line-height: 19px;
+    font-size: var(--chat-font-body, 13px);
+    line-height: 18.5px;
     overflow-wrap: anywhere;
     padding: 8px 12px;
 
     :global(.yfm) {
-      --yfm-color-text-private: var(--card-modal-text, #17394d) !important;
+      --yfm-color-text-private: var(--chat-foreground, var(--card-modal-text, #17394d)) !important;
 
-      color: var(--card-modal-text, #17394d) !important;
-      font-size: 14px !important;
-      line-height: 19px !important;
+      color: var(--chat-foreground, var(--card-modal-text, #17394d)) !important;
+      font-size: var(--chat-font-body, 13px) !important;
+      line-height: 18.5px !important;
 
       > :first-child {
         margin-top: 0 !important;
@@ -113,6 +113,16 @@
       > :last-child {
         margin-bottom: 0 !important;
       }
+    }
+
+    :global(.mention) {
+      background: rgba(4, 133, 247, 0.3);
+      border: 1px solid rgba(4, 133, 247, 0.38);
+      border-radius: 5px;
+      color: #fff;
+      font-weight: 600;
+      padding: 0 4px;
+      white-space: nowrap;
     }
   }
 
@@ -136,7 +146,7 @@
     align-items: flex-start;
     display: flex;
     gap: 7px;
-    margin: 10px 0 0;
+    margin: 6px 0 0;
     padding: 0;
 
     &:first-child {
@@ -159,7 +169,7 @@
   }
 
   .item.continuesAbove:global(.comment) {
-    margin-top: 2px;
+    margin-top: 1px;
   }
 
   .item.continuesAbove:not(.own) .bubble {
@@ -179,8 +189,23 @@
     }
 
     .bubble {
-      background: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16));
-      border-color: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.24));
+      background: var(--chat-bubble-sent, #0485f7);
+      color: var(--chat-accent-foreground, #f7faff);
+
+      :global(.yfm) {
+        --yfm-color-text-private: var(--chat-accent-foreground, #f7faff) !important;
+
+        color: var(--chat-accent-foreground, #f7faff) !important;
+      }
+
+      :global(.mention) {
+        background: rgba(255, 255, 255, 0.25);
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        line-height: inherit;
+        padding: 1px 8px;
+      }
     }
 
     .content {
@@ -205,10 +230,10 @@
     align-items: center;
     color: var(--card-modal-muted, #6b808c);
     display: flex;
-    font-size: 11px;
+    font-size: 10px;
     gap: 4px;
-    line-height: 14px;
-    margin: 0 4px 3px;
+    line-height: 12px;
+    margin: 0 4px 1px;
   }
 
   .metaSeparator {

@@ -35,6 +35,7 @@ import { useTranslation } from 'react-i18next';
 
 import { CloseButton } from '../../../lib/custom-ui';
 import entryActions from '../../../entry-actions';
+import VideoPlayer from '../../common/VideoPlayer';
 import UserAvatar from '../../users/UserAvatar';
 import Config from '../../../constants/Config';
 import LazyEmojiPicker, {
@@ -185,9 +186,16 @@ function AttachmentPreview({ attachment, onClose }) {
         </header>
         <div className={styles.previewBody}>
           {isImage && <img src={url} alt={attachment.name} />}
-          {/* User uploads do not have a separate captions track. */}
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          {isVideo && <video src={url} controls preload="metadata" />}
+          {isVideo && (
+            <VideoPlayer
+              attachment={attachment}
+              posterUrl={
+                attachment.data?.thumbnailUrls?.outside720 ||
+                attachment.data?.thumbnailUrls?.outside360
+              }
+              className={styles.previewVideo}
+            />
+          )}
           {isPdf && <iframe src={url} title={attachment.name} />}
           {!isImage && !isVideo && !isPdf && (
             <div className={styles.genericPreview}>
@@ -207,7 +215,12 @@ AttachmentPreview.propTypes = {
     name: PropTypes.string.isRequired,
     data: PropTypes.shape({
       url: PropTypes.string,
+      playbackUrl: PropTypes.string,
       mimeType: PropTypes.string,
+      thumbnailUrls: PropTypes.shape({
+        outside360: PropTypes.string,
+        outside720: PropTypes.string,
+      }),
       image: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
       video: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
     }),

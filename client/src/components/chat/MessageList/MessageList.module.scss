@@ -767,6 +767,11 @@
     }
   }
 
+  .previewVideo {
+    height: min(72dvh, 720px);
+    width: 100%;
+  }
+
   .genericPreview {
     align-items: center;
     color: var(--chat-muted);
