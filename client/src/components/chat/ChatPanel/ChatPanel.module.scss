@@ -72,7 +72,7 @@
     flex: 0 0 auto;
     gap: 4px;
     grid-template-columns: 1fr 1fr;
-    margin: 10px 14px 0;
+    margin: 8px 14px 0;
     padding: 0;
     position: relative;
 
@@ -101,7 +101,7 @@
       font-size: var(--chat-font-body);
       font-weight: 650;
       gap: 6px;
-      height: 36px;
+      height: 34px;
       justify-content: center;
       min-width: 0;
       padding: 0 8px;
@@ -184,8 +184,8 @@
     flex: 0 0 auto;
     gap: 10px;
     justify-content: space-between;
-    min-height: 38px;
-    padding: 7px 6px 5px;
+    min-height: 34px;
+    padding: 5px 6px 3px;
 
     > strong {
       color: var(--chat-foreground);

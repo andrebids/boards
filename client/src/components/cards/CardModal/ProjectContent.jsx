@@ -512,7 +512,13 @@ const ProjectContent = React.memo(({ onClose }) => {
                         /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                                     jsx-a11y/no-static-element-interactions */
                         <div className={styles.cursorPointer} onClick={handleEditDescriptionClick}>
-                          <Button variant="secondary" className={styles.editButton}>
+                          <Button
+                            variant="secondary"
+                            aria-label={t('action.editDescription', {
+                              context: 'title',
+                            })}
+                            className={styles.editButton}
+                          >
                             <Icon fitted name="pencil" size="small" />
                           </Button>
                           <ExpandableMarkdown>{card.description}</ExpandableMarkdown>

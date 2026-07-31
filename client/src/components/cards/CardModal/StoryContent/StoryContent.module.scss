@@ -72,10 +72,12 @@
 
   .editButton {
     background: transparent;
+    border-radius: 50%;
     box-shadow: none;
+    height: 28px;
     line-height: 28px;
     margin: 0;
-    min-height: auto;
+    min-height: 28px;
     opacity: 0;
     padding: 0;
     position: absolute;
@@ -85,6 +87,12 @@
 
     &:hover {
       background: var(--card-modal-surface-hover, rgba(9, 30, 66, 0.08));
+    }
+
+    :global(i.icon) {
+      font-size: 12px;
+      height: 16px;
+      width: 16px;
     }
   }
 

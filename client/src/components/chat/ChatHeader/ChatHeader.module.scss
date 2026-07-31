@@ -1,5 +1,5 @@
 :global(#app) {
-  .header { align-items: center; border-bottom: 1px solid var(--chat-separator); display: flex; justify-content: space-between; min-height: 64px; padding: 10px 10px 10px 16px; }
+  .header { align-items: center; border-bottom: 1px solid var(--chat-separator); display: flex; justify-content: space-between; min-height: 56px; padding: 6px 10px 6px 14px; }
   .copy { min-width: 0; }
   .copy h2 { color: var(--chat-foreground); font-size: var(--chat-font-title); font-weight: 700; line-height: 22px; margin: 0; }
   .copy p { align-items: center; color: var(--chat-muted); display: flex; font-size: var(--chat-font-meta); gap: 5px; line-height: 16px; margin: 2px 0 0; min-width: 0;

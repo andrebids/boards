@@ -475,7 +475,13 @@ const StoryContent = React.memo(({ onClose }) => {
                           )}
                           onClick={handleEditDescriptionClick}
                         >
-                          <Button variant="secondary" className={styles.editButton}>
+                          <Button
+                            variant="secondary"
+                            aria-label={t('action.editDescription', {
+                              context: 'title',
+                            })}
+                            className={styles.editButton}
+                          >
                             <Icon fitted name="pencil" size="small" />
                           </Button>
                           <Markdown>{card.description}</Markdown>
