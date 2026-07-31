@@ -10,7 +10,7 @@ import GlobalInboxRow from '../GlobalInboxRow';
 
 import styles from './GlobalInbox.module.scss';
 
-const FILTERS = ['unread', 'mentions', 'all'];
+const FILTERS = ['all', 'unread', 'mentions'];
 const INBOX_PAGE_SIZE = 30;
 const SEARCH_DEBOUNCE_MS = 250;
 
