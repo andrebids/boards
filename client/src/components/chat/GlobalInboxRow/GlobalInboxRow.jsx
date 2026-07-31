@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import selectors from '../../../selectors';
 import { formatTextWithMentions } from '../../../utils/mentions';
 import ChatAvatar from '../ChatAvatar';
+import { isCustomGroupConversation, isGeneralConversation } from '../utils';
 
 import styles from './GlobalInboxRow.module.scss';
 
@@ -68,7 +69,13 @@ const GlobalInboxRow = React.memo(({ item, onMarkAsRead, onOpen }) => {
         }
         onClick={() => onOpen(item)}
       >
-        <ChatAvatar user={avatarUser} isProject={!item.avatarUserId} />
+        <ChatAvatar
+          groupId={item.conversationId}
+          isCustomGroup={isCustomGroupConversation(item)}
+          isGeneral={isGeneralConversation(item)}
+          isProject={!item.avatarUserId}
+          user={avatarUser}
+        />
         <span className={styles.copy}>
           <span className={styles.titleLine}>
             <strong>{title}</strong>

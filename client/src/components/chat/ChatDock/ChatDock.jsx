@@ -88,8 +88,8 @@ const ChatDock = React.memo(() => {
             }
 
             const directUser = getDirectUser(conversation, members, currentUser.id);
-            const isProjectConversation =
-              isGeneralConversation(conversation) || isCustomGroupConversation(conversation);
+            const isCustomGroup = isCustomGroupConversation(conversation);
+            const isProjectConversation = isGeneralConversation(conversation) || isCustomGroup;
             const title = getConversationTitle(
               conversation,
               members,
@@ -118,6 +118,9 @@ const ChatDock = React.memo(() => {
                 onClick={() => openConversation(window.id)}
               >
                 <ChatAvatar
+                  groupId={conversation.id}
+                  isCustomGroup={isCustomGroup}
+                  isGeneral={isGeneralConversation(conversation)}
                   isOnline={directUser?.isOnline}
                   isProject={isProjectConversation}
                   user={directUser}

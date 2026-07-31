@@ -98,6 +98,9 @@ const ConversationRow = React.memo(
           }
         >
           <ChatAvatar
+            groupId={conversation?.id}
+            isCustomGroup={isCustomGroupConversation(conversation)}
+            isGeneral={isGeneral}
             isOnline={user?.isOnline}
             isProject={isGeneral || isCustomGroupConversation(conversation)}
             user={user}

@@ -30,15 +30,7 @@ const Variants = {
   BOARD: 'board',
 };
 
-const COLORS = [
-  'emerald',
-  'peter-river',
-  'wisteria',
-  'carrot',
-  'alizarin',
-  'turquoise',
-  'midnight-blue',
-];
+const COLORS = ['blue', 'green', 'purple', 'orange', 'aqua', 'magenta', 'sunset', 'indigo', 'lime'];
 
 const getColor = (name) => {
   let sum = 0;
@@ -55,26 +47,30 @@ const UserAvatar = React.memo(
 
     const user = useSelector((state) => selectUserById(state, id));
     const [t] = useTranslation();
+    const title =
+      user.id === StaticUserIds.DELETED
+        ? t(`common.${user.name}`, {
+            context: 'title',
+          })
+        : user.name;
+    const hasBoardTooltip = variant === Variants.BOARD;
 
     const contentNode = (
       <span
-        title={
-          user.id === StaticUserIds.DELETED
-            ? t(`common.${user.name}`, {
-                context: 'title',
-              })
-            : user.name
-        }
         className={classNames(
           styles.wrapper,
           styles[`wrapper${upperFirst(size)}`],
           variant === Variants.BOARD && styles.wrapperBoard,
+          hasBoardTooltip && styles.tooltip,
           onClick && styles.wrapperHoverable,
           !user.avatar && styles[`background${upperFirst(camelCase(getColor(user.name)))}`],
         )}
+        data-position={hasBoardTooltip ? 'bottom center' : undefined}
+        data-tooltip={hasBoardTooltip ? title : undefined}
         style={{
           background: user.avatar && `url("${user.avatar.thumbnailUrls.cover180}") center / cover`,
         }}
+        title={hasBoardTooltip ? undefined : title}
       >
         {!user.avatar && <span className={styles.initials}>{initials(user.name).slice(0, 2)}</span>}
         {withCreatorIndicator && <span className={styles.creatorIndicator}>+</span>}
@@ -84,6 +80,7 @@ const UserAvatar = React.memo(
     return onClick ? (
       <button
         data-id={id}
+        aria-label={title}
         type="button"
         disabled={isDisabled}
         className={classNames(styles.button, className)}

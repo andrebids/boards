@@ -1,5 +1,5 @@
 :global(#app) {
-  .row { align-items: center; background: transparent; border-radius: var(--chat-radius-control); display: flex; min-height: 58px; overflow: hidden; position: relative; transition: background-color var(--chat-motion-fast) var(--chat-ease); width: 100%;
+  .row { align-items: center; background: transparent; border-radius: var(--chat-radius-control); display: flex; min-height: 54px; overflow: hidden; position: relative; transition: background-color var(--chat-motion-fast) var(--chat-ease); width: 100%;
     &:hover { background: var(--chat-surface-hover); }
     &:hover [data-chat-row-actions], &:focus-within [data-chat-row-actions] { opacity: 1; pointer-events: auto; }
   }
@@ -11,11 +11,11 @@
   }
   .hasUnread { background: var(--chat-accent-soft);
     &:hover { background: var(--chat-accent-soft-hover); }
-    .copy strong { font-weight: 700; }
+    .copy strong { font-weight: 650; }
   }
   .copy { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0;
     strong, small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    strong { color: var(--chat-foreground); font-size: var(--chat-font-body); font-weight: 650; line-height: 18px; }
+    strong { color: var(--chat-foreground); font-size: var(--chat-font-body); font-weight: 600; line-height: 18px; }
     small { color: var(--chat-muted); font-size: var(--chat-font-meta); line-height: 17px; }
   }
   .titleLine { align-items: center; display: flex; gap: 5px; min-width: 0;

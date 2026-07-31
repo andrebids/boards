@@ -44,11 +44,11 @@
   }
 
   .initials {
+    color: #64748b;
     font-weight: 700;
-    letter-spacing: 0.015em;
+    letter-spacing: 0.02em;
     margin: 0 auto;
-    text-shadow: 0 1px 2px rgba(2, 6, 23, 0.32);
-    text-transform: capitalize;
+    text-transform: uppercase;
   }
 
   .wrapper {
@@ -63,6 +63,105 @@
 
   .wrapperHoverable:hover {
     opacity: 0.75;
+  }
+
+  .tooltip[data-tooltip] {
+    &::before,
+    &::after {
+      pointer-events: none;
+      visibility: hidden;
+      z-index: 1000;
+    }
+
+    &::before {
+      background: #fff;
+      box-shadow: 1px 1px 0 rgba(225, 224, 225, 0.4);
+      margin-bottom: 3px;
+      opacity: 0;
+      transition:
+        opacity 150ms ease,
+        transform 150ms ease,
+        visibility 0s linear 150ms;
+    }
+
+    &::after {
+      background: #fff;
+      border: 0;
+      border-radius: 12px;
+      box-shadow:
+        0 2px 8px 0 rgba(0, 0, 0, 0.06),
+        0 -6px 12px 0 rgba(0, 0, 0, 0.03),
+        0 14px 28px 0 rgba(0, 0, 0, 0.08);
+      color: #161616;
+      font-family: inherit;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 16px;
+      margin-bottom: 7px;
+      max-width: 320px;
+      opacity: 0;
+      overflow-wrap: break-word;
+      padding: 8px;
+      text-align: left;
+      text-transform: none;
+      transition:
+        opacity 150ms ease,
+        transform 150ms ease,
+        visibility 0s linear 150ms;
+      white-space: normal;
+      width: max-content;
+      word-break: break-all;
+    }
+
+    &[data-position='bottom center'] {
+      &::before {
+        margin-bottom: 0;
+        margin-top: 3px;
+      }
+
+      &::after {
+        margin-bottom: 0;
+        margin-top: 7px;
+      }
+    }
+
+    &:hover::before,
+    &:hover::after {
+      visibility: visible;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+
+    &:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) scale(1) !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      &::before,
+      &::after {
+        transition: none;
+      }
+    }
+  }
+
+  .button:focus-visible .tooltip[data-tooltip] {
+    &::before,
+    &::after {
+      visibility: visible;
+    }
+
+    &::before {
+      opacity: 1;
+    }
+
+    &::after {
+      opacity: 1;
+      transform: translateX(-50%) scale(1) !important;
+    }
   }
 
   .wrapperBoard {
@@ -129,61 +228,44 @@
 
   /* Backgrounds */
 
-  .backgroundEmerald {
-    background: #2ecc71;
+  .backgroundBlue {
+    background: url('https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/blue.jpg')
+      center / cover no-repeat;
   }
 
-  .backgroundPeterRiver {
-    background: #3498db;
+  .backgroundGreen {
+    background: url('https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/green.jpg')
+      center / cover no-repeat;
   }
 
-  .backgroundWisteria {
-    background: #8e44ad;
+  .backgroundPurple {
+    background: url('https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/purple.jpg')
+      center / cover no-repeat;
   }
 
-  .backgroundCarrot {
-    background: #e67e22;
+  .backgroundOrange {
+    background: url('https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/orange.jpg')
+      center / cover no-repeat;
   }
 
-  .backgroundAlizarin {
-    background: #e74c3c;
+  .backgroundAqua {
+    background: url('../../../assets/images/avatar-backgrounds/aqua.png') center / cover no-repeat;
   }
 
-  .backgroundTurquoise {
-    background: #1abc9c;
+  .backgroundMagenta {
+    background: url('../../../assets/images/avatar-backgrounds/magenta.png') center / cover no-repeat;
   }
 
-  .backgroundMidnightBlue {
-    background: #2c3e50;
+  .backgroundSunset {
+    background: url('../../../assets/images/avatar-backgrounds/sunset.png') center / cover no-repeat;
   }
 
-  /* Refined palette for the compact member group shown over board covers. */
-
-  .wrapperBoard.backgroundEmerald {
-    background: linear-gradient(145deg, #34d399, #059669);
+  .backgroundIndigo {
+    background: url('../../../assets/images/avatar-backgrounds/indigo.png') center / cover no-repeat;
   }
 
-  .wrapperBoard.backgroundPeterRiver {
-    background: linear-gradient(145deg, #60a5fa, #2563eb);
+  .backgroundLime {
+    background: url('../../../assets/images/avatar-backgrounds/lime.png') center / cover no-repeat;
   }
 
-  .wrapperBoard.backgroundWisteria {
-    background: linear-gradient(145deg, #c084fc, #7c3aed);
-  }
-
-  .wrapperBoard.backgroundCarrot {
-    background: linear-gradient(145deg, #fbbf24, #ea580c);
-  }
-
-  .wrapperBoard.backgroundAlizarin {
-    background: linear-gradient(145deg, #fb7185, #e11d48);
-  }
-
-  .wrapperBoard.backgroundTurquoise {
-    background: linear-gradient(145deg, #2dd4bf, #0f766e);
-  }
-
-  .wrapperBoard.backgroundMidnightBlue {
-    background: linear-gradient(145deg, #64748b, #334155);
-  }
 }

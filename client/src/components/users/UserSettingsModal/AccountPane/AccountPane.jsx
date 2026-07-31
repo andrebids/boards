@@ -7,6 +7,7 @@ import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Divider, Dropdown, Header, Tab } from 'semantic-ui-react';
+import { Camera } from 'lucide-react';
 import { Button } from '../../../../lib/custom-ui';
 
 import { usePopupInClosableContext } from '../../../../hooks';
@@ -32,11 +33,9 @@ const AccountPane = React.memo(() => {
   const handleLanguageChange = useCallback(
     (_, { value }) => {
       // FIXME: hack
-      dispatch(
-        entryActions.updateCurrentUserLanguage(value === 'auto' ? null : value)
-      );
+      dispatch(entryActions.updateCurrentUserLanguage(value === 'auto' ? null : value));
     },
-    [dispatch]
+    [dispatch],
   );
 
   const EditAvatarPopup = usePopupInClosableContext(EditAvatarStep);
@@ -51,15 +50,26 @@ const AccountPane = React.memo(() => {
   return (
     <Tab.Pane attached={false} className={styles.wrapper}>
       <EditAvatarPopup>
-        <UserAvatar
-          id={user.id}
-          size="massive"
-          isDisabled={user.isAvatarUpdating}
-        />
+        <button
+          type="button"
+          aria-busy={user.isAvatarUpdating || undefined}
+          aria-label={t('action.uploadNewAvatar')}
+          className={styles.avatarControl}
+          disabled={user.isAvatarUpdating}
+        >
+          <span className={styles.avatarPreview}>
+            <UserAvatar id={user.id} size="massive" />
+            <span className={styles.avatarOverlay} aria-hidden="true">
+              <Camera size={20} strokeWidth={2} />
+            </span>
+            {user.isAvatarUpdating && <span className={styles.avatarSpinner} aria-hidden="true" />}
+          </span>
+          <span className={styles.avatarLabel}>{t('action.uploadNewAvatar')}</span>
+        </button>
       </EditAvatarPopup>
-      <br />
-      <br />
-      <EditUserInformation id={user.id} />
+      <div className={styles.userInformation}>
+        <EditUserInformation id={user.id} />
+      </div>
       <Divider horizontal section>
         <Header as="h4">
           {t('common.language', {
@@ -75,7 +85,7 @@ const AccountPane = React.memo(() => {
             value: 'auto',
             text: t('common.detectAutomatically'),
           },
-          ...locales.map(locale => ({
+          ...locales.map((locale) => ({
             value: locale.language,
             flag: locale.country,
             text: locale.name,
@@ -95,10 +105,7 @@ const AccountPane = React.memo(() => {
           </Divider>
           {isUsernameEditable && (
             <div className={styles.action}>
-              <EditUserUsernamePopup
-                id={user.id}
-                withPasswordConfirmation={!user.isSsoUser}
-              >
+              <EditUserUsernamePopup id={user.id} withPasswordConfirmation={!user.isSsoUser}>
                 <Button variant="secondary" className={styles.actionButton}>
                   {t('action.editUsername', {
                     context: 'title',
@@ -109,10 +116,7 @@ const AccountPane = React.memo(() => {
           )}
           {isEmailEditable && (
             <div className={styles.action}>
-              <EditUserEmailPopup
-                id={user.id}
-                withPasswordConfirmation={!user.isSsoUser}
-              >
+              <EditUserEmailPopup id={user.id} withPasswordConfirmation={!user.isSsoUser}>
                 <Button variant="secondary" className={styles.actionButton}>
                   {t('action.editEmail', {
                     context: 'title',
@@ -123,10 +127,7 @@ const AccountPane = React.memo(() => {
           )}
           {isPasswordEditable && (
             <div className={styles.action}>
-              <EditUserPasswordPopup
-                id={user.id}
-                withPasswordConfirmation={!user.isSsoUser}
-              >
+              <EditUserPasswordPopup id={user.id} withPasswordConfirmation={!user.isSsoUser}>
                 <Button variant="secondary" className={styles.actionButton}>
                   {t('action.editPassword', {
                     context: 'title',
