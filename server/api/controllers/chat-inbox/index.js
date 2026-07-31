@@ -14,6 +14,11 @@ module.exports = {
       type: 'string',
       maxLength: 512,
     },
+    query: {
+      type: 'string',
+      maxLength: 200,
+      defaultsTo: '',
+    },
     limit: {
       type: 'number',
       min: 1,
@@ -27,6 +32,7 @@ module.exports = {
       user: this.req.currentUser,
       filter: inputs.filter,
       before: inputs.before,
+      query: inputs.query,
       limit: inputs.limit,
     });
   },

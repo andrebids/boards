@@ -10,11 +10,31 @@ const Errors = {
   CONVERSATION_NOT_FOUND: { conversationNotFound: 'Conversation not found' },
 };
 
+const getAllUnreadConversationIds = async (user, before, conversationIds = []) => {
+  const page = await sails.helpers.chat.getInbox.with({
+    user,
+    filter: 'unread',
+    before,
+    limit: 100,
+  });
+  const nextConversationIds = [
+    ...conversationIds,
+    ...page.items.map(({ conversationId }) => conversationId),
+  ];
+
+  return page.meta.nextCursor
+    ? getAllUnreadConversationIds(user, page.meta.nextCursor, nextConversationIds)
+    : nextConversationIds;
+};
+
 module.exports = {
   inputs: {
     conversationIds: {
       type: 'json',
-      required: true,
+    },
+    all: {
+      type: 'boolean',
+      defaultsTo: false,
     },
   },
 
@@ -24,11 +44,32 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const conversationIds = Array.isArray(inputs.conversationIds) ? inputs.conversationIds : [];
+    let conversationIds = Array.isArray(inputs.conversationIds) ? inputs.conversationIds : [];
+
+    if (inputs.all) {
+      if (conversationIds.length > 0) {
+        throw Errors.INVALID_CONVERSATIONS;
+      }
+
+      conversationIds = await getAllUnreadConversationIds(this.req.currentUser);
+
+      if (conversationIds.length === 0) {
+        return {
+          items: [],
+          meta: {
+            unreadConversationTotal: 0,
+            unreadMentionConversationTotal: 0,
+            unreadMessageTotal: 0,
+            unreadConversationTotalsByProjectId: {},
+          },
+        };
+      }
+    }
+
     const uniqueConversationIds = [...new Set(conversationIds)];
     if (
       conversationIds.length === 0 ||
-      conversationIds.length > 100 ||
+      (!inputs.all && conversationIds.length > 100) ||
       uniqueConversationIds.length !== conversationIds.length ||
       conversationIds.some((id) => typeof id !== 'string' || !ID_REGEX.test(id) || !isIdInRange(id))
     ) {
@@ -70,6 +111,16 @@ module.exports = {
       }),
     );
 
-    return { items: readStates };
+    return {
+      items: inputs.all ? [] : readStates,
+      ...(inputs.all && {
+        meta: {
+          unreadConversationTotal: 0,
+          unreadMentionConversationTotal: 0,
+          unreadMessageTotal: 0,
+          unreadConversationTotalsByProjectId: {},
+        },
+      }),
+    };
   },
 };

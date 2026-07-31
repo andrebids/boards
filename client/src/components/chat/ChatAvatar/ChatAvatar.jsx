@@ -40,8 +40,13 @@ const ChatAvatar = React.memo(({ isOnline, isProject, user }) => {
     contentNode = <UserRound aria-hidden="true" size={17} strokeWidth={2.2} />;
   }
 
+  const className = `${styles.avatar} ${isProject ? styles.projectAvatar : ''}`;
+
   return (
-    <span className={styles.avatar} style={{ backgroundColor: mutedColors[colorIndex] }}>
+    <span
+      className={className}
+      style={isProject ? undefined : { backgroundColor: mutedColors[colorIndex] }}
+    >
       {contentNode}
       {isOnline && <span className={styles.online} />}
     </span>

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
 import { useChat } from '../ChatContext';
+import { getOverflowChatWindowIds } from '../ChatContext/windowState';
 import ChatAvatar from '../ChatAvatar';
 import ChatWindow from '../ChatWindow';
 import {
@@ -30,6 +31,7 @@ const ChatDock = React.memo(() => {
     isConversationListClosing,
     isConversationListOpen,
     isEnabled,
+    minimizeConversation,
     openConversation,
     windows,
   } = useChat();
@@ -46,22 +48,24 @@ const ChatDock = React.memo(() => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const activeWindows = useMemo(() => windows.filter((window) => !window.isMinimized), [windows]);
+  const overflowWindowIds = useMemo(
+    () => getOverflowChatWindowIds(windows, limit),
+    [limit, windows],
+  );
+  const overflowWindowIdSet = useMemo(() => new Set(overflowWindowIds), [overflowWindowIds]);
 
-  const { hiddenWindows, visibleWindows } = useMemo(() => {
-    const splitIndex = Math.max(0, activeWindows.length - limit);
+  useEffect(() => {
+    overflowWindowIds.forEach(minimizeConversation);
+  }, [minimizeConversation, overflowWindowIds]);
 
-    return {
-      hiddenWindows: activeWindows.slice(0, splitIndex),
-      visibleWindows: activeWindows.slice(splitIndex),
-    };
-  }, [activeWindows, limit]);
+  const visibleWindows = useMemo(
+    () => windows.filter((window) => !window.isMinimized && !overflowWindowIdSet.has(window.id)),
+    [overflowWindowIdSet, windows],
+  );
 
   const bubbleWindows = useMemo(() => {
-    const hiddenWindowIds = new Set(hiddenWindows.map((window) => window.id));
-
-    return windows.filter((window) => window.isMinimized || hiddenWindowIds.has(window.id));
-  }, [hiddenWindows, windows]);
+    return windows.filter((window) => window.isMinimized || overflowWindowIdSet.has(window.id));
+  }, [overflowWindowIdSet, windows]);
 
   if (!isEnabled || windows.length === 0) {
     return null;
@@ -100,12 +104,15 @@ const ChatDock = React.memo(() => {
             const label = unreadCount
               ? `${title} — ${t('chat.unreadMessages', { count: unreadCount })}`
               : title;
+            const bubbleClassName = `${styles.bubble} ${
+              unreadCount > 0 ? styles.bubbleUnread : ''
+            }`;
 
             return (
               <button
                 type="button"
                 key={window.id}
-                className={styles.bubble}
+                className={bubbleClassName}
                 aria-label={label}
                 title={label}
                 onClick={() => openConversation(window.id)}

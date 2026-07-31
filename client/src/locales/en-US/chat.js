@@ -20,6 +20,8 @@ export default {
       globalInboxSummary_one: '{{count}} unread conversation across all projects',
       globalInboxSummary_other: '{{count}} unread conversations across all projects',
       loadingGlobalInbox: 'Loading conversations from all projects',
+      loadingOlderConversations: 'Loading older conversations…',
+      loadOlderConversations: 'Load older conversations',
       markAsRead: 'Mark as read',
       markAllAsRead: 'Mark all as read',
       markConversationAsRead: 'Mark {{conversation}} as read',

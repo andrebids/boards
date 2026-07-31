@@ -31,6 +31,47 @@ describe('chat reducer', () => {
     expect(state.inboxMeta.unreadConversationTotal).toBe(1);
   });
 
+  test('appends an older inbox page without replacing the current results', () => {
+    const firstPage = reducer(undefined, {
+      type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,
+      payload: {
+        items: [
+          {
+            conversationId: 'conversation-2',
+            lastMessageAt: '2026-07-15T12:00:00Z',
+          },
+        ],
+        meta: { hasMore: true, nextCursor: 'cursor-1' },
+        options: { filter: 'all', append: false },
+      },
+    });
+    const fetchingMore = reducer(firstPage, {
+      type: ActionTypes.CHAT_INBOX_FETCH,
+      payload: { options: { filter: 'all', before: 'cursor-1', append: true } },
+    });
+    const nextState = reducer(fetchingMore, {
+      type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,
+      payload: {
+        items: [
+          {
+            conversationId: 'conversation-1',
+            lastMessageAt: '2026-07-14T12:00:00Z',
+          },
+        ],
+        meta: { hasMore: false, nextCursor: null },
+        options: { filter: 'all', before: 'cursor-1', append: true },
+      },
+    });
+
+    expect(fetchingMore.isInboxFetchingMore).toBe(true);
+    expect(Object.keys(nextState.inboxItemsByConversationId)).toEqual([
+      'conversation-2',
+      'conversation-1',
+    ]);
+    expect(nextState.inboxMeta.hasMore).toBe(false);
+    expect(nextState.isInboxFetchingMore).toBe(false);
+  });
+
   test('merges a global event into an inbox item without requiring a local conversation', () => {
     const initialState = reducer(undefined, {
       type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,
@@ -45,6 +86,7 @@ describe('chat reducer', () => {
         ],
         meta: {
           unreadConversationTotal: 0,
+          unreadMentionConversationTotal: 0,
           unreadMessageTotal: 0,
           unreadConversationTotalsByProjectId: { 'project-1': 0 },
         },
@@ -57,6 +99,7 @@ describe('chat reducer', () => {
         item: {
           id: 'conversation-1',
           unreadCount: 2,
+          hasUnreadMention: true,
           lastMessageAt: new Date('2026-07-15T12:00:00.000Z'),
         },
       },
@@ -68,6 +111,7 @@ describe('chat reducer', () => {
     });
     expect(state.inboxMeta).toMatchObject({
       unreadConversationTotal: 1,
+      unreadMentionConversationTotal: 1,
       unreadMessageTotal: 2,
       unreadConversationTotalsByProjectId: { 'project-1': 1 },
     });
@@ -131,7 +175,9 @@ describe('chat reducer', () => {
       type: ActionTypes.CHAT_INBOX_READ,
       payload: {
         conversationIds: ['conversation-1'],
-        previousItemsByConversationId: { 'conversation-1': items['conversation-1'] },
+        previousItemsByConversationId: {
+          'conversation-1': items['conversation-1'],
+        },
       },
     });
     const concurrentState = reducer(optimisticState, {
@@ -142,7 +188,9 @@ describe('chat reducer', () => {
     const restoredState = reducer(concurrentState, {
       type: ActionTypes.CHAT_INBOX_READ__FAILURE,
       payload: {
-        previousItemsByConversationId: { 'conversation-1': items['conversation-1'] },
+        previousItemsByConversationId: {
+          'conversation-1': items['conversation-1'],
+        },
         error,
       },
     });
@@ -248,8 +296,12 @@ describe('chat reducer', () => {
     expect(nextState.memberIdsByProject['project-1']).toEqual([]);
     expect(nextState.openConversationIds).toEqual(['conversation-2']);
     expect(nextState.minimizedConversationIds).toEqual([]);
-    expect(nextState.isMessagesFetchingByConversation).toEqual({ 'conversation-2': false });
-    expect(nextState.hasMoreMessagesByConversation).toEqual({ 'conversation-2': true });
+    expect(nextState.isMessagesFetchingByConversation).toEqual({
+      'conversation-2': false,
+    });
+    expect(nextState.hasMoreMessagesByConversation).toEqual({
+      'conversation-2': true,
+    });
     expect(nextState.isMembersFetchingByProject).toEqual({ 'project-2': true });
     expect(nextState.isConversationsFetchingByProject).toEqual({});
     expect(nextState.hasFetchedConversationsByProject).toEqual({});
@@ -286,11 +338,16 @@ describe('chat reducer', () => {
     });
     state = reducer(state, {
       type: ActionTypes.CHAT_REPLY_TARGET_SET,
-      payload: { conversationId: 'conversation-2', message: { id: 'message-4' } },
+      payload: {
+        conversationId: 'conversation-2',
+        message: { id: 'message-4' },
+      },
     });
 
     expect(state.draftsByConversation['conversation-1']).toBe('first draft');
-    expect(state.replyTargetsByConversation['conversation-2']).toEqual({ id: 'message-4' });
+    expect(state.replyTargetsByConversation['conversation-2']).toEqual({
+      id: 'message-4',
+    });
   });
 
   test('does not let an expired typing timer clear a newer typing event', () => {

@@ -41,9 +41,13 @@ export const selectChatInboxItems = createReselector(
 
 export const selectIsChatInboxFetching = (state) => selectChatState(state).isInboxFetching;
 
+export const selectIsChatInboxFetchingMore = (state) => selectChatState(state).isInboxFetchingMore;
+
 export const selectHasFetchedChatInbox = (state) => selectChatState(state).hasFetchedInbox;
 
 export const selectChatInboxError = (state) => selectChatState(state).inboxError;
+
+export const selectChatInboxMeta = (state) => selectChatState(state).inboxMeta;
 
 export const selectChatInboxUnreadConversationTotal = createReselector(
   selectChatState,
@@ -233,8 +237,10 @@ export default {
   selectChatState,
   selectChatInboxItems,
   selectIsChatInboxFetching,
+  selectIsChatInboxFetchingMore,
   selectHasFetchedChatInbox,
   selectChatInboxError,
+  selectChatInboxMeta,
   selectChatInboxUnreadConversationTotal,
   selectChatInboxUnreadMessageTotal,
   selectChatInboxUnreadConversationTotalsByProjectId,

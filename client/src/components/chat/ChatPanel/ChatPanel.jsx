@@ -206,7 +206,7 @@ const ChatPanel = React.memo(
         setIsGroupFormOpen(false);
         setActiveTab('conversations');
       },
-      [dispatch, groupTitle, project.id, selectedMemberIds],
+      [dispatch, groupTitle, project?.id, selectedMemberIds],
     );
 
     const searchPlaceholder =

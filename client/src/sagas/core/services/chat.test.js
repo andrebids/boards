@@ -33,9 +33,12 @@ jest.mock('nanoid', () => ({ nanoid: jest.fn() }));
 
 describe('chat inbox services', () => {
   test('fetches inbox summaries together with included users', () => {
-    const generator = fetchChatInbox();
-    expect(generator.next().value).toEqual(put(actions.fetchChatInbox()));
-    expect(generator.next().value).toEqual(call(request, api.getChatInbox));
+    const generator = fetchChatInbox({});
+    const options = { filter: 'all', limit: 50, append: false };
+    expect(generator.next().value).toEqual(put(actions.fetchChatInbox(options)));
+    expect(generator.next().value).toEqual(
+      call(request, api.getChatInbox, { filter: 'all', limit: 50 }),
+    );
 
     const body = {
       items: [{ conversationId: 'conversation-1' }],
@@ -43,7 +46,42 @@ describe('chat inbox services', () => {
       included: { users: [{ id: 'user-2' }] },
     };
     expect(generator.next(body).value).toEqual(
-      put(actions.fetchChatInbox.success(body.items, body.meta, body.included.users)),
+      put(actions.fetchChatInbox.success(body.items, body.meta, body.included.users, options)),
+    );
+    expect(generator.next().done).toBe(true);
+  });
+
+  test('restores the active inbox request after a socket reconnect', () => {
+    const generator = fetchChatInbox();
+    expect(generator.next().value).toEqual(select(selectors.selectChatState));
+
+    const inboxRequest = { filter: 'unread', query: 'alpha', limit: 30 };
+    expect(generator.next({ inboxRequest }).value).toEqual(
+      put(actions.fetchChatInbox({ ...inboxRequest, append: false })),
+    );
+    expect(generator.next().value).toEqual(call(request, api.getChatInbox, inboxRequest));
+  });
+
+  test('requests and appends an older inbox page', () => {
+    const requestOptions = {
+      filter: 'mentions',
+      query: 'design',
+      before: 'cursor-1',
+      limit: 30,
+    };
+    const actionOptions = { ...requestOptions, append: true };
+    const generator = fetchChatInbox({ ...requestOptions, append: true });
+
+    expect(generator.next().value).toEqual(put(actions.fetchChatInbox(actionOptions)));
+    expect(generator.next().value).toEqual(call(request, api.getChatInbox, requestOptions));
+
+    const body = {
+      items: [],
+      meta: { hasMore: false },
+      included: { users: [] },
+    };
+    expect(generator.next(body).value).toEqual(
+      put(actions.fetchChatInbox.success([], body.meta, [], actionOptions)),
     );
     expect(generator.next().done).toBe(true);
   });
@@ -74,7 +112,9 @@ describe('chat inbox services', () => {
     );
     expect(generator.next(undefined).value).toEqual(select(selectors.selectChatState));
     expect(
-      generator.next({ inboxItemsByConversationId: { [conversationId]: inboxItem } }).value,
+      generator.next({
+        inboxItemsByConversationId: { [conversationId]: inboxItem },
+      }).value,
     ).toEqual(put(actions.markChatConversationAsRead(conversationId, inboxItem)));
     expect(generator.next().value).toEqual(
       call(request, api.markChatConversationAsRead, conversationId, {}),
@@ -84,7 +124,9 @@ describe('chat inbox services', () => {
     );
     expect(generator.next(undefined).value).toEqual(select(selectors.selectChatState));
     expect(
-      generator.next({ inboxItemsByConversationId: { [conversationId]: inboxItem } }).value,
+      generator.next({
+        inboxItemsByConversationId: { [conversationId]: inboxItem },
+      }).value,
     ).toEqual(put(actions.markChatConversationAsRead.success(readState)));
     expect(generator.next().done).toBe(true);
   });

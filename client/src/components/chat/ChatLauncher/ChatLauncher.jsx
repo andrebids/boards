@@ -9,17 +9,39 @@ import { MessageCircle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
+import { CloseButton } from '../../../lib/custom-ui';
 import { useChat } from '../ChatContext';
+import ChatAvatar from '../ChatAvatar';
 import ChatPanel from '../ChatPanel';
+import { getMessagePreviewText, shouldShowMessagePreview } from './preview';
 
 import styles from './ChatLauncher.module.scss';
 
 const CLOSE_ANIMATION_MS = 160;
+const PREVIEW_VISIBLE_MS = 4800;
+const PREVIEW_EXIT_MS = 160;
 
 const ChatLauncher = React.memo(() => {
   const [t] = useTranslation();
   const unreadTotal = useSelector(selectors.selectChatInboxUnreadConversationTotal) || 0;
   const lastMessageAlert = useSelector(selectors.selectLastChatMessageAlert);
+  const alertConversation = useSelector((state) =>
+    lastMessageAlert
+      ? selectors.selectChatConversationById(state, lastMessageAlert.conversationId)
+      : undefined,
+  );
+  const alertInboxItem = useSelector((state) =>
+    lastMessageAlert
+      ? selectors
+          .selectChatInboxItems(state)
+          .find(({ conversationId }) => conversationId === lastMessageAlert.conversationId)
+      : undefined,
+  );
+  const alertSender = useSelector((state) =>
+    lastMessageAlert?.senderUserId
+      ? selectors.selectUserById(state, lastMessageAlert.senderUserId)
+      : undefined,
+  );
   const {
     closeConversationList,
     inboxScope,
@@ -33,8 +55,38 @@ const ChatLauncher = React.memo(() => {
     windows,
   } = useChat();
   const [isAlerting, setIsAlerting] = useState(false);
+  const [previewAlert, setPreviewAlert] = useState(null);
+  const [isPreviewClosing, setIsPreviewClosing] = useState(false);
   const closeTimeoutRef = useRef(null);
   const closeCompletionRef = useRef(null);
+  const previewTimeoutRef = useRef(null);
+  const previewExitTimeoutRef = useRef(null);
+
+  const clearPreviewTimers = useCallback(() => {
+    if (previewTimeoutRef.current) {
+      window.clearTimeout(previewTimeoutRef.current);
+      previewTimeoutRef.current = null;
+    }
+    if (previewExitTimeoutRef.current) {
+      window.clearTimeout(previewExitTimeoutRef.current);
+      previewExitTimeoutRef.current = null;
+    }
+  }, []);
+
+  const dismissPreview = useCallback(() => {
+    clearPreviewTimers();
+    setIsPreviewClosing(true);
+    previewExitTimeoutRef.current = window.setTimeout(() => {
+      setPreviewAlert(null);
+      setIsPreviewClosing(false);
+      previewExitTimeoutRef.current = null;
+    }, PREVIEW_EXIT_MS);
+  }, [clearPreviewTimers]);
+
+  const schedulePreviewDismiss = useCallback(() => {
+    clearPreviewTimers();
+    previewTimeoutRef.current = window.setTimeout(dismissPreview, PREVIEW_VISIBLE_MS);
+  }, [clearPreviewTimers, dismissPreview]);
 
   useEffect(() => {
     if (!lastMessageAlert || windows.some(({ id }) => id === lastMessageAlert.conversationId)) {
@@ -46,14 +98,36 @@ const ChatLauncher = React.memo(() => {
     return () => window.clearTimeout(timeoutId);
   }, [lastMessageAlert, windows]);
 
+  useEffect(() => {
+    if (!shouldShowMessagePreview(lastMessageAlert, windows, isConversationListOpen)) {
+      clearPreviewTimers();
+      setPreviewAlert(null);
+      setIsPreviewClosing(false);
+      return undefined;
+    }
+
+    setPreviewAlert(lastMessageAlert);
+    setIsPreviewClosing(false);
+    schedulePreviewDismiss();
+
+    return clearPreviewTimers;
+  }, [
+    clearPreviewTimers,
+    isConversationListOpen,
+    lastMessageAlert,
+    schedulePreviewDismiss,
+    windows,
+  ]);
+
   useEffect(
     () => () => {
       if (closeTimeoutRef.current) {
         window.clearTimeout(closeTimeoutRef.current);
       }
+      clearPreviewTimers();
       closeCompletionRef.current = null;
     },
-    [],
+    [clearPreviewTimers],
   );
 
   const handleOpen = useCallback(() => {
@@ -103,6 +177,19 @@ const ChatLauncher = React.memo(() => {
     }
   }, [handleClose, handleOpen, isConversationListOpen]);
 
+  const handlePreviewOpen = useCallback(() => {
+    if (!previewAlert) {
+      return;
+    }
+
+    dismissPreview();
+    openGlobalConversation({
+      conversationId: previewAlert.conversationId,
+      firstUnreadMessageId: previewAlert.messageId,
+      projectId: previewAlert.projectId,
+    });
+  }, [dismissPreview, openGlobalConversation, previewAlert]);
+
   if (!isEnabled) {
     return null;
   }
@@ -115,6 +202,16 @@ const ChatLauncher = React.memo(() => {
     launcherLabel = t('chat.conversationsWithUnread', { count: unreadTotal });
   }
 
+  const previewLastMessage = alertConversation?.lastMessage || alertInboxItem?.lastMessage;
+  const previewSenderName = alertSender?.name || alertInboxItem?.title || t('chat.conversation');
+  const previewText = getMessagePreviewText(previewLastMessage, t);
+  const previewUnreadCount = Math.max(
+    alertConversation?.unreadCount || 0,
+    alertInboxItem?.unreadCount || 0,
+    1,
+  );
+  const previewAvatarUser = alertSender || { name: previewSenderName };
+
   return (
     <>
       {isConversationListOpen && (
@@ -125,6 +222,45 @@ const ChatLauncher = React.memo(() => {
           onInboxScopeChange={setInboxScope}
           onOpenGlobalConversation={openGlobalConversation}
         />
+      )}
+      {previewAlert && (
+        <div
+          className={`${styles.messagePreview} ${
+            isPreviewClosing ? styles.messagePreviewClosing : ''
+          }`}
+          onBlur={schedulePreviewDismiss}
+          onFocus={clearPreviewTimers}
+          onMouseEnter={clearPreviewTimers}
+          onMouseLeave={schedulePreviewDismiss}
+        >
+          <button
+            type="button"
+            className={styles.previewOpen}
+            aria-label={`${previewSenderName}: ${previewText}`}
+            onClick={handlePreviewOpen}
+          >
+            <ChatAvatar user={previewAvatarUser} isOnline={alertSender?.isOnline} />
+            <span className={styles.previewCopy}>
+              <span className={styles.previewTitleLine}>
+                <strong>{previewSenderName}</strong>
+                <span
+                  aria-label={t('chat.unreadMessages', {
+                    count: previewUnreadCount,
+                  })}
+                >
+                  {previewUnreadCount > 99 ? '99+' : previewUnreadCount}
+                </span>
+              </span>
+              <small>{previewText}</small>
+            </span>
+          </button>
+          <CloseButton
+            ariaLabel={t('chat.close')}
+            className={styles.previewDismiss}
+            onClick={dismissPreview}
+            title={t('chat.close')}
+          />
+        </div>
       )}
       <button
         type="button"

@@ -11,6 +11,14 @@ import GlobalInboxRow from '../GlobalInboxRow';
 import styles from './GlobalInbox.module.scss';
 
 const FILTERS = ['unread', 'mentions', 'all'];
+const INBOX_PAGE_SIZE = 30;
+const SEARCH_DEBOUNCE_MS = 250;
+
+const normalizeSearchText = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase();
 
 const GlobalInbox = React.memo(({ onOpenConversation }) => {
   const [t] = useTranslation();
@@ -18,17 +26,32 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
   const items = useSelector(selectors.selectChatInboxItems);
   const unreadTotal = useSelector(selectors.selectChatInboxUnreadConversationTotal) || 0;
   const isFetching = useSelector(selectors.selectIsChatInboxFetching);
+  const isFetchingMore = useSelector(selectors.selectIsChatInboxFetchingMore);
   const hasFetched = useSelector(selectors.selectHasFetchedChatInbox);
   const error = useSelector(selectors.selectChatInboxError);
+  const inboxMeta = useSelector(selectors.selectChatInboxMeta);
   const hasChosenFilterRef = useRef(false);
   const [filter, setFilter] = useState('unread');
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
   useEffect(() => {
-    if (!hasFetched && !isFetching && !error) {
-      dispatch(entryActions.fetchChatInbox());
-    }
-  }, [dispatch, error, hasFetched, isFetching]);
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedQuery(query.trim());
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [query]);
+
+  useEffect(() => {
+    dispatch(
+      entryActions.fetchChatInbox({
+        filter,
+        query: debouncedQuery,
+        limit: INBOX_PAGE_SIZE,
+      }),
+    );
+  }, [debouncedQuery, dispatch, filter]);
 
   useEffect(() => {
     if (
@@ -43,16 +66,15 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
   }, [filter, hasFetched, query, unreadTotal]);
 
   const mentionTotal = useMemo(
-    () => items.filter((item) => item.hasUnreadMention && item.unreadCount > 0).length,
-    [items],
-  );
-  const unreadConversationIds = useMemo(
-    () => items.filter((item) => item.unreadCount > 0).map((item) => item.conversationId),
-    [items],
+    () =>
+      typeof inboxMeta.unreadMentionConversationTotal === 'number'
+        ? inboxMeta.unreadMentionConversationTotal
+        : items.filter((item) => item.hasUnreadMention && item.unreadCount > 0).length,
+    [inboxMeta.unreadMentionConversationTotal, items],
   );
 
   const filteredItems = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase();
+    const normalizedQuery = normalizeSearchText(debouncedQuery);
 
     return items.filter((item) => {
       if (filter === 'unread' && !(item.unreadCount > 0)) return false;
@@ -63,10 +85,12 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
       const searchableText = [item.title, item.projectName, item.lastMessage?.text]
         .filter(Boolean)
         .join(' ')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
         .toLocaleLowerCase();
       return searchableText.includes(normalizedQuery);
     });
-  }, [filter, items, query]);
+  }, [debouncedQuery, filter, items]);
 
   const handleMarkAsRead = useCallback(
     (conversationId) => {
@@ -76,8 +100,14 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
   );
 
   const handleRetry = useCallback(() => {
-    dispatch(entryActions.fetchChatInbox());
-  }, [dispatch]);
+    dispatch(
+      entryActions.fetchChatInbox({
+        filter,
+        query: debouncedQuery,
+        limit: INBOX_PAGE_SIZE,
+      }),
+    );
+  }, [debouncedQuery, dispatch, filter]);
 
   const handleFilterChange = useCallback((nextFilter) => {
     hasChosenFilterRef.current = true;
@@ -85,10 +115,24 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
   }, []);
 
   const handleMarkAllAsRead = useCallback(() => {
-    if (unreadConversationIds.length > 0) {
-      dispatch(entryActions.markAllChatInboxAsRead(unreadConversationIds));
+    if (unreadTotal > 0) {
+      dispatch(entryActions.markAllChatInboxAsRead());
     }
-  }, [dispatch, unreadConversationIds]);
+  }, [dispatch, unreadTotal]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!inboxMeta.nextCursor || isFetchingMore) return;
+
+    dispatch(
+      entryActions.fetchChatInbox({
+        filter,
+        query: debouncedQuery,
+        before: inboxMeta.nextCursor,
+        limit: INBOX_PAGE_SIZE,
+        append: true,
+      }),
+    );
+  }, [debouncedQuery, dispatch, filter, inboxMeta.nextCursor, isFetchingMore]);
 
   const handleFilterKeyDown = useCallback((event, index) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
@@ -107,7 +151,7 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
 
   const showInitialLoading = isFetching && !hasFetched;
   const showInitialError = Boolean(error) && !hasFetched;
-  const hasQuery = Boolean(query.trim());
+  const hasQuery = Boolean(debouncedQuery);
 
   let contentNode;
   if (showInitialLoading) {
@@ -153,10 +197,10 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
     if (hasQuery) {
       title = t('chat.noGlobalConversationsFound');
       description = t('chat.tryAnotherSearch');
-    } else if (filter === 'unread' && items.length > 0) {
+    } else if (filter === 'unread' && inboxMeta.conversationTotal > 0) {
       title = t('chat.globalInboxReadTitle');
       description = t('chat.globalInboxReadDescription');
-    } else if (filter === 'mentions') {
+    } else if (filter === 'mentions' && inboxMeta.conversationTotal > 0) {
       title = t('chat.noUnreadMentionsTitle');
       description = t('chat.noUnreadMentionsDescription');
     }
@@ -168,7 +212,7 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
         </span>
         <strong>{title}</strong>
         <p>{description}</p>
-        {!hasQuery && filter !== 'all' && items.length > 0 && (
+        {!hasQuery && filter !== 'all' && inboxMeta.conversationTotal > 0 && (
           <button type="button" onClick={() => handleFilterChange('all')}>
             {t('chat.viewAllConversations')}
           </button>
@@ -223,10 +267,26 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
         id="chat-global-inbox-results"
         className={styles.results}
         role="tabpanel"
+        aria-busy={isFetching || isFetchingMore}
         aria-live="polite"
         aria-labelledby={`chat-inbox-filter-${filter}`}
       >
         {contentNode}
+        {hasFetched && filteredItems.length > 0 && inboxMeta.hasMore && (
+          <div className={styles.pagination}>
+            <button type="button" disabled={isFetchingMore} onClick={handleLoadMore}>
+              {isFetchingMore && (
+                <RefreshCw
+                  aria-hidden="true"
+                  className={styles.loadingIcon}
+                  size={14}
+                  strokeWidth={2}
+                />
+              )}
+              {t(isFetchingMore ? 'chat.loadingOlderConversations' : 'chat.loadOlderConversations')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

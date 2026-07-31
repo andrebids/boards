@@ -20,7 +20,7 @@ import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import history from '../../../history';
 import { getGlobalConversationTarget } from '../navigation';
-import createInitialChatWindows from './windowState';
+import createInitialChatWindows, { setChatWindowMinimized } from './windowState';
 
 import '../theme.scss';
 
@@ -217,18 +217,22 @@ const ChatProvider = React.memo(({ children }) => {
       dispatch(entryActions.openChatConversation(id));
       setWindows((currentWindows) => {
         const existingWindow = currentWindows.find((window) => window.id === id);
+        let nextWindows;
 
         if (existingWindow) {
-          return [
+          nextWindows = [
             ...currentWindows.filter((window) => window.id !== id),
             {
               ...existingWindow,
               isMinimized: false,
             },
           ];
+        } else {
+          nextWindows = [...currentWindows, { id, isMinimized: false }];
         }
 
-        return [...currentWindows, { id, isMinimized: false }];
+        windowsRef.current = nextWindows;
+        return nextWindows;
       });
     },
     [dispatch],
@@ -318,7 +322,12 @@ const ChatProvider = React.memo(({ children }) => {
     (id) => {
       subscribedWindowIdsRef.current.delete(id);
       dispatch(entryActions.closeChatConversation(id));
-      setWindows((currentWindows) => currentWindows.filter((window) => window.id !== id));
+      setWindows((currentWindows) => {
+        const nextWindows = currentWindows.filter((window) => window.id !== id);
+
+        windowsRef.current = nextWindows;
+        return nextWindows;
+      });
       const parameters = new URLSearchParams(window.location.search);
       if (parameters.get('chatConversation') === id) {
         parameters.delete('chatConversation');
@@ -337,12 +346,34 @@ const ChatProvider = React.memo(({ children }) => {
 
   const toggleConversationMinimized = useCallback(
     (id) => {
-      dispatch(entryActions.toggleChatConversationMinimized(id));
-      setWindows((currentWindows) =>
-        currentWindows.map((window) =>
-          window.id === id ? { ...window, isMinimized: !window.isMinimized } : window,
-        ),
+      const currentWindow = windowsRef.current.find((window) => window.id === id);
+      if (!currentWindow) {
+        return;
+      }
+
+      const nextWindows = setChatWindowMinimized(
+        windowsRef.current,
+        id,
+        !currentWindow.isMinimized,
       );
+
+      windowsRef.current = nextWindows;
+      dispatch(entryActions.toggleChatConversationMinimized(id));
+      setWindows(nextWindows);
+    },
+    [dispatch],
+  );
+
+  const minimizeConversation = useCallback(
+    (id) => {
+      const nextWindows = setChatWindowMinimized(windowsRef.current, id, true);
+      if (nextWindows === windowsRef.current) {
+        return;
+      }
+
+      windowsRef.current = nextWindows;
+      dispatch(entryActions.toggleChatConversationMinimized(id));
+      setWindows(nextWindows);
     },
     [dispatch],
   );
@@ -397,6 +428,7 @@ const ChatProvider = React.memo(({ children }) => {
       isEnabled,
       isProjectChatEnabled: isCurrentUserChatMember,
       isPending: !!pendingConversation,
+      minimizeConversation,
       openConversation,
       openConversationList,
       openDirectConversation,
@@ -416,6 +448,7 @@ const ChatProvider = React.memo(({ children }) => {
       isConversationListOpen,
       isEnabled,
       isCurrentUserChatMember,
+      minimizeConversation,
       openConversation,
       openConversationList,
       openDirectConversation,

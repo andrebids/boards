@@ -22,6 +22,9 @@ const updateInboxMetaForItemChange = (meta, previousItem, nextItem) => {
   const nextUnreadCount = getInboxUnreadCount(nextItem);
   const previousUnreadConversation = previousUnreadCount > 0 ? 1 : 0;
   const nextUnreadConversation = nextUnreadCount > 0 ? 1 : 0;
+  const previousUnreadMention =
+    previousUnreadConversation && previousItem?.hasUnreadMention ? 1 : 0;
+  const nextUnreadMention = nextUnreadConversation && nextItem?.hasUnreadMention ? 1 : 0;
   const nextMeta = { ...meta };
 
   if (typeof nextMeta.unreadConversationTotal === 'number') {
@@ -33,6 +36,12 @@ const updateInboxMetaForItemChange = (meta, previousItem, nextItem) => {
   if (typeof nextMeta.unreadMessageTotal === 'number') {
     nextMeta.unreadMessageTotal = Math.max(
       nextMeta.unreadMessageTotal + nextUnreadCount - previousUnreadCount,
+      0,
+    );
+  }
+  if (typeof nextMeta.unreadMentionConversationTotal === 'number') {
+    nextMeta.unreadMentionConversationTotal = Math.max(
+      nextMeta.unreadMentionConversationTotal + nextUnreadMention - previousUnreadMention,
       0,
     );
   }
@@ -61,9 +70,11 @@ const updateInboxMetaForItemChange = (meta, previousItem, nextItem) => {
 const initialState = {
   inboxItemsByConversationId: {},
   isInboxFetching: false,
+  isInboxFetchingMore: false,
   hasFetchedInbox: false,
   inboxError: null,
   inboxMeta: {},
+  inboxRequest: null,
   memberIdsByProject: {},
   openConversationIds: [],
   minimizedConversationIds: [],
@@ -91,6 +102,7 @@ export default (state = initialState, { type, payload }) => {
       return {
         ...state,
         isInboxFetching: false,
+        isInboxFetchingMore: false,
         hasFetchedInbox: false,
         inboxError: null,
         memberIdsByProject: {},
@@ -102,33 +114,51 @@ export default (state = initialState, { type, payload }) => {
         hasMoreNewerMessagesByConversation: {},
         typingByConversation: {},
       };
-    case ActionTypes.CHAT_INBOX_FETCH:
+    case ActionTypes.CHAT_INBOX_FETCH: {
+      const isAppending = Boolean(payload.options?.append);
       return {
         ...state,
-        isInboxFetching: true,
+        isInboxFetching: !isAppending,
+        isInboxFetchingMore: isAppending,
+        hasFetchedInbox: isAppending ? state.hasFetchedInbox : false,
         inboxError: null,
+        inboxRequest: {
+          filter: payload.options?.filter || 'all',
+          query: payload.options?.query || '',
+          limit: payload.options?.limit || 50,
+        },
       };
-    case ActionTypes.CHAT_INBOX_FETCH__SUCCESS:
+    }
+    case ActionTypes.CHAT_INBOX_FETCH__SUCCESS: {
+      const pageItemsByConversationId = payload.items.reduce((result, item) => {
+        const conversationId = getInboxConversationId(item);
+        return conversationId
+          ? {
+              ...result,
+              [conversationId]: { ...item, conversationId },
+            }
+          : result;
+      }, {});
       return {
         ...state,
-        inboxItemsByConversationId: payload.items.reduce((result, item) => {
-          const conversationId = getInboxConversationId(item);
-          return conversationId
-            ? {
-                ...result,
-                [conversationId]: { ...item, conversationId },
-              }
-            : result;
-        }, {}),
+        inboxItemsByConversationId: payload.options?.append
+          ? {
+              ...state.inboxItemsByConversationId,
+              ...pageItemsByConversationId,
+            }
+          : pageItemsByConversationId,
         isInboxFetching: false,
+        isInboxFetchingMore: false,
         hasFetchedInbox: true,
         inboxError: null,
         inboxMeta: payload.meta || {},
       };
+    }
     case ActionTypes.CHAT_INBOX_FETCH__FAILURE:
       return {
         ...state,
         isInboxFetching: false,
+        isInboxFetchingMore: false,
         inboxError: payload.error,
       };
     case ActionTypes.CHAT_INBOX_ITEM_UPDATE_HANDLE: {
@@ -657,7 +687,10 @@ export default (state = initialState, { type, payload }) => {
           previousItem && payload.previousData
             ? {
                 ...state.inboxItemsByConversationId,
-                [payload.conversationId]: { ...previousItem, ...payload.previousData },
+                [payload.conversationId]: {
+                  ...previousItem,
+                  ...payload.previousData,
+                },
               }
             : state.inboxItemsByConversationId,
         isPreferencesUpdatingByConversation: {

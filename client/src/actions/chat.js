@@ -5,17 +5,17 @@
 
 import ActionTypes from '../constants/ActionTypes';
 
-const fetchChatInbox = () => ({
+const fetchChatInbox = (options = {}) => ({
   type: ActionTypes.CHAT_INBOX_FETCH,
-  payload: {},
+  payload: { options },
 });
-fetchChatInbox.success = (items, meta, users) => ({
+fetchChatInbox.success = (items, meta, users, options = {}) => ({
   type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,
-  payload: { items, meta, users },
+  payload: { items, meta, users, options },
 });
-fetchChatInbox.failure = (error) => ({
+fetchChatInbox.failure = (error, options = {}) => ({
   type: ActionTypes.CHAT_INBOX_FETCH__FAILURE,
-  payload: { error },
+  payload: { error, options },
 });
 
 const markAllChatInboxAsRead = (conversationIds, previousItemsByConversationId, previousMeta) => ({

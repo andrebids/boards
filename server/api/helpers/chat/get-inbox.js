@@ -54,13 +54,21 @@ const isAfterCursor = (item, cursor) =>
     lastMessageAt: cursor.lastMessageAt,
   }) > 0;
 
+const normalizeSearchText = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase();
+
 const getCandidateProjects = async (user) => {
   const managerProjectIds = await sails.helpers.users.getManagerProjectIds(user.id);
   const fullyVisibleProjectIds = [...managerProjectIds];
   let sharedProjects = [];
 
   if (user.role === User.Roles.ADMIN) {
-    sharedProjects = await Project.qm.getShared({ exceptIdOrIds: managerProjectIds });
+    sharedProjects = await Project.qm.getShared({
+      exceptIdOrIds: managerProjectIds,
+    });
     fullyVisibleProjectIds.push(...sails.helpers.utils.mapRecords(sharedProjects));
   }
 
@@ -90,6 +98,11 @@ module.exports = {
     before: {
       type: 'string',
     },
+    query: {
+      type: 'string',
+      maxLength: 200,
+      defaultsTo: '',
+    },
     limit: {
       type: 'number',
       min: 1,
@@ -115,7 +128,9 @@ module.exports = {
         included: { users: [] },
         meta: {
           hasChatAccess: false,
+          conversationTotal: 0,
           unreadConversationTotal: 0,
+          unreadMentionConversationTotal: 0,
           unreadMessageTotal: 0,
           unreadConversationTotalsByProjectId: {},
           hasMore: false,
@@ -217,6 +232,19 @@ module.exports = {
             : ChatParticipant.NotificationLevels.ALL,
           mutedUntil: currentParticipant ? currentParticipant.mutedUntil : null,
           isMuted: currentParticipant ? ChatParticipant.isMuted(currentParticipant) : false,
+          searchText: normalizeSearchText(
+            [
+              conversation.title,
+              project.name,
+              lastMessage && lastMessage.text,
+              ...participants.map(({ userId }) => {
+                const participantUser = userById.get(userId);
+                return participantUser && participantUser.name;
+              }),
+            ]
+              .filter(Boolean)
+              .join(' '),
+          ),
         };
       })
       .sort(compareInboxItems);
@@ -231,7 +259,10 @@ module.exports = {
     );
     const meta = {
       hasChatAccess,
+      conversationTotal: allItems.length,
       unreadConversationTotal: unreadItems.length,
+      unreadMentionConversationTotal: unreadItems.filter(({ hasUnreadMention }) => hasUnreadMention)
+        .length,
       unreadMessageTotal: unreadItems.reduce((total, item) => total + item.unreadCount, 0),
       unreadConversationTotalsByProjectId,
     };
@@ -241,6 +272,13 @@ module.exports = {
       filteredItems = unreadItems;
     } else if (inputs.filter === 'mentions') {
       filteredItems = unreadItems.filter(({ hasUnreadMention }) => hasUnreadMention);
+    }
+
+    const normalizedQuery = normalizeSearchText(inputs.query).trim();
+    if (normalizedQuery) {
+      filteredItems = filteredItems.filter(({ searchText }) =>
+        searchText.includes(normalizedQuery),
+      );
     }
 
     const cursor = decodeCursor(inputs.before);
@@ -256,7 +294,8 @@ module.exports = {
     }
 
     const hasMore = filteredItems.length > inputs.limit;
-    const items = filteredItems.slice(0, inputs.limit);
+    const itemsWithSearchText = filteredItems.slice(0, inputs.limit);
+    const items = itemsWithSearchText.map(({ searchText, ...item }) => item);
     const nextCursor = hasMore && items.length > 0 ? encodeCursor(items[items.length - 1]) : null;
     const includedUserIds = new Set(
       items

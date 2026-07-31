@@ -11,7 +11,9 @@ import ActionTypes from '../../../constants/ActionTypes';
 
 export default function* chatWatchers() {
   yield all([
-    takeLatest(EntryActionTypes.CHAT_INBOX_FETCH, () => services.fetchChatInbox()),
+    takeLatest(EntryActionTypes.CHAT_INBOX_FETCH, ({ payload: { options } }) =>
+      services.fetchChatInbox(options),
+    ),
     takeEvery(EntryActionTypes.CHAT_INBOX_READ, ({ payload: { conversationIds } }) =>
       services.markAllChatInboxAsRead(conversationIds),
     ),

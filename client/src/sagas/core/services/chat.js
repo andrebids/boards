@@ -94,16 +94,37 @@ export function* fetchChatMembers(projectId) {
   yield put(actions.fetchChatMembers.success(projectId, users));
 }
 
-export function* fetchChatInbox() {
-  yield put(actions.fetchChatInbox());
+export function* fetchChatInbox(options) {
+  let effectiveOptions = options;
+  if (!effectiveOptions) {
+    const chatState = yield select(selectors.selectChatState);
+    effectiveOptions = chatState.inboxRequest || {};
+  }
+
+  const requestOptions = {
+    filter: effectiveOptions.filter || 'all',
+    limit: effectiveOptions.limit || 50,
+    ...(effectiveOptions.query && { query: effectiveOptions.query }),
+    ...(effectiveOptions.before && { before: effectiveOptions.before }),
+  };
+  const actionOptions = {
+    ...requestOptions,
+    append: Boolean(effectiveOptions.append && effectiveOptions.before),
+  };
+  yield put(actions.fetchChatInbox(actionOptions));
 
   try {
-    const body = yield call(request, api.getChatInbox);
+    const body = yield call(request, api.getChatInbox, requestOptions);
     yield put(
-      actions.fetchChatInbox.success(body.items || [], body.meta || {}, body.included?.users || []),
+      actions.fetchChatInbox.success(
+        body.items || [],
+        body.meta || {},
+        body.included?.users || [],
+        actionOptions,
+      ),
     );
   } catch (error) {
-    yield put(actions.fetchChatInbox.failure(error));
+    yield put(actions.fetchChatInbox.failure(error, actionOptions));
   }
 }
 
@@ -139,7 +160,11 @@ export function* markAllChatInboxAsRead(conversationIds) {
   );
 
   try {
-    const body = yield call(request, api.markAllChatInboxAsRead, targetConversationIds);
+    const body = yield call(
+      request,
+      api.markAllChatInboxAsRead,
+      conversationIds ? targetConversationIds : undefined,
+    );
     yield put(actions.markAllChatInboxAsRead.success(body.items || [], body.meta));
     yield all(
       (body.items || []).map((readState) => put(actions.handleChatConversationRead(readState))),

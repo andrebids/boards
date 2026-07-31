@@ -1,6 +1,43 @@
 :global(#app) {
-  .avatar { align-items: center; border: 1px solid var(--chat-border); border-radius: 50%; color: var(--chat-foreground); display: inline-flex; flex: 0 0 auto; font-size: 12px; font-weight: 700; height: 36px; justify-content: center; overflow: visible; position: relative; width: 36px; }
-  .userAvatar { display: inline-flex; flex: 0 0 auto; position: relative; }
-  .image { background-position: center; background-size: cover; border-radius: inherit; inset: 0; position: absolute; }
-  .online { background: var(--chat-success); border: 2px solid var(--chat-overlay); border-radius: 50%; bottom: -1px; height: 10px; position: absolute; right: -1px; width: 10px; }
+  .avatar {
+    align-items: center;
+    border: 0;
+    border-radius: 50%;
+    color: var(--chat-foreground);
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 700;
+    height: 36px;
+    justify-content: center;
+    overflow: visible;
+    position: relative;
+    width: 36px;
+  }
+  .projectAvatar {
+    background: linear-gradient(145deg, #64748b 0%, #475569 100%);
+    color: #f8fafc;
+  }
+  .userAvatar {
+    display: inline-flex;
+    flex: 0 0 auto;
+    position: relative;
+  }
+  .image {
+    background-position: center;
+    background-size: cover;
+    border-radius: inherit;
+    inset: 0;
+    position: absolute;
+  }
+  .online {
+    background: var(--chat-success);
+    border: 2px solid var(--chat-overlay);
+    border-radius: 50%;
+    bottom: -1px;
+    height: 10px;
+    position: absolute;
+    right: -1px;
+    width: 10px;
+  }
 }

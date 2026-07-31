@@ -61,6 +61,8 @@ export default {
       groups: 'Grupos',
       leaveGroup: 'Salir del grupo',
       loadingGlobalInbox: 'Cargando conversaciones de todos los proyectos',
+      loadingOlderConversations: 'Cargando conversaciones anteriores…',
+      loadOlderConversations: 'Cargar conversaciones anteriores',
       loadingMessages: 'Cargando mensajes',
       manageGroup: 'Gestionar grupo',
       markAsRead: 'Marcar como leída',

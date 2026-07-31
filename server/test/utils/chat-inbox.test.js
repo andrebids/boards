@@ -68,7 +68,12 @@ describe('Chat inbox', () => {
       },
     ];
     const participants = [
-      { id: '1', conversationId: '200', userId: '1', notificationLevel: 'mentions' },
+      {
+        id: '1',
+        conversationId: '200',
+        userId: '1',
+        notificationLevel: 'mentions',
+      },
       { id: '2', conversationId: '200', userId: '2', notificationLevel: 'all' },
       { id: '3', conversationId: '201', userId: '3', notificationLevel: 'all' },
       { id: '4', conversationId: '201', userId: '4', notificationLevel: 'all' },
@@ -80,7 +85,10 @@ describe('Chat inbox', () => {
       Roles: { ADMIN: 'admin' },
       qm: {
         getByIds: async (ids) =>
-          ids.map((id) => ({ id, name: id === '2' ? 'Beatriz' : `User ${id}` })),
+          ids.map((id) => ({
+            id,
+            name: id === '2' ? 'Beatriz' : `User ${id}`,
+          })),
       },
     };
     global.Project = {
@@ -172,7 +180,9 @@ describe('Chat inbox', () => {
       });
       expect(result.meta).to.deep.equal({
         hasChatAccess: true,
+        conversationTotal: 2,
         unreadConversationTotal: 2,
+        unreadMentionConversationTotal: 1,
         unreadMessageTotal: 5,
         unreadConversationTotalsByProjectId: { 10: 1, 20: 1 },
         hasMore: false,
@@ -204,6 +214,15 @@ describe('Chat inbox', () => {
         limit: 50,
       });
       expect(mentions.items.map(({ conversationId }) => conversationId)).to.deep.equal(['100']);
+
+      const search = await getInbox.fn({
+        user,
+        filter: 'all',
+        query: 'beatriz',
+        limit: 50,
+      });
+      expect(search.items.map(({ conversationId }) => conversationId)).to.deep.equal(['200']);
+      expect(search.items[0]).not.to.have.property('searchText');
     } finally {
       restoreGlobals(previousGlobals);
     }
@@ -222,7 +241,10 @@ describe('Chat inbox', () => {
       _: global._,
     };
     global._ = lodash;
-    global.User = { Roles: { ADMIN: 'admin' }, qm: { getByIds: async () => [] } };
+    global.User = {
+      Roles: { ADMIN: 'admin' },
+      qm: { getByIds: async () => [] },
+    };
     global.Project = {
       qm: {
         getByIds: async () => [{ id: '10', name: 'Empty' }],
@@ -292,7 +314,10 @@ describe('Chat inbox', () => {
     };
 
     try {
-      const result = await getUnreadDetails.fn({ conversationIds: ['10'], userId: '3' });
+      const result = await getUnreadDetails.fn({
+        conversationIds: ['10'],
+        userId: '3',
+      });
       expect(query).to.include('m.user_id <> $1');
       expect(query).to.include('m.deleted_at IS NULL');
       expect(query).to.include('MIN(m.id)');
@@ -358,6 +383,69 @@ describe('Chat inbox', () => {
       const result = await chatInboxRead.fn.call({ req }, { conversationIds: ['10', '20'] });
       expect(markInputs.map(({ messageId }) => messageId)).to.deep.equal(['100', '200']);
       expect(result.items.map(({ conversationId }) => conversationId)).to.deep.equal(['10', '20']);
+    } finally {
+      restoreGlobals(previousGlobals);
+    }
+  });
+
+  it('marks every unread conversation as read across inbox pages', async () => {
+    const previousGlobals = {
+      sails: global.sails,
+      ChatConversation: global.ChatConversation,
+      ChatMessage: global.ChatMessage,
+    };
+    const conversations = [
+      { id: '10', projectId: '1' },
+      { id: '20', projectId: '2' },
+    ];
+    const markInputs = [];
+    global.ChatConversation = { qm: { getByIds: async () => conversations } };
+    global.ChatMessage = {
+      qm: {
+        getLastByConversationIds: async () => [
+          { id: '100', conversationId: '10' },
+          { id: '200', conversationId: '20' },
+        ],
+      },
+    };
+    global.sails = {
+      helpers: {
+        chat: {
+          getInbox: {
+            with: async ({ before }) =>
+              before
+                ? {
+                    items: [{ conversationId: '20' }],
+                    meta: { nextCursor: null },
+                  }
+                : {
+                    items: [{ conversationId: '10' }],
+                    meta: { nextCursor: 'next-page' },
+                  },
+          },
+          getConversationAccess: { with: async () => ({ canWrite: true }) },
+          markAsRead: {
+            with: async (inputs) => {
+              markInputs.push(inputs);
+              return { conversationId: inputs.conversation.id, unreadCount: 0 };
+            },
+          },
+        },
+      },
+    };
+
+    try {
+      const req = { currentUser: { id: '3' } };
+      const result = await chatInboxRead.fn.call({ req }, { all: true });
+
+      expect(markInputs.map(({ messageId }) => messageId)).to.deep.equal(['100', '200']);
+      expect(result.items).to.deep.equal([]);
+      expect(result.meta).to.deep.equal({
+        unreadConversationTotal: 0,
+        unreadMentionConversationTotal: 0,
+        unreadMessageTotal: 0,
+        unreadConversationTotalsByProjectId: {},
+      });
     } finally {
       restoreGlobals(previousGlobals);
     }

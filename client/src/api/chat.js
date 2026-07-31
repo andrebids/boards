@@ -50,19 +50,21 @@ const transformIncluded = (included) => ({
 const getChatMembers = (projectId, headers) =>
   socket.get(`/projects/${projectId}/chat-members`, undefined, headers);
 
-const getChatInbox = (headers) =>
-  socket.get('/chat-inbox', undefined, headers).then((body) => ({
+const getChatInbox = (data, headers) =>
+  socket.get('/chat-inbox', data, headers).then((body) => ({
     ...body,
     items: (body.items || []).map(transformChatInboxItem),
   }));
 
 const markAllChatInboxAsRead = (conversationIds, headers) =>
-  socket.post('/chat-inbox/read', { conversationIds }, headers).then((body) => ({
-    ...body,
-    items: (body.items || (body.item ? [body.item] : [])).map((item) =>
-      transformDates(item, ['lastReadAt']),
-    ),
-  }));
+  socket
+    .post('/chat-inbox/read', conversationIds ? { conversationIds } : { all: true }, headers)
+    .then((body) => ({
+      ...body,
+      items: (body.items || (body.item ? [body.item] : [])).map((item) =>
+        transformDates(item, ['lastReadAt']),
+      ),
+    }));
 
 const getChatConversations = (projectId, headers) =>
   socket.get(`/projects/${projectId}/chat-conversations`, undefined, headers).then((body) => ({

@@ -5,9 +5,9 @@
 
 import EntryActionTypes from '../constants/EntryActionTypes';
 
-const fetchChatInbox = () => ({
+const fetchChatInbox = (options = {}) => ({
   type: EntryActionTypes.CHAT_INBOX_FETCH,
-  payload: {},
+  payload: { options },
 });
 const markAllChatInboxAsRead = (conversationIds) => ({
   type: EntryActionTypes.CHAT_INBOX_READ,

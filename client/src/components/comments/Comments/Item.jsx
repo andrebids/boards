@@ -20,7 +20,6 @@ import { StaticUserIds } from '../../../constants/StaticUsers';
 import { BoardMembershipRoles } from '../../../constants/Enums';
 import { ClosableContext } from '../../../contexts';
 import Edit from './Edit';
-import TimeAgo from '../../common/TimeAgo';
 import Markdown from '../../common/Markdown';
 import ConfirmationStep from '../../common/ConfirmationStep';
 import UserAvatar from '../../users/UserAvatar';
@@ -28,6 +27,13 @@ import UserAvatar from '../../users/UserAvatar';
 import styles from './Item.module.scss';
 
 const GROUP_WINDOW = 5 * 60 * 1000;
+
+const padDatePart = (value) => String(value).padStart(2, '0');
+
+const formatCommentTimestamp = (date) =>
+  `${padDatePart(date.getDate())}/${padDatePart(date.getMonth() + 1)} ${padDatePart(
+    date.getHours(),
+  )}:${padDatePart(date.getMinutes())}`;
 
 const isSameDay = (firstDate, secondDate) =>
   firstDate.getFullYear() === secondDate.getFullYear() &&
@@ -136,6 +142,12 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
           context: 'title',
         })
       : user.name;
+  const commentDate = new Date(comment.createdAt);
+  const commentTimestamp = formatCommentTimestamp(commentDate);
+  const commentTimestampTitle = t('format:fullDateTime', {
+    value: commentDate,
+    postProcess: 'formatDate',
+  });
 
   return (
     <Comment
@@ -167,7 +179,9 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
               </>
             )}
             <span className={styles.date}>
-              <TimeAgo date={comment.createdAt} />
+              <time dateTime={commentDate.toISOString()} title={commentTimestampTitle}>
+                {commentTimestamp}
+              </time>
             </span>
           </div>
         )}

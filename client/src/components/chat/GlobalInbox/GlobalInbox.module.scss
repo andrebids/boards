@@ -158,6 +158,62 @@
     }
   }
 
+  .pagination {
+    display: flex;
+    justify-content: center;
+    padding: 8px 8px 4px;
+
+    button {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: var(--chat-radius-control);
+      color: var(--chat-accent-hover);
+      cursor: pointer;
+      display: inline-flex;
+      font: inherit;
+      font-size: var(--chat-font-body);
+      font-weight: 700;
+      gap: 6px;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 12px;
+      transition:
+        background-color var(--chat-motion-fast) var(--chat-ease),
+        color var(--chat-motion-fast) var(--chat-ease),
+        transform var(--chat-motion-fast) var(--chat-ease);
+
+      &:hover:not(:disabled) {
+        background: var(--chat-default);
+        color: var(--chat-foreground);
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.97);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--chat-accent);
+        outline-offset: 1px;
+      }
+
+      &:disabled {
+        color: var(--chat-muted);
+        cursor: wait;
+      }
+    }
+  }
+
+  .loadingIcon {
+    animation: inboxLoadingSpin 0.8s linear infinite;
+  }
+
+  @keyframes inboxLoadingSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .skeletons {
     display: flex;
     flex-direction: column;
@@ -285,8 +341,13 @@
     .search,
     .filters button,
     .bulkActions button,
+    .pagination button,
     .state button {
       transition: none;
+    }
+
+    .loadingIcon {
+      animation: none;
     }
   }
 }
