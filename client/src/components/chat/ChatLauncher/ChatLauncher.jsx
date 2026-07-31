@@ -13,7 +13,7 @@ import { CloseButton } from '../../../lib/custom-ui';
 import { useChat } from '../ChatContext';
 import ChatAvatar from '../ChatAvatar';
 import ChatPanel from '../ChatPanel';
-import { getMessagePreviewText, shouldShowMessagePreview } from './preview';
+import { getMessageAlertPresentation, getMessagePreviewText } from './preview';
 
 import styles from './ChatLauncher.module.scss';
 
@@ -57,8 +57,11 @@ const ChatLauncher = React.memo(() => {
   const [isAlerting, setIsAlerting] = useState(false);
   const [previewAlert, setPreviewAlert] = useState(null);
   const [isPreviewClosing, setIsPreviewClosing] = useState(false);
+  const alertTimeoutRef = useRef(null);
   const closeTimeoutRef = useRef(null);
   const closeCompletionRef = useRef(null);
+  const handledAlertMessageIdRef = useRef(null);
+  const handledPreviewMessageIdRef = useRef(null);
   const previewTimeoutRef = useRef(null);
   const previewExitTimeoutRef = useRef(null);
 
@@ -89,20 +92,52 @@ const ChatLauncher = React.memo(() => {
   }, [clearPreviewTimers, dismissPreview]);
 
   useEffect(() => {
-    if (!lastMessageAlert || windows.some(({ id }) => id === lastMessageAlert.conversationId)) {
+    const presentation = getMessageAlertPresentation(
+      lastMessageAlert,
+      handledAlertMessageIdRef.current,
+      windows,
+      false,
+    );
+    if (!presentation.isNew) {
       return undefined;
     }
 
+    handledAlertMessageIdRef.current = presentation.messageId;
+    if (!presentation.isEligible) {
+      return undefined;
+    }
+
+    if (alertTimeoutRef.current) {
+      window.clearTimeout(alertTimeoutRef.current);
+    }
     setIsAlerting(true);
-    const timeoutId = window.setTimeout(() => setIsAlerting(false), 1600);
-    return () => window.clearTimeout(timeoutId);
+    alertTimeoutRef.current = window.setTimeout(() => {
+      setIsAlerting(false);
+      alertTimeoutRef.current = null;
+    }, 1600);
+    return undefined;
   }, [lastMessageAlert, windows]);
 
   useEffect(() => {
-    if (!shouldShowMessagePreview(lastMessageAlert, windows, isConversationListOpen)) {
+    const presentation = getMessageAlertPresentation(
+      lastMessageAlert,
+      handledPreviewMessageIdRef.current,
+      windows,
+      isConversationListOpen,
+    );
+
+    if (presentation.isNew) {
+      handledPreviewMessageIdRef.current = presentation.messageId;
+    }
+
+    if (!presentation.isEligible) {
       clearPreviewTimers();
       setPreviewAlert(null);
       setIsPreviewClosing(false);
+      return undefined;
+    }
+
+    if (!presentation.shouldPresent) {
       return undefined;
     }
 
@@ -110,7 +145,7 @@ const ChatLauncher = React.memo(() => {
     setIsPreviewClosing(false);
     schedulePreviewDismiss();
 
-    return clearPreviewTimers;
+    return undefined;
   }, [
     clearPreviewTimers,
     isConversationListOpen,
@@ -121,6 +156,9 @@ const ChatLauncher = React.memo(() => {
 
   useEffect(
     () => () => {
+      if (alertTimeoutRef.current) {
+        window.clearTimeout(alertTimeoutRef.current);
+      }
       if (closeTimeoutRef.current) {
         window.clearTimeout(closeTimeoutRef.current);
       }

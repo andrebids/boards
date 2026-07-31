@@ -1,4 +1,8 @@
-import { getMessagePreviewText, shouldShowMessagePreview } from './preview';
+import {
+  getMessageAlertPresentation,
+  getMessagePreviewText,
+  shouldShowMessagePreview,
+} from './preview';
 
 describe('chat launcher message preview', () => {
   const t = (key) => key;
@@ -18,5 +22,27 @@ describe('chat launcher message preview', () => {
     expect(getMessagePreviewText({ text: '', attachments: [{ id: 'file-1' }] }, t)).toBe(
       'chat.sentFile',
     );
+  });
+
+  test('does not present the same alert after its conversation window closes', () => {
+    const alert = { conversationId: 'conversation-1', messageId: 'message-1' };
+    const whileOpen = getMessageAlertPresentation(alert, null, [{ id: 'conversation-1' }], false);
+
+    expect(whileOpen).toMatchObject({
+      isNew: true,
+      messageId: 'message-1',
+      shouldPresent: false,
+    });
+
+    const afterClosing = getMessageAlertPresentation(alert, whileOpen.messageId, [], false);
+    expect(afterClosing).toMatchObject({ isNew: false, shouldPresent: false });
+
+    const nextMessage = getMessageAlertPresentation(
+      { ...alert, messageId: 'message-2' },
+      afterClosing.messageId,
+      [],
+      false,
+    );
+    expect(nextMessage).toMatchObject({ isNew: true, shouldPresent: true });
   });
 });

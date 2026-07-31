@@ -5,6 +5,23 @@ export const shouldShowMessagePreview = (alert, windows, isConversationListOpen)
     alert && !isConversationListOpen && !windows.some(({ id }) => id === alert.conversationId),
   );
 
+export const getMessageAlertPresentation = (
+  alert,
+  handledMessageId,
+  windows,
+  isConversationListOpen,
+) => {
+  const messageId = alert?.messageId || null;
+  const isNew = Boolean(messageId && messageId !== handledMessageId);
+
+  return {
+    isEligible: shouldShowMessagePreview(alert, windows, isConversationListOpen),
+    isNew,
+    messageId,
+    shouldPresent: isNew && shouldShowMessagePreview(alert, windows, isConversationListOpen),
+  };
+};
+
 export const getMessagePreviewText = (lastMessage, t) => {
   if (!lastMessage) {
     return t('chat.newMessageAlert');
