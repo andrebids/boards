@@ -18,6 +18,8 @@ const NOTIFICATION_TYPE_TO_PARTIAL = {
   completeTask: 'complete-task',
 };
 
+const COMPACT_NOTIFICATION_TYPES = new Set(['mentionInComment']);
+
 const getTemplatesSignature = (templatesDir) => {
   const getTemplateFiles = (directory) => {
     return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -68,6 +70,7 @@ module.exports = {
 
       const templateData = {
         ...inputs.data,
+        is_compact_notification: COMPACT_NOTIFICATION_TYPES.has(inputs.templateName),
         notification_partial_name:
           NOTIFICATION_TYPE_TO_PARTIAL[inputs.templateName] || inputs.templateName,
       };

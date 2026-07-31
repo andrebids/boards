@@ -834,6 +834,8 @@ export default {
       openImage: 'Abrir {{name}}',
       playVideo: 'Reproduzir {{name}}',
       downloadOriginalVideo: 'Descarregar vídeo original',
+      enableVideoLoop: 'Repetir vídeo',
+      disableVideoLoop: 'Parar de repetir vídeo',
       changePassword: 'Alterar password',
       clear: 'Limpar',
       close: 'Fechar',

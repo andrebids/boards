@@ -1,0 +1,28 @@
+<!-- Notificação compacta -->
+<tr>
+  <td class="px" style="padding:14px 28px 28px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#24314b; color:#b9ceff; font:700 11px/16px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; text-transform:uppercase; padding:5px 10px; border-radius:999px;">
+          {{notification_type_label}}
+        </td>
+      </tr>
+    </table>
+
+    <h1 class="h1" style="margin:16px 0 8px; font:700 24px/32px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#f7f8fa;">
+      {{actor_name}} {{action_verb}} {{action_object}}
+    </h1>
+
+    <p style="margin:0 0 20px; font:400 14px/22px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#9da8b8;">
+      Em <a href="{{card_url}}" target="_blank" style="color:#8fb0ff; font-weight:600; text-decoration:none;">{{card_title}}</a> · {{board_name}}
+    </p>
+
+    <div style="padding:16px 18px; background-color:#242933; border-radius:12px; font:400 14px/22px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#eef1f5; overflow-wrap:anywhere;">
+      “{{comment_excerpt}}”
+    </div>
+
+    <div style="margin-top:20px;">
+      {{> cta_button}}
+    </div>
+  </td>
+</tr>

@@ -37,6 +37,10 @@
     width: auto;
   }
 
+  .loopButton[aria-pressed='true'] {
+    color: #60a5fa;
+  }
+
   .state {
     background: #09090b;
     border-radius: 14px;

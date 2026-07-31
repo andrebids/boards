@@ -13,9 +13,9 @@ import { useDispatch } from 'react-redux';
 import LinkifyReact from 'linkify-react';
 import {
   Check,
+  CheckCheck,
   ChevronDown,
   Download,
-  Eye,
   ExternalLink,
   FileText,
   Forward,
@@ -1020,7 +1020,7 @@ const MessageList = React.memo(
                             aria-label={t('chat.seen')}
                             title={t('chat.seen')}
                           >
-                            <Eye aria-hidden="true" size={12} strokeWidth={2} />
+                            <CheckCheck aria-hidden="true" size={14} strokeWidth={2.25} />
                           </span>
                         )}
                         {message.isFailed && (

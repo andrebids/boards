@@ -557,6 +557,8 @@ export default {
       openImage: 'Open {{name}}',
       playVideo: 'Play {{name}}',
       downloadOriginalVideo: 'Download original video',
+      enableVideoLoop: 'Repeat video',
+      disableVideoLoop: 'Stop repeating video',
       changePassword: 'Change password',
       clear: 'Clear',
       close: 'Close',
