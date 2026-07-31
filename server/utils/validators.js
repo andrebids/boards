@@ -28,7 +28,7 @@ const isId = (value) =>
 
 const isIds = (values) => _.every(values, isId);
 
-const isPassword = (value) => zxcvbn(value).score >= 2; // TODO: move to config
+const isPassword = (value) => value.length >= 8 && zxcvbn(value).score >= 2; // TODO: move to config
 
 const isEmailOrUsername = (value) =>
   value.includes('@')

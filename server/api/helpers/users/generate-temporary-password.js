@@ -15,7 +15,7 @@ const CHARACTER_GROUPS = [
 ];
 
 const ALL_CHARACTERS = CHARACTER_GROUPS.join('');
-const PASSWORD_LENGTH = 20;
+const PASSWORD_LENGTH = 8;
 
 const pickRandomCharacter = (characters) => characters[crypto.randomInt(characters.length)];
 

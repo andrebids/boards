@@ -25,6 +25,11 @@ const Sizes = {
   MASSIVE: 'massive',
 };
 
+const Variants = {
+  DEFAULT: 'default',
+  BOARD: 'board',
+};
+
 const COLORS = [
   'emerald',
   'peter-river',
@@ -35,7 +40,7 @@ const COLORS = [
   'midnight-blue',
 ];
 
-const getColor = name => {
+const getColor = (name) => {
   let sum = 0;
   for (let i = 0; i < name.length; i += 1) {
     sum += name.charCodeAt(i);
@@ -45,11 +50,11 @@ const getColor = name => {
 };
 
 const UserAvatar = React.memo(
-  ({ id, size, isDisabled, withCreatorIndicator, className, onClick }) => {
+  ({ id, size, variant, isDisabled, withCreatorIndicator, className, onClick }) => {
     const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
 
-  const user = useSelector(state => selectUserById(state, id));
-  const [t] = useTranslation();
+    const user = useSelector((state) => selectUserById(state, id));
+    const [t] = useTranslation();
 
     const contentNode = (
       <span
@@ -63,24 +68,16 @@ const UserAvatar = React.memo(
         className={classNames(
           styles.wrapper,
           styles[`wrapper${upperFirst(size)}`],
+          variant === Variants.BOARD && styles.wrapperBoard,
           onClick && styles.wrapperHoverable,
-          !user.avatar &&
-            styles[`background${upperFirst(camelCase(getColor(user.name)))}`]
+          !user.avatar && styles[`background${upperFirst(camelCase(getColor(user.name)))}`],
         )}
         style={{
-          background:
-            user.avatar &&
-            `url("${user.avatar.thumbnailUrls.cover180}") center / cover`,
+          background: user.avatar && `url("${user.avatar.thumbnailUrls.cover180}") center / cover`,
         }}
       >
-        {!user.avatar && (
-          <span className={styles.initials}>
-            {initials(user.name).slice(0, 2)}
-          </span>
-        )}
-        {withCreatorIndicator && (
-          <span className={styles.creatorIndicator}>+</span>
-        )}
+        {!user.avatar && <span className={styles.initials}>{initials(user.name).slice(0, 2)}</span>}
+        {withCreatorIndicator && <span className={styles.creatorIndicator}>+</span>}
       </span>
     );
 
@@ -97,12 +94,13 @@ const UserAvatar = React.memo(
     ) : (
       <span className={className}>{contentNode}</span>
     );
-  }
+  },
 );
 
 UserAvatar.propTypes = {
   id: PropTypes.string,
   size: PropTypes.oneOf(Object.values(Sizes)),
+  variant: PropTypes.oneOf(Object.values(Variants)),
   isDisabled: PropTypes.bool,
   withCreatorIndicator: PropTypes.bool,
   className: PropTypes.string,
@@ -112,6 +110,7 @@ UserAvatar.propTypes = {
 UserAvatar.defaultProps = {
   id: undefined,
   size: Sizes.MEDIUM,
+  variant: Variants.DEFAULT,
   isDisabled: false,
   withCreatorIndicator: false,
   className: undefined,

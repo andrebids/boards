@@ -9,7 +9,7 @@ describe('User onboarding helpers', () => {
       const passwords = Array.from({ length: 50 }, () => generateTemporaryPassword.fn());
 
       passwords.forEach((password) => {
-        expect(password).to.have.lengthOf(20);
+        expect(password).to.have.lengthOf(8);
         expect(password).to.match(/[A-Z]/);
         expect(password).to.match(/[a-z]/);
         expect(password).to.match(/[0-9]/);
@@ -18,6 +18,14 @@ describe('User onboarding helpers', () => {
       });
 
       expect(new Set(passwords).size).to.equal(passwords.length);
+    });
+  });
+
+  describe('password validation', () => {
+    it('requires at least eight characters and sufficient strength', () => {
+      expect(isPassword('aB3!xyz')).to.equal(false);
+      expect(isPassword('12345678')).to.equal(false);
+      expect(isPassword('T7#mQ2@z')).to.equal(true);
     });
   });
 });

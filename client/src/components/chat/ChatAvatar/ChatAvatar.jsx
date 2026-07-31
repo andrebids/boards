@@ -3,16 +3,25 @@ import PropTypes from 'prop-types';
 import initials from 'initials';
 import { UserRound, Users } from 'lucide-react';
 
+import UserAvatar from '../../users/UserAvatar';
+
 import styles from './ChatAvatar.module.scss';
 
 const mutedColors = ['#536b84', '#65717d', '#55737a', '#74677f', '#747b61'];
 
 const ChatAvatar = React.memo(({ isOnline, isProject, user }) => {
+  if (!isProject && user?.id) {
+    return (
+      <span className={styles.userAvatar}>
+        <UserAvatar id={user.id} size="large" />
+        {isOnline && <span className={styles.online} />}
+      </span>
+    );
+  }
+
   const colorIndex = user
-    ? [...user.name].reduce(
-        (sum, character) => sum + character.charCodeAt(0),
-        0,
-      ) % mutedColors.length
+    ? [...user.name].reduce((sum, character) => sum + character.charCodeAt(0), 0) %
+      mutedColors.length
     : 0;
 
   let contentNode = initials(user?.name || '?').slice(0, 2);
@@ -43,6 +52,7 @@ ChatAvatar.propTypes = {
   isOnline: PropTypes.bool,
   isProject: PropTypes.bool,
   user: PropTypes.shape({
+    id: PropTypes.string,
     name: PropTypes.string,
     avatar: PropTypes.shape({
       thumbnailUrls: PropTypes.shape({

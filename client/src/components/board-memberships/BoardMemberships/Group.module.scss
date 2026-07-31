@@ -5,39 +5,70 @@
 
 :global(#app) {
   .icon {
-    color: rgba(255, 255, 255, 0.64);
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    box-shadow: none;
+    color: rgba(255, 255, 255, 0.94);
+    display: inline-flex;
+    flex: 0 0 36px;
+    height: 36px;
+    justify-content: center;
     line-height: 1;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(2, 6, 23, 0.28);
+    width: 36px;
   }
 
   .othersButton {
-    background: rgba(0, 0, 0, 0.24);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 50%;
     box-shadow: none;
     color: #fff;
+    font-weight: 700;
     line-height: 36px;
     margin: 0;
     padding: 0;
-    transition: all 0.1s ease 0s;
+    transition:
+      background-color 140ms ease-out,
+      transform 140ms cubic-bezier(0.2, 0, 0, 1);
     vertical-align: top;
     width: 36px;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.32);
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+
+    &:focus-visible {
+      box-shadow:
+        0 0 0 2px rgba(255, 255, 255, 0.9),
+        0 0 0 5px rgba(96, 165, 250, 0.66);
     }
   }
 
   .user {
     line-height: 1;
-    margin: 0 -4px 0 0;
+    margin: 0;
+    position: relative;
+
+    &:hover,
+    &:focus-within {
+      z-index: 2;
+    }
   }
 
   .wrapper {
     align-items: center;
-    background: rgba(0, 0, 0, 0.08);
-    border-radius: 24px;
     display: flex;
-    line-height: 34px;
-    padding: 5px 7px 5px 10px;
+    gap: 6px;
+    line-height: 36px;
+    padding: 5px 0;
 
     &:not(:last-child) {
       margin-right: 10px;

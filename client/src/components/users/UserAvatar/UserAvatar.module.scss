@@ -11,6 +11,22 @@
     display: inline-block;
     outline: none;
     padding: 0;
+
+    &:focus-visible .wrapperBoard {
+      box-shadow:
+        0 0 0 3px rgba(96, 165, 250, 0.72),
+        0 8px 20px rgba(2, 6, 23, 0.3);
+    }
+
+    &:active .wrapperBoard {
+      transform: scale(0.96);
+    }
+
+    &:disabled .wrapperBoard {
+      cursor: default;
+      opacity: 0.5;
+      transform: none;
+    }
   }
 
   // TODO: provide for different sizes
@@ -28,7 +44,10 @@
   }
 
   .initials {
+    font-weight: 700;
+    letter-spacing: 0.015em;
     margin: 0 auto;
+    text-shadow: 0 1px 2px rgba(2, 6, 23, 0.32);
     text-transform: capitalize;
   }
 
@@ -44,6 +63,19 @@
 
   .wrapperHoverable:hover {
     opacity: 0.75;
+  }
+
+  .wrapperBoard {
+    box-shadow: none;
+    transition:
+      opacity 120ms ease-out,
+      transform 160ms cubic-bezier(0.2, 0, 0, 1);
+
+    &.wrapperHoverable:hover {
+      box-shadow: none;
+      opacity: 1;
+      transform: translateY(-2px) scale(1.04);
+    }
   }
 
   /* Sizes */
@@ -75,6 +107,17 @@
     height: 36px;
     padding: 12px 0 10px;
     width: 36px;
+  }
+
+  .wrapperLarge.wrapperBoard {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .wrapperBoard .initials {
+    margin: 0;
   }
 
   .wrapperMassive {
@@ -112,5 +155,35 @@
 
   .backgroundMidnightBlue {
     background: #2c3e50;
+  }
+
+  /* Refined palette for the compact member group shown over board covers. */
+
+  .wrapperBoard.backgroundEmerald {
+    background: linear-gradient(145deg, #34d399, #059669);
+  }
+
+  .wrapperBoard.backgroundPeterRiver {
+    background: linear-gradient(145deg, #60a5fa, #2563eb);
+  }
+
+  .wrapperBoard.backgroundWisteria {
+    background: linear-gradient(145deg, #c084fc, #7c3aed);
+  }
+
+  .wrapperBoard.backgroundCarrot {
+    background: linear-gradient(145deg, #fbbf24, #ea580c);
+  }
+
+  .wrapperBoard.backgroundAlizarin {
+    background: linear-gradient(145deg, #fb7185, #e11d48);
+  }
+
+  .wrapperBoard.backgroundTurquoise {
+    background: linear-gradient(145deg, #2dd4bf, #0f766e);
+  }
+
+  .wrapperBoard.backgroundMidnightBlue {
+    background: linear-gradient(145deg, #64748b, #334155);
   }
 }

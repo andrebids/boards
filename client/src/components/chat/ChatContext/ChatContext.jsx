@@ -20,6 +20,7 @@ import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import history from '../../../history';
 import { getGlobalConversationTarget } from '../navigation';
+import createInitialChatWindows from './windowState';
 
 import '../theme.scss';
 
@@ -36,25 +37,6 @@ const isGeneralConversation = (conversation) =>
   ['project_group', 'projectGroup', 'general'].includes(conversation.type);
 
 const isDirectConversation = (conversation) => conversation?.type === 'projectDirect';
-
-const readStoredWindows = (storageKey) => {
-  try {
-    const value = JSON.parse(localStorage.getItem(storageKey));
-
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return value
-      .filter((item) => item && typeof item.id === 'string')
-      .map((item) => ({
-        id: item.id,
-        isMinimized: !!item.isMinimized,
-      }));
-  } catch {
-    return [];
-  }
-};
 
 const ChatProvider = React.memo(({ children }) => {
   const currentUser = useSelector(selectors.selectCurrentUser);
@@ -77,14 +59,14 @@ const ChatProvider = React.memo(({ children }) => {
   const store = useStore();
   const { t } = useTranslation();
   const projectId = project?.id;
-  const storageKey = `planka-chat-windows:${currentUser.id}:${projectId || 'none'}`;
-  const previousStorageKey = useRef(storageKey);
+  const scopeKey = `${currentUser.id}:${projectId || 'none'}`;
+  const previousScopeKey = useRef(scopeKey);
   const subscribedWindowIdsRef = useRef(new Set());
   const previousRevocationVersionRef = useRef(accessRevocationVersions[projectId] || 0);
   const handledDeepLinkRef = useRef(null);
   const hasRequestedInboxRef = useRef(false);
 
-  const [windows, setWindows] = useState(() => readStoredWindows(storageKey));
+  const [windows, setWindows] = useState(createInitialChatWindows);
   const [pendingConversation, setPendingConversation] = useState(null);
   const [isConversationListOpen, setIsConversationListOpen] = useState(false);
   const [isConversationListClosing, setIsConversationListClosing] = useState(false);
@@ -139,23 +121,23 @@ const ChatProvider = React.memo(({ children }) => {
   }, [hasPendingMessages, t]);
 
   useEffect(() => {
-    if (previousStorageKey.current === storageKey) {
+    if (previousScopeKey.current === scopeKey) {
       return;
     }
 
     windowsRef.current.forEach(({ id }) => {
       dispatch(entryActions.closeChatConversation(id));
     });
-    previousStorageKey.current = storageKey;
+    previousScopeKey.current = scopeKey;
     subscribedWindowIdsRef.current = new Set();
     previousRevocationVersionRef.current = accessRevocationVersions[projectId] || 0;
-    setWindows(readStoredWindows(storageKey));
+    setWindows(createInitialChatWindows());
     setPendingConversation(null);
     setIsConversationListOpen(false);
     setIsConversationListClosing(false);
     setInboxScope(projectId && isCurrentUserChatMember ? 'project' : 'global');
     handledDeepLinkRef.current = null;
-  }, [accessRevocationVersions, dispatch, isCurrentUserChatMember, projectId, storageKey]);
+  }, [accessRevocationVersions, dispatch, isCurrentUserChatMember, projectId, scopeKey]);
 
   useEffect(() => {
     windowsRef.current = windows;
@@ -179,14 +161,6 @@ const ChatProvider = React.memo(({ children }) => {
   }, [isEnabled, project?.id, dispatch]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(windows));
-    } catch {
-      // Storage can be unavailable in private browsing. The dock still works in memory.
-    }
-  }, [storageKey, windows]);
-
-  useEffect(() => {
     const revocationVersion = accessRevocationVersions[projectId] || 0;
     if (revocationVersion <= previousRevocationVersionRef.current) {
       return;
@@ -198,13 +172,7 @@ const ChatProvider = React.memo(({ children }) => {
     setIsConversationListOpen(false);
     setIsConversationListClosing(false);
     setWindows([]);
-
-    try {
-      localStorage.removeItem(storageKey);
-    } catch {
-      // Storage is optional; clearing in-memory state still protects the current session.
-    }
-  }, [accessRevocationVersions, projectId, storageKey]);
+  }, [accessRevocationVersions, projectId]);
 
   useEffect(() => {
     if (!hasFetchedConversations) {
