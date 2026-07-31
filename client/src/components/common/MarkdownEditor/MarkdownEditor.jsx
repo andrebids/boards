@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import {
@@ -18,8 +18,12 @@ import { ActionName } from "@gravity-ui/markdown-editor/_/bundle/config/action-n
 /* eslint-enable import/no-unresolved */
 
 import { EditorModes } from "../../../constants/Enums";
+import { createMentionMarkupLanguageData } from "./mention-utils";
+import createUserMentionExtension from "./mentions";
 
 import styles from "./MarkdownEditor.module.scss";
+
+const EMPTY_MENTION_USERS = [];
 
 const removedActionNamesSet = new Set([
   ActionName.checkbox,
@@ -62,6 +66,7 @@ const MarkdownEditor = React.forwardRef(
     {
       defaultValue,
       defaultMode,
+      mentionUsers,
       isError,
       onChange,
       onSubmit,
@@ -72,6 +77,14 @@ const MarkdownEditor = React.forwardRef(
     ref,
   ) => {
     const wrapperRef = useRef(null);
+    const mentionExtension = useMemo(
+      () => createUserMentionExtension(mentionUsers),
+      [mentionUsers],
+    );
+    const mentionMarkupLanguageData = useMemo(
+      () => createMentionMarkupLanguageData(mentionUsers),
+      [mentionUsers],
+    );
 
     const handleWrapperRef = useCallback(
       (element) => {
@@ -94,7 +107,14 @@ const MarkdownEditor = React.forwardRef(
       handlers: {
         uploadFile: fileUploadHandler,
       },
+      markupConfig: {
+        autocompletion: {
+          activateOnTyping: true,
+        },
+        languageData: [mentionMarkupLanguageData],
+      },
       wysiwygConfig: {
+        extensions: mentionExtension,
         extensionOptions: {
           commandMenu: {
             actions: commandMenuActions,
@@ -176,6 +196,13 @@ const MarkdownEditor = React.forwardRef(
 MarkdownEditor.propTypes = {
   defaultValue: PropTypes.string.isRequired,
   defaultMode: PropTypes.oneOf(Object.values(EditorModes)),
+  mentionUsers: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      display: PropTypes.string.isRequired,
+      name: PropTypes.string,
+    }),
+  ),
   isError: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
@@ -185,6 +212,7 @@ MarkdownEditor.propTypes = {
 
 MarkdownEditor.defaultProps = {
   defaultMode: EditorModes.WYSIWYG,
+  mentionUsers: EMPTY_MENTION_USERS,
   isError: false,
   onModeChange: undefined,
 };

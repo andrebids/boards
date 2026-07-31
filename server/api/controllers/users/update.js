@@ -59,6 +59,10 @@ module.exports = {
     subscribeToCardWhenCommenting: {
       type: 'boolean',
     },
+    notificationLevel: {
+      type: 'string',
+      isIn: Object.values(User.NotificationLevels),
+    },
     turnOffRecentCardHighlighting: {
       type: 'boolean',
     },
@@ -141,6 +145,7 @@ module.exports = {
         'language',
         'subscribeToOwnCards',
         'subscribeToCardWhenCommenting',
+        'notificationLevel',
         'turnOffRecentCardHighlighting',
         'enableFavoritesByDefault',
         'defaultEditorMode',

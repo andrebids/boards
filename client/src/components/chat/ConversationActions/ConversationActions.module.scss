@@ -41,7 +41,7 @@
 
   .menu {
     animation: menuEnter var(--chat-motion-fast) var(--chat-ease) both;
-    background: var(--chat-overlay);
+    background: var(--chat-popup);
     border: 1px solid var(--chat-border);
     border-radius: var(--chat-radius-control);
     box-shadow: var(--chat-panel-shadow);

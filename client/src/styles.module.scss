@@ -516,7 +516,7 @@
   }
 
   .yfm {
-    --yfm-color-text-private: #17394d !important;
+    --yfm-color-text-private: var(--card-modal-text, #17394d) !important;
     --yfm-font-family-monospace: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace !important;
     --yfm-font-family-sans: 'Plus Jakarta Sans', sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
 

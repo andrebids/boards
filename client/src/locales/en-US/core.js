@@ -404,6 +404,109 @@ export default {
       videoProcessing: 'Preparing this video for playback...',
       withoutBaseGroup: 'Without base group',
       writeComment: 'Write a comment...',
+      filters: 'Filters:',
+      myProjects: 'My projects',
+      favorites: 'Favorites',
+      noProjectsFound: 'No projects found',
+      clickToRemove: 'Click to remove',
+      resetProjectsOrder: 'Restore default order',
+      resetFavoritesOrder: 'Restore favorites order',
+      unexpectedApplicationError:
+        'An unexpected error occurred. Reload the page to continue.',
+      loadMoreActivities: 'Load more activities ({{count}} loaded)',
+      pdfDocument: 'PDF document',
+      bytes: 'Bytes',
+      fileSize: '{{value}} {{unit}}',
+      unknownCard: 'Unknown card',
+      unknownLabel: 'Unknown label',
+      unknownList: 'Unknown list',
+      unknownSourceList: 'Unknown source list',
+      unknownDestinationList: 'Unknown destination list',
+      unknownUser: 'Unknown user',
+      unknownAttachment: 'Unknown attachment',
+      unknownTask: 'Unknown task',
+      unknownTaskList: 'Unknown task list',
+      invalidDate: 'Invalid date',
+      unknownDate: 'Unknown date',
+      deletedComment: '[Comment deleted]',
+      thisCard: 'this card',
+      dropImagesHere: 'Drop images here',
+      dropFilesHere: 'Drop files here',
+      processingImages: 'Processing images...',
+      processingFiles: 'Processing files...',
+      deleteDefaultLabel: 'Delete default label',
+      areYouSureYouWantToDeleteThisDefaultLabel:
+        'Are you sure you want to delete the default label "{{name}}"?',
+      deleteDefaultLabelWarning:
+        'Existing labels will not be affected. This label will no longer be added automatically to new projects.',
+      userCreatedCard:
+        '<0>{{user}}</0> created a card <2>{{card}}</2> in {{list}}',
+      userAddedAttachmentToCard:
+        '<0>{{user}}</0> added an attachment to card <2>{{card}}</2>',
+      userCreatedTaskOnCard:
+        '<0>{{user}}</0> created task <2>{{task}}</2> on card <4>{{card}}</4>',
+      userCreatedTaskOnThisCard:
+        '<0>{{user}}</0> created task <2>{{task}}</2> on this card',
+      userDeletedTaskOnCard:
+        '<0>{{user}}</0> deleted task <2>{{task}}</2> from card <4>{{card}}</4>',
+      userDeletedTaskOnThisCard:
+        '<0>{{user}}</0> deleted task <2>{{task}}</2> from this card',
+      userUpdatedTaskOnCard:
+        '<0>{{user}}</0> updated task <2>{{task}}</2> on card <4>{{card}}</4>',
+      userUpdatedTaskOnThisCard:
+        '<0>{{user}}</0> updated task <2>{{task}}</2> on this card',
+      userCreatedTaskListOnCard:
+        '<0>{{user}}</0> created task list <2>{{taskList}}</2> on card <4>{{card}}</4>',
+      userCreatedTaskListOnThisCard:
+        '<0>{{user}}</0> created task list <2>{{taskList}}</2> on this card',
+      userDeletedTaskListOnCard:
+        '<0>{{user}}</0> deleted task list <2>{{taskList}}</2> from card <4>{{card}}</4>',
+      userDeletedTaskListOnThisCard:
+        '<0>{{user}}</0> deleted task list <2>{{taskList}}</2> from this card',
+      userCreatedAttachmentOnCard:
+        '<0>{{user}}</0> created attachment <2>{{attachment}}</2> on card <4>{{card}}</4>',
+      userCreatedAttachmentOnThisCard:
+        '<0>{{user}}</0> created attachment <2>{{attachment}}</2> on this card',
+      userCreatedVideoOnCard:
+        '<0>{{user}}</0> added video <2>{{attachment}}</2> to card <4>{{card}}</4>',
+      userCreatedVideoOnThisCard:
+        '<0>{{user}}</0> added video <2>{{attachment}}</2> to this card',
+      userDeletedAttachmentOnCard:
+        '<0>{{user}}</0> deleted attachment <2>{{attachment}}</2> from card <4>{{card}}</4>',
+      userDeletedAttachmentOnThisCard:
+        '<0>{{user}}</0> deleted attachment <2>{{attachment}}</2> from this card',
+      userDeletedVideoOnCard:
+        '<0>{{user}}</0> removed video <2>{{attachment}}</2> from card <4>{{card}}</4>',
+      userDeletedVideoOnThisCard:
+        '<0>{{user}}</0> removed video <2>{{attachment}}</2> from this card',
+      userAddedLabelToCard:
+        '<0>{{user}}</0> added label <2>{{label}}</2> to card <4>{{card}}</4>',
+      userRemovedLabelFromCard:
+        '<0>{{user}}</0> removed label <2>{{label}}</2> from card <4>{{card}}</4>',
+      userUncompletedTaskOnCard:
+        '<0>{{user}}</0> marked task <2>{{task}}</2> incomplete on card <4>{{card}}</4>',
+      userSetDueDateOnCard:
+        '<0>{{user}}</0> set the due date <2>{{date}}</2> for card <4>{{card}}</4>',
+      activityLogMessage:
+        '<0>{{user}}</0> performed an action on card <2>{{card}}</2>',
+      video: 'Video',
+      loading: 'Loading...',
+      loadingVideoPreview: 'Loading video preview...',
+      noVideoPreviewAvailable: 'No preview available',
+      errorLoadingVideoPreview: 'Unable to load preview',
+      notificationTestTitle: 'Global Notification System Test',
+      notificationTestDescription:
+        'Use this tool to send a real test email using the globally configured SMTP account ("{{email}}").',
+      sendTestEmailTitle: 'Send a Test Email',
+      sendTestEmail: 'Send Test Email',
+      globalNotificationsActiveTitle: 'Global Notification System Active',
+      globalNotificationsActiveDescription:
+        'All notifications are sent centrally through the email address <strong>{{email}}</strong>. No additional configuration is required from the user.',
+      expandPanel: 'Expand panel',
+      collapsePanel: 'Collapse panel',
+      openActivityHistory: 'Open activity history',
+      noLabelsCreatedYet: 'No labels created yet',
+      browse: 'Browse',
     },
 
     action: {
@@ -536,6 +639,15 @@ export default {
       uploadNewAvatar: 'Upload new avatar',
       uploadNewImage: 'Upload new image',
       noLabelsCreatedYet: 'No labels created yet',
+      back: 'Back',
+      reload: 'Reload',
+      createCustomField: 'Create custom field',
+      createTaskList: 'Create task list',
+      editColor: 'Edit color',
+      editCustomField: 'Edit custom field',
+      editCustomFieldGroup: 'Edit custom field group',
+      editRole: 'Edit role',
+      editType: 'Edit type',
     },
   },
 };

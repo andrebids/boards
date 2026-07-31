@@ -15,11 +15,13 @@ const ConversationList = React.memo(
   ({
     conversations,
     currentUser,
+    isEmbedded,
     isPending,
     members,
     onConversationOpen,
     onGeneralOpen,
     openConversationIds,
+    showGeneralFallback,
   }) => {
     const [t] = useTranslation();
     const { customGroups, directConversations, generalConversation } = useMemo(
@@ -39,28 +41,32 @@ const ConversationList = React.memo(
     return (
       <div
         id="chat-tabpanel-conversations"
-        className={styles.list}
-        role="tabpanel"
-        aria-labelledby="chat-tab-conversations"
+        className={`${styles.list} ${isEmbedded ? styles.embedded : ''}`}
+        role={isEmbedded ? undefined : 'tabpanel'}
+        aria-labelledby={isEmbedded ? undefined : 'chat-tab-conversations'}
       >
-        <span className={styles.sectionLabel}>{t('chat.pinned')}</span>
-        <ConversationRow
-          conversation={generalConversation}
-          currentParticipant={generalConversation?.participants?.find(
-            ({ userId }) => userId === currentUser.id,
-          )}
-          isGeneral
-          isOpen={openConversationIds.includes(generalConversation?.id)}
-          isPending={isPending}
-          lastMessage={generalConversation?.lastMessage}
-          onClick={generalConversation ? onConversationOpen : onGeneralOpen}
-          sender={
-            generalConversation &&
-            members.find(
-              (member) => member.id === generalConversation.lastMessage?.userId,
-            )
-          }
-        />
+        {(generalConversation || showGeneralFallback) && (
+          <>
+            <span className={styles.sectionLabel}>{t('chat.pinned')}</span>
+            <ConversationRow
+              conversation={generalConversation}
+              currentParticipant={generalConversation?.participants?.find(
+                ({ userId }) => userId === currentUser.id,
+              )}
+              isGeneral
+              isOpen={openConversationIds.includes(generalConversation?.id)}
+              isPending={isPending}
+              lastMessage={generalConversation?.lastMessage}
+              onClick={generalConversation ? onConversationOpen : onGeneralOpen}
+              sender={
+                generalConversation &&
+                members.find(
+                  (member) => member.id === generalConversation.lastMessage?.userId,
+                )
+              }
+            />
+          </>
+        )}
         {customGroups.length > 0 && (
           <span className={styles.sectionLabel}>{t('chat.groups')}</span>
         )}
@@ -100,6 +106,7 @@ const ConversationList = React.memo(
           );
         })}
         {!generalConversation &&
+          !showGeneralFallback &&
           directConversations.length === 0 &&
           customGroups.length === 0 && (
             <div className={styles.empty}>{t('chat.noConversations')}</div>
@@ -120,6 +127,7 @@ ConversationList.propTypes = {
     }),
   ).isRequired,
   currentUser: PropTypes.shape({ id: PropTypes.string.isRequired }).isRequired,
+  isEmbedded: PropTypes.bool,
   isPending: PropTypes.bool.isRequired,
   openConversationIds: PropTypes.arrayOf(PropTypes.string).isRequired,
   members: PropTypes.arrayOf(
@@ -130,6 +138,12 @@ ConversationList.propTypes = {
   ).isRequired,
   onConversationOpen: PropTypes.func.isRequired,
   onGeneralOpen: PropTypes.func.isRequired,
+  showGeneralFallback: PropTypes.bool,
+};
+
+ConversationList.defaultProps = {
+  isEmbedded: false,
+  showGeneralFallback: true,
 };
 
 export default ConversationList;

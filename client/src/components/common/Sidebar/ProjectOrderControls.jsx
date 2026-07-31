@@ -6,6 +6,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import {
   resetProjectsOrder,
@@ -20,6 +21,7 @@ import styles from './ProjectOrderControls.module.scss';
 
 const ProjectOrderControls = React.memo(() => {
   const dispatch = useDispatch();
+  const [t] = useTranslation();
   const customOrder = useSelector(selectProjectsOrder);
   const customFavOrder = useSelector(selectFavoritesOrder);
 
@@ -46,7 +48,7 @@ const ProjectOrderControls = React.memo(() => {
           className={styles.resetButton}
           onClick={handleResetOrder}
           type="button"
-          title="Restaurar ordenação padrão"
+          title={t('common.resetProjectsOrder')}
         >
           <i className="fas fa-sort-alpha-down" />
         </button>
@@ -54,7 +56,7 @@ const ProjectOrderControls = React.memo(() => {
           className={styles.resetButton}
           onClick={handleResetFavoritesOrder}
           type="button"
-          title="Restaurar ordenação dos favoritos"
+          title={t('common.resetFavoritesOrder')}
         >
           <i className="fas fa-star" />
         </button>

@@ -99,6 +99,31 @@ module.exports = {
       user: inputs.actorUser,
     });
 
+    if (inputs.actorUser.id !== values.user.id) {
+      try {
+        await sails.helpers.notifications.createOne.with({
+          values: {
+            type: Notification.Types.ADD_MEMBER_TO_BOARD,
+            data: {
+              board: _.pick(values.board, ['id', 'name']),
+              project: _.pick(inputs.project, ['id', 'name']),
+              role: boardMembership.role,
+            },
+            user: values.user,
+            creatorUser: inputs.actorUser,
+          },
+          project: inputs.project,
+          board: values.board,
+        });
+      } catch (error) {
+        sails.log.error(
+          'Falha ao criar a notificação de adesão ao board (membershipId=%s): %s',
+          boardMembership.id,
+          error.message,
+        );
+      }
+    }
+
     return boardMembership;
   },
 };

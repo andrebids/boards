@@ -1,9 +1,11 @@
 import dateFns from 'date-fns/locale/fr';
 import timeAgo from 'javascript-time-ago/locale/fr';
+import merge from 'lodash/merge';
 
 import markdownEditor from './markdown-editor.json';
+import enUSCore from '../en-US/core';
 
-export default {
+export default merge({}, enUSCore, {
   dateFns,
   timeAgo,
   markdownEditor,
@@ -196,6 +198,110 @@ export default {
       users: 'Utilisateurs',
       viewer: 'Spectateur',
       writeComment: 'Écrire un commentaire...',
+      filters: 'Filtres :',
+      myProjects: 'Mes projets',
+      favorites: 'Favoris',
+      noProjectsFound: 'Aucun projet trouvé',
+      clickToRemove: 'Cliquer pour supprimer',
+      resetProjectsOrder: 'Rétablir l’ordre par défaut',
+      resetFavoritesOrder: 'Rétablir l’ordre des favoris',
+      unexpectedApplicationError:
+        'Une erreur inattendue est survenue. Rechargez la page pour continuer.',
+      loadMoreActivities: 'Charger plus d’activités ({{count}} chargées)',
+      pdfDocument: 'Document PDF',
+      bytes: 'octets',
+      fileSize: '{{value}} {{unit}}',
+      unknownCard: 'Carte inconnue',
+      unknownLabel: 'Étiquette inconnue',
+      unknownList: 'Liste inconnue',
+      unknownSourceList: 'Liste source inconnue',
+      unknownDestinationList: 'Liste de destination inconnue',
+      unknownUser: 'Utilisateur inconnu',
+      unknownAttachment: 'Pièce jointe inconnue',
+      unknownTask: 'Tâche inconnue',
+      unknownTaskList: 'Liste de tâches inconnue',
+      invalidDate: 'Date non valide',
+      unknownDate: 'Date inconnue',
+      deletedComment: '[Commentaire supprimé]',
+      thisCard: 'cette carte',
+      download: 'Télécharger',
+      dropImagesHere: 'Déposez les images ici',
+      dropFilesHere: 'Déposez les fichiers ici',
+      processingImages: 'Traitement des images...',
+      processingFiles: 'Traitement des fichiers...',
+      deleteDefaultLabel: 'Supprimer l’étiquette par défaut',
+      areYouSureYouWantToDeleteThisDefaultLabel:
+        'Voulez-vous vraiment supprimer l’étiquette par défaut « {{name}} » ?',
+      deleteDefaultLabelWarning:
+        'Les étiquettes existantes ne seront pas affectées. Cette étiquette ne sera plus ajoutée automatiquement aux nouveaux projets.',
+      userCreatedCard:
+        '<0>{{user}}</0> a créé une carte <2>{{card}}</2> dans {{list}}',
+      userAddedAttachmentToCard:
+        '<0>{{user}}</0> a ajouté une pièce jointe à la carte <2>{{card}}</2>',
+      userCreatedTaskOnCard:
+        '<0>{{user}}</0> a créé la tâche <2>{{task}}</2> sur la carte <4>{{card}}</4>',
+      userCreatedTaskOnThisCard:
+        '<0>{{user}}</0> a créé la tâche <2>{{task}}</2> sur cette carte',
+      userDeletedTaskOnCard:
+        '<0>{{user}}</0> a supprimé la tâche <2>{{task}}</2> de la carte <4>{{card}}</4>',
+      userDeletedTaskOnThisCard:
+        '<0>{{user}}</0> a supprimé la tâche <2>{{task}}</2> de cette carte',
+      userUpdatedTaskOnCard:
+        '<0>{{user}}</0> a mis à jour la tâche <2>{{task}}</2> sur la carte <4>{{card}}</4>',
+      userUpdatedTaskOnThisCard:
+        '<0>{{user}}</0> a mis à jour la tâche <2>{{task}}</2> sur cette carte',
+      userCreatedTaskListOnCard:
+        '<0>{{user}}</0> a créé la liste de tâches <2>{{taskList}}</2> sur la carte <4>{{card}}</4>',
+      userCreatedTaskListOnThisCard:
+        '<0>{{user}}</0> a créé la liste de tâches <2>{{taskList}}</2> sur cette carte',
+      userDeletedTaskListOnCard:
+        '<0>{{user}}</0> a supprimé la liste de tâches <2>{{taskList}}</2> de la carte <4>{{card}}</4>',
+      userDeletedTaskListOnThisCard:
+        '<0>{{user}}</0> a supprimé la liste de tâches <2>{{taskList}}</2> de cette carte',
+      userCreatedAttachmentOnCard:
+        '<0>{{user}}</0> a créé la pièce jointe <2>{{attachment}}</2> sur la carte <4>{{card}}</4>',
+      userCreatedAttachmentOnThisCard:
+        '<0>{{user}}</0> a créé la pièce jointe <2>{{attachment}}</2> sur cette carte',
+      userCreatedVideoOnCard:
+        '<0>{{user}}</0> a ajouté la vidéo <2>{{attachment}}</2> à la carte <4>{{card}}</4>',
+      userCreatedVideoOnThisCard:
+        '<0>{{user}}</0> a ajouté la vidéo <2>{{attachment}}</2> à cette carte',
+      userDeletedAttachmentOnCard:
+        '<0>{{user}}</0> a supprimé la pièce jointe <2>{{attachment}}</2> de la carte <4>{{card}}</4>',
+      userDeletedAttachmentOnThisCard:
+        '<0>{{user}}</0> a supprimé la pièce jointe <2>{{attachment}}</2> de cette carte',
+      userDeletedVideoOnCard:
+        '<0>{{user}}</0> a retiré la vidéo <2>{{attachment}}</2> de la carte <4>{{card}}</4>',
+      userDeletedVideoOnThisCard:
+        '<0>{{user}}</0> a retiré la vidéo <2>{{attachment}}</2> de cette carte',
+      userAddedLabelToCard:
+        '<0>{{user}}</0> a ajouté l’étiquette <2>{{label}}</2> à la carte <4>{{card}}</4>',
+      userRemovedLabelFromCard:
+        '<0>{{user}}</0> a retiré l’étiquette <2>{{label}}</2> de la carte <4>{{card}}</4>',
+      userUncompletedTaskOnCard:
+        '<0>{{user}}</0> a marqué la tâche <2>{{task}}</2> comme incomplète sur la carte <4>{{card}}</4>',
+      userSetDueDateOnCard:
+        '<0>{{user}}</0> a défini l’échéance <2>{{date}}</2> pour la carte <4>{{card}}</4>',
+      activityLogMessage:
+        '<0>{{user}}</0> a effectué une action sur la carte <2>{{card}}</2>',
+      video: 'Vidéo',
+      loading: 'Chargement...',
+      loadingVideoPreview: 'Chargement de l’aperçu vidéo...',
+      noVideoPreviewAvailable: 'Aucun aperçu disponible',
+      errorLoadingVideoPreview: 'Impossible de charger l’aperçu',
+      notificationTestTitle: 'Test du système de notifications globales',
+      notificationTestDescription:
+        'Utilisez cet outil pour envoyer un véritable e-mail de test avec le compte SMTP configuré globalement (« {{email}} »).',
+      sendTestEmailTitle: 'Envoyer un e-mail de test',
+      sendTestEmail: 'Envoyer l’e-mail de test',
+      globalNotificationsActiveTitle: 'Système de notifications globales actif',
+      globalNotificationsActiveDescription:
+        'Toutes les notifications sont envoyées de manière centralisée via l’adresse e-mail <strong>{{email}}</strong>. Aucune configuration supplémentaire n’est requise de la part de l’utilisateur.',
+      expandPanel: 'Développer le panneau',
+      collapsePanel: 'Réduire le panneau',
+      openActivityHistory: 'Ouvrir l’historique des activités',
+      noLabelsCreatedYet: 'Aucune étiquette créée',
+      browse: 'Parcourir',
     },
 
     action: {
@@ -273,6 +379,15 @@ export default {
       unsubscribe: 'Se désabonner',
       uploadNewAvatar: 'Télécharger un nouvel avatar',
       uploadNewImage: 'Télécharger une nouvelle image',
+      back: 'Retour',
+      reload: 'Recharger',
+      createCustomField: 'Créer un champ personnalisé',
+      createTaskList: 'Créer une liste de tâches',
+      editColor: 'Modifier la couleur',
+      editCustomField: 'Modifier le champ personnalisé',
+      editCustomFieldGroup: 'Modifier le groupe de champs personnalisés',
+      editRole: 'Modifier le rôle',
+      editType: 'Modifier le type',
     },
   },
-};
+});

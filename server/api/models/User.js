@@ -33,6 +33,11 @@ const ProjectOrders = {
   BY_CREATION_TIME: 'byCreationTime',
 };
 
+const NotificationLevels = {
+  ALL: 'all',
+  ESSENTIAL: 'essential',
+};
+
 const LANGUAGES = [
   'ar-YE',
   'bg-BG',
@@ -76,6 +81,7 @@ const PERSONAL_FIELD_NAMES = [
   'language',
   'subscribeToOwnCards',
   'subscribeToCardWhenCommenting',
+  'notificationLevel',
   'turnOffRecentCardHighlighting',
   'enableFavoritesByDefault',
   'defaultEditorMode',
@@ -92,6 +98,7 @@ module.exports = {
   EditorModes,
   HomeViews,
   ProjectOrders,
+  NotificationLevels,
   LANGUAGES,
   WELCOME_EMAIL_LANGUAGES,
   PRIVATE_FIELD_NAMES,
@@ -157,6 +164,12 @@ module.exports = {
       type: 'boolean',
       defaultsTo: true,
       columnName: 'subscribe_to_card_when_commenting',
+    },
+    notificationLevel: {
+      type: 'string',
+      isIn: Object.values(NotificationLevels),
+      defaultsTo: NotificationLevels.ALL,
+      columnName: 'notification_level',
     },
     turnOffRecentCardHighlighting: {
       type: 'boolean',

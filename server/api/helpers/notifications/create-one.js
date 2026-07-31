@@ -53,6 +53,9 @@ const buildTitle = (notification, t) => {
     case Notification.Types.COMMENT_CARD:
       baseTitle = t('New Comment');
       break;
+    case Notification.Types.ADD_MEMBER_TO_BOARD:
+      baseTitle = t('You Were Added to Board');
+      break;
     case Notification.Types.ADD_MEMBER_TO_CARD:
       baseTitle = t('You Were Added to Card');
       break;
@@ -75,8 +78,16 @@ const buildTitle = (notification, t) => {
 };
 
 const buildBodyByFormat = (board, card, notification, actorUser, t) => {
-  const markdownCardLink = `[${escapeMarkdown(card.name)}](${generateUrl(`cards/${card.id}`)})`;
-  const htmlCardLink = `<a href="${generateUrl(`cards/${card.id}`)}">${escapeHtml(card.name)}</a>`;
+  const markdownCardLink =
+    card && `[${escapeMarkdown(card.name)}](${generateUrl(`cards/${card.id}`)})`;
+  const htmlCardLink =
+    card && `<a href="${generateUrl(`cards/${card.id}`)}">${escapeHtml(card.name)}</a>`;
+  const markdownBoardLink = `[${escapeMarkdown(board.name)}](${generateUrl(
+    `boards/${board.id}`,
+  )})`;
+  const htmlBoardLink = `<a href="${generateUrl(`boards/${board.id}`)}">${escapeHtml(
+    board.name,
+  )}</a>`;
 
   switch (notification.type) {
     case Notification.Types.MOVE_CARD: {
@@ -134,6 +145,16 @@ const buildBodyByFormat = (board, card, notification, actorUser, t) => {
         )}:\n\n<i>${escapeHtml(commentText)}</i>`,
       };
     }
+    case Notification.Types.ADD_MEMBER_TO_BOARD:
+      return {
+        text: t('%s added you to board %s', actorUser.name, board.name),
+        markdown: t(
+          '%s added you to board %s',
+          escapeMarkdown(actorUser.name),
+          markdownBoardLink,
+        ),
+        html: t('%s added you to board %s', escapeHtml(actorUser.name), htmlBoardLink),
+      };
     case Notification.Types.ADD_MEMBER_TO_CARD:
       return {
         text: t('%s added you to %s on %s', actorUser.name, card.name, board.name),
@@ -247,65 +268,96 @@ const buildAndSendEmail = async (board, card, notification, actorUser, notifiabl
   }
 };
 
-const buildAndSendEmailWithTemplates = async (board, card, notification, actorUser, notifiableUser, t, inputs) => {
+const buildAndSendEmailWithTemplates = async (
+  board,
+  card,
+  notification,
+  actorUser,
+  notifiableUser,
+  t,
+  inputs,
+) => {
   const project = inputs.project || board.project;
-  const currentList = inputs.list || card.list;
-  const listName = currentList ? sails.helpers.lists.makeName(currentList) : 'Lista';
+  const currentList = inputs.list || card?.list;
+  const listName = currentList ? sails.helpers.lists.makeName(currentList) : '';
+  const isBoardNotification = notification.type === Notification.Types.ADD_MEMBER_TO_BOARD;
+  const currentYear = new Date().getFullYear();
+  const emailLanguage = notifiableUser?.language || 'pt-PT';
+  const hasDueDate = Boolean(card?.dueDate);
+  const rawComment = notification?.data?.text || '';
+  const commentExcerpt =
+    rawComment.length > 220 ? `${rawComment.substring(0, 217).trimEnd()}...` : rawComment;
+  // eslint-disable-next-line no-use-before-define
+  const localizedData = getNotificationSpecificData(
+    notification,
+    actorUser,
+    t,
+    card,
+    currentList,
+    board,
+    project,
+  );
+  const stripTrailingColon = (value) => value.replace(/\s*:\s*$/, '');
 
   // Dados específicos por tipo de notificação
-  const getNotificationSpecificData = (notification, actorUser, t, card, currentList) => {
+  const getNotificationPresentation = () => {
     switch (notification?.type) {
       case Notification.Types.MOVE_CARD: {
-        const fromListName = notification?.data?.fromList ?
-          sails.helpers.lists.makeName(notification.data.fromList) : 'Lista Origem';
-        const toListName = notification?.data?.toList ?
-          sails.helpers.lists.makeName(notification.data.toList) : 'Lista Destino';
+        const fromListName = notification?.data?.fromList
+          ? sails.helpers.lists.makeName(notification.data.fromList)
+          : 'Lista Origem';
+        const toListName = notification?.data?.toList
+          ? sails.helpers.lists.makeName(notification.data.toList)
+          : 'Lista Destino';
         return {
-          from_list: escapeHtml(fromListName),
-          to_list: escapeHtml(toListName),
-          action_verb: 'moveu',
-          action_object: 'o cartão',
-          notification_type_label: 'Movimento',
-          type_background_color: '#eff8ff',
-          type_border_color: '#b2ddff',
-          type_text_color: '#175cd3',
+          from_list: fromListName,
+          to_list: toListName,
+          action_verb: t(`notification:${notification.type}.verb`),
+          action_object: t(`notification:${notification.type}.object`),
+          notification_type_label: stripTrailingColon(t('email:label:moved')),
         };
       }
       case Notification.Types.COMMENT_CARD:
         return {
-          action_verb: 'comentou',
-          action_object: 'o cartão',
-          notification_type_label: 'Comentário',
-          type_background_color: '#f0f9ff',
-          type_border_color: '#7dd3fc',
-          type_text_color: '#0369a1',
+          action_verb: t(`notification:${notification.type}.verb`),
+          action_object: t(`notification:${notification.type}.object`),
+          notification_type_label: stripTrailingColon(t('email:label:comment')),
+        };
+      case Notification.Types.ADD_MEMBER_TO_BOARD:
+        return {
+          action_verb: t(`notification:${notification.type}.verb`),
+          action_object: t(`notification:${notification.type}.object`),
+          notification_type_label: stripTrailingColon(t('email:label:addedToBoard')),
         };
       case Notification.Types.ADD_MEMBER_TO_CARD:
         return {
-          action_verb: 'adicionou-o',
-          action_object: 'ao cartão',
-          notification_type_label: 'Membro Adicionado',
-          type_background_color: '#f0fdf4',
-          type_border_color: '#86efac',
-          type_text_color: '#166534',
+          action_verb: t(`notification:${notification.type}.verb`),
+          action_object: t(`notification:${notification.type}.object`),
+          notification_type_label: stripTrailingColon(t('email:label:addedMember')),
         };
       case Notification.Types.MENTION_IN_COMMENT:
         return {
-          action_verb: 'mencionou-o',
-          action_object: 'num comentário',
-          notification_type_label: 'Menção',
-          type_background_color: '#fef3c7',
-          type_border_color: '#fcd34d',
-          type_text_color: '#92400e',
+          action_verb: t(`notification:${notification.type}.verb`),
+          action_object: t(`notification:${notification.type}.object`),
+          notification_type_label: stripTrailingColon(t('email:label:mentioned')),
         };
       case Notification.Types.SET_DUE_DATE:
         return {
-          action_verb: 'alterou',
-          action_object: 'a data de entrega',
-          notification_type_label: 'Data de Entrega Alterada',
-          type_background_color: '#eff6ff',
-          type_border_color: '#93c5fd',
-          type_text_color: '#1d4ed8',
+          action_verb: t(`notification:${notification.type}.verb`),
+          action_object: t(`notification:${notification.type}.object`),
+          notification_type_label: stripTrailingColon(t('email:label:dueDateChanged')),
+        };
+      case Notification.Types.CREATE_TASK:
+        return {
+          action_verb: t(`notification:${notification.type}.verb`),
+          action_object: t(`notification:${notification.type}.object`),
+          notification_type_label: stripTrailingColon(t('email:label:newTask')),
+        };
+      case Notification.Types.COMPLETE_TASK:
+        return {
+          action_verb: t(`notification:${notification.type}.verb`),
+          action_object: t(`notification:${notification.type}.object`),
+          notification_type_label: stripTrailingColon(t('email:label:taskCompleted')),
         };
       default:
         return {};
@@ -313,36 +365,41 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
   };
 
   const templateData = {
-    actor_name: escapeHtml(actorUser?.name || 'Utilizador'),
+    ...localizedData,
+    actor_name: actorUser?.name || 'Utilizador',
     actor_initials: generateInitials(actorUser?.name || 'Utilizador'),
-    user_name: escapeHtml(notifiableUser?.name || 'Utilizador'),
-    card_title: escapeHtml(card?.name || 'Carta'),
+    user_name: notifiableUser?.name || 'Utilizador',
+    card_title: card?.name || board?.name || 'Board',
     card_id: card?.id || '',
-    project_name: escapeHtml(project?.name || board?.name || 'Projeto'),
-    board_name: escapeHtml(board?.name || 'Quadro'),
-    list_name: escapeHtml(listName),
-    card_url: generateUrl(`cards/${card?.id || ''}`),
+    project_name: project?.name || board?.name || 'Projeto',
+    board_name: board?.name || 'Quadro',
+    list_name: listName,
+    card_url:
+      localizedData.card_url ||
+      (isBoardNotification
+        ? generateUrl(`boards/${board.id}`)
+        : generateUrl(`cards/${card?.id || ''}`)),
     planka_base_url: generateUrl(),
-    logo_url: generateUrl('logo512.png'), // URL dinâmica para a logo
-    send_date: new Date().toLocaleDateString('pt-PT'),
+    notification_title: buildTitle(notification, t),
+    email_language: emailLanguage,
+    email_greeting: t('email:welcome:greeting', notifiableUser?.name || 'Utilizador'),
+    send_date: new Date().toLocaleDateString(emailLanguage),
     user_email: notifiableUser?.email || 'utilizador@exemplo.com',
-    current_year: new Date().getFullYear(),
+    current_year: currentYear,
+    email_copyright: t('email:copyright').replace('{{current_year}}', currentYear),
+    email_action_commented: t('email:action:commented'),
+    email_action_mentioned: t('email:action:mentioned'),
     notification_type: notification?.type || '',
-    show_due_date_in_header: notification?.type !== 'SET_DUE_DATE',
+    is_board_notification: isBoardNotification,
+    show_due_date_in_header: notification?.type !== Notification.Types.SET_DUE_DATE,
+    has_due_date: hasDueDate,
 
-    // Null-safe
-    comment_excerpt: notification?.data?.text ?
-      escapeHtml(notification.data.text.substring(0, 100) + '...') :
-      'Sem comentário',
-    due_date: card?.dueDate ?
-      new Date(card.dueDate).toLocaleDateString('pt-PT') :
-      'Sem prazo',
-
+    comment_excerpt: commentExcerpt || stripTrailingColon(t('email:label:comment')),
+    due_date: hasDueDate ? new Date(card.dueDate).toLocaleDateString(emailLanguage) : '',
 
     // Dados específicos do tipo
-    ...getNotificationSpecificData(notification, actorUser, t, card, currentList),
+    ...getNotificationPresentation(),
   };
-
 
   const html = await sails.helpers.utils.compileEmailTemplate.with({
     templateName: notification?.type || 'comment-card',
@@ -355,7 +412,8 @@ const buildAndSendEmailWithTemplates = async (board, card, notification, actorUs
 
 // ✅ Fallback para HTML inline (método antigo)
 const buildAndSendEmailLegacy = async (board, card, notification, actorUser, notifiableUser, t) => {
-  const cardLink = `<a href="${generateUrl(`cards/${card.id}`)}">${escapeHtml(card.name)}</a>`;
+  const cardLink =
+    card && `<a href="${generateUrl(`cards/${card.id}`)}">${escapeHtml(card.name)}</a>`;
   const boardLink = `<a href="${generateUrl(`boards/${board.id}`)}">${escapeHtml(board.name)}</a>`;
 
   let html;
@@ -382,6 +440,14 @@ const buildAndSendEmailLegacy = async (board, card, notification, actorUser, not
         cardLink,
         boardLink,
       )}</p><p>${escapeHtml(notification.data.text)}</p>`;
+
+      break;
+    case Notification.Types.ADD_MEMBER_TO_BOARD:
+      html = `<p>${t(
+        '%s added you to board %s',
+        escapeHtml(actorUser.name),
+        boardLink,
+      )}</p>`;
 
       break;
     case Notification.Types.ADD_MEMBER_TO_CARD:
@@ -429,7 +495,6 @@ module.exports = {
     },
     list: {
       type: 'ref',
-      required: true,
     },
   },
 
@@ -440,32 +505,53 @@ module.exports = {
       values.userId = values.user.id;
     }
 
+    const notifiableUser = values.user || (await User.qm.getOneById(values.userId));
+    if (!notifiableUser) {
+      sails.log.warn(
+        'Notificação %s ignorada porque o utilizador %s não existe',
+        values.type,
+        values.userId,
+      );
+      return null;
+    }
+
+    if (
+      notifiableUser.notificationLevel === User.NotificationLevels.ESSENTIAL &&
+      !Notification.ESSENTIAL_TYPES.includes(values.type)
+    ) {
+      sails.log.debug(
+        'Notificação pessoal suprimida (userId=%s, type=%s, notificationLevel=%s)',
+        notifiableUser.id,
+        values.type,
+        notifiableUser.notificationLevel,
+      );
+      return null;
+    }
+
     const isCommentRelated =
       values.type === Notification.Types.COMMENT_CARD ||
       values.type === Notification.Types.MENTION_IN_COMMENT;
 
-    if (isCommentRelated) {
-      values.commentId = values.comment.id;
-    } else {
-      values.actionId = values.action.id;
-    }
-
-    // Garantir que os dados da notificação incluem informações do cartão
     const notificationData = {
       ...values.data,
-      card: {
-        id: values.card.id,
-        name: values.card.name,
-        boardId: values.card.boardId,
-      },
+      ...(values.card && {
+        card: {
+          id: values.card.id,
+          name: values.card.name,
+          boardId: values.card.boardId,
+        },
+      }),
     };
 
     const notification = await Notification.qm.createOne({
-      ...values,
+      type: values.type,
       data: notificationData,
+      userId: notifiableUser.id,
       creatorUserId: values.creatorUser.id,
-      boardId: values.card.boardId,
-      cardId: values.card.id,
+      boardId: inputs.board.id,
+      cardId: values.card?.id,
+      commentId: isCommentRelated ? values.comment?.id : undefined,
+      actionId: values.action?.id,
     });
 
     sails.sockets.broadcast(`user:${notification.userId}`, 'notificationCreate', {
@@ -482,13 +568,17 @@ module.exports = {
         included: {
           projects: [inputs.project],
           boards: [inputs.board],
-          lists: [inputs.list],
-          cards: [values.card],
+          ...(inputs.list && {
+            lists: [inputs.list],
+          }),
+          ...(values.card && {
+            cards: [values.card],
+          }),
           ...(isCommentRelated
             ? {
                 comments: [values.comment],
               }
-            : {
+            : values.action && {
                 actions: [values.action],
               }),
         },
@@ -501,7 +591,7 @@ module.exports = {
         notificationId: notification.id,
         type: notification.type,
         userId: notification.userId,
-        cardId: values.card.id,
+        cardId: values.card?.id || null,
       }
     );
 
@@ -510,6 +600,7 @@ module.exports = {
     // Define quais os tipos de notificação que devem acionar um e-mail
     const EMAIL_NOTIFIABLE_TYPES = [
       Notification.Types.SET_DUE_DATE,
+      Notification.Types.ADD_MEMBER_TO_BOARD,
       Notification.Types.ADD_MEMBER_TO_CARD,
       Notification.Types.COMMENT_CARD,
       Notification.Types.MENTION_IN_COMMENT,
@@ -533,7 +624,6 @@ module.exports = {
     if (globalNotificationsEnabled || notificationServices.length > 0 || smtpIsEnabled) {
       // E verificar também se o tipo de notificação é um dos permitidos para e-mail
       if (EMAIL_NOTIFIABLE_TYPES.includes(notification.type)) {
-        const notifiableUser = values.user || (await User.qm.getOneById(notification.userId));
         sails.log.info(
           `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] User notificável encontrado:`, {
             userId: notifiableUser.id,
@@ -610,6 +700,29 @@ module.exports = {
             `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Notificações globais e SMTP padrão desativados, não enviando email`,
           );
         }
+
+        if (notificationServices.length > 0) {
+          const services = notificationServices.map((notificationService) =>
+            _.pick(notificationService, ['url', 'format']),
+          );
+
+          try {
+            await buildAndSendNotifications(
+              services,
+              inputs.board,
+              values.card,
+              notification,
+              values.creatorUser,
+              t,
+              {
+                ...inputs,
+                notifiableUser,
+              },
+            );
+          } catch (error) {
+            sails.log.error('Falha no envio da notificação pessoal por Apprise:', error);
+          }
+        }
       } else {
         sails.log.info(
           `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Tipo "${notification.type}" não está na lista EMAIL_NOTIFIABLE_TYPES, não enviando email`,
@@ -626,27 +739,34 @@ module.exports = {
 };
 
 const getNotificationSpecificData = (notification, creatorUser, t, card, list, board, project) => {
-  const cardUrl = generateUrl(`cards/${card.id}`);
-  const boardForNotification = board || card.board; // Usa o board passado, com fallback para o do cartão
+  const isBoardNotification = notification.type === Notification.Types.ADD_MEMBER_TO_BOARD;
+  const boardForNotification = board || card?.board;
+  const resourceUrl = isBoardNotification
+    ? generateUrl(`boards/${boardForNotification?.id || notification.boardId}`)
+    : generateUrl(`cards/${card?.id || notification.cardId}`);
 
   // Medida de segurança para evitar crashes se os dados estiverem incompletos
   if (!boardForNotification || !project) {
-    sails.log.warn('Dados do quadro ou do projeto em falta para a notificação (ID do cartão: %s)', card.id);
+    sails.log.warn(
+      'Dados do quadro ou do projeto em falta para a notificação (type=%s, cardId=%s)',
+      notification.type,
+      card?.id || null,
+    );
     return {
       actor_name: creatorUser.name,
       action_verb: t(`notification:${notification.type}.verb`),
       action_object: t(`notification:${notification.type}.object`),
       project_name: 'Projeto desconhecido',
       board_name: 'Quadro desconhecido',
-      list_name: list ? list.name : card.list?.name || 'Lista desconhecida',
-      card_title: card.name,
-      card_id: card.id,
-      card_url: cardUrl,
+      list_name: list?.name || card?.list?.name || '',
+      card_title: card?.name || notification.data?.board?.name || 'Board',
+      card_id: card?.id || '',
+      card_url: resourceUrl,
     };
   }
 
   // Gerar URL específica baseada no tipo de notificação
-  let specificUrl = cardUrl; // Fallback para o cartão geral
+  let specificUrl = resourceUrl;
 
   if (
     notification.type === Notification.Types.COMMENT_CARD ||
@@ -656,9 +776,6 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     if (notification.data?.commentId) {
       specificUrl = generateUrl(`cards/${card.id}#comment-${notification.data.commentId}`);
     }
-  } else if (notification.type === Notification.Types.MOVE_CARD) {
-    // Para movimentos, manter o cartão geral (já mostra a nova posição)
-    specificUrl = cardUrl;
   } else if (notification.type === 'createTask' || notification.type === 'completeTask') {
     // Para tarefas, tentar levar à tarefa específica se disponível
     if (notification.data?.taskId) {
@@ -667,7 +784,7 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
   }
 
   // Gerar texto específico do botão CTA baseado no tipo de notificação
-  let ctaButtonText = t('email:viewCard'); // Fallback padrão
+  let ctaButtonText = isBoardNotification ? t('email:viewBoard') : t('email:viewCard');
 
   if (
     notification.type === Notification.Types.COMMENT_CARD ||
@@ -676,12 +793,6 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     ctaButtonText = t('email:viewComment');
   } else if (notification.type === 'createTask' || notification.type === 'completeTask') {
     ctaButtonText = t('email:viewTask');
-  } else if (notification.type === Notification.Types.MOVE_CARD) {
-    ctaButtonText = t('email:viewCard');
-  } else if (notification.type === Notification.Types.ADD_MEMBER_TO_CARD) {
-    ctaButtonText = t('email:viewCard');
-  } else if (notification.type === Notification.Types.SET_DUE_DATE) {
-    ctaButtonText = t('email:viewCard');
   }
 
   return {
@@ -690,11 +801,12 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     action_object: t(`notification:${notification.type}.object`),
     project_name: project.name,
     board_name: boardForNotification.name,
-    list_name: list ? list.name : card.list.name,
-    card_title: card.name,
-    card_id: card.id,
+    list_name: list?.name || card?.list?.name || '',
+    card_title: card?.name || boardForNotification.name,
+    card_id: card?.id || '',
     card_url: specificUrl,
     cta_button_text: ctaButtonText,
+    is_board_notification: isBoardNotification,
 
     // Traduções para labels e descrições
     email_label_comment: t('email:label:comment'),
@@ -709,6 +821,7 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     email_label_dueDateSet: t('email:label:dueDateSet'),
     email_label_newTaskCreated: t('email:label:newTaskCreated'),
     email_label_addedToCard: t('email:label:addedToCard'),
+    email_label_addedToBoard: t('email:label:addedToBoard'),
     email_label_dueDateCard: t('email:label:dueDateCard'),
     email_action_moveCard: t('email:action:moveCard'),
     email_action_setDueDate: t('email:action:setDueDate'),

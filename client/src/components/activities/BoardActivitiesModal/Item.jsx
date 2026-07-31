@@ -52,7 +52,7 @@ const Item = React.memo(({ id }) => {
     return null;
   }
 
-  const [t] = useTranslation();
+  const [t, i18n] = useTranslation();
   const [activateClosable, deactivateClosable] = useContext(ClosableContext);
 
   const handleBeforeGalleryOpen = useCallback(
@@ -72,7 +72,8 @@ const Item = React.memo(({ id }) => {
         })
       : user.name;
 
-  const cardName = card ? card.name : activity.data?.card?.name || 'Cartão desconhecido';
+  const cardName =
+    card ? card.name : activity.data?.card?.name || t('common.unknownCard');
 
   // Mostrar thumbnail apenas para atividades de anexos específicos
   let thumbnailAttachment = null;
@@ -103,7 +104,13 @@ const Item = React.memo(({ id }) => {
   switch (activity.type) {
     case ActivityTypes.CREATE_CARD: {
       const { list } = activity.data || {};
-      const listName = list?.name || t(`common.${list?.type}`) || 'Lista desconhecida';
+      const listName =
+        list?.name ||
+        (list?.type
+          ? t(`common.${list.type}`, {
+              defaultValue: t('common.unknownList'),
+            })
+          : t('common.unknownList'));
 
       contentNode = (
         <Trans
@@ -129,8 +136,20 @@ const Item = React.memo(({ id }) => {
     case ActivityTypes.MOVE_CARD: {
       const { fromList, toList } = activity.data || {};
 
-      const fromListName = fromList?.name || t(`common.${fromList?.type}`) || 'Lista origem desconhecida';
-      const toListName = toList?.name || t(`common.${toList?.type}`) || 'Lista destino desconhecida';
+      const fromListName =
+        fromList?.name ||
+        (fromList?.type
+          ? t(`common.${fromList.type}`, {
+              defaultValue: t('common.unknownSourceList'),
+            })
+          : t('common.unknownSourceList'));
+      const toListName =
+        toList?.name ||
+        (toList?.type
+          ? t(`common.${toList.type}`, {
+              defaultValue: t('common.unknownDestinationList'),
+            })
+          : t('common.unknownDestinationList'));
 
       contentNode = (
         <Trans
@@ -177,13 +196,13 @@ const Item = React.memo(({ id }) => {
             i18nKey="common.userAddedUserToCard"
             values={{
               actorUser: userName,
-              addedUser: activity.data?.user?.name || 'Utilizador desconhecido',
+              addedUser: activity.data?.user?.name || t('common.unknownUser'),
               card: cardName,
             }}
           >
             <span className={styles.author}>{userName}</span>
             {' added '}
-            {activity.data?.user?.name || 'Utilizador desconhecido'}
+            {activity.data?.user?.name || t('common.unknownUser')}
             {' to '}
             <Link to={Paths.CARDS.replace(':id', activity.cardId)}>
               {cardName}
@@ -198,13 +217,13 @@ const Item = React.memo(({ id }) => {
           i18nKey="common.userRemovedUserFromCard"
           values={{
             actorUser: userName,
-            removedUser: activity.data?.user?.name || 'Utilizador desconhecido',
+            removedUser: activity.data?.user?.name || t('common.unknownUser'),
             card: cardName,
           }}
         >
           <span className={styles.author}>{userName}</span>
           {' removed '}
-          {activity.data?.user?.name || 'Utilizador desconhecido'}
+          {activity.data?.user?.name || t('common.unknownUser')}
           {' from '}
           <Link to={Paths.CARDS.replace(':id', activity.cardId)}>
             {cardName}
@@ -215,7 +234,7 @@ const Item = React.memo(({ id }) => {
       break;
     case ActivityTypes.CREATE_ATTACHMENT: {
       const { attachmentName, isVideo, thumbnailUrls, videoData } = activity.data || {};
-      const displayName = attachmentName || 'Anexo desconhecido';
+      const displayName = attachmentName || t('common.unknownAttachment');
       const isVideoFile = isVideo === true;
 
       // Determinar a chave de tradução baseada no tipo de arquivo
@@ -262,7 +281,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.DELETE_ATTACHMENT: {
       const { attachmentName, isVideo } = activity.data || {};
-      const displayName = attachmentName || 'Anexo desconhecido';
+      const displayName = attachmentName || t('common.unknownAttachment');
       const isVideoFile = isVideo === true;
 
       // Determinar a chave de tradução baseada no tipo de arquivo
@@ -296,25 +315,29 @@ const Item = React.memo(({ id }) => {
                   // Extrair dados com verificações de segurança
             const { commentText, cardName: activityCardName, mentions, isReply, action } = activity.data || {};
 
-      // Usar padrão direto como outros casos
-      const getActionText = (action) => {
-        switch (action) {
-          case 'create': return isReply ? ' respondeu a um comentário no ' : ' comentou no ';
-          case 'update': return ' editou comentário no ';
-          case 'delete': return ' removeu comentário no ';
-          case 'reply': return ' respondeu a um comentário no ';
-          default: return ' comentou no ';
-        }
-      };
+      const translationKey =
+        action === 'update'
+          ? 'common.userUpdatedCommentOnCard'
+          : action === 'delete'
+            ? 'common.userDeletedCommentOnCard'
+            : action === 'reply' || isReply
+              ? 'common.userRepliedToCommentOnCard'
+              : 'common.userCommentedOnCard';
 
       contentNode = (
-        <>
+        <Trans
+          i18nKey={translationKey}
+          values={{
+            user: userName,
+            card: activityCardName || cardName,
+          }}
+        >
           <span className={styles.author}>{userName}</span>
-          {getActionText(action)}
+          {' commented on '}
           <Link to={Paths.CARDS.replace(':id', activity.cardId)}>
             {activityCardName || cardName}
           </Link>
-        </>
+        </Trans>
       );
 
       // Adicionar texto do comentário ao contentNode
@@ -345,7 +368,7 @@ const Item = React.memo(({ id }) => {
           <>
             {contentNode}
             <div className={styles.deletedComment}>
-              <em>[Comentário removido]</em>
+              <em>{t('common.deletedComment')}</em>
             </div>
           </>
         );
@@ -355,7 +378,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.ADD_LABEL_TO_CARD: {
       const { labelName, labelColor } = activity.data || {};
-      const displayName = labelName || 'Label desconhecido';
+      const displayName = labelName || t('common.unknownLabel');
 
       // Converter nome da cor para classe CSS
       const getColorClass = (colorName) => {
@@ -436,7 +459,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.REMOVE_LABEL_FROM_CARD: {
       const { labelName, labelColor } = activity.data || {};
-      const displayName = labelName || 'Label desconhecido';
+      const displayName = labelName || t('common.unknownLabel');
 
       // Converter nome da cor para classe CSS
       const getColorClass = (colorName) => {
@@ -517,7 +540,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.CREATE_TASK: {
       const { task } = activity.data || {};
-      const taskName = task?.name || 'Tarefa desconhecida';
+      const taskName = task?.name || t('common.unknownTask');
 
       contentNode = (
         <Trans
@@ -542,7 +565,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.DELETE_TASK: {
       const { task } = activity.data || {};
-      const taskName = task?.name || 'Tarefa desconhecida';
+      const taskName = task?.name || t('common.unknownTask');
 
       contentNode = (
         <Trans
@@ -567,7 +590,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.COMPLETE_TASK: {
       const { task } = activity.data || {};
-      const taskName = task?.name || 'Tarefa desconhecida';
+      const taskName = task?.name || t('common.unknownTask');
 
       contentNode = (
         <Trans
@@ -592,7 +615,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.UNCOMPLETE_TASK: {
       const { task } = activity.data || {};
-      const taskName = task?.name || 'Tarefa desconhecida';
+      const taskName = task?.name || t('common.unknownTask');
 
       contentNode = (
         <Trans
@@ -617,7 +640,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.CREATE_TASK_LIST: {
       const { taskList } = activity.data || {};
-      const taskListName = taskList?.name || 'Lista de tarefas desconhecida';
+      const taskListName = taskList?.name || t('common.unknownTaskList');
 
       contentNode = (
         <Trans
@@ -642,7 +665,7 @@ const Item = React.memo(({ id }) => {
     }
     case ActivityTypes.DELETE_TASK_LIST: {
       const { taskList } = activity.data || {};
-      const taskListName = taskList?.name || 'Lista de tarefas desconhecida';
+      const taskListName = taskList?.name || t('common.unknownTaskList');
 
       contentNode = (
         <Trans
@@ -672,9 +695,11 @@ const Item = React.memo(({ id }) => {
       const formatDate = (date) => {
         if (!date) return null;
         try {
-          return new Date(date).toLocaleDateString('pt-PT');
+          return new Date(date).toLocaleDateString(
+            i18n.resolvedLanguage || i18n.language
+          );
         } catch (error) {
-          return 'Data inválida';
+          return t('common.invalidDate');
         }
       };
 
@@ -749,13 +774,13 @@ const Item = React.memo(({ id }) => {
             i18nKey="common.userSetDueDateOnCard"
             values={{
               user: userName,
-              date: 'Data desconhecida',
+              date: t('common.unknownDate'),
               card: cardName,
             }}
           >
             <span className={styles.author}>{userName}</span>
             {' definiu data limite '}
-            <strong>Data desconhecida</strong>
+            <strong>{t('common.unknownDate')}</strong>
             {' para o cartão '}
             <Link to={Paths.CARDS.replace(':id', activity.cardId)}>
               {cardName}

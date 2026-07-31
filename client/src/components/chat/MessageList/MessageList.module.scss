@@ -75,6 +75,11 @@
     flex: 0 0 24px;
   }
 
+  .messageAvatar {
+    flex: 0 0 24px;
+    line-height: 0;
+  }
+
   .messageContent {
     max-width: 74%;
     min-width: 0;
@@ -137,7 +142,7 @@
 
   .hoverActions {
     align-items: center;
-    background: var(--chat-overlay);
+    background: var(--chat-popup);
     border: 1px solid var(--chat-border);
     border-radius: var(--chat-radius-control);
     box-shadow: var(--chat-panel-shadow);
@@ -226,7 +231,7 @@
 
   .actionsMenu,
   .forwardMenu {
-    background: var(--chat-overlay);
+    background: var(--chat-popup);
     border: 1px solid var(--chat-border);
     border-radius: var(--chat-radius-control);
     box-shadow: var(--chat-panel-shadow);

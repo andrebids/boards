@@ -88,6 +88,7 @@ const CardImageCarousel = React.memo(() => {
   const [t] = useTranslation();
   const dispatch = useDispatch();
   const [selectedId, setSelectedId] = useState(null);
+  const [loadedImageKeys, setLoadedImageKeys] = useState({});
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [activateClosable, deactivateClosable] = useContext(ClosableContext);
@@ -261,6 +262,19 @@ const CardImageCarousel = React.memo(() => {
 
   const handlePointerCancel = useCallback(() => {
     pointerStartXRef.current = null;
+  }, []);
+
+  const handleImageLoad = useCallback((imageKey) => {
+    setLoadedImageKeys((previousKeys) => {
+      if (previousKeys[imageKey]) {
+        return previousKeys;
+      }
+
+      return {
+        ...previousKeys,
+        [imageKey]: true,
+      };
+    });
   }, []);
 
   const handleToggleCoverClick = useCallback(
@@ -440,6 +454,10 @@ const CardImageCarousel = React.memo(() => {
               );
             }
 
+            const imageUrl = getThumbnailUrl(image) || image.data.url;
+            const imageKey = `${image.id}:${imageUrl}`;
+            const isImageLoading = !loadedImageKeys[imageKey];
+
             return (
               <GalleryItem
                 key={image.id}
@@ -457,6 +475,7 @@ const CardImageCarousel = React.memo(() => {
                     aria-label={t('action.openImage', {
                       name: image.name,
                     })}
+                    aria-busy={isSelected && isImageLoading}
                     className={classNames(styles.slide, isSelected && styles.slideSelected)}
                     onKeyDown={handleKeyDown}
                     onClick={(event) => {
@@ -470,10 +489,17 @@ const CardImageCarousel = React.memo(() => {
                     }}
                   >
                     <img
-                      src={getThumbnailUrl(image) || image.data.url}
+                      src={imageUrl}
                       alt={image.name}
                       className={styles.image}
+                      onLoad={() => handleImageLoad(imageKey)}
+                      onError={() => handleImageLoad(imageKey)}
                     />
+                    {isSelected && isImageLoading && (
+                      <span className={styles.mediaLoadingIndicator} aria-hidden="true">
+                        <span className={styles.mediaLoadingSpinner} />
+                      </span>
+                    )}
                   </button>
                 )}
               </GalleryItem>

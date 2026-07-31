@@ -5,7 +5,7 @@
 
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import React, { useContext } from 'react';
+import React, { useContext, useImperativeHandle, useRef } from 'react';
 // The shared adapter is the single allowed boundary around Semantic UI Button.
 // eslint-disable-next-line no-restricted-imports
 import { Button as SemanticUIButton } from 'semantic-ui-react';
@@ -63,6 +63,9 @@ const Button = React.forwardRef(
     ref,
   ) => {
     const group = useContext(ButtonGroupContext);
+    const semanticButtonRef = useRef(null);
+
+    useImperativeHandle(ref, () => semanticButtonRef.current?.ref?.current || null);
 
     const resolvedVariant = variant || group.variant || Variants.PRIMARY;
     const resolvedSize = normalizeSize(size || group.size);
@@ -83,7 +86,7 @@ const Button = React.forwardRef(
     return (
       <SemanticUIButton
         {...props} // eslint-disable-line react/jsx-props-no-spreading
-        ref={ref}
+        ref={semanticButtonRef}
         aria-busy={resolvedPending || undefined}
         aria-disabled={resolvedDisabled || resolvedPending || undefined}
         className={classNames(

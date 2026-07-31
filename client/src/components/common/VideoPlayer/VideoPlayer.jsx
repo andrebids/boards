@@ -77,7 +77,8 @@ const VideoPlayer = React.memo(({ attachment, autoPlay, className, posterUrl }) 
         poster={posterUrl || undefined}
         aspectRatio={hasDimensions ? `${width} / ${height}` : '16 / 9'}
         autoPlay={autoPlay}
-        load="visible"
+        load={autoPlay ? 'eager' : 'visible'}
+        preload={autoPlay ? 'auto' : 'metadata'}
         muted={autoPlay}
         playsInline
         onError={() => setHasPlaybackError(true)}
@@ -86,10 +87,14 @@ const VideoPlayer = React.memo(({ attachment, autoPlay, className, posterUrl }) 
           mediaProps={{
             'aria-label': attachment.name,
             controlsList: 'nodownload',
-            preload: 'metadata',
           }}
         />
-        <DefaultVideoLayout icons={defaultLayoutIcons} colorScheme="dark" showTooltipDelay={350} />
+        <DefaultVideoLayout
+          icons={defaultLayoutIcons}
+          colorScheme="dark"
+          showTooltipDelay={350}
+          noModal
+        />
       </MediaPlayer>
     </div>
   );

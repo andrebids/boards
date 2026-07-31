@@ -204,7 +204,7 @@ const Item = React.memo(({ id }) => {
           i18nKey={translationKey}
           values={{
             user: userName,
-            card: activityCardName || 'este cartão',
+            card: activityCardName || t('common.thisCard'),
           }}
         >
           <span className={styles.author}>{userName}</span>
@@ -214,7 +214,7 @@ const Item = React.memo(({ id }) => {
           {action === 'delete' && ' removeu comentário no cartão '}
           {action === 'reply' && ' respondeu a um comentário no cartão '}
           <span className={styles.cardName}>
-            {activityCardName || 'este cartão'}
+            {activityCardName || t('common.thisCard')}
           </span>
         </Trans>
       );
@@ -247,7 +247,7 @@ const Item = React.memo(({ id }) => {
           <>
             {contentNode}
             <div className={styles.deletedComment}>
-              <em>[Comentário removido]</em>
+              <em>{t('common.deletedComment')}</em>
             </div>
           </>
         );

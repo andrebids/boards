@@ -115,10 +115,10 @@ const PdfPreview = ({ file, onClose }) => {
       <div className={styles.pdfPreviewFooter}>
         <span className={styles.pdfInfo}>
           <Icon name="file pdf outline" />
-          PDF Document
+          {t('common.pdfDocument')}
         </span>
         <span className={styles.fileSize}>
-          {file.data?.size && formatFileSize(file.data.size)}
+          {file.data?.size && formatFileSize(file.data.size, t)}
         </span>
       </div>
     </div>
@@ -130,14 +130,19 @@ const PdfPreview = ({ file, onClose }) => {
  * @param {number} bytes - Tamanho em bytes
  * @returns {string} Tamanho formatado
  */
-const formatFileSize = bytes => {
-  if (bytes === 0) return '0 Bytes';
+const formatFileSize = (bytes, t) => {
+  if (bytes === 0) {
+    return t('common.fileSize', { value: 0, unit: t('common.bytes') });
+  }
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = [t('common.bytes'), 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return t('common.fileSize', {
+    value: parseFloat((bytes / Math.pow(k, i)).toFixed(2)),
+    unit: sizes[i],
+  });
 };
 
 PdfPreview.propTypes = {

@@ -52,7 +52,11 @@ const RightSide = React.memo(() => {
           className={classNames(styles.button)}
           onClick={handleToggleHiddenClick}
         >
-          <Icon fitted name={isHiddenVisible ? 'eye slash' : 'eye'} />
+          <Icon
+            fitted
+            className={isHiddenVisible ? undefined : styles.visibilityIcon}
+            name={isHiddenVisible ? 'eye slash' : 'eye'}
+          />
         </button>
       </div>
       <div className={styles.action}>

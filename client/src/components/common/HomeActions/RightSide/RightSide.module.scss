@@ -26,6 +26,22 @@
     }
   }
 
+  .visibilityIcon {
+    position: relative;
+
+    &::after {
+      background: currentColor;
+      border-radius: 50%;
+      content: '';
+      height: 3px;
+      left: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 3px;
+    }
+  }
+
   .buttonGroup {
     .button {
       border-radius: 0;

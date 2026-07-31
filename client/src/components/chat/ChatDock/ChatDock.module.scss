@@ -3,10 +3,8 @@
     align-items: flex-end;
     bottom: 84px;
     display: flex;
-    flex-direction: row;
-    gap: 8px;
+    flex-direction: column;
     justify-content: flex-end;
-    max-width: calc(100vw - 120px);
     opacity: 1;
     pointer-events: auto;
     position: fixed;
@@ -20,41 +18,58 @@
     z-index: 1004;
   }
 
-  .concealed {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(6px);
-    transition-delay: 0ms, 0ms, 140ms;
-    visibility: hidden;
+  .windows {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-end;
   }
 
-  .overflowButton {
-    align-items: center;
+  .bubbleRail {
+    bottom: -60px;
+    display: flex;
+    gap: 7px;
+    max-width: calc(100vw - 120px);
+    overflow-x: auto;
+    padding: 4px 2px;
+    position: absolute;
+    right: 62px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .bubble {
     background: var(--chat-overlay);
     border: 1px solid var(--chat-border);
-    border-radius: var(--chat-radius-control);
+    border-radius: 50%;
     box-shadow: var(--chat-panel-shadow);
-    color: var(--chat-foreground);
     cursor: pointer;
-    display: flex;
-    flex: 0 0 auto;
-    font-size: var(--chat-font-meta);
-    gap: 6px;
+    display: inline-flex;
+    flex: 0 0 44px;
     height: 44px;
-    justify-content: center;
-    padding: 0 13px;
+    padding: 3px;
+    position: relative;
+    transition:
+      background-color var(--chat-motion-fast) var(--chat-ease),
+      transform var(--chat-motion-fast) var(--chat-ease);
+    width: 44px;
 
-    span {
-      font-weight: 700;
+    :global(.avatar) {
+      height: 36px;
+      width: 36px;
     }
 
     &:hover {
       background: var(--chat-surface-hover);
-      border-color: var(--chat-default-hover);
+      transform: translateY(-2px);
     }
 
     &:active {
-      transform: scale(0.98);
+      transform: scale(0.96);
     }
 
     &:focus-visible {
@@ -63,26 +78,55 @@
     }
   }
 
+  .bubbleBadge {
+    align-items: center;
+    background: var(--chat-danger);
+    border: 2px solid var(--chat-background);
+    border-radius: 999px;
+    color: var(--chat-danger-foreground);
+    display: inline-flex;
+    font-size: 10px;
+    font-weight: 700;
+    height: 18px;
+    justify-content: center;
+    min-width: 18px;
+    padding: 0 4px;
+    position: absolute;
+    right: -4px;
+    top: -4px;
+  }
+
+  .concealed {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition-delay: 0ms, 0ms, 140ms;
+    visibility: hidden;
+  }
+
   @media only screen and (max-width: 767px) {
     .dock {
       bottom: 76px;
       left: 0;
-      max-width: none;
       right: 0;
       width: 100%;
     }
 
-    .overflowButton {
-      bottom: 84px;
-      left: 8px;
-      position: fixed;
-      z-index: 1;
+    .windows {
+      width: 100%;
+    }
+
+    .bubbleRail {
+      bottom: -60px;
+      max-width: calc(100vw - 88px);
+      right: 76px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .dock,
-    .concealed {
+    .concealed,
+    .bubble {
       transform: none;
       transition: none;
     }

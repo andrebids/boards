@@ -14,6 +14,7 @@ const Types = {
   CREATE_CARD: 'createCard',
   MOVE_CARD: 'moveCard',
   COMMENT_CARD: 'commentCard',
+  ADD_MEMBER_TO_BOARD: 'addMemberToBoard',
   ADD_MEMBER_TO_CARD: 'addMemberToCard',
   REMOVE_MEMBER_FROM_CARD: 'removeMemberFromCard',
   MENTION_IN_COMMENT: 'mentionInComment',
@@ -29,8 +30,16 @@ const Types = {
   SET_DUE_DATE: 'setDueDate',
 };
 
+const ESSENTIAL_TYPES = [
+  Types.ADD_MEMBER_TO_BOARD,
+  Types.ADD_MEMBER_TO_CARD,
+  Types.REMOVE_MEMBER_FROM_CARD,
+  Types.MENTION_IN_COMMENT,
+];
+
 module.exports = {
   Types,
+  ESSENTIAL_TYPES,
 
   attributes: {
     //  ╔═╗╦═╗╦╔╦╗╦╔╦╗╦╦  ╦╔═╗╔═╗
@@ -77,7 +86,6 @@ module.exports = {
     },
     cardId: {
       model: 'Card',
-      required: true,
       columnName: 'card_id',
     },
     commentId: {

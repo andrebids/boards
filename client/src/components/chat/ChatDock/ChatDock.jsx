@@ -1,18 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { MessageCircle } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import selectors from '../../../selectors';
 import { useChat } from '../ChatContext';
+import ChatAvatar from '../ChatAvatar';
 import ChatWindow from '../ChatWindow';
-import { shouldConcealChatDock } from '../utils';
+import {
+  getConversationTitle,
+  getDirectUser,
+  isCustomGroupConversation,
+  isGeneralConversation,
+  shouldConcealChatDock,
+} from '../utils';
 
 import styles from './ChatDock.module.scss';
 
 const getLimit = (width) => {
-  if (width >= 1440) {
-    return 3;
-  }
-
   if (width >= 1024) {
     return 2;
   }
@@ -29,6 +33,10 @@ const ChatDock = React.memo(() => {
     openConversation,
     windows,
   } = useChat();
+  const currentUser = useSelector(selectors.selectCurrentUser);
+  const project = useSelector(selectors.selectCurrentProject);
+  const conversations = useSelector(selectors.selectChatConversationsForCurrentProject) || [];
+  const members = useSelector(selectors.selectChatMembersForCurrentProject) || [];
   const [limit, setLimit] = useState(() => getLimit(window.innerWidth));
 
   useEffect(() => {
@@ -49,15 +57,13 @@ const ChatDock = React.memo(() => {
     };
   }, [activeWindows, limit]);
 
-  const handleOverflowClick = useCallback(() => {
-    const nextWindow = hiddenWindows[hiddenWindows.length - 1];
+  const bubbleWindows = useMemo(() => {
+    const hiddenWindowIds = new Set(hiddenWindows.map((window) => window.id));
 
-    if (nextWindow) {
-      openConversation(nextWindow.id);
-    }
-  }, [hiddenWindows, openConversation]);
+    return windows.filter((window) => window.isMinimized || hiddenWindowIds.has(window.id));
+  }, [hiddenWindows, windows]);
 
-  if (!isEnabled || activeWindows.length === 0) {
+  if (!isEnabled || windows.length === 0) {
     return null;
   }
 
@@ -69,20 +75,59 @@ const ChatDock = React.memo(() => {
       aria-hidden={isConcealed}
       aria-label={t('chat.openConversations')}
     >
-      {hiddenWindows.length > 0 && (
-        <button
-          type="button"
-          className={styles.overflowButton}
-          title={t('chat.showOtherConversations')}
-          onClick={handleOverflowClick}
-        >
-          <MessageCircle aria-hidden="true" size={17} strokeWidth={2} />
-          <span>+{hiddenWindows.length}</span>
-        </button>
+      {bubbleWindows.length > 0 && (
+        <div className={styles.bubbleRail} aria-label={t('chat.openConversations')}>
+          {bubbleWindows.map((window) => {
+            const conversation = conversations.find((item) => item.id === window.id);
+            if (!conversation) {
+              return null;
+            }
+
+            const directUser = getDirectUser(conversation, members, currentUser.id);
+            const isProjectConversation =
+              isGeneralConversation(conversation) || isCustomGroupConversation(conversation);
+            const title = getConversationTitle(
+              conversation,
+              members,
+              currentUser.id,
+              project?.name || '',
+              {
+                conversationTitle: t('chat.conversation'),
+                generalTitle: t('chat.general'),
+              },
+            );
+            const unreadCount = conversation.unreadCount || 0;
+            const label = unreadCount
+              ? `${title} — ${t('chat.unreadMessages', { count: unreadCount })}`
+              : title;
+
+            return (
+              <button
+                type="button"
+                key={window.id}
+                className={styles.bubble}
+                aria-label={label}
+                title={label}
+                onClick={() => openConversation(window.id)}
+              >
+                <ChatAvatar
+                  isOnline={directUser?.isOnline}
+                  isProject={isProjectConversation}
+                  user={directUser}
+                />
+                {unreadCount > 0 && (
+                  <span className={styles.bubbleBadge}>{Math.min(unreadCount, 99)}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       )}
-      {visibleWindows.map((window) => (
-        <ChatWindow key={window.id} id={window.id} />
-      ))}
+      <div className={styles.windows}>
+        {visibleWindows.map((window) => (
+          <ChatWindow key={window.id} id={window.id} />
+        ))}
+      </div>
     </aside>
   );
 });

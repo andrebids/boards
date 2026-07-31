@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import { ThemeProvider, ToasterProvider } from '@gravity-ui/uikit';
 import { ErrorBoundary } from '@sentry/react';
+import { useTranslation } from 'react-i18next';
 // eslint-disable-next-line import/no-unresolved
 import { toaster } from '@gravity-ui/uikit/toaster-singleton';
 import { ReduxRouter } from '../../lib/redux-router';
@@ -25,14 +26,18 @@ import '../../lib/custom-ui/styles.css';
 
 import '../../styles.module.scss';
 
-const ApplicationErrorFallback = () => (
-  <main role="alert">
-    <p>Ocorreu um erro inesperado. Recarregue a página para continuar.</p>
-    <button type="button" onClick={() => window.location.reload()}>
-      Recarregar
-    </button>
-  </main>
-);
+const ApplicationErrorFallback = () => {
+  const [t] = useTranslation();
+
+  return (
+    <main role="alert">
+      <p>{t('common.unexpectedApplicationError')}</p>
+      <button type="button" onClick={() => window.location.reload()}>
+        {t('action.reload')}
+      </button>
+    </main>
+  );
+};
 
 function Root({ store, history }) {
   return (

@@ -6,6 +6,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 import ProjectItem from './ProjectItem';
@@ -25,6 +26,7 @@ import styles from './ProjectList.module.scss';
 
 const ProjectList = React.memo(() => {
   const dispatch = useDispatch();
+  const [t] = useTranslation();
   const favoriteProjects = useSelector(selectSidebarFavoriteProjectsOrdered);
   const otherProjects = useSelector(selectSidebarOtherProjectsOrdered);
   const [showAll, setShowAll] = useState(false);
@@ -102,9 +104,9 @@ const ProjectList = React.memo(() => {
   if (favoriteProjects.length === 0 && otherProjects.length === 0) {
     return (
       <div className={styles.wrapper}>
-        <h3 className={styles.title}>MEUS PROJETOS</h3>
+        <h3 className={styles.title}>{t('common.myProjects')}</h3>
         <div className={styles.empty}>
-          <p>Nenhum projeto encontrado</p>
+          <p>{t('common.noProjectsFound')}</p>
         </div>
       </div>
     );
@@ -115,7 +117,7 @@ const ProjectList = React.memo(() => {
       <DragDropContext onDragEnd={handleDragEnd}>
         {favoriteProjects.length > 0 && (
           <>
-            <h3 className={styles.title}>FAVORITOS</h3>
+            <h3 className={styles.title}>{t('common.favorites')}</h3>
             <Droppable droppableId="favorites" direction="vertical">
               {provided => (
                 <div
@@ -148,7 +150,7 @@ const ProjectList = React.memo(() => {
           </>
         )}
 
-        <h3 className={styles.title}>MEUS PROJETOS</h3>
+        <h3 className={styles.title}>{t('common.myProjects')}</h3>
 
         <Droppable droppableId="projects">
           {provided => (

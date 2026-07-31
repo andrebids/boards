@@ -6,11 +6,11 @@ import MemberRow from '../MemberRow';
 
 import styles from './MemberList.module.scss';
 
-const MemberList = React.memo(({ isPending, members, onMemberOpen }) => {
+const MemberList = React.memo(({ isCompact, isPending, members, onMemberOpen }) => {
   const [t] = useTranslation();
 
   return (
-    <div className={styles.list}>
+    <div className={`${styles.list} ${isCompact ? styles.compact : ''}`}>
       {members.map((member) => (
         <MemberRow
           key={member.id}
@@ -27,6 +27,7 @@ const MemberList = React.memo(({ isPending, members, onMemberOpen }) => {
 });
 
 MemberList.propTypes = {
+  isCompact: PropTypes.bool,
   isPending: PropTypes.bool.isRequired,
   members: PropTypes.arrayOf(
     PropTypes.shape({
@@ -35,6 +36,10 @@ MemberList.propTypes = {
     }),
   ).isRequired,
   onMemberOpen: PropTypes.func.isRequired,
+};
+
+MemberList.defaultProps = {
+  isCompact: false,
 };
 
 export default MemberList;

@@ -537,7 +537,7 @@ const AddCard = React.memo(
                       e.preventDefault();
                       setLabelsToAdd(prev => prev.filter(id => id !== labelId));
                     }}
-                    title="Clique para remover"
+                    title={t('common.clickToRemove')}
                   >
                     <LabelChip id={labelId} size="tiny" />
                   </span>
@@ -558,7 +558,7 @@ const AddCard = React.memo(
                       e.preventDefault();
                       setUsersToAdd(prev => prev.filter(id => id !== userId));
                     }}
-                    title="Clique para remover"
+                    title={t('common.clickToRemove')}
                   >
                     <UserAvatar id={userId} size="small" />
                   </span>

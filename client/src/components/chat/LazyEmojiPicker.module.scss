@@ -1,5 +1,5 @@
 .picker {
-  --epr-bg-color: #1c1d20 !important;
+  --epr-bg-color: var(--chat-popup) !important;
   --epr-category-icon-active-color: #f4f6f8 !important;
   --epr-category-label-height: 0px !important;
   --epr-category-navigation-button-size: 22px !important;
@@ -117,6 +117,7 @@
   :global(.epr-body) {
     min-height: 0;
     order: 2;
+    overscroll-behavior: contain;
   }
 
   :global(.epr-emoji-list) {

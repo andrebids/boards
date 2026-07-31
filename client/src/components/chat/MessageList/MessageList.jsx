@@ -44,7 +44,7 @@ import LazyEmojiPicker, {
   EMOJI_PICKER_HEIGHT,
   EMOJI_PICKER_WIDTH,
 } from '../LazyEmojiPicker';
-import { getConversationTitle } from '../utils';
+import { getConversationTitle, getParticipantUserIds, isDirectConversation } from '../utils';
 
 import styles from './MessageList.module.scss';
 
@@ -249,12 +249,14 @@ const MessageList = React.memo(
     const [t] = useTranslation();
     const listRef = useRef(null);
     const activeMessageActionsRef = useRef(null);
+    const reactionEmojiPickerRef = useRef(null);
     const previousLastIdRef = useRef(null);
     const prependScrollStateRef = useRef(null);
     const isAtBottomRef = useRef(true);
     const [activeReactionMenuMessageId, setActiveReactionMenuMessageId] = useState(null);
     const [activeActionsMessageId, setActiveActionsMessageId] = useState(null);
     const [forwardingMessageId, setForwardingMessageId] = useState(null);
+    const [pendingForward, setPendingForward] = useState(null);
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [editingText, setEditingText] = useState('');
     const [focusedMessageId, setFocusedMessageId] = useState(() => {
@@ -295,6 +297,40 @@ const MessageList = React.memo(
           .map((id) => members.find((member) => member.id === id)?.name)
           .filter(Boolean),
       [currentUserId, members, typingUserIds],
+    );
+
+    const directConversationsByUserId = useMemo(() => {
+      const result = new Map();
+      conversations.forEach((conversation) => {
+        if (
+          conversation.id !== conversationId &&
+          !conversation.isBlocked &&
+          isDirectConversation(conversation)
+        ) {
+          getParticipantUserIds(conversation).forEach((userId) => {
+            if (userId !== currentUserId) {
+              result.set(userId, conversation);
+            }
+          });
+        }
+      });
+      return result;
+    }, [conversationId, conversations, currentUserId]);
+
+    const forwardConversationTargets = useMemo(
+      () =>
+        conversations.filter(
+          (conversation) =>
+            conversation.id !== conversationId &&
+            !conversation.isBlocked &&
+            !isDirectConversation(conversation),
+        ),
+      [conversationId, conversations],
+    );
+
+    const forwardMemberTargets = useMemo(
+      () => members.filter((member) => member.id !== currentUserId),
+      [currentUserId, members],
     );
 
     const scrollToBottom = useCallback(() => {
@@ -472,18 +508,72 @@ const MessageList = React.memo(
       [dispatch],
     );
 
+    const forwardToConversation = useCallback(
+      (messageId, targetConversationId) => {
+        dispatch(entryActions.forwardChatMessage(messageId, targetConversationId));
+        closeMenus();
+      },
+      [closeMenus, dispatch],
+    );
+
+    const forwardToMember = useCallback(
+      (messageId, userId) => {
+        const existingConversation = directConversationsByUserId.get(userId);
+        if (existingConversation) {
+          forwardToConversation(messageId, existingConversation.id);
+          return;
+        }
+
+        setPendingForward({ messageId, userId });
+        dispatch(entryActions.createDirectChatConversation(projectId, userId));
+        closeMenus();
+      },
+      [closeMenus, directConversationsByUserId, dispatch, forwardToConversation, projectId],
+    );
+
+    useEffect(() => {
+      if (!pendingForward) {
+        return;
+      }
+
+      const targetConversation = directConversationsByUserId.get(pendingForward.userId);
+      if (!targetConversation) {
+        return;
+      }
+
+      dispatch(entryActions.forwardChatMessage(pendingForward.messageId, targetConversation.id));
+      setPendingForward(null);
+    }, [directConversationsByUserId, dispatch, pendingForward]);
+
     useEffect(() => {
       if (!isReactionEmojiPickerOpen) return undefined;
-      const close = () => {
+      const close = (event) => {
+        if (
+          event?.target instanceof Node &&
+          reactionEmojiPickerRef.current?.contains(event.target)
+        ) {
+          return;
+        }
+
         setActiveReactionMenuMessageId(null);
         setIsReactionEmojiPickerOpen(false);
         setReactionEmojiPickerPosition(null);
       };
+      const closeOnOutsidePointerDown = (event) => {
+        if (
+          event.target instanceof Node &&
+          !reactionEmojiPickerRef.current?.contains(event.target)
+        ) {
+          close();
+        }
+      };
       window.addEventListener('resize', close);
       window.addEventListener('scroll', close, true);
+      document.addEventListener('pointerdown', closeOnOutsidePointerDown, true);
       return () => {
         window.removeEventListener('resize', close);
         window.removeEventListener('scroll', close, true);
+        document.removeEventListener('pointerdown', closeOnOutsidePointerDown, true);
       };
     }, [isReactionEmojiPickerOpen]);
 
@@ -602,7 +692,13 @@ const MessageList = React.memo(
                     focusedMessageId === message.id ? styles.focusedMessage : ''
                   }`}
                 >
-                  {!isOwn && !continuesNext && <UserAvatar id={message.userId} size="tiny" />}
+                  {!isOwn && !continuesNext && (
+                    <UserAvatar
+                      id={message.userId}
+                      size="tiny"
+                      className={styles.messageAvatar}
+                    />
+                  )}
                   {!isOwn && continuesNext && <span className={styles.avatarSpacer} />}
                   <div className={styles.messageContent}>
                     {!continuesPrevious && (
@@ -647,6 +743,7 @@ const MessageList = React.memo(
                             createPortal(
                               <div
                                 className={styles.floatingReactionEmojiMenu}
+                                ref={reactionEmojiPickerRef}
                                 style={reactionEmojiPickerPosition}
                               >
                                 <Suspense fallback={null}>
@@ -738,34 +835,33 @@ const MessageList = React.memo(
                           {forwardingMessageId === message.id && (
                             <div className={styles.forwardMenu}>
                               <strong>{t('chat.forwardTo')}</strong>
-                              {conversations
-                                .filter(
-                                  (conversation) =>
-                                    conversation.id !== conversationId && !conversation.isBlocked,
-                                )
-                                .map((conversation) => (
-                                  <button
-                                    type="button"
-                                    key={conversation.id}
-                                    onClick={() => {
-                                      dispatch(
-                                        entryActions.forwardChatMessage(message.id, conversation.id),
-                                      );
-                                      closeMenus();
-                                    }}
-                                  >
-                                    {getConversationTitle(
-                                      conversation,
-                                      members,
-                                      currentUserId,
-                                      projectName,
-                                      {
-                                        conversationTitle: t('chat.conversation'),
-                                        generalTitle: t('chat.general'),
-                                      },
-                                    )}
-                                  </button>
-                                ))}
+                              {forwardConversationTargets.map((conversation) => (
+                                <button
+                                  type="button"
+                                  key={conversation.id}
+                                  onClick={() => forwardToConversation(message.id, conversation.id)}
+                                >
+                                  {getConversationTitle(
+                                    conversation,
+                                    members,
+                                    currentUserId,
+                                    projectName,
+                                    {
+                                      conversationTitle: t('chat.conversation'),
+                                      generalTitle: t('chat.general'),
+                                    },
+                                  )}
+                                </button>
+                              ))}
+                              {forwardMemberTargets.map((member) => (
+                                <button
+                                  type="button"
+                                  key={member.id}
+                                  onClick={() => forwardToMember(message.id, member.id)}
+                                >
+                                  {member.name}
+                                </button>
+                              ))}
                             </div>
                           )}
                         </div>

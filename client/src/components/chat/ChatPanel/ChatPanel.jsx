@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Check, Folder, Inbox, Plus, Users } from 'lucide-react';
+import { ArrowLeft, Check, Folder, Inbox, Plus, Users } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,6 @@ import { useChat } from '../ChatContext';
 import { getDirectUser, isGeneralConversation } from '../utils';
 import ChatHeader from '../ChatHeader';
 import ChatSearch from '../ChatSearch';
-import ChatTabs from '../ChatTabs';
 import ConversationList from '../ConversationList';
 import MemberList from '../MemberList';
 import ChatAvatar from '../ChatAvatar';
@@ -52,10 +51,15 @@ const ChatPanel = React.memo(
     useEffect(() => {
       const handleKeyDown = (event) => {
         if (event.key === 'Escape' && !event.defaultPrevented) {
-          if (isGroupFormOpen && activeTab === 'members') {
+          if (isGroupFormOpen) {
             setGroupTitle('');
             setSelectedMemberIds([]);
             setIsGroupFormOpen(false);
+            setQuery('');
+            return;
+          }
+          if (activeTab === 'members') {
+            setActiveTab('conversations');
             setQuery('');
             return;
           }
@@ -111,6 +115,27 @@ const ChatPanel = React.memo(
       );
     }, [currentUser.id, members, query]);
 
+    const availableMembers = useMemo(() => {
+      const directConversationUserIds = new Set(
+        conversations
+          .map((conversation) => getDirectUser(conversation, members, currentUser.id)?.id)
+          .filter(Boolean),
+      );
+
+      return [...filteredMembers]
+        .filter((member) => !directConversationUserIds.has(member.id))
+        .sort((left, right) => {
+          if (left.isOnline !== right.isOnline) {
+            return left.isOnline ? -1 : 1;
+          }
+
+          return left.name.localeCompare(right.name);
+        });
+    }, [conversations, currentUser.id, filteredMembers, members]);
+
+    const isSearching = query.trim().length > 0;
+    const suggestedMembers = isSearching ? availableMembers : availableMembers.slice(0, 5);
+
     const selectedMembers = useMemo(() => {
       const membersById = new Map(members.map((member) => [member.id, member]));
       return selectedMemberIds.map((id) => membersById.get(id)).filter(Boolean);
@@ -137,6 +162,7 @@ const ChatPanel = React.memo(
     const handleGroupFormOpen = useCallback(() => {
       setQuery('');
       setIsGroupFormOpen(true);
+      setActiveTab('members');
       window.requestAnimationFrame(() => groupTitleRef.current?.focus());
     }, []);
 
@@ -185,7 +211,7 @@ const ChatPanel = React.memo(
 
     const searchPlaceholder =
       activeTab === 'conversations'
-        ? t('chat.searchConversations')
+        ? t('chat.searchConversationsAndMembers')
         : t(isGroupFormOpen ? 'chat.searchGroupMembers' : 'chat.searchMembers');
 
     const openConversationIds = useMemo(() => windows.map(({ id }) => id), [windows]);
@@ -193,6 +219,13 @@ const ChatPanel = React.memo(
     const handleNewConversation = useCallback(() => {
       setQuery('');
       setActiveTab('members');
+      window.requestAnimationFrame(() => searchRef.current?.focus());
+    }, []);
+
+    const handleConversationsBack = useCallback(() => {
+      setQuery('');
+      setIsGroupFormOpen(false);
+      setActiveTab('conversations');
       window.requestAnimationFrame(() => searchRef.current?.focus());
     }, []);
 
@@ -317,27 +350,79 @@ const ChatPanel = React.memo(
                 placeholder={searchPlaceholder}
                 onChange={setQuery}
               />
-              {!(activeTab === 'members' && isGroupFormOpen) && (
-                <ChatTabs activeTab={activeTab} onChange={setActiveTab} />
-              )}
               <div className={styles.content}>
                 {activeTab === 'conversations' && (
-                  <ConversationList
-                    conversations={filteredConversations}
-                    currentUser={currentUser}
-                    members={members}
-                    openConversationIds={openConversationIds}
-                    isPending={isPending}
-                    onConversationOpen={handleConversationOpen}
-                    onGeneralOpen={handleGeneralOpen}
-                  />
+                  <div className={styles.discoveryContent}>
+                    <section
+                      className={styles.discoverySection}
+                      aria-labelledby="chat-conversations-heading"
+                    >
+                      <header className={styles.discoveryHeader}>
+                        <strong id="chat-conversations-heading">{t('chat.conversations')}</strong>
+                      </header>
+                      <ConversationList
+                        conversations={filteredConversations}
+                        currentUser={currentUser}
+                        isEmbedded
+                        members={members}
+                        openConversationIds={openConversationIds}
+                        isPending={isPending}
+                        onConversationOpen={handleConversationOpen}
+                        onGeneralOpen={handleGeneralOpen}
+                        showGeneralFallback={!isSearching}
+                      />
+                    </section>
+                    <section
+                      className={styles.discoverySection}
+                      aria-labelledby="chat-start-conversation-heading"
+                    >
+                      <header className={styles.discoveryHeader}>
+                        <strong id="chat-start-conversation-heading">
+                          {t('chat.startConversation')}
+                        </strong>
+                        <button
+                          type="button"
+                          className={styles.discoveryAction}
+                          onClick={handleGroupFormOpen}
+                        >
+                          <Users aria-hidden="true" size={14} />
+                          {t('chat.createGroup')}
+                        </button>
+                      </header>
+                      {suggestedMembers.length > 0 ? (
+                        <MemberList
+                          isCompact
+                          members={suggestedMembers}
+                          isPending={isPending}
+                          onMemberOpen={handleMemberOpen}
+                        />
+                      ) : (
+                        <div className={styles.discoveryEmpty}>
+                          {t(
+                            isSearching
+                              ? 'chat.noMembersFound'
+                              : 'chat.allMembersHaveConversations',
+                          )}
+                        </div>
+                      )}
+                      {!isSearching && availableMembers.length > 5 && (
+                        <button
+                          type="button"
+                          className={styles.viewAllMembers}
+                          onClick={handleNewConversation}
+                        >
+                          {t('chat.viewAllMembers', { count: filteredMembers.length })}
+                        </button>
+                      )}
+                    </section>
+                  </div>
                 )}
                 {activeTab !== 'conversations' && (
                   <div
                     id="chat-tabpanel-members"
                     className={styles.membersContent}
-                    role="tabpanel"
-                    aria-labelledby="chat-tab-members"
+                    role="region"
+                    aria-label={t('chat.members')}
                   >
                     {isGroupFormOpen ? (
                       <form className={styles.groupForm} onSubmit={handleGroupSubmit}>
@@ -456,14 +541,16 @@ const ChatPanel = React.memo(
                       </form>
                     ) : (
                       <>
-                        <button
-                          type="button"
-                          className={styles.createGroupButton}
-                          onClick={handleGroupFormOpen}
-                        >
-                          <Plus aria-hidden="true" size={16} />
-                          {t('chat.createGroup')}
-                        </button>
+                        <header className={styles.membersViewHeader}>
+                          <button type="button" onClick={handleConversationsBack}>
+                            <ArrowLeft aria-hidden="true" size={16} />
+                            {t('chat.backToConversations')}
+                          </button>
+                          <button type="button" onClick={handleGroupFormOpen}>
+                            <Plus aria-hidden="true" size={15} />
+                            {t('chat.createGroup')}
+                          </button>
+                        </header>
                         <MemberList
                           members={filteredMembers}
                           isPending={isPending}
@@ -474,14 +561,6 @@ const ChatPanel = React.memo(
                   </div>
                 )}
               </div>
-              {activeTab === 'conversations' && (
-                <footer className={styles.footer}>
-                  <button type="button" onClick={handleNewConversation}>
-                    <Plus aria-hidden="true" size={16} strokeWidth={2.2} />
-                    {t('chat.newConversation')}
-                  </button>
-                </footer>
-              )}
             </div>
           )}
           {isGlobalScope && (

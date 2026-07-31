@@ -68,7 +68,7 @@ const BoardActivitiesPanel = React.memo(() => {
           className={styles.toggleButton}
           onClick={handleToggle}
           aria-label={
-            isExpanded ? t('action.collapsePanel') : t('action.expandPanel')
+            isExpanded ? t('common.collapsePanel') : t('common.expandPanel')
           }
         >
           <Icon fitted name={isExpanded ? 'chevron right' : 'chevron left'} />
@@ -101,7 +101,9 @@ const BoardActivitiesPanel = React.memo(() => {
                 className={styles.loadMoreButton}
                 type="button"
               >
-                Carregar Mais Atividades ({activityIds.length} carregadas)
+                {t('common.loadMoreActivities', {
+                  count: activityIds.length,
+                })}
               </button>
             </div>
           )}

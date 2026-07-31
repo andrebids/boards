@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,7 @@ const DEFAULT_DATA = {
 
 const Add = React.memo(({ onSubmit }) => {
   const defaultMode = useSelector((state) => selectors.selectCurrentUser(state).defaultEditorMode);
+  const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -36,6 +37,17 @@ const Add = React.memo(({ onSubmit }) => {
   const buttonRef = useRef(null);
 
   const isExceeded = data.text.length > MAX_LENGTH;
+  const mentionUsers = useMemo(
+    () =>
+      boardMemberships
+        .filter(({ user }) => user)
+        .map(({ user }) => ({
+          id: user.id,
+          display: user.username || user.name,
+          name: user.name,
+        })),
+    [boardMemberships],
+  );
 
   const submit = useCallback(() => {
     const cleanData = {
@@ -105,6 +117,7 @@ const Add = React.memo(({ onSubmit }) => {
             <MarkdownEditor
               defaultValue={data.text}
               defaultMode={defaultMode}
+              mentionUsers={mentionUsers}
               isError={isExceeded}
               onChange={handleEditorChange}
               onSubmit={handleSubmit}
