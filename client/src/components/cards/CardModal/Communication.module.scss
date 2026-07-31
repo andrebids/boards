@@ -21,7 +21,7 @@
   .tabList:global(.ui.pointing.secondary.menu) {
     align-items: stretch;
     background: transparent;
-    border-bottom: 1px solid var(--card-modal-border, #e3e6ea);
+    border-bottom: 0;
     box-shadow: none;
     gap: 2px;
     margin: 0;
@@ -47,8 +47,8 @@
 
   .tabList:global(.ui.pointing.secondary.menu) .menuItem:global(.item)::after {
     background: var(--card-modal-accent, #2563eb);
-    border-radius: 999px 999px 0 0;
-    bottom: -1px;
+    border-radius: 0;
+    bottom: 0;
     content: "";
     display: block;
     height: 2px;

@@ -42,19 +42,24 @@ const IconByType = {
 };
 
 const ACCENT_TYPES = new Set([
-  ActivityTypes.CREATE_CARD,
   ActivityTypes.MOVE_CARD,
   ActivityTypes.ADD_MEMBER_TO_CARD,
+  ActivityTypes.CREATE_ATTACHMENT,
+  ActivityTypes.COMMENT_REPLY,
+]);
+
+const SUCCESS_TYPES = new Set([
+  ActivityTypes.CREATE_CARD,
   ActivityTypes.COMPLETE_TASK,
   ActivityTypes.CREATE_TASK,
   ActivityTypes.CREATE_TASK_LIST,
-  ActivityTypes.CREATE_ATTACHMENT,
-  ActivityTypes.COMMENT_CREATE,
-  ActivityTypes.COMMENT_REPLY,
-  ActivityTypes.ADD_LABEL_TO_CARD,
 ]);
 
-const WARNING_TYPES = new Set([ActivityTypes.UNCOMPLETE_TASK, ActivityTypes.SET_DUE_DATE]);
+const WARNING_TYPES = new Set([
+  ActivityTypes.UNCOMPLETE_TASK,
+  ActivityTypes.SET_DUE_DATE,
+  ActivityTypes.ADD_LABEL_TO_CARD,
+]);
 
 const DANGER_TYPES = new Set([
   ActivityTypes.REMOVE_MEMBER_FROM_CARD,
@@ -83,6 +88,7 @@ const Item = React.memo(({ id }) => {
       : user.name;
 
   let contentNode;
+  let detailNode;
   switch (activity.type) {
     case ActivityTypes.CREATE_CARD: {
       const { list } = activity.data;
@@ -101,6 +107,7 @@ const Item = React.memo(({ id }) => {
           {listName}
         </Trans>
       );
+      detailNode = listName;
 
       break;
     }
@@ -126,6 +133,7 @@ const Item = React.memo(({ id }) => {
           {toListName}
         </Trans>
       );
+      detailNode = `${fromListName} → ${toListName}`;
 
       break;
     }
@@ -155,6 +163,7 @@ const Item = React.memo(({ id }) => {
             {' to this card'}
           </Trans>
         );
+      detailNode = activity.data.user.name;
 
       break;
     case ActivityTypes.REMOVE_MEMBER_FROM_CARD:
@@ -183,6 +192,7 @@ const Item = React.memo(({ id }) => {
             {' from this card'}
           </Trans>
         );
+      detailNode = activity.data.user.name;
 
       break;
     case ActivityTypes.COMPLETE_TASK:
@@ -200,6 +210,7 @@ const Item = React.memo(({ id }) => {
           {' on this card'}
         </Trans>
       );
+      detailNode = activity.data.task.name;
 
       break;
     case ActivityTypes.UNCOMPLETE_TASK:
@@ -217,6 +228,7 @@ const Item = React.memo(({ id }) => {
           {' incomplete on this card'}
         </Trans>
       );
+      detailNode = activity.data.task.name;
 
       break;
     case ActivityTypes.CREATE_TASK:
@@ -242,6 +254,7 @@ const Item = React.memo(({ id }) => {
           <strong className={styles.subject}>{taskName}</strong>
         </Trans>
       );
+      detailNode = taskName;
 
       break;
     }
@@ -266,6 +279,7 @@ const Item = React.memo(({ id }) => {
           <strong className={styles.subject}>{taskListName}</strong>
         </Trans>
       );
+      detailNode = taskListName;
 
       break;
     }
@@ -298,6 +312,7 @@ const Item = React.memo(({ id }) => {
           <strong className={styles.subject}>{attachmentName}</strong>
         </Trans>
       );
+      detailNode = attachmentName;
 
       break;
     }
@@ -326,6 +341,7 @@ const Item = React.memo(({ id }) => {
           <strong className={styles.subject}>{cardName}</strong>
         </Trans>
       );
+      detailNode = labelName;
 
       break;
     }
@@ -388,6 +404,7 @@ const Item = React.memo(({ id }) => {
           </Trans>
         );
       }
+      detailNode = newDate || oldDate || t('common.unknownDate');
 
       break;
     }
@@ -396,13 +413,7 @@ const Item = React.memo(({ id }) => {
     case ActivityTypes.COMMENT_DELETE:
     case ActivityTypes.COMMENT_REPLY: {
       // Extrair dados com verificações de segurança
-      const {
-        commentText,
-        cardName: activityCardName,
-        mentions,
-        isReply,
-        action,
-      } = activity.data || {};
+      const { commentText, cardName: activityCardName, isReply, action } = activity.data || {};
 
       // Usar traduções existentes
       let translationKey;
@@ -439,36 +450,10 @@ const Item = React.memo(({ id }) => {
         </Trans>
       );
 
-      // Adicionar texto do comentário ao contentNode
       if (action !== 'delete' && commentText) {
-        contentNode = (
-          <>
-            {contentNode}
-            <div className={styles.commentText}>
-              <div className={styles.commentContent}>{formatTextWithMentions(commentText)}</div>
-              {mentions && mentions.length > 0 && (
-                <div className={styles.mentions}>
-                  {mentions.map((mention) => (
-                    <span key={mention} className={styles.mention}>
-                      @{mention}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        );
-      }
-
-      if (action === 'delete') {
-        contentNode = (
-          <>
-            {contentNode}
-            <div className={styles.deletedComment}>
-              <em>{t('common.deletedComment')}</em>
-            </div>
-          </>
-        );
+        detailNode = formatTextWithMentions(commentText);
+      } else if (action === 'delete') {
+        detailNode = <em>{t('common.deletedComment')}</em>;
       }
 
       break;
@@ -489,11 +474,17 @@ const Item = React.memo(({ id }) => {
           <strong className={styles.subject}>{cardName}</strong>
         </Trans>
       );
+      detailNode = cardName;
     }
   }
 
+  const isCommentReply =
+    activity.type === ActivityTypes.COMMENT_CREATE &&
+    (activity.data?.isReply || activity.data?.action === 'reply');
+
   const markerClassName = classNames(styles.marker, {
-    [styles.markerAccent]: ACCENT_TYPES.has(activity.type),
+    [styles.markerAccent]: ACCENT_TYPES.has(activity.type) || isCommentReply,
+    [styles.markerSuccess]: SUCCESS_TYPES.has(activity.type),
     [styles.markerWarning]: WARNING_TYPES.has(activity.type),
     [styles.markerDanger]: DANGER_TYPES.has(activity.type),
   });
@@ -511,6 +502,7 @@ const Item = React.memo(({ id }) => {
         <span className={styles.date}>
           <TimeAgo date={activity.createdAt} />
         </span>
+        {detailNode && <div className={styles.description}>{detailNode}</div>}
       </article>
     </li>
   );
