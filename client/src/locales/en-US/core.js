@@ -220,12 +220,15 @@ export default {
       labels: 'Labels',
       language: 'Language',
       defaultLabels: 'Default Labels',
-      defaultLabelsDescription: 'These labels are automatically added to all new boards.',
+      defaultLabelsDescription:
+        'These labels are automatically added to all new boards.',
       noDefaultLabelsYet: 'No default labels yet.',
-      addCommonLabelsForAllProjects: 'Add common labels you want to use in all projects.',
+      addCommonLabelsForAllProjects:
+        'Add common labels you want to use in all projects.',
       editDefaultLabel: 'Edit Pre-defined Label',
       addDefaultLabel: 'Create Pre-defined Label',
-      areYouSureYouWantToDeleteThisLabel: 'Are you sure you want to delete this label?',
+      areYouSureYouWantToDeleteThisLabel:
+        'Are you sure you want to delete this label?',
       nameMustBeProvided: 'Name is required',
       nameTooLong: 'Name is too long (maximum 60 characters)',
       nameAlreadyExists: 'A label with this name already exists',
@@ -259,8 +262,10 @@ export default {
       userCreatedEmailPending_title: 'User Created',
       userCreatedButWelcomeEmailFailed:
         'The user was created, but the welcome email could not be sent.',
-      welcomeEmailResendFailed: 'The welcome email could not be resent. Please try again.',
-      welcomeEmailResentSuccessfully: 'The welcome email was resent successfully.',
+      welcomeEmailResendFailed:
+        'The welcome email could not be resent. Please try again.',
+      welcomeEmailResentSuccessfully:
+        'The welcome email was resent successfully.',
       resendingWelcomeEmail: 'Resending welcome email…',
       newUsername: 'New username',
       newVersionAvailable: 'New version available',
@@ -271,6 +276,23 @@ export default {
       noProjects: 'No projects',
       noUnreadNotifications: 'No unread notifications.',
       notifications: 'Notifications',
+      personalNotifications: 'Personal notifications',
+      personalNotificationsDescription:
+        'Choose how much activity reaches your notification inbox.',
+      allNotifications: 'All notifications',
+      allNotificationsDescription: 'Activity from cards and boards you follow.',
+      essentialNotificationsOnly: 'Essential only',
+      essentialNotificationsDescription:
+        'Mentions and when you are added to a board or card.',
+      noNotifications: 'No notifications',
+      noNotificationsDescription:
+        'Do not create or send personal notifications for this account.',
+      savingNotificationPreference: 'Saving notification preference…',
+      notificationPreferenceSaveFailed:
+        "We couldn't save your notification preference. Try again.",
+      notificationDelivery: 'Notification delivery',
+      notificationDeliveryDescription:
+        'These delivery services follow the personal preference above.',
       oldestFirst: 'Oldest first',
       openBoard_title: 'Open Board',
       optional_inline: 'optional',
@@ -353,6 +375,8 @@ export default {
       userAddedUserToThisCard:
         '<0>{{actorUser}}</0> added {{addedUser}} to this card',
       userAddedYouToCard: '<0>{{user}}</0> added you to <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> added you to board <2>{{board}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> completed {{task}} on <4>{{card}}</4>',
       userCompletedTaskOnThisCard:
@@ -362,8 +386,7 @@ export default {
       userLeftCard: '<0>{{user}}</0> left <2>{{card}}</2>',
       userLeftNewCommentToCard:
         '<0>{{user}}</0> left a new comment «{{comment}}» to <2>{{card}}</2>',
-      userCommentedOnCard:
-        '<0>{{user}}</0> commented on <2>{{card}}</2>',
+      userCommentedOnCard: '<0>{{user}}</0> commented on <2>{{card}}</2>',
       userRepliedToCommentOnCard:
         '<0>{{user}}</0> replied to a comment on <2>{{card}}</2>',
       userUpdatedCommentOnCard:

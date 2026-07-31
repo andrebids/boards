@@ -94,6 +94,7 @@ export default {
       newMessages: 'Nouveaux messages',
       noConversations: 'Il n’y a pas encore de conversations dans ce projet.',
       noMembersFound: 'Aucun membre trouvé.',
+      noChatResults: 'Aucune conversation ni aucun membre trouvé.',
       notificationPreferences: 'Préférences de notification',
       notifications: 'Notifications',
       notificationsMuted: 'Notifications en sourdine',

@@ -282,6 +282,8 @@ export default {
       userAddedUserToThisCard:
         '<0>{{actorUser}}</0> dodał {{addedUser}} do tej karty',
       userAddedYouToCard: '<0>{{user}}</0> dodał cię do <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> dodał cię do tablicy <2>{{board}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> oznaczył {{task}} jako ukończone na <4>{{card}}</4>',
       userCompletedTaskOnThisCard:

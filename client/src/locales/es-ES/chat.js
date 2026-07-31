@@ -85,6 +85,7 @@ export default {
       noConversations: 'Todavía no hay conversaciones en este proyecto.',
       noGlobalConversationsFound: 'No se encontraron conversaciones',
       noMembersFound: 'No se encontraron miembros.',
+      noChatResults: 'No se encontraron conversaciones ni miembros.',
       noUnreadMentionsTitle: 'No hay menciones sin leer',
       noUnreadMentionsDescription: 'Las menciones que necesiten tu atención aparecerán aquí.',
       notificationPreferences: 'Preferencias de notificaciones',

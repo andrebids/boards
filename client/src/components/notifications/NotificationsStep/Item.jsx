@@ -88,6 +88,31 @@ const Item = React.memo(({ id, onClose }) => {
 
   let contentNode;
   switch (notification.type) {
+    case NotificationTypes.ADD_MEMBER_TO_BOARD: {
+      const boardName =
+        notification.data?.board?.name ||
+        t('common.board', {
+          defaultValue: 'Board',
+        });
+
+      contentNode = (
+        <Trans
+          i18nKey="common.userAddedYouToBoard"
+          values={{
+            user: creatorUserName,
+            board: boardName,
+          }}
+        >
+          <span className={styles.author}>{creatorUserName}</span>
+          {' added you to board '}
+          <Link to={Paths.BOARDS.replace(':id', notification.boardId)} onClick={onClose}>
+            {boardName}
+          </Link>
+        </Trans>
+      );
+
+      break;
+    }
     case NotificationTypes.MOVE_CARD: {
       const { fromList, toList } = notification.data || {};
 
@@ -479,7 +504,8 @@ const Item = React.memo(({ id, onClose }) => {
           <TimeAgo date={notification.createdAt} />
         </span>
       </span>
-      <Button variant="secondary"
+      <Button
+        variant="secondary"
         type="button"
         icon="trash alternate outline"
         aria-label={t('action.delete')}

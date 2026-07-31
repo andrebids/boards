@@ -245,7 +245,8 @@ export default {
       userCreatedButWelcomeEmailFailed:
         'L’utente è stato creato, ma non è stato possibile inviare l’e-mail di benvenuto.',
       welcomeEmailResendFailed: 'Impossibile reinviare l’e-mail. Riprova.',
-      welcomeEmailResentSuccessfully: 'L’e-mail di benvenuto è stata reinviata correttamente.',
+      welcomeEmailResentSuccessfully:
+        'L’e-mail di benvenuto è stata reinviata correttamente.',
       resendingWelcomeEmail: 'Reinvio dell’e-mail di benvenuto…',
       newUsername: 'Nuovo username',
       newVersionAvailable: 'Nuova versione disponibile',
@@ -335,6 +336,8 @@ export default {
       userAddedUserToThisCard:
         '<0>{{actorUser}}</0> ha aggiunto {{addedUser}} a questa task',
       userAddedYouToCard: '<0>{{user}}</0> ti ha aggiunto a <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> ti ha aggiunto alla bacheca <2>{{board}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> ha completato {{task}} in <4>{{card}}</4>',
       userCompletedTaskOnThisCard:

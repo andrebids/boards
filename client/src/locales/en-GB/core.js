@@ -250,8 +250,10 @@ export default {
       userCreatedEmailPending_title: 'User Created',
       userCreatedButWelcomeEmailFailed:
         'The user was created, but the welcome email could not be sent.',
-      welcomeEmailResendFailed: 'The welcome email could not be resent. Please try again.',
-      welcomeEmailResentSuccessfully: 'The welcome email was resent successfully.',
+      welcomeEmailResendFailed:
+        'The welcome email could not be resent. Please try again.',
+      welcomeEmailResentSuccessfully:
+        'The welcome email was resent successfully.',
       resendingWelcomeEmail: 'Resending welcome email…',
       newUsername: 'New username',
       newVersionAvailable: 'New version available',
@@ -334,6 +336,8 @@ export default {
       userAddedUserToThisCard:
         '<0>{{actorUser}}</0> added {{addedUser}} to this card',
       userAddedYouToCard: '<0>{{user}}</0> added you to <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> added you to board <2>{{board}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> completed {{task}} on <4>{{card}}</4>',
       userCompletedTaskOnThisCard:
@@ -485,6 +489,5 @@ export default {
       uploadNewAvatar: 'Upload new avatar',
       uploadNewImage: 'Upload new image',
     },
-
   },
 };

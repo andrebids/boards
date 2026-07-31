@@ -1,819 +1,860 @@
-# HeroUI v3 — referência de implementação para o chat
+# HeroUI — CSS para implementação no chat
 
-> Documento de referência criado a partir da documentação oficial do HeroUI v3.0.5.
-> Consulta efetuada em 31 de julho de 2026.
+> Escopo: apenas o chat de `client/src/components/chat`.
+>
+> Formato: CSS/SCSS sem instalar ou importar HeroUI, React 19 ou Tailwind CSS.
+>
+> Consulta dos estilos oficiais efetuada em 31 de julho de 2026.
 
-## Objetivo
+## Regra de implementação
 
-Reunir num único ficheiro os padrões e exemplos de código do HeroUI que podem ser
-aplicados ao chat: anexos, reações, ações contextuais, popups, scroll, loading e
-feedback.
+Este documento contém apenas estilos. O markup, o estado e os comportamentos
+acessíveis existentes no chat continuam a ser implementados pelos componentes
+atuais.
 
-Este documento separa explicitamente:
+O CSS oficial de `@heroui/styles` usa BEM e diretivas Tailwind `@apply`. Como este
+projeto usa SCSS Modules, as diretivas foram convertidas para declarações CSS
+normais e os seletores foram mapeados para as classes que já existem no chat.
 
-1. **Código oficial HeroUI** — exemplos públicos copiados da documentação.
-2. **Adaptação proposta** — composição específica para o chat deste projeto.
+Não é necessário:
 
-Não inclui cópias da implementação interna dos componentes. O HeroUI recomenda
-consumir os componentes através de `@heroui/react`.
+- Instalar `@heroui/react`.
+- Instalar `@heroui/styles`.
+- Atualizar React.
+- Introduzir Tailwind CSS.
+- Importar qualquer Provider.
 
-## Bloqueio de compatibilidade
+## Fontes CSS oficiais
 
-O projeto atual não pode receber HeroUI v3 diretamente sem uma migração prévia.
-
-| Requisito | HeroUI v3 | Projeto atual |
-| --- | --- | --- |
-| React | 19 ou superior | 18.2.0 |
-| Tailwind CSS | v4 | Não instalado |
-| HeroUI | `@heroui/react` e `@heroui/styles` | Não instalado |
-| Estilos do chat | Tailwind v4 + HeroUI | SCSS Modules e tokens próprios |
-
-Portanto, existem duas decisões possíveis:
-
-- **Integração direta:** atualizar React, introduzir Tailwind CSS v4 e instalar HeroUI.
-- **Referência visual:** manter React 18/SCSS e continuar a adaptar os padrões.
-
-Este documento prepara a primeira opção, conforme solicitado. Não executar os
-comandos abaixo no branch principal sem aprovar primeiro a migração de stack.
-
-## Fontes oficiais
-
-- [Quick Start](https://heroui.com/en/docs/react/getting-started/quick-start)
-- [Design Principles](https://heroui.com/en/docs/react/getting-started/design-principles)
-- [Card](https://heroui.com/en/docs/react/components/card)
-- [Chip](https://heroui.com/en/docs/react/components/chip)
-- [Toolbar](https://heroui.com/en/docs/react/components/toolbar)
-- [Popover](https://heroui.com/en/docs/react/components/popover)
-- [Dropdown](https://heroui.com/en/docs/react/components/dropdown)
-- [ScrollShadow](https://heroui.com/en/docs/react/components/scroll-shadow)
-- [Skeleton](https://heroui.com/en/docs/react/components/skeleton)
-- [Toast](https://heroui.com/en/docs/react/components/toast)
-- [Tooltip](https://heroui.com/en/docs/react/components/tooltip)
+- [surface.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/surface.css)
+- [card.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/card.css)
+- [chip.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/chip.css)
+- [button.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/button.css)
+- [toolbar.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/toolbar.css)
+- [popover.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/popover.css)
+- [dropdown.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/dropdown.css)
+- [tooltip.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/tooltip.css)
+- [scroll-shadow.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/scroll-shadow.css)
+- [skeleton.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/skeleton.css)
+- [toast.css](https://github.com/heroui-inc/heroui/blob/v3/packages/styles/components/toast.css)
 
 ---
 
-## 1. Instalação oficial
+## 1. Tokens do chat
 
-Fonte: [HeroUI Quick Start](https://heroui.com/en/docs/react/getting-started/quick-start).
+Destino:
 
-### Pacotes
+`client/src/components/chat/theme.scss`
 
-```bash
-npm i @heroui/styles @heroui/react
-```
+Os tokens abaixo traduzem a hierarquia de superfícies do HeroUI para os tokens que
+o chat já utiliza.
 
-### Importação de estilos
-
-O HeroUI exige esta ordem:
-
-```css
-@import "tailwindcss";
-@import "@heroui/styles";
-```
-
-O HeroUI v3 não necessita de um Provider global para os componentes normais.
-O `Toast` é uma exceção funcional: precisa de `Toast.Provider`.
-
-### Smoke test oficial
-
-```tsx
-import { Button } from '@heroui/react';
-
-function App() {
-  return (
-    <Button>
-      My Button
-    </Button>
+```scss
+#app {
+  /*
+   * HeroUI dark surfaces:
+   * background -> surface -> surface-secondary -> surface-tertiary -> overlay
+   */
+  --chat-surface-tertiary: color-mix(
+    in oklab,
+    var(--chat-surface-secondary) 92%,
+    var(--chat-foreground) 8%
   );
+  --chat-overlay-foreground: var(--chat-foreground);
+  --chat-default-soft: color-mix(in oklab, var(--chat-default) 70%, transparent);
+
+  /*
+   * HeroUI uses large, concentric radii. These values are reduced for the
+   * compact 360px chat while preserving the same hierarchy.
+   */
+  --chat-radius-message: 18px;
+  --chat-radius-attachment: 14px;
+  --chat-radius-overlay: 20px;
+  --chat-radius-chip: 16px;
+
+  /*
+   * HeroUI dark overlays use a subtle inset highlight instead of a large
+   * external shadow.
+   */
+  --chat-overlay-shadow:
+    0 0 1px rgba(255, 255, 255, 0.3) inset,
+    0 14px 28px rgba(0, 0, 0, 0.24);
+
+  --chat-ease-smooth: cubic-bezier(0.2, 0, 0, 1);
+  --chat-ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 }
 ```
 
 ---
 
-## 2. Card — base para anexos e previews
-
-Fonte: [HeroUI Card](https://heroui.com/en/docs/react/components/card).
-
-### Anatomia oficial
-
-```tsx
-import { Card } from "@heroui/react";
-
-export default () => (
-  <Card>
-    <Card.Header>
-      <Card.Title />
-      <Card.Description />
-    </Card.Header>
-    <Card.Content />
-    <Card.Footer />
-  </Card>
-);
-```
-
-### Variantes oficiais relevantes
-
-```tsx
-import {Card} from "@heroui/react";
-
-export function Variants() {
-  return (
-    <div className="flex flex-col gap-4">
-      <Card className="w-[320px]" variant="transparent">
-        <Card.Header>
-          <Card.Title>Transparent</Card.Title>
-          <Card.Description>Minimal prominence with transparent background</Card.Description>
-        </Card.Header>
-      </Card>
-
-      <Card className="w-[320px]" variant="default">
-        <Card.Header>
-          <Card.Title>Default</Card.Title>
-          <Card.Description>Standard card appearance (bg-surface)</Card.Description>
-        </Card.Header>
-      </Card>
-
-      <Card className="w-[320px]" variant="secondary">
-        <Card.Header>
-          <Card.Title>Secondary</Card.Title>
-          <Card.Description>Medium prominence (bg-surface-secondary)</Card.Description>
-        </Card.Header>
-      </Card>
-    </div>
-  );
-}
-```
-
-### Adaptação proposta: anexo compacto do chat
-
-O componente abaixo é uma composição específica do projeto, construída com a API
-oficial de `Card` e `Button`.
-
-```tsx
-import {Button, Card} from "@heroui/react";
-import {ArrowDownToLine, File} from "lucide-react";
-
-export function ChatAttachmentCard({
-  attachment,
-  onOpen,
-  onDownload,
-}) {
-  return (
-    <Card
-      className="w-full max-w-[280px] flex-row items-center gap-3 p-2"
-      variant="secondary"
-    >
-      <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-default">
-        {attachment.thumbnailUrl ? (
-          <img
-            alt=""
-            className="size-full object-cover"
-            src={attachment.thumbnailUrl}
-          />
-        ) : (
-          <span className="flex size-full items-center justify-center text-muted">
-            <File aria-hidden="true" size={18} />
-          </span>
-        )}
-      </div>
-
-      <button
-        type="button"
-        className="min-w-0 flex-1 text-left"
-        onClick={onOpen}
-      >
-        <Card.Title className="truncate text-sm">
-          {attachment.name}
-        </Card.Title>
-        <Card.Description className="truncate text-xs">
-          {attachment.typeLabel} · {attachment.sizeLabel}
-        </Card.Description>
-      </button>
-
-      <Button
-        isIconOnly
-        aria-label={`Descarregar ${attachment.name}`}
-        size="sm"
-        variant="tertiary"
-        onPress={onDownload}
-      >
-        <ArrowDownToLine aria-hidden="true" size={16} />
-      </Button>
-    </Card>
-  );
-}
-```
-
-Aplicar em:
-
-- `client/src/components/chat/MessageList/MessageList.jsx`
-- Substituir o markup de `.attachment` e `.attachmentVisual`.
-- Preservar o preview já existente para imagens, vídeos e PDF.
-
----
-
-## 3. Chip — reações e estados
-
-Fonte: [HeroUI Chip](https://heroui.com/en/docs/react/components/chip).
-
-### Código oficial
-
-```tsx
-import {CircleDashed} from "@gravity-ui/icons";
-import {Chip} from "@heroui/react";
-
-export function ChipWithIcon() {
-  return (
-    <Chip color="accent" variant="soft">
-      <CircleDashed />
-      <Chip.Label>Label</Chip.Label>
-    </Chip>
-  );
-}
-```
-
-### Adaptação proposta: reação
-
-`Chip` é informativo. Para uma reação interativa, o controlo clicável deve continuar
-a ser um `button` ou `ToggleButton`, com o chip apenas como conteúdo visual.
-
-```tsx
-import {Chip} from "@heroui/react";
-
-export function MessageReaction({
-  emoji,
-  count,
-  isSelected,
-  onPress,
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={isSelected}
-      aria-label={`${emoji}, ${count} reações`}
-      onClick={onPress}
-    >
-      <Chip
-        color={isSelected ? "accent" : "default"}
-        size="sm"
-        variant={isSelected ? "soft" : "secondary"}
-      >
-        <Chip.Label>{emoji} {count}</Chip.Label>
-      </Chip>
-    </button>
-  );
-}
-```
-
-Aplicar em:
-
-- `client/src/components/chat/MessageList/MessageList.jsx`
-- Bloco `message.reactions`.
-
----
-
-## 4. Toolbar — ações que aparecem sobre a mensagem
-
-Fonte: [HeroUI Toolbar](https://heroui.com/en/docs/react/components/toolbar).
-
-### Código oficial: toolbar attached
-
-```tsx
-import {Bold, Copy, Italic, Scissors, Underline} from "@gravity-ui/icons";
-import {
-  Button,
-  ButtonGroup,
-  Separator,
-  ToggleButton,
-  ToggleButtonGroup,
-  Toolbar,
-} from "@heroui/react";
-
-export function Attached() {
-  return (
-    <Toolbar isAttached aria-label="Text formatting">
-      <ToggleButtonGroup aria-label="Text style" selectionMode="multiple">
-        <ToggleButton isIconOnly aria-label="Bold" id="bold">
-          <Bold />
-        </ToggleButton>
-        <ToggleButton isIconOnly aria-label="Italic" id="italic">
-          <ToggleButtonGroup.Separator />
-          <Italic />
-        </ToggleButton>
-        <ToggleButton isIconOnly aria-label="Underline" id="underline">
-          <ToggleButtonGroup.Separator />
-          <Underline />
-        </ToggleButton>
-      </ToggleButtonGroup>
-      <Separator />
-      <ButtonGroup variant="tertiary">
-        <Button isIconOnly aria-label="Copy">
-          <Copy />
-        </Button>
-        <Button isIconOnly aria-label="Cut">
-          <ButtonGroup.Separator />
-          <Scissors />
-        </Button>
-      </ButtonGroup>
-    </Toolbar>
-  );
-}
-```
-
-### Adaptação proposta: toolbar da mensagem
-
-```tsx
-import {Button, ButtonGroup, Separator, Toolbar} from "@heroui/react";
-import {Ellipsis, Forward, Reply, SmilePlus} from "lucide-react";
-
-export function MessageActionToolbar({
-  onReact,
-  onReply,
-  onForward,
-  onMore,
-}) {
-  return (
-    <Toolbar isAttached aria-label="Ações da mensagem">
-      <ButtonGroup variant="tertiary">
-        <Button isIconOnly aria-label="Adicionar reação" onPress={onReact}>
-          <SmilePlus aria-hidden="true" size={16} />
-        </Button>
-        <Button isIconOnly aria-label="Responder" onPress={onReply}>
-          <ButtonGroup.Separator />
-          <Reply aria-hidden="true" size={16} />
-        </Button>
-        <Button isIconOnly aria-label="Encaminhar" onPress={onForward}>
-          <ButtonGroup.Separator />
-          <Forward aria-hidden="true" size={16} />
-        </Button>
-      </ButtonGroup>
-      <Separator />
-      <Button isIconOnly aria-label="Mais ações" variant="tertiary" onPress={onMore}>
-        <Ellipsis aria-hidden="true" size={16} />
-      </Button>
-    </Toolbar>
-  );
-}
-```
-
-Aplicar em:
-
-- `client/src/components/chat/MessageList/MessageList.jsx`
-- Substituir a estrutura visual de `.hoverActions`.
-- A navegação por teclado passa a ser responsabilidade do `Toolbar`.
-
----
-
-## 5. Dropdown — menu de ações
-
-Fonte: [HeroUI Dropdown](https://heroui.com/en/docs/react/components/dropdown).
-
-### Código oficial
-
-```tsx
-"use client";
-
-import {Button, Dropdown, Label} from "@heroui/react";
-
-export function Default() {
-  return (
-    <Dropdown>
-      <Button aria-label="Menu" variant="secondary">
-        Actions
-      </Button>
-      <Dropdown.Popover>
-        <Dropdown.Menu onAction={(key) => console.log(`Selected: ${key}`)}>
-          <Dropdown.Item id="new-file" textValue="New file">
-            <Label>New file</Label>
-          </Dropdown.Item>
-          <Dropdown.Item id="copy-link" textValue="Copy link">
-            <Label>Copy link</Label>
-          </Dropdown.Item>
-          <Dropdown.Item id="edit-file" textValue="Edit file">
-            <Label>Edit file</Label>
-          </Dropdown.Item>
-          <Dropdown.Item id="delete-file" textValue="Delete file" variant="danger">
-            <Label>Delete file</Label>
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown.Popover>
-    </Dropdown>
-  );
-}
-```
-
-### Adaptação proposta: menu da mensagem
-
-```tsx
-import {Dropdown, Header, Kbd, Label, Separator} from "@heroui/react";
-
-export function MessageActionsMenu({isOwn, onAction}) {
-  return (
-    <Dropdown.Popover>
-      <Dropdown.Menu aria-label="Mais ações da mensagem" onAction={onAction}>
-        <Dropdown.Section>
-          <Header>Mensagem</Header>
-          <Dropdown.Item id="copy" textValue="Copiar">
-            <Label>Copiar</Label>
-            <Kbd slot="keyboard" variant="light">
-              <Kbd.Abbr keyValue="command" />
-              <Kbd.Content>C</Kbd.Content>
-            </Kbd>
-          </Dropdown.Item>
-          <Dropdown.Item id="reply" textValue="Responder">
-            <Label>Responder</Label>
-          </Dropdown.Item>
-          <Dropdown.Item id="forward" textValue="Encaminhar">
-            <Label>Encaminhar</Label>
-          </Dropdown.Item>
-        </Dropdown.Section>
-
-        {isOwn ? (
-          <>
-            <Separator />
-            <Dropdown.Item id="edit" textValue="Editar">
-              <Label>Editar</Label>
-            </Dropdown.Item>
-            <Dropdown.Item id="delete" textValue="Eliminar" variant="danger">
-              <Label>Eliminar</Label>
-            </Dropdown.Item>
-          </>
-        ) : null}
-      </Dropdown.Menu>
-    </Dropdown.Popover>
-  );
-}
-```
-
-Aplicar em:
-
-- `client/src/components/chat/MessageList/MessageList.jsx`
-- `client/src/components/chat/ConversationActions/ConversationActions.jsx`
-- `client/src/components/chat/ChatWindow/ChatWindow.jsx`
-
----
-
-## 6. Popover — notificações, perfis e conteúdo rico
-
-Fonte: [HeroUI Popover](https://heroui.com/en/docs/react/components/popover).
-
-### Anatomia oficial
-
-```tsx
-import { Popover } from '@heroui/react';
-
-export default () => (
-  <Popover>
-    <Popover.Trigger/>
-    <Popover.Content>
-      <Popover.Arrow />
-      <Popover.Dialog>
-        <Popover.Heading/>
-      </Popover.Dialog>
-    </Popover.Content>
-  </Popover>
-)
-```
-
-### Código oficial com seta
-
-```tsx
-import {Ellipsis} from "@gravity-ui/icons";
-import {Button, Popover} from "@heroui/react";
-
-export function PopoverWithArrow() {
-  return (
-    <Popover>
-      <Button isIconOnly variant="tertiary">
-        <Ellipsis />
-      </Button>
-      <Popover.Content className="max-w-64" offset={10}>
-        <Popover.Dialog>
-          <Popover.Arrow />
-          <Popover.Heading>Popover with Arrow</Popover.Heading>
-          <p className="mt-2 text-sm text-muted">
-            The arrow shows which element triggered the popover.
-          </p>
-        </Popover.Dialog>
-      </Popover.Content>
-    </Popover>
-  );
-}
-```
-
-Comportamentos oficiais relevantes:
-
-- `placement`: `top`, `bottom`, `left`, `right` e variantes.
-- `offset`: `8` por defeito.
-- `shouldFlip`: `true` por defeito.
-- Conteúdo renderizado num portal.
-
-Aplicar em:
-
-- Preferências de notificações em `ChatWindow`.
-- Perfil resumido ao clicar num avatar.
-- Detalhes de reações.
-- Popup de anexos quando tiver conteúdo rico.
-
----
-
-## 7. ScrollShadow — indicação de conteúdo deslocável
-
-Fonte: [HeroUI ScrollShadow](https://heroui.com/en/docs/react/components/scroll-shadow).
-
-### Código oficial
-
-```tsx
-import {ScrollShadow} from "@heroui/react";
-
-export default function Default() {
-  return (
-    <div className="w-full p-0 sm:max-w-sm">
-      <ScrollShadow className="max-h-[240px] p-4">
-        <div className="space-y-4">
-          {Array.from({length: 10}).map((_, idx) => (
-            <p key={`scroll-shadow-content-${idx}`}>
-              Scrollable content
-            </p>
-          ))}
-        </div>
-      </ScrollShadow>
-    </div>
-  );
-}
-```
-
-### Adaptação proposta
-
-```tsx
-import {ScrollShadow} from "@heroui/react";
-
-export function ChatMessageScroller({children}) {
-  return (
-    <ScrollShadow
-      className="min-h-0 flex-1"
-      orientation="vertical"
-      size={28}
-    >
-      {children}
-    </ScrollShadow>
-  );
-}
-```
-
-Aplicar em:
-
-- Lista principal de mensagens.
-- Lista de conversas.
-- Menu de encaminhamento.
-- Seleção de membros.
-
----
-
-## 8. Skeleton — loading com a forma do conteúdo
-
-Fonte: [HeroUI Skeleton](https://heroui.com/en/docs/react/components/skeleton).
-
-### Código oficial: itens de lista
-
-```tsx
-import {Skeleton} from "@heroui/react";
-
-export function List() {
-  return (
-    <div className="w-full max-w-sm space-y-4">
-      {Array.from({length: 3}).map((_, index) => (
-        <div key={index} className="flex items-center gap-3">
-          <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-3 w-full rounded" />
-            <Skeleton className="h-3 w-4/5 rounded" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-```
-
-### Adaptação proposta: mensagens
-
-```tsx
-import {Skeleton} from "@heroui/react";
-
-export function MessageListSkeleton() {
-  return (
-    <div aria-label="A carregar mensagens" className="space-y-4">
-      <div className="flex items-end gap-2">
-        <Skeleton className="size-6 shrink-0 rounded-full" />
-        <Skeleton className="h-14 w-3/5 rounded-xl" />
-      </div>
-      <div className="flex justify-end">
-        <Skeleton className="h-10 w-2/5 rounded-xl" />
-      </div>
-      <div className="flex items-end gap-2">
-        <Skeleton className="size-6 shrink-0 rounded-full" />
-        <Skeleton className="h-20 w-4/5 rounded-xl" />
-      </div>
-    </div>
-  );
-}
-```
-
-Para dark mode, a documentação permite configurar:
-
-```css
-.dark, [data-theme="dark"] {
-  --skeleton-animation: pulse;
-}
-```
-
----
-
-## 9. Toast — upload, sucesso e erro
-
-Fonte: [HeroUI Toast](https://heroui.com/en/docs/react/components/toast).
-
-### Setup oficial
-
-```tsx
-import { Toast, Button, toast } from '@heroui/react';
-
-function App() {
-  return (
-    <div>
-      <Toast.Provider />
-      <Button onPress={() => toast("Simple message")}>
-        Show toast
-      </Button>
-    </div>
-  );
-}
-```
-
-### API oficial para promises
-
-```tsx
-import { toast } from '@heroui/react';
-
-toast.promise(
-  uploadFile(),
-  {
-    loading: "Uploading file...",
-    success: (data) => `File ${data.filename} uploaded`,
-    error: "Failed to upload file",
+## 2. Bolhas e cartões de anexos
+
+Origem:
+
+- `card.css`
+- `surface.css`
+
+Destino:
+
+`client/src/components/chat/MessageList/MessageList.module.scss`
+
+```scss
+:global(#app) {
+  .bubble {
+    background: var(--chat-bubble-received);
+    border: 1px solid var(--chat-border);
+    border-radius: var(--chat-radius-message);
+    color: var(--chat-foreground);
+    overflow-wrap: anywhere;
+    padding: 8px 12px;
+    position: relative;
+    white-space: pre-wrap;
   }
-);
-```
 
-### Adaptação proposta
+  .own .bubble {
+    background: var(--chat-bubble-sent);
+    border-color: var(--chat-bubble-sent);
+    color: var(--chat-accent-foreground);
+  }
 
-```tsx
-toast.promise(
-  uploadChatAttachment(file),
-  {
-    loading: `A enviar ${file.name}…`,
-    success: `${file.name} foi enviado`,
-    error: `Não foi possível enviar ${file.name}`,
-  },
-);
-```
+  /*
+   * Card horizontal compacto inspirado no exemplo HeroUI.
+   * Mantém o elemento atual como button; só altera a apresentação.
+   */
+  .attachment {
+    align-items: center;
+    background: var(--chat-surface-tertiary);
+    border: 1px solid var(--chat-border);
+    border-radius: var(--chat-radius-attachment);
+    box-shadow: 0 0 1px rgba(255, 255, 255, 0.12) inset;
+    color: var(--chat-foreground);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: var(--chat-font-body);
+    gap: 10px;
+    max-width: 280px;
+    min-height: 46px;
+    overflow: hidden;
+    padding: 6px 10px 6px 6px;
+    text-align: left;
+    transition:
+      background-color 100ms var(--chat-ease-smooth),
+      border-color 100ms var(--chat-ease-smooth),
+      transform 150ms var(--chat-ease-smooth);
+    width: 100%;
 
-Não substituir erros inline do composer por toasts. Usar toast para:
+    &:hover {
+      background: var(--chat-default-hover);
+      border-color: color-mix(
+        in oklab,
+        var(--chat-border) 78%,
+        var(--chat-foreground) 22%
+      );
+    }
 
-- Confirmação de upload.
-- Confirmação de cópia de link.
-- Confirmação de encaminhamento.
-- Falhas globais sem campo específico onde mostrar o erro.
+    &:active {
+      transform: scale(0.98);
+    }
 
----
+    &:focus-visible {
+      box-shadow:
+        0 0 0 2px var(--chat-focus-ring),
+        0 0 1px rgba(255, 255, 255, 0.12) inset;
+      outline: 2px solid var(--chat-accent);
+      outline-offset: 2px;
+    }
 
-## 10. Tooltip — descoberta dos controlos por ícone
+    > svg {
+      color: var(--chat-muted);
+      flex: 0 0 auto;
+      margin: 0 7px;
+    }
 
-Fonte: [HeroUI Tooltip](https://heroui.com/en/docs/react/components/tooltip).
+    > span {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 
-### Código oficial com seta
+  .attachmentVisual {
+    align-items: center;
+    flex-direction: row;
+    padding: 6px 10px 6px 6px;
 
-```tsx
-import {Button, Tooltip} from "@heroui/react";
+    img {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      display: block;
+      flex: 0 0 34px;
+      height: 34px;
+      object-fit: cover;
+      outline: 1px solid rgba(255, 255, 255, 0.1);
+      outline-offset: -1px;
+      width: 34px;
+    }
 
-export function TooltipWithArrow() {
-  return (
-    <Tooltip delay={0}>
-      <Button variant="secondary">With Arrow</Button>
-      <Tooltip.Content showArrow>
-        <Tooltip.Arrow />
-        <p>Tooltip with arrow indicator</p>
-      </Tooltip.Content>
-    </Tooltip>
-  );
+    span {
+      padding: 0;
+    }
+  }
+
+  .imageMessage {
+    border-radius: var(--chat-radius-message);
+  }
+
+  .imageAttachment img {
+    outline: 1px solid rgba(255, 255, 255, 0.1);
+    outline-offset: -1px;
+  }
 }
 ```
 
-### Adaptação proposta
+Resultado esperado:
 
-```tsx
-import {Button, Tooltip} from "@heroui/react";
-import {Paperclip} from "lucide-react";
-
-export function AttachmentButton({onPress}) {
-  return (
-    <Tooltip delay={500}>
-      <Button
-        isIconOnly
-        aria-label="Anexar ficheiros"
-        variant="tertiary"
-        onPress={onPress}
-      >
-        <Paperclip aria-hidden="true" size={18} />
-      </Button>
-      <Tooltip.Content showArrow placement="top">
-        <Tooltip.Arrow />
-        <p>Anexar ficheiros</p>
-      </Tooltip.Content>
-    </Tooltip>
-  );
-}
-```
-
-Aplicar aos botões:
-
-- Anexar.
-- Emoji.
-- Preferências de notificações.
-- Responder.
-- Encaminhar.
-- Mais ações.
-- Fechar.
+- Anexo semelhante à referência enviada: miniatura quadrada e nome numa única
+  superfície compacta.
+- Cantos do thumbnail menores do que os cantos do cartão.
+- Nenhuma alteração ao download ou preview atual.
 
 ---
 
-## 11. Composição recomendada por ficheiro
+## 3. Reações como chips
 
-| Ficheiro atual | Componentes HeroUI |
-| --- | --- |
-| `MessageList/MessageList.jsx` | `Card`, `Chip`, `Toolbar`, `Dropdown`, `ScrollShadow`, `Skeleton`, `Tooltip` |
-| `MessageComposer/MessageComposer.jsx` | `Button`, `Popover`, `Tooltip`, `Toast` |
-| `ChatWindow/ChatWindow.jsx` | `Popover`, `Dropdown`, `Tooltip` |
-| `ConversationActions/ConversationActions.jsx` | `Dropdown` |
-| `ConversationList/ConversationList.jsx` | `ScrollShadow`, `Skeleton` |
-| `ChatPanel/ChatPanel.jsx` | `Tabs`, `ScrollShadow`, `Skeleton` |
+Origem:
 
-## 12. Ordem de implementação
+`chip.css`
 
-### Fase 0 — migração obrigatória
+Destino:
 
-- [ ] Criar branch dedicada.
-- [ ] Atualizar React e React DOM para 19+.
-- [ ] Validar bibliotecas incompatíveis com React 19.
-- [ ] Instalar/configurar Tailwind CSS v4.
-- [ ] Instalar `@heroui/react` e `@heroui/styles`.
-- [ ] Importar `tailwindcss` antes de `@heroui/styles`.
-- [ ] Executar smoke test com `Button`.
+`client/src/components/chat/MessageList/MessageList.module.scss`
 
-### Fase 1 — baixo risco
+```scss
+:global(#app) {
+  .reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+    position: relative;
+    z-index: 1;
 
-- [ ] Introduzir `Tooltip` nos botões por ícone.
-- [ ] Introduzir `ScrollShadow` nas listas.
-- [ ] Introduzir `Skeleton` no carregamento.
-- [ ] Introduzir `Toast.Provider` e feedback de upload.
+    button {
+      --reaction-background: var(--chat-default-soft);
+      --reaction-foreground: var(--chat-muted);
 
-### Fase 2 — mensagens
+      align-items: center;
+      background: var(--reaction-background);
+      border: 1px solid transparent;
+      border-radius: var(--chat-radius-chip);
+      color: var(--reaction-foreground);
+      cursor: pointer;
+      display: inline-flex;
+      font-family: inherit;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      gap: 3px;
+      justify-content: center;
+      line-height: 20px;
+      min-height: 24px;
+      min-width: 28px;
+      padding: 1px 8px;
+      transition:
+        background-color 100ms var(--chat-ease-smooth),
+        border-color 100ms var(--chat-ease-smooth),
+        color 100ms var(--chat-ease-smooth),
+        transform 150ms var(--chat-ease-smooth);
 
-- [ ] Converter anexos para `Card`.
-- [ ] Converter reações para apresentação baseada em `Chip`.
-- [ ] Converter barra de ações para `Toolbar`.
+      &:hover {
+        --reaction-background: var(--chat-default-hover);
+        --reaction-foreground: var(--chat-foreground);
+      }
 
-### Fase 3 — overlays
+      &:active {
+        transform: scale(0.98);
+      }
 
-- [ ] Converter menus de mensagem para `Dropdown`.
-- [ ] Converter notificações e perfis para `Popover`.
-- [ ] Remover posicionamento manual apenas depois de validar portal, flip e foco.
+      &:focus-visible {
+        outline: 2px solid var(--chat-accent);
+        outline-offset: 2px;
+      }
+    }
 
-## 13. Critérios de aceitação
+    .reacted {
+      --reaction-background: var(--chat-accent-soft);
+      --reaction-foreground: var(--chat-accent);
 
-- Todos os controlos por ícone mantêm `aria-label`.
-- Toolbar é navegável por teclado.
-- Dropdown fecha com `Escape` e devolve foco ao trigger.
-- Popover faz flip quando não existe espaço.
-- Anexos mostram nome truncado sem perder o nome acessível.
-- Reações expõem `aria-pressed`.
-- Skeleton respeita `prefers-reduced-motion`.
-- Toast não substitui erros junto ao campo onde a ação ocorreu.
-- O chat mantém as funcionalidades atuais de resposta, encaminhamento, edição,
-  eliminação, preview, download e retry.
-- O hot reload continua a ser o método de validação local; não executar build salvo
-  pedido explícito ou validação de release.
+      border-color: color-mix(
+        in oklab,
+        var(--chat-accent) 28%,
+        transparent
+      );
 
-## 14. Decisão antes de implementar
+      &:hover {
+        --reaction-background: var(--chat-accent-soft-hover);
+        --reaction-foreground: var(--chat-accent);
+      }
+    }
+  }
 
-A integração direta não é uma alteração apenas visual. Ela introduz React 19,
-Tailwind CSS v4 e uma nova biblioteca de componentes no projeto.
+  .moreReactions {
+    border-left: 1px solid var(--chat-separator);
+    margin-left: 2px;
+    padding-left: 5px;
+  }
+}
+```
 
-Antes de começar, aprovar uma destas opções:
+---
 
-1. **Migração completa para HeroUI v3** — seguir todas as fases deste documento.
-2. **PoC isolada** — implementar primeiro uma única superfície do chat numa rota ou
-   componente experimental.
-3. **Manter stack atual** — usar este documento apenas como referência de padrões.
+## 4. Toolbar de ações da mensagem
+
+Origem:
+
+- `toolbar.css`
+- `button.css`
+
+Destino:
+
+`client/src/components/chat/MessageList/MessageList.module.scss`
+
+```scss
+:global(#app) {
+  .hoverActions {
+    align-items: center;
+    background: var(--chat-popup);
+    border: 1px solid var(--chat-border);
+    border-radius: var(--chat-radius-overlay);
+    box-shadow: var(--chat-overlay-shadow);
+    display: grid;
+    gap: 2px;
+    grid-auto-flow: column;
+    padding: 4px;
+
+    > button,
+    .reactionControl > button,
+    .messageActions > button {
+      --action-background: transparent;
+      --action-foreground: var(--chat-muted);
+
+      align-items: center;
+      background: var(--action-background);
+      border: 0;
+      border-radius: 12px;
+      color: var(--action-foreground);
+      cursor: pointer;
+      display: inline-flex;
+      height: 30px;
+      justify-content: center;
+      padding: 0;
+      transition:
+        background-color 100ms var(--chat-ease-smooth),
+        color 100ms var(--chat-ease-smooth),
+        transform 150ms var(--chat-ease-smooth);
+      width: 30px;
+
+      &:hover {
+        --action-background: var(--chat-default);
+        --action-foreground: var(--chat-foreground);
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--chat-accent);
+        outline-offset: 1px;
+      }
+
+      svg {
+        height: 16px;
+        pointer-events: none;
+        width: 16px;
+      }
+    }
+  }
+
+  .hoverActionDivider {
+    align-self: center;
+    background: var(--chat-separator);
+    height: 16px;
+    margin: 0 2px;
+    width: 1px;
+  }
+}
+```
+
+Nota: este CSS reproduz a aparência `toolbar--attached`. Navegação por setas exige
+JavaScript/ARIA; manter o comportamento atual até existir uma implementação
+específica.
+
+---
+
+## 5. Popups e dropdowns
+
+Origem:
+
+- `popover.css`
+- `dropdown.css`
+
+Destinos:
+
+- `MessageComposer/MessageComposer.module.scss`
+- `MessageList/MessageList.module.scss`
+- `ConversationActions/ConversationActions.module.scss`
+- `ChatWindow/ChatWindow.module.scss`
+
+### Bloco partilhado
+
+Aplicar as propriedades deste bloco às classes já existentes:
+
+- `.attachmentMenu`
+- `.actionsMenu`
+- `.forwardMenu`
+- `.menu`
+- `.headerMenu`
+- `.groupEditor`
+
+```scss
+background: var(--chat-popup);
+border: 1px solid var(--chat-border);
+border-radius: var(--chat-radius-overlay);
+box-shadow: var(--chat-overlay-shadow);
+color: var(--chat-overlay-foreground);
+overscroll-behavior: contain;
+transform-origin: var(--chat-popup-transform-origin, top right);
+```
+
+### Entrada e saída
+
+O HeroUI usa 150ms na entrada e 100ms na saída, animando apenas opacity e transform.
+
+```scss
+@keyframes chatPopupEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes chatPopupExit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.95);
+  }
+}
+
+.attachmentMenu,
+.actionsMenu,
+.forwardMenu,
+.menu,
+.headerMenu,
+.groupEditor {
+  animation: chatPopupEnter 150ms var(--chat-ease-smooth) both;
+}
+```
+
+Não adicionar `chatPopupExit` sem estado de saída no JSX. Remover o elemento
+imediatamente impediria a animação de terminar.
+
+### Itens dos menus
+
+```scss
+button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  color: var(--chat-foreground);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: var(--chat-font-body);
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 10px;
+  text-align: left;
+  transition:
+    background-color 100ms var(--chat-ease-smooth),
+    color 100ms var(--chat-ease-smooth),
+    transform 150ms var(--chat-ease-smooth);
+  width: 100%;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--chat-default);
+    outline: none;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+```
+
+### Ação destrutiva
+
+```scss
+.destructiveAction,
+.leaveGroup {
+  color: var(--chat-danger);
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(
+      in oklab,
+      var(--chat-danger) 15%,
+      transparent
+    );
+    color: var(--chat-danger);
+  }
+}
+```
+
+---
+
+## 6. Tooltip CSS-only
+
+Origem:
+
+`tooltip.css`
+
+O CSS pode ser reutilizado, mas mostrar/esconder e posicionar o tooltip continua a
+exigir markup/estado existente ou uma implementação futura.
+
+```scss
+.chatTooltip {
+  background: var(--chat-popup);
+  border: 1px solid var(--chat-border);
+  border-radius: 12px;
+  box-shadow: var(--chat-overlay-shadow);
+  color: var(--chat-foreground);
+  font-size: 12px;
+  line-height: 16px;
+  max-width: 240px;
+  overflow-wrap: anywhere;
+  padding: 7px 9px;
+  transform-origin: var(--chat-tooltip-transform-origin, center bottom);
+
+  &[data-entering='true'] {
+    animation: chatTooltipEnter 150ms var(--chat-ease-smooth) both;
+  }
+
+  &[data-exiting='true'] {
+    animation: chatTooltipExit 100ms var(--chat-ease-smooth) both;
+  }
+}
+
+.chatTooltipArrow {
+  fill: var(--chat-popup);
+  stroke: color-mix(in oklab, var(--chat-border) 70%, transparent);
+}
+
+@keyframes chatTooltipEnter {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes chatTooltipExit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(2px) scale(0.95);
+  }
+}
+```
+
+---
+
+## 7. Scroll shadow
+
+Origem:
+
+`scroll-shadow.css`
+
+O HeroUI ativa as máscaras com atributos `data-*`. No chat atual, o mesmo resultado
+pode ser usado de forma permanente nas listas verticais, sem dependência.
+
+Destino principal:
+
+`client/src/components/chat/MessageList/MessageList.module.scss`
+
+```scss
+:global(#app) {
+  .list {
+    --scroll-shadow-size: 28px;
+    --scroll-shadow-scrollbar-size: 6px;
+
+    mask-image:
+      linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--scroll-shadow-size),
+        #000 calc(100% - var(--scroll-shadow-size)),
+        transparent 100%
+      ),
+      linear-gradient(#000, #000);
+    mask-position:
+      left top,
+      right top;
+    mask-repeat: no-repeat;
+    mask-size:
+      calc(100% - var(--scroll-shadow-scrollbar-size)) 100%,
+      var(--scroll-shadow-scrollbar-size) 100%;
+    -webkit-mask-image:
+      linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--scroll-shadow-size),
+        #000 calc(100% - var(--scroll-shadow-size)),
+        transparent 100%
+      ),
+      linear-gradient(#000, #000);
+    -webkit-mask-position:
+      left top,
+      right top;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size:
+      calc(100% - var(--scroll-shadow-scrollbar-size)) 100%,
+      var(--scroll-shadow-scrollbar-size) 100%;
+  }
+}
+```
+
+Limitação: a versão permanente desvanece os extremos mesmo quando já se chegou ao
+topo ou fundo. Para igualar completamente o HeroUI, atualizar atributos como
+`data-top-scroll` e `data-bottom-scroll` com o evento de scroll.
+
+---
+
+## 8. Skeleton de mensagens
+
+Origem:
+
+`skeleton.css`
+
+Destino sugerido:
+
+Novo `MessageListSkeleton.module.scss`, apenas se o componente de loading for criado.
+
+```scss
+.skeleton {
+  background: color-mix(
+    in oklab,
+    var(--chat-surface-tertiary) 70%,
+    transparent
+  );
+  border-radius: 8px;
+  overflow: hidden;
+  pointer-events: none;
+  position: relative;
+
+  &::after {
+    animation: chatSkeleton 2s linear infinite;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--chat-foreground) 9%, transparent),
+      transparent
+    );
+    content: '';
+    inset: 0;
+    position: absolute;
+    transform: translateX(-100%);
+  }
+}
+
+.avatar {
+  border-radius: 50%;
+  height: 24px;
+  width: 24px;
+}
+
+.receivedBubble {
+  border-radius: var(--chat-radius-message);
+  height: 54px;
+  width: 62%;
+}
+
+.sentBubble {
+  border-radius: var(--chat-radius-message);
+  height: 38px;
+  margin-left: auto;
+  width: 44%;
+}
+
+@keyframes chatSkeleton {
+  to {
+    transform: translateX(200%);
+  }
+}
+```
+
+---
+
+## 9. Toast visual
+
+Origem:
+
+`toast.css`
+
+Este bloco é apenas a apresentação. O chat já possui mecanismos de mensagens e
+erros; não adicionar uma biblioteca.
+
+```scss
+.chatToastRegion {
+  bottom: 16px;
+  left: 50%;
+  max-width: calc(100vw - 32px);
+  pointer-events: none;
+  position: fixed;
+  transform: translateX(-50%);
+  width: 360px;
+  z-index: 1200;
+}
+
+.chatToast {
+  align-items: flex-start;
+  animation: chatToastEnter 200ms var(--chat-ease-smooth) both;
+  background: var(--chat-popup);
+  border: 1px solid var(--chat-border);
+  border-radius: var(--chat-radius-overlay);
+  box-shadow: var(--chat-overlay-shadow);
+  color: var(--chat-overlay-foreground);
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  pointer-events: auto;
+}
+
+.chatToastIndicator {
+  align-items: center;
+  color: var(--chat-muted);
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  padding: 2px;
+}
+
+.chatToastContent {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chatToastTitle {
+  color: var(--chat-foreground);
+  font-size: var(--chat-font-body);
+  font-weight: 650;
+  line-height: 18px;
+}
+
+.chatToastDescription {
+  color: var(--chat-muted);
+  font-size: var(--chat-font-meta);
+  line-height: 16px;
+}
+
+.chatToastSuccess .chatToastIndicator,
+.chatToastSuccess .chatToastTitle {
+  color: var(--chat-success);
+}
+
+.chatToastWarning .chatToastIndicator,
+.chatToastWarning .chatToastTitle {
+  color: var(--chat-warning);
+}
+
+.chatToastDanger .chatToastIndicator,
+.chatToastDanger .chatToastTitle {
+  color: var(--chat-danger);
+}
+
+@keyframes chatToastEnter {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
+
+---
+
+## 10. Reduced motion
+
+Adicionar aos módulos que recebem animações:
+
+```scss
+@media (prefers-reduced-motion: reduce) {
+  .hoverActions,
+  .attachment,
+  .reactions button,
+  .attachmentMenu,
+  .actionsMenu,
+  .forwardMenu,
+  .menu,
+  .headerMenu,
+  .groupEditor,
+  .chatTooltip,
+  .chatToast,
+  .skeleton::after {
+    animation: none;
+    transition: none;
+  }
+}
+```
+
+---
+
+## 11. Ordem CSS recomendada
+
+1. Adicionar os tokens em `theme.scss`.
+2. Aplicar cartão compacto aos anexos.
+3. Aplicar chips às reações.
+4. Uniformizar toolbar e menus.
+5. Testar popups em desktop e mobile.
+6. Adicionar scroll shadow apenas depois de confirmar que não oculta mensagens nos
+   extremos.
+7. Criar Skeleton/Toast apenas se os respetivos estados forem implementados.
+
+## 12. Fora do escopo
+
+- Alterar páginas fora do chat.
+- Instalar HeroUI.
+- Introduzir Tailwind.
+- Trocar os componentes React existentes.
+- Copiar lógica interna de Popover, Dropdown ou Toolbar.
+- Mudar APIs, reducers, sagas ou o servidor.
 

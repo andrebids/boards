@@ -316,6 +316,8 @@ export default {
         '<0>{{actorUser}}</0> lisäsi käyttäjän {{addedUser}} tähän korttiin',
       userAddedYouToCard:
         '<0>{{user}}</0> lisäsi sinut korttiin <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> lisäsi sinut tauluun <2>{{board}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> suoritti tehtävän {{task}} kortissa <4>{{card}}</4>',
       userCompletedTaskOnThisCard:

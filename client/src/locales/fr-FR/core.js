@@ -143,8 +143,10 @@ export default merge({}, enUSCore, {
       userCreatedEmailPending_title: 'Utilisateur créé',
       userCreatedButWelcomeEmailFailed:
         'L’utilisateur a été créé, mais l’e-mail de bienvenue n’a pas pu être envoyé.',
-      welcomeEmailResendFailed: 'L’e-mail n’a pas pu être renvoyé. Veuillez réessayer.',
-      welcomeEmailResentSuccessfully: 'L’e-mail de bienvenue a été renvoyé avec succès.',
+      welcomeEmailResendFailed:
+        'L’e-mail n’a pas pu être renvoyé. Veuillez réessayer.',
+      welcomeEmailResentSuccessfully:
+        'L’e-mail de bienvenue a été renvoyé avec succès.',
       resendingWelcomeEmail: 'Renvoi de l’e-mail de bienvenue…',
       newUsername: "Nouveau nom d'utilisateur",
       newestFirst: 'Le plus récent en premier',
@@ -154,6 +156,25 @@ export default merge({}, enUSCore, {
       noProjects: 'Pas de projet',
       noUnreadNotifications: 'Aucune notification non lue.',
       notifications: 'Notifications',
+      personalNotifications: 'Notifications personnelles',
+      personalNotificationsDescription:
+        'Choisissez la quantité d’activité qui arrive dans votre boîte de notifications.',
+      allNotifications: 'Toutes les notifications',
+      allNotificationsDescription:
+        'Activité des cartes et tableaux que vous suivez.',
+      essentialNotificationsOnly: 'Essentielles uniquement',
+      essentialNotificationsDescription:
+        'Mentions et ajouts à un tableau ou à une carte.',
+      noNotifications: 'Aucune notification',
+      noNotificationsDescription:
+        'Ne créer ni envoyer de notifications personnelles pour ce compte.',
+      savingNotificationPreference:
+        'Enregistrement de la préférence de notification…',
+      notificationPreferenceSaveFailed:
+        'Impossible d’enregistrer la préférence de notification. Veuillez réessayer.',
+      notificationDelivery: 'Envoi des notifications',
+      notificationDeliveryDescription:
+        'Ces services d’envoi respectent la préférence personnelle ci-dessus.',
       oldestFirst: 'Le plus ancien en premier',
       openBoard_title: 'Ouvrir le tableau',
       optional_inline: 'optionnel',
@@ -190,6 +211,8 @@ export default merge({}, enUSCore, {
         '<0>{{user}}</0> a ajouté cette carte à {{list}}',
       userLeftNewCommentToCard:
         '<0>{{user}}</0> a laissé un nouveau commentaire {{comment}} à <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> vous a ajouté au tableau <2>{{board}}</2>',
       userMovedCardFromListToList:
         '<0>{{user}}</0> a déplacé <2>{{card}}</2> de {{fromList}} vers {{toList}}',
       userMovedThisCardFromListToList:

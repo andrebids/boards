@@ -244,8 +244,10 @@ export default {
       userCreatedEmailPending_title: 'Usuario creado',
       userCreatedButWelcomeEmailFailed:
         'El usuario fue creado, pero no se pudo enviar el correo de bienvenida.',
-      welcomeEmailResendFailed: 'No se pudo reenviar el correo. Inténtalo de nuevo.',
-      welcomeEmailResentSuccessfully: 'El correo de bienvenida se reenvió correctamente.',
+      welcomeEmailResendFailed:
+        'No se pudo reenviar el correo. Inténtalo de nuevo.',
+      welcomeEmailResentSuccessfully:
+        'El correo de bienvenida se reenvió correctamente.',
       resendingWelcomeEmail: 'Reenviando correo de bienvenida…',
       newUsername: 'Nuevo nombre de usuario',
       newestFirst: 'Más reciente primero',
@@ -332,6 +334,8 @@ export default {
       userAddedUserToThisCard:
         '<0>{{actorUser}}</0> añadió {{addedUser}} a esta tarjeta',
       userAddedYouToCard: '<0>{{user}}</0> te añadió a <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> te añadió al tablero <2>{{board}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> completó {{task}} en <4>{{card}}</4>',
       userCompletedTaskOnThisCard:

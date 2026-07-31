@@ -316,6 +316,8 @@ export default {
       userAddedUserToThisCard:
         '<0>{{actorUser}}</0> tilføjede {{addedUser}} til dette kort',
       userAddedYouToCard: '<0>{{user}}</0> tilføjede dig til <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> tilføjede dig til tavlen <2>{{board}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> færdiggjorte {{task}} på <4>{{card}}</4>',
       userCompletedTaskOnThisCard:

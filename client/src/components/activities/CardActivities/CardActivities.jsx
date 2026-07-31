@@ -6,7 +6,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useInView } from 'react-intersection-observer';
-import { Comment, Loader } from 'semantic-ui-react';
+import { Loader } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
@@ -22,7 +22,7 @@ const CardActivities = React.memo(() => {
 
   const [inViewRef] = useInView({
     threshold: 1,
-    onChange: inView => {
+    onChange: (inView) => {
       if (inView && currentCard) {
         dispatch(entryActions.fetchActivitiesInCurrentCard());
       }
@@ -39,22 +39,21 @@ const CardActivities = React.memo(() => {
   return (
     <>
       <div className={styles.itemsWrapper}>
-        <Comment.Group className={styles.items}>
-          {activityIds.map(activityId => (
+        <ol className={styles.items}>
+          {activityIds.map((activityId) => (
             <Item key={activityId} id={activityId} />
           ))}
-        </Comment.Group>
+        </ol>
       </div>
-      {isActivitiesFetching !== undefined &&
-        isAllActivitiesFetched !== undefined && (
-          <div className={styles.loaderWrapper}>
-            {isActivitiesFetching ? (
-              <Loader active inverted inline="centered" size="small" />
-            ) : (
-              !isAllActivitiesFetched && <div ref={inViewRef} />
-            )}
-          </div>
-        )}
+      {isActivitiesFetching !== undefined && isAllActivitiesFetched !== undefined && (
+        <div className={styles.loaderWrapper}>
+          {isActivitiesFetching ? (
+            <Loader active inverted inline="centered" size="small" />
+          ) : (
+            !isAllActivitiesFetched && <div ref={inViewRef} />
+          )}
+        </div>
+      )}
     </>
   );
 });

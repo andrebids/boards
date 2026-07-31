@@ -484,15 +484,20 @@ export default {
       labels: 'Rótulos',
       language: 'Idioma',
       defaultLabels: 'Etiquetas Padrão',
-      defaultLabelsDescription: 'Estas etiquetas são automaticamente adicionadas a todos os novos boards.',
+      defaultLabelsDescription:
+        'Estas etiquetas são automaticamente adicionadas a todos os novos boards.',
       noDefaultLabelsYet: 'Ainda não tem etiquetas padrão.',
-      addCommonLabelsForAllProjects: 'Adicione etiquetas comuns que deseja usar em todos os projetos.',
+      addCommonLabelsForAllProjects:
+        'Adicione etiquetas comuns que deseja usar em todos os projetos.',
       editDefaultLabel: 'Editar Rótulo Pré-definido',
       addDefaultLabel: 'Criar Rótulo Pré-definido',
       deleteDefaultLabel: 'Eliminar Etiqueta Padrão',
-      areYouSureYouWantToDeleteThisDefaultLabel: 'Tem a certeza de que pretende eliminar a etiqueta pré‑definida "{{name}}"?',
-      deleteDefaultLabelWarning: 'As etiquetas existentes não serão afetadas. Esta etiqueta deixará de ser adicionada automaticamente ao criar novos projetos.',
-      areYouSureYouWantToDeleteThisLabel: 'Tem certeza que deseja eliminar esta etiqueta?',
+      areYouSureYouWantToDeleteThisDefaultLabel:
+        'Tem a certeza de que pretende eliminar a etiqueta pré‑definida "{{name}}"?',
+      deleteDefaultLabelWarning:
+        'As etiquetas existentes não serão afetadas. Esta etiqueta deixará de ser adicionada automaticamente ao criar novos projetos.',
+      areYouSureYouWantToDeleteThisLabel:
+        'Tem certeza que deseja eliminar esta etiqueta?',
       nameMustBeProvided: 'O nome é obrigatório',
       nameTooLong: 'O nome é muito longo (máximo 60 caracteres)',
       nameAlreadyExists: 'Já existe uma etiqueta com este nome',
@@ -526,8 +531,10 @@ export default {
       userCreatedEmailPending_title: 'Utilizador Criado',
       userCreatedButWelcomeEmailFailed:
         'O utilizador foi criado, mas não foi possível enviar o email de boas-vindas.',
-      welcomeEmailResendFailed: 'Não foi possível reenviar o email. Tente novamente.',
-      welcomeEmailResentSuccessfully: 'O email de boas-vindas foi reenviado com sucesso.',
+      welcomeEmailResendFailed:
+        'Não foi possível reenviar o email. Tente novamente.',
+      welcomeEmailResentSuccessfully:
+        'O email de boas-vindas foi reenviado com sucesso.',
       resendingWelcomeEmail: 'A reenviar email de boas-vindas…',
       newUsername: 'Novo nome de utilizador',
       newVersionAvailable: 'Nova versão disponível',
@@ -538,6 +545,24 @@ export default {
       noProjects: 'Sem projetos',
       noUnreadNotifications: 'Nenhuma notificação não lida.',
       notifications: 'Notificações',
+      personalNotifications: 'Notificações pessoais',
+      personalNotificationsDescription:
+        'Escolha quanta atividade chega à sua caixa de notificações.',
+      allNotifications: 'Todas as notificações',
+      allNotificationsDescription:
+        'Atividade dos cartões e quadros que acompanha.',
+      essentialNotificationsOnly: 'Apenas essenciais',
+      essentialNotificationsDescription:
+        'Menções e quando é adicionado a um quadro ou cartão.',
+      noNotifications: 'Nenhuma notificação',
+      noNotificationsDescription:
+        'Não criar nem enviar notificações pessoais para esta conta.',
+      savingNotificationPreference: 'A guardar a preferência de notificações…',
+      notificationPreferenceSaveFailed:
+        'Não foi possível guardar a preferência de notificações. Tente novamente.',
+      notificationDelivery: 'Entrega das notificações',
+      notificationDeliveryDescription:
+        'Estes serviços de entrega respeitam a preferência pessoal acima.',
       oldestFirst: 'Mais antigos primeiro',
       openBoard_title: 'Abrir Quadro',
       optional_inline: 'opcional',
@@ -618,14 +643,18 @@ export default {
       userActions_title: 'Ações do Utilizador',
       userAddedCardToList:
         '<0>{{user}}</0> adicionou um cartão <2>{{card}}</2> à {{list}}',
-      userCreatedCard: '<0>{{user}}</0> criou um cartão <2>{{card}}</2> em {{list}}',
+      userCreatedCard:
+        '<0>{{user}}</0> criou um cartão <2>{{card}}</2> em {{list}}',
       userAddedThisCardToList:
         '<0>{{user}}</0> adicionou este cartão à {{list}}',
       userAddedUserToCard:
         '<0>{{actorUser}}</0> adicionou {{addedUser}} ao cartão <4>{{card}}</4>',
       userAddedUserToThisCard:
         '<0>{{actorUser}}</0> adicionou {{addedUser}} a este cartão',
-      userAddedYouToCard: '<0>{{user}}</0> adicionou-o ao cartão <2>{{card}}</2>',
+      userAddedYouToCard:
+        '<0>{{user}}</0> adicionou-o ao cartão <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> adicionou-o ao quadro <2>{{board}}</2>',
       userAddedAttachmentToCard:
         '<0>{{user}}</0> adicionou um anexo ao cartão <2>{{card}}</2>',
       userCompletedTaskOnCard:
@@ -637,8 +666,7 @@ export default {
       userLeftCard: '<0>{{user}}</0> saiu do cartão <2>{{card}}</2>',
       userLeftNewCommentToCard:
         '<0>{{user}}</0> deixou um novo comentário «{{comment}}» no cartão <2>{{card}}</2>',
-      userCommentedOnCard:
-        '<0>{{user}}</0> comentou no cartão <2>{{card}}</2>',
+      userCommentedOnCard: '<0>{{user}}</0> comentou no cartão <2>{{card}}</2>',
       userRepliedToCommentOnCard:
         '<0>{{user}}</0> respondeu a um comentário no cartão <2>{{card}}</2>',
       userUpdatedCommentOnCard:
@@ -921,6 +949,5 @@ export default {
       reload: 'Recarregar',
       noLabelsCreatedYet: 'Nenhuma etiqueta criada ainda',
     },
-
   },
 };

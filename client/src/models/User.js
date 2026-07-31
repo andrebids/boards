@@ -9,7 +9,7 @@ import { attr } from 'redux-orm';
 import BaseModel from './BaseModel';
 import buildSearchParts from '../utils/build-search-parts';
 import ActionTypes from '../constants/ActionTypes';
-import { UserRoles } from '../constants/Enums';
+import { UserNotificationLevels, UserRoles } from '../constants/Enums';
 
 const DEFAULT_EMAIL_UPDATE_FORM = {
   data: {
@@ -44,6 +44,12 @@ const DEFAULT_WELCOME_EMAIL_RESEND_FORM = {
   wasSent: null,
 };
 
+const DEFAULT_NOTIFICATION_LEVEL_UPDATE_FORM = {
+  isSubmitting: false,
+  previousValue: null,
+  error: null,
+};
+
 const filterProjectModels = (projectModels, search, isHidden) => {
   let filteredProjectModels = projectModels.filter(
     (projectModel) => projectModel.isHidden === isHidden,
@@ -75,6 +81,12 @@ export default class extends BaseModel {
     language: attr(),
     subscribeToOwnCards: attr(),
     subscribeToCardWhenCommenting: attr(),
+    notificationLevel: attr({
+      getDefault: () => UserNotificationLevels.ALL,
+    }),
+    notificationLevelUpdateForm: attr({
+      getDefault: () => DEFAULT_NOTIFICATION_LEVEL_UPDATE_FORM,
+    }),
     turnOffRecentCardHighlighting: attr(),
     isDefaultAdmin: attr(),
     isSsoUser: attr(),
@@ -139,8 +151,14 @@ export default class extends BaseModel {
         break;
       case ActionTypes.USER_CREATE__SUCCESS:
       case ActionTypes.USER_CREATE_HANDLE:
-      case ActionTypes.USER_UPDATE__SUCCESS:
         User.upsert(payload.user);
+
+        break;
+      case ActionTypes.USER_UPDATE__SUCCESS:
+        User.upsert({
+          ...payload.user,
+          notificationLevelUpdateForm: DEFAULT_NOTIFICATION_LEVEL_UPDATE_FORM,
+        });
 
         break;
       case ActionTypes.USER_WELCOME_EMAIL_RESEND:
@@ -174,10 +192,38 @@ export default class extends BaseModel {
         });
 
         break;
-      case ActionTypes.USER_UPDATE:
-        User.withId(payload.id).update(payload.data);
+      case ActionTypes.USER_UPDATE: {
+        const userModel = User.withId(payload.id);
+
+        if (Object.prototype.hasOwnProperty.call(payload.data, 'notificationLevel')) {
+          userModel.notificationLevelUpdateForm = {
+            isSubmitting: true,
+            previousValue: userModel.notificationLevel,
+            error: null,
+          };
+        }
+
+        userModel.update(payload.data);
 
         break;
+      }
+      case ActionTypes.USER_UPDATE__FAILURE: {
+        const userModel = User.withId(payload.id);
+        const { notificationLevelUpdateForm } = userModel;
+
+        if (notificationLevelUpdateForm.isSubmitting) {
+          userModel.update({
+            notificationLevel: notificationLevelUpdateForm.previousValue,
+            notificationLevelUpdateForm: {
+              isSubmitting: false,
+              previousValue: null,
+              error: payload.error,
+            },
+          });
+        }
+
+        break;
+      }
       case ActionTypes.USER_UPDATE_HANDLE:
         User.upsert(payload.user);
 

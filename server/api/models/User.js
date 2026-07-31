@@ -36,6 +36,7 @@ const ProjectOrders = {
 const NotificationLevels = {
   ALL: 'all',
   ESSENTIAL: 'essential',
+  NONE: 'none',
 };
 
 const LANGUAGES = [

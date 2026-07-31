@@ -24,6 +24,12 @@ export const UserRoles = {
   BOARD_USER: 'boardUser',
 };
 
+export const UserNotificationLevels = {
+  ALL: 'all',
+  ESSENTIAL: 'essential',
+  NONE: 'none',
+};
+
 export const WelcomeEmailLanguages = [
   'en-GB',
   'en-US',
@@ -125,6 +131,7 @@ export const ActivityTypes = {
 export const NotificationTypes = {
   MOVE_CARD: 'moveCard',
   COMMENT_CARD: 'commentCard',
+  ADD_MEMBER_TO_BOARD: 'addMemberToBoard',
   ADD_MEMBER_TO_CARD: 'addMemberToCard',
   MENTION_IN_COMMENT: 'mentionInComment',
 };

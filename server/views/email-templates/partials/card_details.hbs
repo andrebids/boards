@@ -1,19 +1,19 @@
 <!-- Detalhes da atividade -->
 <tr>
   <td class="px" style="padding:0 28px 28px;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; background-color:#ffffff; border:1px solid #dfe4eb; border-radius:10px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; background-color:#20242d; border-radius:14px;">
       {{#if has_due_date}}
       {{#if show_due_date_in_header}}
       <tr>
-        <td style="padding:13px 20px; background-color:#f6f8fb; border-bottom:1px solid #e3e8ef; border-radius:10px 10px 0 0;">
-          <span style="font:600 12px/18px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#687386;">{{email_label_dueDateCard}}</span>
-          <span style="font:700 12px/18px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#263244;">&nbsp; {{due_date}}</span>
+        <td style="padding:13px 20px; background-color:#282e39; border-radius:14px 14px 0 0;">
+          <span style="font:600 12px/18px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#9aa5b5;">{{email_label_dueDateCard}}</span>
+          <span style="font:700 12px/18px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#f2f4f7;">&nbsp; {{due_date}}</span>
         </td>
       </tr>
       {{/if}}
       {{/if}}
       <tr>
-        <td style="padding:20px; font:400 14px/22px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#3f4b5d;">
+        <td style="padding:20px; font:400 14px/22px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#c7ced8;">
           {{> (lookup . 'notification_partial_name')}}
         </td>
       </tr>

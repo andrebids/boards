@@ -29,10 +29,10 @@ const generateInitials = (name) => {
 
 // Função para gerar URLs dinâmicas
 const generateUrl = (path = '') => {
-  const baseUrl = sails.config.custom?.baseUrl;
+  const baseUrl = sails.config.custom && sails.config.custom.baseUrl;
 
   if (!baseUrl) {
-    console.warn('⚠️ BASE_URL não configurada, usando localhost como fallback');
+    sails.log.warn('⚠️ BASE_URL não configurada, usando localhost como fallback');
     return `http://localhost:3008${path}`;
   }
 
@@ -66,11 +66,11 @@ const buildTitle = (notification, t) => {
       baseTitle = t('Due Date Updated');
       break;
     case 'createTask':
-       baseTitle = t('Task Created');
+      baseTitle = t('Task Created');
       break;
     case 'completeTask':
       baseTitle = t('Task Completed');
-       break;
+      break;
     default:
       return null;
   }
@@ -82,9 +82,7 @@ const buildBodyByFormat = (board, card, notification, actorUser, t) => {
     card && `[${escapeMarkdown(card.name)}](${generateUrl(`cards/${card.id}`)})`;
   const htmlCardLink =
     card && `<a href="${generateUrl(`cards/${card.id}`)}">${escapeHtml(card.name)}</a>`;
-  const markdownBoardLink = `[${escapeMarkdown(board.name)}](${generateUrl(
-    `boards/${board.id}`,
-  )})`;
+  const markdownBoardLink = `[${escapeMarkdown(board.name)}](${generateUrl(`boards/${board.id}`)})`;
   const htmlBoardLink = `<a href="${generateUrl(`boards/${board.id}`)}">${escapeHtml(
     board.name,
   )}</a>`;
@@ -148,11 +146,7 @@ const buildBodyByFormat = (board, card, notification, actorUser, t) => {
     case Notification.Types.ADD_MEMBER_TO_BOARD:
       return {
         text: t('%s added you to board %s', actorUser.name, board.name),
-        markdown: t(
-          '%s added you to board %s',
-          escapeMarkdown(actorUser.name),
-          markdownBoardLink,
-        ),
+        markdown: t('%s added you to board %s', escapeMarkdown(actorUser.name), markdownBoardLink),
         html: t('%s added you to board %s', escapeHtml(actorUser.name), htmlBoardLink),
       };
     case Notification.Types.ADD_MEMBER_TO_CARD:
@@ -200,24 +194,44 @@ const buildBodyByFormat = (board, card, notification, actorUser, t) => {
   }
 };
 
-const buildAndSendNotifications = async (services, board, card, notification, actorUser, t, inputs) => {
+// ✅ Sistema de templates com fallback
+const EMAIL_TEMPLATES_ENABLED = process.env.EMAIL_TEMPLATES_ENABLED === 'true';
+
+const buildAndSendNotifications = async (
+  services,
+  board,
+  card,
+  notification,
+  actorUser,
+  t,
+  inputs,
+) => {
   // ✅ Se templates estão ativos, usar HTML dos templates para serviços HTML
   if (EMAIL_TEMPLATES_ENABLED) {
     try {
-      const notifiableUser = inputs.notifiableUser;
+      const { notifiableUser } = inputs;
 
       // Verificar se algum serviço usa formato HTML
-      const hasHtmlService = services.some(service => service.format === 'html');
+      const hasHtmlService = services.some((service) => service.format === 'html');
 
       if (hasHtmlService) {
         // Gerar HTML dos templates apenas se houver serviços HTML
-        const templateHtml = await buildAndSendEmailWithTemplates(board, card, notification, actorUser, notifiableUser, t, inputs);
+        // eslint-disable-next-line no-use-before-define
+        const templateHtml = await buildAndSendEmailWithTemplates(
+          board,
+          card,
+          notification,
+          actorUser,
+          notifiableUser,
+          t,
+          inputs,
+        );
 
         // Criar body com HTML dos templates
         const bodyByFormat = buildBodyByFormat(board, card, notification, actorUser, t);
         const bodyWithTemplates = {
           ...bodyByFormat,
-          html: templateHtml // Substituir HTML padrão pelos templates
+          html: templateHtml, // Substituir HTML padrão pelos templates
         };
 
         await sails.helpers.utils.sendNotifications(
@@ -252,18 +266,35 @@ const buildAndSendNotifications = async (services, board, card, notification, ac
   }
 };
 
-// ✅ Sistema de templates com fallback
-const EMAIL_TEMPLATES_ENABLED = process.env.EMAIL_TEMPLATES_ENABLED === 'true';
-
-const buildAndSendEmail = async (board, card, notification, actorUser, notifiableUser, t, inputs) => {
+// eslint-disable-next-line no-unused-vars
+const buildAndSendEmail = async (
+  board,
+  card,
+  notification,
+  actorUser,
+  notifiableUser,
+  t,
+  inputs,
+) => {
   if (EMAIL_TEMPLATES_ENABLED) {
     try {
-      await buildAndSendEmailWithTemplates(board, card, notification, actorUser, notifiableUser, t, inputs);
+      // eslint-disable-next-line no-use-before-define
+      await buildAndSendEmailWithTemplates(
+        board,
+        card,
+        notification,
+        actorUser,
+        notifiableUser,
+        t,
+        inputs,
+      );
     } catch (error) {
       sails.log.error('❌ Erro nos templates, usando fallback para HTML inline:', error);
+      // eslint-disable-next-line no-use-before-define
       await buildAndSendEmailLegacy(board, card, notification, actorUser, notifiableUser, t);
     }
   } else {
+    // eslint-disable-next-line no-use-before-define
     await buildAndSendEmailLegacy(board, card, notification, actorUser, notifiableUser, t);
   }
 };
@@ -278,13 +309,13 @@ const buildAndSendEmailWithTemplates = async (
   inputs,
 ) => {
   const project = inputs.project || board.project;
-  const currentList = inputs.list || card?.list;
+  const currentList = inputs.list || (card && card.list);
   const listName = currentList ? sails.helpers.lists.makeName(currentList) : '';
   const isBoardNotification = notification.type === Notification.Types.ADD_MEMBER_TO_BOARD;
   const currentYear = new Date().getFullYear();
-  const emailLanguage = notifiableUser?.language || 'pt-PT';
-  const hasDueDate = Boolean(card?.dueDate);
-  const rawComment = notification?.data?.text || '';
+  const emailLanguage = (notifiableUser && notifiableUser.language) || 'pt-PT';
+  const hasDueDate = Boolean(card && card.dueDate);
+  const rawComment = (notification && notification.data && notification.data.text) || '';
   const commentExcerpt =
     rawComment.length > 220 ? `${rawComment.substring(0, 217).trimEnd()}...` : rawComment;
   // eslint-disable-next-line no-use-before-define
@@ -301,14 +332,16 @@ const buildAndSendEmailWithTemplates = async (
 
   // Dados específicos por tipo de notificação
   const getNotificationPresentation = () => {
-    switch (notification?.type) {
+    switch (notification && notification.type) {
       case Notification.Types.MOVE_CARD: {
-        const fromListName = notification?.data?.fromList
-          ? sails.helpers.lists.makeName(notification.data.fromList)
-          : 'Lista Origem';
-        const toListName = notification?.data?.toList
-          ? sails.helpers.lists.makeName(notification.data.toList)
-          : 'Lista Destino';
+        const fromListName =
+          notification && notification.data && notification.data.fromList
+            ? sails.helpers.lists.makeName(notification.data.fromList)
+            : 'Lista Origem';
+        const toListName =
+          notification && notification.data && notification.data.toList
+            ? sails.helpers.lists.makeName(notification.data.toList)
+            : 'Lista Destino';
         return {
           from_list: fromListName,
           to_list: toListName,
@@ -366,32 +399,35 @@ const buildAndSendEmailWithTemplates = async (
 
   const templateData = {
     ...localizedData,
-    actor_name: actorUser?.name || 'Utilizador',
-    actor_initials: generateInitials(actorUser?.name || 'Utilizador'),
-    user_name: notifiableUser?.name || 'Utilizador',
-    card_title: card?.name || board?.name || 'Board',
-    card_id: card?.id || '',
-    project_name: project?.name || board?.name || 'Projeto',
-    board_name: board?.name || 'Quadro',
+    actor_name: (actorUser && actorUser.name) || 'Utilizador',
+    actor_initials: generateInitials((actorUser && actorUser.name) || 'Utilizador'),
+    user_name: (notifiableUser && notifiableUser.name) || 'Utilizador',
+    card_title: (card && card.name) || (board && board.name) || 'Board',
+    card_id: (card && card.id) || '',
+    project_name: (project && project.name) || (board && board.name) || 'Projeto',
+    board_name: (board && board.name) || 'Quadro',
     list_name: listName,
     card_url:
       localizedData.card_url ||
       (isBoardNotification
         ? generateUrl(`boards/${board.id}`)
-        : generateUrl(`cards/${card?.id || ''}`)),
+        : generateUrl(`cards/${(card && card.id) || ''}`)),
     planka_base_url: generateUrl(),
     notification_title: buildTitle(notification, t),
     email_language: emailLanguage,
-    email_greeting: t('email:welcome:greeting', notifiableUser?.name || 'Utilizador'),
+    email_greeting: t(
+      'email:welcome:greeting',
+      (notifiableUser && notifiableUser.name) || 'Utilizador',
+    ),
     send_date: new Date().toLocaleDateString(emailLanguage),
-    user_email: notifiableUser?.email || 'utilizador@exemplo.com',
+    user_email: (notifiableUser && notifiableUser.email) || 'utilizador@exemplo.com',
     current_year: currentYear,
     email_copyright: t('email:copyright').replace('{{current_year}}', currentYear),
     email_action_commented: t('email:action:commented'),
     email_action_mentioned: t('email:action:mentioned'),
-    notification_type: notification?.type || '',
+    notification_type: (notification && notification.type) || '',
     is_board_notification: isBoardNotification,
-    show_due_date_in_header: notification?.type !== Notification.Types.SET_DUE_DATE,
+    show_due_date_in_header: !notification || notification.type !== Notification.Types.SET_DUE_DATE,
     has_due_date: hasDueDate,
 
     comment_excerpt: commentExcerpt || stripTrailingColon(t('email:label:comment')),
@@ -402,7 +438,7 @@ const buildAndSendEmailWithTemplates = async (
   };
 
   const html = await sails.helpers.utils.compileEmailTemplate.with({
-    templateName: notification?.type || 'comment-card',
+    templateName: (notification && notification.type) || 'comment-card',
     data: templateData,
   });
 
@@ -443,11 +479,7 @@ const buildAndSendEmailLegacy = async (board, card, notification, actorUser, not
 
       break;
     case Notification.Types.ADD_MEMBER_TO_BOARD:
-      html = `<p>${t(
-        '%s added you to board %s',
-        escapeHtml(actorUser.name),
-        boardLink,
-      )}</p>`;
+      html = `<p>${t('%s added you to board %s', escapeHtml(actorUser.name), boardLink)}</p>`;
 
       break;
     case Notification.Types.ADD_MEMBER_TO_CARD:
@@ -515,10 +547,13 @@ module.exports = {
       return null;
     }
 
-    if (
+    const hasNotificationsDisabled =
+      notifiableUser.notificationLevel === User.NotificationLevels.NONE;
+    const hasNonEssentialNotificationDisabled =
       notifiableUser.notificationLevel === User.NotificationLevels.ESSENTIAL &&
-      !Notification.ESSENTIAL_TYPES.includes(values.type)
-    ) {
+      !Notification.ESSENTIAL_TYPES.includes(values.type);
+
+    if (hasNotificationsDisabled || hasNonEssentialNotificationDisabled) {
       sails.log.debug(
         'Notificação pessoal suprimida (userId=%s, type=%s, notificationLevel=%s)',
         notifiableUser.id,
@@ -549,9 +584,9 @@ module.exports = {
       userId: notifiableUser.id,
       creatorUserId: values.creatorUser.id,
       boardId: inputs.board.id,
-      cardId: values.card?.id,
-      commentId: isCommentRelated ? values.comment?.id : undefined,
-      actionId: values.action?.id,
+      cardId: values.card && values.card.id,
+      commentId: isCommentRelated && values.comment ? values.comment.id : undefined,
+      actionId: values.action && values.action.id,
     });
 
     sails.sockets.broadcast(`user:${notification.userId}`, 'notificationCreate', {
@@ -586,14 +621,12 @@ module.exports = {
       user: values.creatorUser,
     });
 
-    sails.log.info(
-      `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Notificação criada:`, {
-        notificationId: notification.id,
-        type: notification.type,
-        userId: notification.userId,
-        cardId: values.card?.id || null,
-      }
-    );
+    sails.log.info(`🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Notificação criada:`, {
+      notificationId: notification.id,
+      type: notification.type,
+      userId: notification.userId,
+      cardId: (values.card && values.card.id) || null,
+    });
 
     // --- LÓGICA DE ENVIO DE NOTIFICAÇÕES ---
 
@@ -606,31 +639,28 @@ module.exports = {
       Notification.Types.MENTION_IN_COMMENT,
     ];
 
-    const globalNotificationsEnabled = sails.config.custom.globalNotifications?.enabled;
+    const globalNotificationsEnabled =
+      sails.config.custom.globalNotifications && sails.config.custom.globalNotifications.enabled;
     const notificationServices = await NotificationService.qm.getByUserId(notification.userId);
     const smtpIsEnabled = sails.hooks.smtp.isEnabled();
 
-    sails.log.info(
-      `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Status dos mecanismos de envio:`, {
-        notificationType: notification.type,
-        isInEmailNotifiableTypes: EMAIL_NOTIFIABLE_TYPES.includes(notification.type),
-        globalNotificationsEnabled,
-        notificationServicesCount: notificationServices.length,
-        smtpIsEnabled,
-      }
-    );
+    sails.log.info(`🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Status dos mecanismos de envio:`, {
+      notificationType: notification.type,
+      isInEmailNotifiableTypes: EMAIL_NOTIFIABLE_TYPES.includes(notification.type),
+      globalNotificationsEnabled,
+      notificationServicesCount: notificationServices.length,
+      smtpIsEnabled,
+    });
 
     // Verificar se algum mecanismo de envio de e-mail está ativo
     if (globalNotificationsEnabled || notificationServices.length > 0 || smtpIsEnabled) {
       // E verificar também se o tipo de notificação é um dos permitidos para e-mail
       if (EMAIL_NOTIFIABLE_TYPES.includes(notification.type)) {
-        sails.log.info(
-          `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] User notificável encontrado:`, {
-            userId: notifiableUser.id,
-            userEmail: notifiableUser.email,
-            userName: notifiableUser.name,
-          }
-        );
+        sails.log.info(`🔍 [DIAGNÓSTICO_EMAIL_NOTIF] User notificável encontrado:`, {
+          userId: notifiableUser.id,
+          userEmail: notifiableUser.email,
+          userName: notifiableUser.name,
+        });
 
         const t = sails.helpers.utils.makeTranslator(notifiableUser.language);
         const emailHtml = await buildAndSendEmailWithTemplates(
@@ -642,6 +672,7 @@ module.exports = {
           t,
           inputs,
         );
+        // eslint-disable-next-line no-use-before-define
         const emailData = getNotificationSpecificData(
           notification,
           values.creatorUser,
@@ -689,11 +720,14 @@ module.exports = {
               `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] ✅ Email enviado com sucesso via SMTP padrão para "${notifiableUser.email}"`,
             );
           } catch (error) {
-            sails.log.error(`🔍 [DIAGNÓSTICO_EMAIL_NOTIF] ❌ Falha no envio do email via SMTP padrão:`, {
-              to: notifiableUser.email,
-              error: error.message,
-              stack: error.stack,
-            });
+            sails.log.error(
+              `🔍 [DIAGNÓSTICO_EMAIL_NOTIF] ❌ Falha no envio do email via SMTP padrão:`,
+              {
+                to: notifiableUser.email,
+                error: error.message,
+                stack: error.stack,
+              },
+            );
           }
         } else {
           sails.log.info(
@@ -740,17 +774,19 @@ module.exports = {
 
 const getNotificationSpecificData = (notification, creatorUser, t, card, list, board, project) => {
   const isBoardNotification = notification.type === Notification.Types.ADD_MEMBER_TO_BOARD;
-  const boardForNotification = board || card?.board;
+  const boardForNotification = board || (card && card.board);
   const resourceUrl = isBoardNotification
-    ? generateUrl(`boards/${boardForNotification?.id || notification.boardId}`)
-    : generateUrl(`cards/${card?.id || notification.cardId}`);
+    ? generateUrl(
+        `boards/${(boardForNotification && boardForNotification.id) || notification.boardId}`,
+      )
+    : generateUrl(`cards/${(card && card.id) || notification.cardId}`);
 
   // Medida de segurança para evitar crashes se os dados estiverem incompletos
   if (!boardForNotification || !project) {
     sails.log.warn(
       'Dados do quadro ou do projeto em falta para a notificação (type=%s, cardId=%s)',
       notification.type,
-      card?.id || null,
+      (card && card.id) || null,
     );
     return {
       actor_name: creatorUser.name,
@@ -758,9 +794,12 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
       action_object: t(`notification:${notification.type}.object`),
       project_name: 'Projeto desconhecido',
       board_name: 'Quadro desconhecido',
-      list_name: list?.name || card?.list?.name || '',
-      card_title: card?.name || notification.data?.board?.name || 'Board',
-      card_id: card?.id || '',
+      list_name: (list && list.name) || (card && card.list && card.list.name) || '',
+      card_title:
+        (card && card.name) ||
+        (notification.data && notification.data.board && notification.data.board.name) ||
+        'Board',
+      card_id: (card && card.id) || '',
       card_url: resourceUrl,
     };
   }
@@ -773,12 +812,12 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     notification.type === Notification.Types.MENTION_IN_COMMENT
   ) {
     // Para comentários, tentar levar diretamente ao comentário específico
-    if (notification.data?.commentId) {
+    if (notification.data && notification.data.commentId) {
       specificUrl = generateUrl(`cards/${card.id}#comment-${notification.data.commentId}`);
     }
   } else if (notification.type === 'createTask' || notification.type === 'completeTask') {
     // Para tarefas, tentar levar à tarefa específica se disponível
-    if (notification.data?.taskId) {
+    if (notification.data && notification.data.taskId) {
       specificUrl = generateUrl(`cards/${card.id}#task-${notification.data.taskId}`);
     }
   }
@@ -801,9 +840,9 @@ const getNotificationSpecificData = (notification, creatorUser, t, card, list, b
     action_object: t(`notification:${notification.type}.object`),
     project_name: project.name,
     board_name: boardForNotification.name,
-    list_name: list?.name || card?.list?.name || '',
-    card_title: card?.name || boardForNotification.name,
-    card_id: card?.id || '',
+    list_name: (list && list.name) || (card && card.list && card.list.name) || '',
+    card_title: (card && card.name) || boardForNotification.name,
+    card_id: (card && card.id) || '',
     card_url: specificUrl,
     cta_button_text: ctaButtonText,
     is_board_notification: isBoardNotification,

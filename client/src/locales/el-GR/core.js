@@ -323,6 +323,8 @@ export default {
       userAddedUserToThisCard:
         '<0>{{actorUser}}</0> πρόσθεσε τον/την {{addedUser}} σε αυτήν την κάρτα',
       userAddedYouToCard: '<0>{{user}}</0> σας πρόσθεσε στην <2>{{card}}</2>',
+      userAddedYouToBoard:
+        '<0>{{user}}</0> σας πρόσθεσε στον πίνακα <2>{{board}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> ολοκλήρωσε την εργασία {{task}} στην <4>{{card}}</4>',
       userCompletedTaskOnThisCard:

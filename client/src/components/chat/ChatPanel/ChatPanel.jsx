@@ -353,68 +353,73 @@ const ChatPanel = React.memo(
               <div className={styles.content}>
                 {activeTab === 'conversations' && (
                   <div className={styles.discoveryContent}>
-                    <section
-                      className={styles.discoverySection}
-                      aria-labelledby="chat-conversations-heading"
-                    >
-                      <header className={styles.discoveryHeader}>
-                        <strong id="chat-conversations-heading">{t('chat.conversations')}</strong>
-                      </header>
-                      <ConversationList
-                        conversations={filteredConversations}
-                        currentUser={currentUser}
-                        isEmbedded
-                        members={members}
-                        openConversationIds={openConversationIds}
-                        isPending={isPending}
-                        onConversationOpen={handleConversationOpen}
-                        onGeneralOpen={handleGeneralOpen}
-                        showGeneralFallback={!isSearching}
-                      />
-                    </section>
-                    <section
-                      className={styles.discoverySection}
-                      aria-labelledby="chat-start-conversation-heading"
-                    >
-                      <header className={styles.discoveryHeader}>
-                        <strong id="chat-start-conversation-heading">
-                          {t('chat.startConversation')}
-                        </strong>
-                        <button
-                          type="button"
-                          className={styles.discoveryAction}
-                          onClick={handleGroupFormOpen}
-                        >
-                          <Users aria-hidden="true" size={14} />
-                          {t('chat.createGroup')}
-                        </button>
-                      </header>
-                      {suggestedMembers.length > 0 ? (
-                        <MemberList
-                          isCompact
-                          members={suggestedMembers}
+                    {(!isSearching || filteredConversations.length > 0) && (
+                      <section
+                        className={styles.discoverySection}
+                        aria-labelledby="chat-conversations-heading"
+                      >
+                        <header className={styles.discoveryHeader}>
+                          <strong id="chat-conversations-heading">{t('chat.conversations')}</strong>
+                        </header>
+                        <ConversationList
+                          conversations={filteredConversations}
+                          currentUser={currentUser}
+                          isEmbedded
+                          members={members}
+                          openConversationIds={openConversationIds}
                           isPending={isPending}
-                          onMemberOpen={handleMemberOpen}
+                          onConversationOpen={handleConversationOpen}
+                          onGeneralOpen={handleGeneralOpen}
+                          showGeneralFallback={!isSearching}
                         />
-                      ) : (
-                        <div className={styles.discoveryEmpty}>
-                          {t(
-                            isSearching
-                              ? 'chat.noMembersFound'
-                              : 'chat.allMembersHaveConversations',
-                          )}
-                        </div>
+                      </section>
+                    )}
+                    {(!isSearching || suggestedMembers.length > 0) && (
+                      <section
+                        className={styles.discoverySection}
+                        aria-labelledby="chat-start-conversation-heading"
+                      >
+                        <header className={styles.discoveryHeader}>
+                          <strong id="chat-start-conversation-heading">
+                            {t('chat.startConversation')}
+                          </strong>
+                          <button
+                            type="button"
+                            className={styles.discoveryAction}
+                            onClick={handleGroupFormOpen}
+                          >
+                            <Users aria-hidden="true" size={14} />
+                            {t('chat.createGroup')}
+                          </button>
+                        </header>
+                        {suggestedMembers.length > 0 ? (
+                          <MemberList
+                            isCompact
+                            members={suggestedMembers}
+                            isPending={isPending}
+                            onMemberOpen={handleMemberOpen}
+                          />
+                        ) : (
+                          <div className={styles.discoveryEmpty}>
+                            {t('chat.allMembersHaveConversations')}
+                          </div>
+                        )}
+                        {!isSearching && availableMembers.length > 5 && (
+                          <button
+                            type="button"
+                            className={styles.viewAllMembers}
+                            onClick={handleNewConversation}
+                          >
+                            {t('chat.viewAllMembers', { count: filteredMembers.length })}
+                          </button>
+                        )}
+                      </section>
+                    )}
+                    {isSearching &&
+                      filteredConversations.length === 0 &&
+                      suggestedMembers.length === 0 && (
+                        <div className={styles.discoveryEmpty}>{t('chat.noChatResults')}</div>
                       )}
-                      {!isSearching && availableMembers.length > 5 && (
-                        <button
-                          type="button"
-                          className={styles.viewAllMembers}
-                          onClick={handleNewConversation}
-                        >
-                          {t('chat.viewAllMembers', { count: filteredMembers.length })}
-                        </button>
-                      )}
-                    </section>
                   </div>
                 )}
                 {activeTab !== 'conversations' && (
