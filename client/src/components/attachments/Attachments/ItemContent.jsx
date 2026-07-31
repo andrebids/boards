@@ -187,7 +187,12 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
       </div>
       {canEdit && (
         <EditPopup attachmentId={id}>
-          <Button variant="secondary" className={styles.editButton}>
+          <Button
+            variant="secondary"
+            aria-label={t('action.edit')}
+            isIconOnly
+            className={styles.editButton}
+          >
             <Icon fitted name="pencil" size="small" />
           </Button>
         </EditPopup>

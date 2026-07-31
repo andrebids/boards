@@ -6,10 +6,13 @@
 :global(#app) {
   .editButton {
     background: transparent;
+    border-radius: 50%;
     box-shadow: none;
     color: #fff;
+    height: 32px;
     line-height: 32px;
     margin-right: 0;
+    min-height: 32px;
     opacity: 0;
     padding: 0;
     position: absolute;
@@ -20,6 +23,12 @@
 
     &:hover {
       background: rgba(255, 255, 255, 0.08);
+    }
+
+    :global(i.icon) {
+      font-size: 14px;
+      height: 16px;
+      width: 16px;
     }
   }
 

@@ -7,6 +7,7 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Icon } from 'semantic-ui-react';
 import { Button } from '../../../../lib/custom-ui';
 
@@ -20,6 +21,7 @@ import CustomFieldGroupStep from '../../../custom-field-groups/CustomFieldGroupS
 import styles from './Item.module.scss';
 
 const Item = React.memo(({ id, dragHandleProps }) => {
+  const [t] = useTranslation();
   const selectCustomFieldGroupById = useMemo(
     () => selectors.makeSelectCustomFieldGroupById(),
     []
@@ -65,7 +67,12 @@ const Item = React.memo(({ id, dragHandleProps }) => {
           >
             {customFieldGroup.isPersisted && canEdit && (
               <CustomFieldGroupPopup id={customFieldGroup.id}>
-                <Button variant="secondary" className={styles.editButton}>
+                <Button
+                  variant="secondary"
+                  aria-label={t('action.edit')}
+                  isIconOnly
+                  className={styles.editButton}
+                >
                   <Icon fitted name="pencil" size="small" />
                 </Button>
               </CustomFieldGroupPopup>

@@ -175,7 +175,13 @@ const Header = React.memo(() => {
             <Menu.Item className={classNames(styles.item, styles.title)}>
               {project.name}
               {canEditProject && (
-                <Button variant="secondary" className={styles.editButton} onClick={handleProjectSettingsClick}>
+                <Button
+                  variant="secondary"
+                  aria-label={t('action.edit')}
+                  isIconOnly
+                  className={styles.editButton}
+                  onClick={handleProjectSettingsClick}
+                >
                   <Icon fitted name="pencil" size="small" />
                 </Button>
               )}

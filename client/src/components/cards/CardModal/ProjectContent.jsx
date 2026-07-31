@@ -517,6 +517,7 @@ const ProjectContent = React.memo(({ onClose }) => {
                             aria-label={t('action.editDescription', {
                               context: 'title',
                             })}
+                            isIconOnly
                             className={styles.editButton}
                           >
                             <Icon fitted name="pencil" size="small" />

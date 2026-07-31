@@ -7,6 +7,7 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Draggable } from '@hello-pangea/dnd';
 import { Icon } from 'semantic-ui-react';
@@ -19,6 +20,7 @@ import Paths from '../../../constants/Paths';
 import styles from './Item.module.scss';
 
 const Item = React.memo(({ id, index }) => {
+  const [t] = useTranslation();
   const selectBoardById = useMemo(() => selectors.makeSelectBoardById(), []);
 
   const selectNotificationsTotalByBoardId = useMemo(
@@ -98,7 +100,10 @@ const Item = React.memo(({ id, index }) => {
                   )}
                 </Link>
                 {canEdit && (
-                  <Button variant="secondary"
+                  <Button
+                    variant="secondary"
+                    aria-label={t('action.edit')}
+                    isIconOnly
                     className={styles.editButton}
                     onClick={handleEditClick}
                   >

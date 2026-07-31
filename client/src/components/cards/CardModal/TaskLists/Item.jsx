@@ -71,6 +71,7 @@ const Item = React.memo(({ id, index }) => {
                       <Button variant="secondary"
                         type="button"
                         aria-label={t('action.edit')}
+                        isIconOnly
                         title={t('action.edit')}
                         className={styles.editButton}
                       >

@@ -6,11 +6,12 @@
 :global(#app) {
   .editButton {
     background: transparent;
-    border-radius: 7px;
+    border-radius: 50%;
     box-shadow: none;
+    height: 28px;
     line-height: 28px;
     margin: 0;
-    min-height: auto;
+    min-height: 28px;
     opacity: 0;
     padding: 0;
     position: absolute;
@@ -27,6 +28,12 @@
         var(--card-modal-accent-soft, rgba(37, 99, 235, 0.2));
       opacity: 1;
       outline: none;
+    }
+
+    :global(i.icon) {
+      font-size: 12px;
+      height: 16px;
+      width: 16px;
     }
   }
 
