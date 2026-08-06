@@ -27,7 +27,10 @@ const PasswordReset = React.memo(() => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [wasReset, setWasReset] = useState(false);
   const [error, setError] = useState(null);
-  const token = useMemo(() => new URLSearchParams(window.location.search).get('token'), []);
+  const token = useMemo(() => {
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    return hashParams.get('token') || new URLSearchParams(window.location.search).get('token');
+  }, []);
   const passwordsDoNotMatch = Boolean(confirmation && password !== confirmation);
   const passwordIsInvalid = Boolean(password && !isPassword(password));
 

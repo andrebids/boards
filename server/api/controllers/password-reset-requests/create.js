@@ -38,6 +38,12 @@ module.exports = {
     },
   },
 
+  exits: {
+    success: {
+      statusCode: 202,
+    },
+  },
+
   async fn(inputs) {
     const startedAt = Date.now();
     const accepted = { accepted: true };

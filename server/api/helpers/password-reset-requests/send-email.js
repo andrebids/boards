@@ -64,8 +64,10 @@ module.exports = {
   async fn(inputs) {
     const language = inputs.user.language === 'pt-PT' ? 'pt-PT' : 'en-GB';
     const copy = TRANSLATIONS[language];
-    const resetUrl = new URL('/reset-password', sails.config.custom.baseUrl);
-    resetUrl.searchParams.set('token', inputs.token);
+    const resetUrl = new URL(sails.config.custom.baseUrl);
+    resetUrl.pathname = `${resetUrl.pathname.replace(/\/$/, '')}/reset-password`;
+    resetUrl.search = '';
+    resetUrl.hash = new URLSearchParams({ token: inputs.token }).toString();
 
     const html = juice(
       getTemplate()({
@@ -90,6 +92,7 @@ module.exports = {
       html,
       text,
       messageId: inputs.messageId,
+      suppressErrorDetails: true,
     });
   },
 };

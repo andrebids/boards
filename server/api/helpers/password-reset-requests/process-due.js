@@ -6,10 +6,15 @@
 const { decryptToken } = require('../../../utils/password-reset');
 
 const STALE_AFTER_MINUTES = 10;
-const MAX_ERROR_LENGTH = 1000;
+const CLEANUP_INTERVAL_MILLISECONDS = 60 * 60 * 1000;
 
-const truncateError = (error) =>
-  String(error && (error.stack || error.message || error)).slice(0, MAX_ERROR_LENGTH);
+let lastCleanupAt = 0;
+
+const describeError = (error) => {
+  const name = error && error.name ? error.name : 'Error';
+  const code = error && error.code ? ` (${error.code})` : '';
+  return `${name}${code}`;
+};
 
 const recoverStale = () =>
   sails.sendNativeQuery(
@@ -105,7 +110,7 @@ module.exports = {
         );
         result.sent += 1;
       } catch (error) {
-        const failure = truncateError(error);
+        const failure = describeError(error);
         if (request.attempts >= sails.config.custom.passwordResetMaxAttempts) {
           await updateRequest(
             request.id,
@@ -129,12 +134,15 @@ module.exports = {
     }
     /* eslint-enable no-await-in-loop, no-continue */
 
-    await sails.sendNativeQuery(
-      `DELETE FROM password_reset_attempt WHERE created_at < NOW() - INTERVAL '1 day'`,
-    );
-    await sails.sendNativeQuery(
-      `DELETE FROM password_reset_request WHERE created_at < NOW() - INTERVAL '7 days'`,
-    );
+    if (Date.now() - lastCleanupAt >= CLEANUP_INTERVAL_MILLISECONDS) {
+      await sails.sendNativeQuery(
+        `DELETE FROM password_reset_attempt WHERE created_at < NOW() - INTERVAL '1 day'`,
+      );
+      await sails.sendNativeQuery(
+        `DELETE FROM password_reset_request WHERE created_at < NOW() - INTERVAL '7 days'`,
+      );
+      lastCleanupAt = Date.now();
+    }
 
     return result;
   },

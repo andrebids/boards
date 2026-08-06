@@ -12,6 +12,7 @@ import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import { Popup } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import { StaticUserIds } from '../../../constants/StaticUsers';
 
@@ -55,18 +56,15 @@ const UserAvatar = React.memo(
         : user.name;
     const hasBoardTooltip = variant === Variants.BOARD;
 
-    const contentNode = (
+    const avatarNode = (
       <span
         className={classNames(
           styles.wrapper,
           styles[`wrapper${upperFirst(size)}`],
           variant === Variants.BOARD && styles.wrapperBoard,
-          hasBoardTooltip && styles.tooltip,
           onClick && styles.wrapperHoverable,
           !user.avatar && styles[`background${upperFirst(camelCase(getColor(user.name)))}`],
         )}
-        data-position={hasBoardTooltip ? 'bottom center' : undefined}
-        data-tooltip={hasBoardTooltip ? title : undefined}
         style={{
           background: user.avatar && `url("${user.avatar.thumbnailUrls.cover180}") center / cover`,
         }}
@@ -77,7 +75,7 @@ const UserAvatar = React.memo(
       </span>
     );
 
-    return onClick ? (
+    const contentNode = onClick ? (
       <button
         data-id={id}
         aria-label={title}
@@ -86,10 +84,35 @@ const UserAvatar = React.memo(
         className={classNames(styles.button, className)}
         onClick={onClick}
       >
-        {contentNode}
+        {avatarNode}
       </button>
     ) : (
-      <span className={className}>{contentNode}</span>
+      <span className={className}>{avatarNode}</span>
+    );
+
+    if (!hasBoardTooltip) {
+      return contentNode;
+    }
+
+    return (
+      <Popup
+        basic
+        content={title}
+        position="bottom center"
+        trigger={contentNode}
+        on="hover"
+        popperModifiers={[
+          {
+            name: 'preventOverflow',
+            enabled: true,
+            options: {
+              altAxis: true,
+              padding: 12,
+            },
+          },
+        ]}
+        className={styles.boardTooltip}
+      />
     );
   },
 );

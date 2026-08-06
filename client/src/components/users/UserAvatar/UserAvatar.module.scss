@@ -65,105 +65,6 @@
     opacity: 0.75;
   }
 
-  .tooltip[data-tooltip] {
-    &::before,
-    &::after {
-      pointer-events: none;
-      visibility: hidden;
-      z-index: 1000;
-    }
-
-    &::before {
-      background: #fff;
-      box-shadow: 1px 1px 0 rgba(225, 224, 225, 0.4);
-      margin-bottom: 3px;
-      opacity: 0;
-      transition:
-        opacity 150ms ease,
-        transform 150ms ease,
-        visibility 0s linear 150ms;
-    }
-
-    &::after {
-      background: #fff;
-      border: 0;
-      border-radius: 12px;
-      box-shadow:
-        0 2px 8px 0 rgba(0, 0, 0, 0.06),
-        0 -6px 12px 0 rgba(0, 0, 0, 0.03),
-        0 14px 28px 0 rgba(0, 0, 0, 0.08);
-      color: #161616;
-      font-family: inherit;
-      font-size: 12px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: 16px;
-      margin-bottom: 7px;
-      max-width: 320px;
-      opacity: 0;
-      overflow-wrap: break-word;
-      padding: 8px;
-      text-align: left;
-      text-transform: none;
-      transition:
-        opacity 150ms ease,
-        transform 150ms ease,
-        visibility 0s linear 150ms;
-      white-space: normal;
-      width: max-content;
-      word-break: break-all;
-    }
-
-    &[data-position='bottom center'] {
-      &::before {
-        margin-bottom: 0;
-        margin-top: 3px;
-      }
-
-      &::after {
-        margin-bottom: 0;
-        margin-top: 7px;
-      }
-    }
-
-    &:hover::before,
-    &:hover::after {
-      visibility: visible;
-    }
-
-    &:hover::before {
-      opacity: 1;
-    }
-
-    &:hover::after {
-      opacity: 1;
-      transform: translateX(-50%) scale(1) !important;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      &::before,
-      &::after {
-        transition: none;
-      }
-    }
-  }
-
-  .button:focus-visible .tooltip[data-tooltip] {
-    &::before,
-    &::after {
-      visibility: visible;
-    }
-
-    &::before {
-      opacity: 1;
-    }
-
-    &::after {
-      opacity: 1;
-      transform: translateX(-50%) scale(1) !important;
-    }
-  }
-
   .wrapperBoard {
     box-shadow: none;
     transition:
@@ -268,4 +169,23 @@
     background: url('../../../assets/images/avatar-backgrounds/lime.png') center / cover no-repeat;
   }
 
+}
+
+.boardTooltip {
+  background: #fff !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 2px 8px 0 rgba(0, 0, 0, 0.06),
+    0 -6px 12px 0 rgba(0, 0, 0, 0.03),
+    0 14px 28px 0 rgba(0, 0, 0, 0.08) !important;
+  color: #161616 !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+  max-width: 320px !important;
+  overflow-wrap: break-word;
+  padding: 8px !important;
+  white-space: normal;
+  word-break: break-word;
 }

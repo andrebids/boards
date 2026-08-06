@@ -44,6 +44,10 @@ module.exports = {
     data: {
       type: 'json',
     }, // Compatibilidade com os emails de notificação existentes
+    suppressErrorDetails: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
   },
 
   async fn(inputs) {
@@ -87,7 +91,14 @@ module.exports = {
 
       return info;
     } catch (error) {
-      sails.log.error(`❌ Erro ao enviar email: ${error.message}`);
+      if (inputs.suppressErrorDetails) {
+        sails.log.error('Email delivery failed', {
+          code: error.code,
+          name: error.name,
+        });
+      } else {
+        sails.log.error(`❌ Erro ao enviar email: ${error.message}`);
+      }
       throw error;
     }
   },

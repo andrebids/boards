@@ -43,10 +43,16 @@ const KanbanContent = React.memo(() => {
   const [isAddListOpened, setIsAddListOpened] = useState(false);
   const [isFileDragOverAddList, setIsFileDragOverAddList] = useState(false);
   const [isDragScrolling, setIsDragScrolling] = useState(false);
-  const [isHorizontallyScrollable, setIsHorizontallyScrollable] = useState(false);
+  const [scrollMetrics, setScrollMetrics] = useState({
+    isScrollable: false,
+    maxScrollLeft: 0,
+    thumbWidth: 100,
+  });
 
   const wrapperRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  const topScrollbarRef = useRef(null);
+  const topScrollbarDragRef = useRef(null);
   const dragPositionRef = useRef(null);
 
   const handleDragStart = useCallback(() => {
@@ -145,11 +151,26 @@ const KanbanContent = React.memo(() => {
       return;
     }
 
-    const isScrollable = scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
+    const maxScrollLeft = Math.max(scrollContainer.scrollWidth - scrollContainer.clientWidth, 0);
+    const nextMetrics = {
+      isScrollable: maxScrollLeft > 1,
+      maxScrollLeft,
+      thumbWidth: Math.max((scrollContainer.clientWidth / scrollContainer.scrollWidth) * 100, 12),
+    };
 
-    setIsHorizontallyScrollable((currentValue) =>
-      currentValue === isScrollable ? currentValue : isScrollable,
+    setScrollMetrics((currentMetrics) =>
+      currentMetrics.isScrollable === nextMetrics.isScrollable &&
+      currentMetrics.maxScrollLeft === nextMetrics.maxScrollLeft &&
+      currentMetrics.thumbWidth === nextMetrics.thumbWidth
+        ? currentMetrics
+        : nextMetrics,
     );
+  }, []);
+
+  const syncTopScrollbar = useCallback(() => {
+    if (topScrollbarRef.current && scrollContainerRef.current) {
+      topScrollbarRef.current.value = scrollContainerRef.current.scrollLeft;
+    }
   }, []);
 
   const handlePointerDown = useCallback((event) => {
@@ -209,6 +230,105 @@ const KanbanContent = React.memo(() => {
     scrollContainer.scrollLeft += event.deltaY;
   }, []);
 
+  const handleTopScrollbarChange = useCallback((event) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = Number(event.target.value);
+    }
+  }, []);
+
+  const updateScrollFromTopScrollbarPointer = useCallback((event) => {
+    const dragState = topScrollbarDragRef.current;
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!dragState || !scrollContainer || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const nextScrollLeft =
+      ((event.clientX - dragState.trackLeft - dragState.grabOffset) /
+        dragState.availableTrackWidth) *
+      dragState.maxScrollLeft;
+
+    scrollContainer.scrollLeft = Math.min(Math.max(nextScrollLeft, 0), dragState.maxScrollLeft);
+  }, []);
+
+  const handleTopScrollbarPointerDown = useCallback(
+    (event) => {
+      const scrollContainer = scrollContainerRef.current;
+
+      if (event.button !== 0 || !scrollContainer || scrollMetrics.maxScrollLeft <= 0) {
+        return;
+      }
+
+      const trackRect = event.currentTarget.getBoundingClientRect();
+      const thumbWidth = trackRect.width * (scrollMetrics.thumbWidth / 100);
+      const availableTrackWidth = Math.max(trackRect.width - thumbWidth, 1);
+      const thumbLeft =
+        (scrollContainer.scrollLeft / scrollMetrics.maxScrollLeft) * availableTrackWidth;
+      const pointerPosition = event.clientX - trackRect.left;
+      const isPointerOnThumb =
+        pointerPosition >= thumbLeft && pointerPosition <= thumbLeft + thumbWidth;
+
+      topScrollbarDragRef.current = {
+        pointerId: event.pointerId,
+        trackLeft: trackRect.left,
+        availableTrackWidth,
+        maxScrollLeft: scrollMetrics.maxScrollLeft,
+        grabOffset: isPointerOnThumb ? pointerPosition - thumbLeft : thumbWidth / 2,
+      };
+
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      updateScrollFromTopScrollbarPointer(event);
+    },
+    [scrollMetrics.maxScrollLeft, scrollMetrics.thumbWidth, updateScrollFromTopScrollbarPointer],
+  );
+
+  const handleTopScrollbarPointerRelease = useCallback((event) => {
+    if (topScrollbarDragRef.current?.pointerId !== event.pointerId) {
+      return;
+    }
+
+    topScrollbarDragRef.current = null;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }, []);
+
+  const handleTopScrollbarKeyDown = useCallback(
+    (event) => {
+      const scrollContainer = scrollContainerRef.current;
+
+      if (!scrollContainer) {
+        return;
+      }
+
+      let nextScrollLeft;
+
+      switch (event.key) {
+        case 'ArrowLeft':
+          nextScrollLeft = scrollContainer.scrollLeft - 96;
+          break;
+        case 'ArrowRight':
+          nextScrollLeft = scrollContainer.scrollLeft + 96;
+          break;
+        case 'Home':
+          nextScrollLeft = 0;
+          break;
+        case 'End':
+          nextScrollLeft = scrollMetrics.maxScrollLeft;
+          break;
+        default:
+          return;
+      }
+
+      event.preventDefault();
+      scrollContainer.scrollLeft = nextScrollLeft;
+    },
+    [scrollMetrics.maxScrollLeft],
+  );
+
   const handleKeyDown = useCallback((event) => {
     if (event.target !== event.currentTarget || !scrollContainerRef.current) {
       return;
@@ -255,18 +375,27 @@ const KanbanContent = React.memo(() => {
     const resizeObserver = new ResizeObserver(updateScrollability);
     resizeObserver.observe(scrollContainer);
     window.addEventListener('resize', updateScrollability);
+    window.addEventListener('scroll', syncTopScrollbar, { passive: true });
 
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', updateScrollability);
+      window.removeEventListener('scroll', syncTopScrollbar);
       scrollStyleContainer.classList.remove(styles.kanbanScroll);
       scrollContainerRef.current = null;
     };
-  }, [updateScrollability]);
+  }, [syncTopScrollbar, updateScrollability]);
 
   useEffect(() => {
     updateScrollability();
-  }, [isTimelinePanelExpanded, listIds, updateScrollability]);
+    syncTopScrollbar();
+  }, [
+    isTimelinePanelExpanded,
+    listIds,
+    scrollMetrics.isScrollable,
+    syncTopScrollbar,
+    updateScrollability,
+  ]);
 
   useDidUpdate(() => {
     if (isAddListOpened) {
@@ -287,7 +416,7 @@ const KanbanContent = React.memo(() => {
     <div
       ref={wrapperRef}
       className={`${styles.wrapper} ${
-        isHorizontallyScrollable ? styles.wrapperScrollable : ''
+        scrollMetrics.isScrollable ? styles.wrapperScrollable : ''
       } ${isDragScrolling ? styles.wrapperDragScrolling : ''} ${
         isTimelinePanelExpanded ? styles.timelinePanelExpanded : styles.timelinePanelCollapsed
       }`}
@@ -301,6 +430,27 @@ const KanbanContent = React.memo(() => {
       onPointerCancel={handlePointerRelease}
       onWheel={handleWheel}
     >
+      {scrollMetrics.isScrollable && (
+        <div className={styles.topScrollbarWrapper}>
+          <input
+            ref={topScrollbarRef}
+            className={styles.topScrollbar}
+            type="range"
+            min="0"
+            max={scrollMetrics.maxScrollLeft}
+            defaultValue={scrollContainerRef.current?.scrollLeft || 0}
+            step="1"
+            aria-label={t('common.board')}
+            style={{ '--scroll-thumb-width': `${scrollMetrics.thumbWidth}%` }}
+            onChange={handleTopScrollbarChange}
+            onKeyDown={handleTopScrollbarKeyDown}
+            onPointerDown={handleTopScrollbarPointerDown}
+            onPointerMove={updateScrollFromTopScrollbarPointer}
+            onPointerUp={handleTopScrollbarPointerRelease}
+            onPointerCancel={handleTopScrollbarPointerRelease}
+          />
+        </div>
+      )}
       <div>
         <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <Droppable droppableId="board" type={DroppableTypes.LIST} direction="horizontal">
