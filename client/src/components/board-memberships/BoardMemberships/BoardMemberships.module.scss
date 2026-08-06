@@ -5,15 +5,15 @@
 
 :global(#app) {
   .addButton {
-    background: var(--app-default);
+    background: rgba(15, 23, 42, 0.42);
     backdrop-filter: blur(12px) saturate(135%);
     -webkit-backdrop-filter: blur(12px) saturate(135%);
     border-radius: 50%;
     box-shadow: none;
-    color: var(--app-default-foreground);
+    color: #fff;
     flex: 0 0 36px;
     line-height: 36px;
-    margin: 0 0 0 -8px;
+    margin: 0;
     padding: 0;
     transition:
       background-color 140ms ease-out,
@@ -22,7 +22,7 @@
     width: 36px;
 
     &:hover {
-      background: var(--app-default-hover);
+      background: rgba(30, 64, 175, 0.62);
       box-shadow: none;
       transform: translateY(-2px);
     }
@@ -46,6 +46,7 @@
   .wrapper {
     align-items: center;
     display: inline-flex;
+    gap: 6px;
     min-width: max-content;
   }
 }

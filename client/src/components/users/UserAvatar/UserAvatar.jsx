@@ -12,7 +12,6 @@ import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { Popup } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import { StaticUserIds } from '../../../constants/StaticUsers';
 
@@ -31,7 +30,15 @@ const Variants = {
   BOARD: 'board',
 };
 
-const COLORS = ['blue', 'green', 'purple', 'orange', 'aqua', 'magenta', 'sunset', 'indigo', 'lime'];
+const COLORS = [
+  'emerald',
+  'peter-river',
+  'wisteria',
+  'carrot',
+  'alizarin',
+  'turquoise',
+  'midnight-blue',
+];
 
 const getColor = (name) => {
   let sum = 0;
@@ -48,16 +55,16 @@ const UserAvatar = React.memo(
 
     const user = useSelector((state) => selectUserById(state, id));
     const [t] = useTranslation();
-    const title =
-      user.id === StaticUserIds.DELETED
-        ? t(`common.${user.name}`, {
-            context: 'title',
-          })
-        : user.name;
-    const hasBoardTooltip = variant === Variants.BOARD;
 
-    const avatarNode = (
+    const contentNode = (
       <span
+        title={
+          user.id === StaticUserIds.DELETED
+            ? t(`common.${user.name}`, {
+                context: 'title',
+              })
+            : user.name
+        }
         className={classNames(
           styles.wrapper,
           styles[`wrapper${upperFirst(size)}`],
@@ -68,51 +75,24 @@ const UserAvatar = React.memo(
         style={{
           background: user.avatar && `url("${user.avatar.thumbnailUrls.cover180}") center / cover`,
         }}
-        title={hasBoardTooltip ? undefined : title}
       >
         {!user.avatar && <span className={styles.initials}>{initials(user.name).slice(0, 2)}</span>}
         {withCreatorIndicator && <span className={styles.creatorIndicator}>+</span>}
       </span>
     );
 
-    const contentNode = onClick ? (
+    return onClick ? (
       <button
         data-id={id}
-        aria-label={title}
         type="button"
         disabled={isDisabled}
         className={classNames(styles.button, className)}
         onClick={onClick}
       >
-        {avatarNode}
+        {contentNode}
       </button>
     ) : (
-      <span className={className}>{avatarNode}</span>
-    );
-
-    if (!hasBoardTooltip) {
-      return contentNode;
-    }
-
-    return (
-      <Popup
-        basic
-        content={title}
-        position="bottom center"
-        trigger={contentNode}
-        on="hover"
-        popperModifiers={[
-          {
-            name: 'preventOverflow',
-            enabled: true,
-            options: {
-              altAxis: true,
-              padding: 12,
-            },
-          },
-        ]}
-        className={styles.boardTooltip}
-      />
+      <span className={className}>{contentNode}</span>
     );
   },
 );

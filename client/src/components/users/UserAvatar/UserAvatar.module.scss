@@ -44,11 +44,11 @@
   }
 
   .initials {
-    color: #64748b;
     font-weight: 700;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.015em;
     margin: 0 auto;
-    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(2, 6, 23, 0.32);
+    text-transform: capitalize;
   }
 
   .wrapper {
@@ -129,67 +129,61 @@
 
   /* Backgrounds */
 
-  .backgroundBlue {
-    background: url('https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/blue.jpg')
-      center / cover no-repeat;
+  .backgroundEmerald {
+    background: #2ecc71;
   }
 
-  .backgroundGreen {
-    background: url('https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/green.jpg')
-      center / cover no-repeat;
+  .backgroundPeterRiver {
+    background: #3498db;
   }
 
-  .backgroundPurple {
-    background: url('https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/purple.jpg')
-      center / cover no-repeat;
+  .backgroundWisteria {
+    background: #8e44ad;
   }
 
-  .backgroundOrange {
-    background: url('https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/orange.jpg')
-      center / cover no-repeat;
+  .backgroundCarrot {
+    background: #e67e22;
   }
 
-  .backgroundAqua {
-    background: url('../../../assets/images/avatar-backgrounds/aqua.png') center / cover no-repeat;
+  .backgroundAlizarin {
+    background: #e74c3c;
   }
 
-  .backgroundMagenta {
-    background: url('../../../assets/images/avatar-backgrounds/magenta.png') center / cover no-repeat;
+  .backgroundTurquoise {
+    background: #1abc9c;
   }
 
-  .backgroundSunset {
-    background: url('../../../assets/images/avatar-backgrounds/sunset.png') center / cover no-repeat;
+  .backgroundMidnightBlue {
+    background: #2c3e50;
   }
 
-  .backgroundIndigo {
-    background: url('../../../assets/images/avatar-backgrounds/indigo.png') center / cover no-repeat;
+  /* Refined palette for the compact member group shown over board covers. */
+
+  .wrapperBoard.backgroundEmerald {
+    background: linear-gradient(145deg, #34d399, #059669);
   }
 
-  .backgroundLime {
-    background: url('../../../assets/images/avatar-backgrounds/lime.png') center / cover no-repeat;
+  .wrapperBoard.backgroundPeterRiver {
+    background: linear-gradient(145deg, #60a5fa, #2563eb);
   }
 
-}
+  .wrapperBoard.backgroundWisteria {
+    background: linear-gradient(145deg, #c084fc, #7c3aed);
+  }
 
-.boardTooltip {
-  background: var(--app-dark-surface) !important;
-  border: 1px solid var(--app-dark-border) !important;
-  border-radius: 12px !important;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    0 14px 28px rgba(0, 0, 0, 0.28) !important;
-  color: var(--app-dark-text) !important;
-  font-size: 12px !important;
-  font-weight: 400 !important;
-  line-height: 16px !important;
-  max-width: 320px !important;
-  overflow-wrap: break-word;
-  padding: 8px !important;
-  white-space: normal;
-  word-break: break-word;
+  .wrapperBoard.backgroundCarrot {
+    background: linear-gradient(145deg, #fbbf24, #ea580c);
+  }
 
-  &::before {
-    background: var(--app-dark-surface) !important;
-    box-shadow: -1px -1px 0 var(--app-dark-border) !important;
+  .wrapperBoard.backgroundAlizarin {
+    background: linear-gradient(145deg, #fb7185, #e11d48);
+  }
+
+  .wrapperBoard.backgroundTurquoise {
+    background: linear-gradient(145deg, #2dd4bf, #0f766e);
+  }
+
+  .wrapperBoard.backgroundMidnightBlue {
+    background: linear-gradient(145deg, #64748b, #334155);
   }
 }

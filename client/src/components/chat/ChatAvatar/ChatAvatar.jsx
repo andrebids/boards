@@ -9,66 +9,51 @@ import styles from './ChatAvatar.module.scss';
 
 const mutedColors = ['#536b84', '#65717d', '#55737a', '#74677f', '#747b61'];
 
-const ChatAvatar = React.memo(
-  ({ groupId, isCustomGroup, isGeneral, isOnline, isProject, user }) => {
-    if (!isProject && user?.id) {
-      return (
-        <span className={styles.userAvatar}>
-          <UserAvatar id={user.id} size="large" />
-          {isOnline && <span className={styles.online} />}
-        </span>
-      );
-    }
-
-    const colorIndex = user
-      ? [...user.name].reduce((sum, character) => sum + character.charCodeAt(0), 0) %
-        mutedColors.length
-      : 0;
-    const groupPaletteIndex = groupId
-      ? [...groupId].reduce((sum, character) => sum + character.charCodeAt(0), 0) % 4
-      : 0;
-
-    let contentNode = initials(user?.name || '?').slice(0, 2);
-    if (user?.avatar) {
-      contentNode = (
-        <span
-          className={styles.image}
-          style={{
-            backgroundImage: `url("${user.avatar.thumbnailUrls.cover180}")`,
-          }}
-        />
-      );
-    } else if (isProject) {
-      contentNode = <Users aria-hidden="true" size={17} strokeWidth={2.2} />;
-    } else if (!user) {
-      contentNode = <UserRound aria-hidden="true" size={17} strokeWidth={2.2} />;
-    }
-
-    const className = [
-      styles.avatar,
-      isProject && styles.projectAvatar,
-      isGeneral && styles.generalAvatar,
-      isCustomGroup && styles[`groupAvatar${groupPaletteIndex}`],
-    ]
-      .filter(Boolean)
-      .join(' ');
-
+const ChatAvatar = React.memo(({ isOnline, isProject, user }) => {
+  if (!isProject && user?.id) {
     return (
-      <span
-        className={className}
-        style={isProject ? undefined : { backgroundColor: mutedColors[colorIndex] }}
-      >
-        {contentNode}
+      <span className={styles.userAvatar}>
+        <UserAvatar id={user.id} size="large" />
         {isOnline && <span className={styles.online} />}
       </span>
     );
-  },
-);
+  }
+
+  const colorIndex = user
+    ? [...user.name].reduce((sum, character) => sum + character.charCodeAt(0), 0) %
+      mutedColors.length
+    : 0;
+
+  let contentNode = initials(user?.name || '?').slice(0, 2);
+  if (user?.avatar) {
+    contentNode = (
+      <span
+        className={styles.image}
+        style={{
+          backgroundImage: `url("${user.avatar.thumbnailUrls.cover180}")`,
+        }}
+      />
+    );
+  } else if (isProject) {
+    contentNode = <Users aria-hidden="true" size={17} strokeWidth={2.2} />;
+  } else if (!user) {
+    contentNode = <UserRound aria-hidden="true" size={17} strokeWidth={2.2} />;
+  }
+
+  const className = `${styles.avatar} ${isProject ? styles.projectAvatar : ''}`;
+
+  return (
+    <span
+      className={className}
+      style={isProject ? undefined : { backgroundColor: mutedColors[colorIndex] }}
+    >
+      {contentNode}
+      {isOnline && <span className={styles.online} />}
+    </span>
+  );
+});
 
 ChatAvatar.propTypes = {
-  groupId: PropTypes.string,
-  isCustomGroup: PropTypes.bool,
-  isGeneral: PropTypes.bool,
   isOnline: PropTypes.bool,
   isProject: PropTypes.bool,
   user: PropTypes.shape({
@@ -83,9 +68,6 @@ ChatAvatar.propTypes = {
 };
 
 ChatAvatar.defaultProps = {
-  groupId: undefined,
-  isCustomGroup: false,
-  isGeneral: false,
   isOnline: false,
   isProject: false,
   user: undefined,

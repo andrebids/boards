@@ -27,7 +27,7 @@
     color: #fff;
     font-weight: 700;
     line-height: 36px;
-    margin: 0 0 0 -8px;
+    margin: 0;
     padding: 0;
     transition:
       background-color 140ms ease-out,
@@ -54,16 +54,8 @@
 
   .user {
     line-height: 1;
-    margin-left: -8px;
+    margin: 0;
     position: relative;
-
-    > button > span {
-      box-shadow: none !important;
-    }
-
-    > button:focus-visible > span {
-      box-shadow: 0 0 0 5px rgba(96, 165, 250, 0.72) !important;
-    }
 
     &:hover,
     &:focus-within {
@@ -74,6 +66,7 @@
   .wrapper {
     align-items: center;
     display: flex;
+    gap: 6px;
     line-height: 36px;
     padding: 5px 0;
 

@@ -208,9 +208,6 @@ const ChatWindow = React.memo(({ id }) => {
         </button>
         <div className={styles.headerMain}>
           <ChatAvatar
-            groupId={conversation.id}
-            isCustomGroup={isCustomGroup}
-            isGeneral={isGeneralConversation(conversation)}
             isOnline={directUser?.isOnline}
             isProject={isGeneralConversation(conversation) || isCustomGroup}
             user={directUser}
