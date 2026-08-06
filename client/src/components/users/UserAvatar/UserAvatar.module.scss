@@ -172,14 +172,13 @@
 }
 
 .boardTooltip {
-  background: #fff !important;
-  border: 0 !important;
+  background: var(--app-dark-surface) !important;
+  border: 1px solid var(--app-dark-border) !important;
   border-radius: 12px !important;
   box-shadow:
-    0 2px 8px 0 rgba(0, 0, 0, 0.06),
-    0 -6px 12px 0 rgba(0, 0, 0, 0.03),
-    0 14px 28px 0 rgba(0, 0, 0, 0.08) !important;
-  color: #161616 !important;
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 14px 28px rgba(0, 0, 0, 0.28) !important;
+  color: var(--app-dark-text) !important;
   font-size: 12px !important;
   font-weight: 400 !important;
   line-height: 16px !important;
@@ -188,4 +187,9 @@
   padding: 8px !important;
   white-space: normal;
   word-break: break-word;
+
+  &::before {
+    background: var(--app-dark-surface) !important;
+    box-shadow: -1px -1px 0 var(--app-dark-border) !important;
+  }
 }

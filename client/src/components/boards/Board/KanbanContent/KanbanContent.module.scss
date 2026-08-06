@@ -5,34 +5,34 @@
 
 :global(#app) {
   &.kanbanScroll {
-    scrollbar-color: rgba(255, 255, 255, 0.68) rgba(10, 15, 23, 0.5);
+    scrollbar-color: var(--app-dark-surface-hover, #303947) rgba(8, 12, 18, 0.74);
     scrollbar-width: auto;
 
     &::-webkit-scrollbar {
-      height: 14px;
+      height: 10px;
     }
 
     &::-webkit-scrollbar-track {
-      background: rgba(10, 15, 23, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(8, 12, 18, 0.74);
+      border: 1px solid var(--app-dark-border, rgba(255, 255, 255, 0.1));
       border-radius: 999px;
       box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
     }
 
     &::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.68);
+      background: var(--app-dark-surface-hover, #303947);
       background-clip: padding-box;
-      border: 3px solid transparent;
+      border: 2px solid transparent;
       border-radius: 999px;
       box-shadow: none;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.84);
+        background: #465263;
         background-clip: padding-box;
       }
 
       &:active {
-        background: #ffffff;
+        background: #566477;
         background-clip: padding-box;
       }
     }
@@ -134,9 +134,9 @@
 
     .topScrollbarWrapper {
       box-sizing: border-box;
-      height: 22px;
+      height: 14px;
       left: 20px;
-      padding: 2px 0 6px;
+      padding: 1px 0 3px;
       position: sticky;
       width: calc(100vw - 40px);
       z-index: 1002;
@@ -147,49 +147,49 @@
       background: transparent;
       cursor: pointer;
       display: block;
-      height: 14px;
+      height: 10px;
       margin: 0;
       padding: 0;
       width: 100%;
 
       &::-webkit-slider-runnable-track {
-        background: rgba(10, 15, 23, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(8, 12, 18, 0.74);
+        border: 1px solid var(--app-dark-border, rgba(255, 255, 255, 0.1));
         border-radius: 999px;
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
-        height: 10px;
+        height: 6px;
       }
 
       &::-webkit-slider-thumb {
         appearance: none;
-        background: rgba(255, 255, 255, 0.72);
-        border: 3px solid transparent;
+        background: var(--app-dark-surface-hover, #303947);
+        border: 1px solid rgba(255, 255, 255, 0.16);
         border-radius: 999px;
         box-sizing: border-box;
-        height: 14px;
+        height: 10px;
         margin-top: -3px;
         width: var(--scroll-thumb-width);
       }
 
       &:hover::-webkit-slider-thumb,
       &:focus-visible::-webkit-slider-thumb {
-        background: rgba(255, 255, 255, 0.9);
+        background: #465263;
       }
 
       &::-moz-range-track {
-        background: rgba(10, 15, 23, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(8, 12, 18, 0.74);
+        border: 1px solid var(--app-dark-border, rgba(255, 255, 255, 0.1));
         border-radius: 999px;
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
-        height: 10px;
+        height: 6px;
       }
 
       &::-moz-range-thumb {
-        background: rgba(255, 255, 255, 0.72);
-        border: 3px solid transparent;
+        background: var(--app-dark-surface-hover, #303947);
+        border: 1px solid rgba(255, 255, 255, 0.16);
         border-radius: 999px;
         box-sizing: border-box;
-        height: 14px;
+        height: 10px;
         width: var(--scroll-thumb-width);
       }
 
