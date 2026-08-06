@@ -5,6 +5,8 @@
 
 const ROOT = '/';
 const LOGIN = '/login';
+const FORGOT_PASSWORD = '/forgot-password';
+const RESET_PASSWORD = '/reset-password';
 const OIDC_CALLBACK = '/oidc-callback';
 const PROJECTS = '/projects/:id';
 const BOARDS = '/boards/:id';
@@ -13,6 +15,8 @@ const CARDS = '/cards/:id';
 export default {
   ROOT,
   LOGIN,
+  FORGOT_PASSWORD,
+  RESET_PASSWORD,
   OIDC_CALLBACK,
   PROJECTS,
   BOARDS,

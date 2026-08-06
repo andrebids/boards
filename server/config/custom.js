@@ -42,6 +42,17 @@ module.exports.custom = {
 
   tokenExpiresIn: parseInt(process.env.TOKEN_EXPIRES_IN, 10) || 365,
 
+  passwordResetEnabled: process.env.PASSWORD_RESET_ENABLED !== 'false',
+  passwordResetTokenExpiresInMinutes: envToPositiveNumber(
+    process.env.PASSWORD_RESET_TOKEN_EXPIRES_IN_MINUTES,
+    30,
+  ),
+  passwordResetPollIntervalSeconds: envToPositiveNumber(
+    process.env.PASSWORD_RESET_POLL_INTERVAL_SECONDS,
+    5,
+  ),
+  passwordResetMaxAttempts: envToPositiveNumber(process.env.PASSWORD_RESET_MAX_ATTEMPTS, 3),
+
   // Location to receive uploaded files in. Default (non-string value) is a Sails-specific location.
   uploadsTempPath: null,
   uploadsBasePath: sails.config.appPath,

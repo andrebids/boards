@@ -68,6 +68,9 @@ module.exports.routes = {
   'POST /api/access-tokens/exchange-with-oidc': 'access-tokens/exchange-with-oidc',
   'DELETE /api/access-tokens/me': 'access-tokens/delete',
 
+  'POST /api/password-reset-requests': 'password-reset-requests/create',
+  'POST /api/password-resets': 'password-resets/create',
+
   'GET /api/users': 'users/index',
   'POST /api/users': 'users/create',
   'GET /api/users/:id': 'users/show',

@@ -27,4 +27,6 @@ module.exports.policies = {
   'config/show': true,
   'access-tokens/create': true,
   'access-tokens/exchange-with-oidc': true,
+  'password-reset-requests/create': true,
+  'password-resets/create': true,
 };

@@ -9,7 +9,7 @@ module.exports = {
       const { currentUser } = this.req;
 
       let oidc = null;
-      
+
       // Verificar se o hook OIDC existe e está habilitado
       if (sails.hooks.oidc && sails.hooks.oidc.isEnabled()) {
         try {
@@ -26,26 +26,34 @@ module.exports = {
 
             oidc = {
               authorizationUrl: oidcClient.authorizationUrl(authorizationUrlParams),
-              endSessionUrl: oidcClient.issuer.end_session_endpoint ? oidcClient.endSessionUrl({}) : null,
+              endSessionUrl: oidcClient.issuer.end_session_endpoint
+                ? oidcClient.endSessionUrl({})
+                : null,
               isEnforced: sails.config.custom.oidcEnforced,
             };
           }
         } catch (oidcError) {
-          sails.log.warn('Config controller: OIDC error, continuing without OIDC:', oidcError.message);
+          sails.log.warn(
+            'Config controller: OIDC error, continuing without OIDC:',
+            oidcError.message,
+          );
         }
       }
-      
+
       const result = {
         item: sails.helpers.config.presentOne(
           {
             oidc,
+            passwordResetEnabled:
+              sails.config.custom.passwordResetEnabled &&
+              sails.hooks.smtp.isEnabled() &&
+              !sails.config.custom.oidcEnforced,
           },
           currentUser,
         ),
       };
-      
+
       return result;
-      
     } catch (error) {
       sails.log.error('Config controller: Error occurred:', error);
       throw error;

@@ -135,6 +135,24 @@ describe('chat utils', () => {
     expect(getConversationTitle(conversation, members, '1', 'Projeto', labels)).toBe('Bruno');
   });
 
+  test('does not resolve a participant as the user of the general conversation', () => {
+    const andre = {
+      id: '1',
+      name: 'André',
+      avatar: {
+        thumbnailUrls: {
+          cover180: '/user-avatars/andre.jpg',
+        },
+      },
+    };
+    const conversation = {
+      type: 'projectGroup',
+      participantUserIds: ['1', '2'],
+    };
+
+    expect(getDirectUser(conversation, [andre, members[1]], '2')).toBeUndefined();
+  });
+
   test('resolves a former project member included with the conversation', () => {
     const formerMember = { id: '3', name: 'Carla' };
     const conversation = {

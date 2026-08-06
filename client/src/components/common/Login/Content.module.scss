@@ -40,10 +40,28 @@
     font-size: 28px;
     font-weight: normal;
     margin-bottom: 32px;
+    color: rgb(245, 240, 255);
   }
 
   .formWrapper {
     margin-bottom: 36px;
+  }
+
+  .authLink {
+    margin: 16px 0 0;
+    text-align: center;
+  }
+
+  .authLink a {
+    color: #d8d4ff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .authLink a:focus-visible {
+    border-radius: 3px;
+    outline: 2px solid #fff;
+    outline-offset: 3px;
   }
 
   .fullHeight {
@@ -63,6 +81,23 @@
 
   .inputWrapper {
     margin-bottom: 16px;
+  }
+
+  .helperText {
+    color: #d7d9e4;
+    font-size: 14px;
+    line-height: 20px;
+    margin: 8px 0 16px;
+  }
+
+  .inputWrapper .helperText {
+    margin: 6px 0 0;
+  }
+
+  .errorText {
+    color: #ffb4b4;
+    font-size: 14px;
+    margin: 6px 0 0;
   }
 
   .loginWrapper {

@@ -61,6 +61,9 @@ export function* handleLocationChange() {
 
       break;
     }
+    case Paths.FORGOT_PASSWORD:
+    case Paths.RESET_PASSWORD:
+      break;
     case Paths.OIDC_CALLBACK:
       yield call(authenticateWithOidcCallback);
 

@@ -65,6 +65,10 @@ export const getParticipantUserIds = (conversation) =>
   );
 
 export const getDirectUser = (conversation, members, currentUserId) => {
+  if (!isDirectConversation(conversation)) {
+    return undefined;
+  }
+
   const participantIds = getParticipantUserIds(conversation);
   const otherUserId = participantIds.find((userId) => userId !== currentUserId);
 

@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation, Trans } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Divider, Form, Grid, Header, Message } from 'semantic-ui-react';
 import { useDidUpdate, usePrevious, useToggle } from '../../../lib/hooks';
 import { Button, Input } from '../../../lib/custom-ui';
@@ -16,10 +17,11 @@ import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useForm, useNestedRef } from '../../../hooks';
 import { isUsername } from '../../../utils/validator';
+import Paths from '../../../constants/Paths';
 
 import styles from './Content.module.scss';
 
-const createMessage = error => {
+const createMessage = (error) => {
   if (!error) {
     return error;
   }
@@ -101,8 +103,7 @@ const Content = React.memo(() => {
   const message = useMemo(() => createMessage(error), [error]);
   const [focusPasswordFieldState, focusPasswordField] = useToggle();
 
-  const [emailOrUsernameFieldRef, handleEmailOrUsernameFieldRef] =
-    useNestedRef('inputRef');
+  const [emailOrUsernameFieldRef, handleEmailOrUsernameFieldRef] = useNestedRef('inputRef');
   const [passwordFieldRef, handlePasswordFieldRef] = useNestedRef('inputRef');
 
   const handleSubmit = useCallback(() => {
@@ -111,10 +112,7 @@ const Content = React.memo(() => {
       emailOrUsername: data.emailOrUsername.trim(),
     };
 
-    if (
-      !isEmail(cleanData.emailOrUsername) &&
-      !isUsername(cleanData.emailOrUsername)
-    ) {
+    if (!isEmail(cleanData.emailOrUsername) && !isUsername(cleanData.emailOrUsername)) {
       emailOrUsernameFieldRef.current.select();
       return;
     }
@@ -153,7 +151,7 @@ const Content = React.memo(() => {
 
           break;
         case 'Invalid password':
-          setData(prevData => ({
+          setData((prevData) => ({
             ...prevData,
             password: '',
           }));
@@ -171,10 +169,7 @@ const Content = React.memo(() => {
 
   return (
     <div className={classNames(styles.wrapper, styles.fullHeight)}>
-      <Grid
-        verticalAlign="middle"
-        className={classNames(styles.grid, styles.fullHeight)}
-      >
+      <Grid verticalAlign="middle" className={classNames(styles.grid, styles.fullHeight)}>
         <Grid.Column computer={6} tablet={16} mobile={16}>
           <div className={styles.loginWrapper}>
             <Header
@@ -198,13 +193,15 @@ const Content = React.memo(() => {
                 <>
                   <Form size="large" onSubmit={handleSubmit}>
                     <div className={styles.inputWrapper}>
-                      <div className={styles.inputLabel}>
+                      <label className={styles.inputLabel} htmlFor="login-email-or-username">
                         {t('common.emailOrUsername')}
-                      </div>
+                      </label>
                       <Input
                         fluid
+                        id="login-email-or-username"
                         ref={handleEmailOrUsernameFieldRef}
                         name="emailOrUsername"
+                        autoComplete="username"
                         value={data.emailOrUsername}
                         maxLength={256}
                         readOnly={isSubmitting}
@@ -213,13 +210,15 @@ const Content = React.memo(() => {
                       />
                     </div>
                     <div className={styles.inputWrapper}>
-                      <div className={styles.inputLabel}>
+                      <label className={styles.inputLabel} htmlFor="login-password">
                         {t('common.password')}
-                      </div>
+                      </label>
                       <Input.Password
                         fluid
+                        id="login-password"
                         ref={handlePasswordFieldRef}
                         name="password"
+                        autoComplete="current-password"
                         value={data.password}
                         maxLength={256}
                         readOnly={isSubmitting}
@@ -237,12 +236,13 @@ const Content = React.memo(() => {
                       disabled={isSubmitting || isSubmittingWithOidc}
                     />
                   </Form>
+                  {config.passwordResetEnabled && (
+                    <p className={styles.authLink}>
+                      <Link to={Paths.FORGOT_PASSWORD}>{t('action.forgotPassword')}</Link>
+                    </p>
+                  )}
                   {withOidc && (
-                    <Divider
-                      horizontal
-                      content={t('common.or')}
-                      className={styles.divider}
-                    />
+                    <Divider horizontal content={t('common.or')} className={styles.divider} />
                   )}
                 </>
               )}
@@ -262,11 +262,7 @@ const Content = React.memo(() => {
             <p className={styles.formFooter}>
               <Trans i18nKey="common.poweredByPlanka">
                 {'Powered by '}
-                <a
-                  href="https://blacherestudio.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href="https://blacherestudio.com/" target="_blank" rel="noreferrer">
                   PLANKA
                 </a>
               </Trans>

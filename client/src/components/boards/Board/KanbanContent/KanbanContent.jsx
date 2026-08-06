@@ -27,27 +27,27 @@ const KanbanContent = React.memo(() => {
   const listIds = useSelector(selectors.selectFiniteListIdsForCurrentBoard);
   const isTimelinePanelExpanded = useSelector(selectIsTimelinePanelExpanded);
 
-  const canAddList = useSelector(state => {
+  const canAddList = useSelector((state) => {
     const isEditModeEnabled = selectors.selectIsEditModeEnabled(state); // TODO: move out?
 
     if (!isEditModeEnabled) {
       return isEditModeEnabled;
     }
 
-    const boardMembership =
-      selectors.selectCurrentUserMembershipForCurrentBoard(state);
-    return (
-      !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR
-    );
+    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
   });
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [isAddListOpened, setIsAddListOpened] = useState(false);
   const [isFileDragOverAddList, setIsFileDragOverAddList] = useState(false);
+  const [isDragScrolling, setIsDragScrolling] = useState(false);
+  const [isHorizontallyScrollable, setIsHorizontallyScrollable] = useState(false);
 
   const wrapperRef = useRef(null);
-  const prevPositionRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const dragPositionRef = useRef(null);
 
   const handleDragStart = useCallback(() => {
     document.body.classList.add(globalStyles.dragging);
@@ -62,10 +62,7 @@ const KanbanContent = React.memo(() => {
         return;
       }
 
-      if (
-        source.droppableId === destination.droppableId &&
-        source.index === destination.index
-      ) {
+      if (source.droppableId === destination.droppableId && source.index === destination.index) {
         return;
       }
 
@@ -78,18 +75,14 @@ const KanbanContent = React.memo(() => {
           break;
         case DroppableTypes.CARD:
           dispatch(
-            entryActions.moveCard(
-              id,
-              parseDndId(destination.droppableId),
-              destination.index
-            )
+            entryActions.moveCard(id, parseDndId(destination.droppableId), destination.index),
           );
 
           break;
         default:
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleAddListClick = useCallback(() => {
@@ -100,7 +93,7 @@ const KanbanContent = React.memo(() => {
     setIsAddListOpened(false);
   }, []);
 
-  const handleAddListFileDragOver = useCallback(event => {
+  const handleAddListFileDragOver = useCallback((event) => {
     if (!event.dataTransfer?.types?.includes('Files')) {
       return;
     }
@@ -110,7 +103,7 @@ const KanbanContent = React.memo(() => {
     setIsFileDragOverAddList(true);
   }, []);
 
-  const handleAddListFileDragLeave = useCallback(event => {
+  const handleAddListFileDragLeave = useCallback((event) => {
     if (!event.dataTransfer?.types?.includes('Files')) {
       return;
     }
@@ -124,7 +117,7 @@ const KanbanContent = React.memo(() => {
   }, []);
 
   const handleAddListFileDrop = useCallback(
-    event => {
+    (event) => {
       if (!event.dataTransfer?.types?.includes('Files')) {
         return;
       }
@@ -138,98 +131,179 @@ const KanbanContent = React.memo(() => {
           entryActions.createListInCurrentBoard({
             name: `${t('common.list')} ${listIds.length + 1}`,
             type: ListTypes.ACTIVE,
-          })
+          }),
         );
       }
     },
-    [dispatch, listIds.length, t]
+    [dispatch, listIds.length, t],
   );
 
-  const handleMouseDown = useCallback(event => {
-    // If button is defined and not equal to 0 (left click)
-    if (event.button) {
+  const updateScrollability = useCallback(() => {
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!scrollContainer) {
       return;
     }
 
-    if (
-      event.target !== wrapperRef.current &&
-      !event.target.dataset.dragScroller
-    ) {
-      return;
-    }
+    const isScrollable = scrollContainer.scrollWidth > scrollContainer.clientWidth + 1;
 
-    prevPositionRef.current = event.clientX;
-
-    window.getSelection().removeAllRanges();
-    document.body.classList.add(globalStyles.dragScrolling);
+    setIsHorizontallyScrollable((currentValue) =>
+      currentValue === isScrollable ? currentValue : isScrollable,
+    );
   }, []);
 
-  const handleWindowMouseMove = useCallback(event => {
-    if (prevPositionRef.current === null) {
+  const handlePointerDown = useCallback((event) => {
+    if (event.button !== 0 || !scrollContainerRef.current) {
+      return;
+    }
+
+    if (event.target !== wrapperRef.current && !event.target.dataset.dragScroller) {
+      return;
+    }
+
+    dragPositionRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startScrollLeft: scrollContainerRef.current.scrollLeft,
+    };
+
+    window.getSelection().removeAllRanges();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsDragScrolling(true);
+  }, []);
+
+  const handlePointerMove = useCallback((event) => {
+    const dragPosition = dragPositionRef.current;
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!dragPosition || !scrollContainer || dragPosition.pointerId !== event.pointerId) {
       return;
     }
 
     event.preventDefault();
-
-    window.scrollBy({
-      left: prevPositionRef.current - event.clientX,
-    });
-
-    prevPositionRef.current = event.clientX;
+    scrollContainer.scrollLeft = dragPosition.startScrollLeft + dragPosition.startX - event.clientX;
   }, []);
 
-  const handleWindowMouseRelease = useCallback(() => {
-    if (prevPositionRef.current === null) {
+  const handlePointerRelease = useCallback((event) => {
+    if (dragPositionRef.current?.pointerId !== event.pointerId) {
       return;
     }
 
-    prevPositionRef.current = null;
-    document.body.classList.remove(globalStyles.dragScrolling);
+    dragPositionRef.current = null;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    setIsDragScrolling(false);
+  }, []);
+
+  const handleWheel = useCallback((event) => {
+    const scrollContainer = scrollContainerRef.current;
+
+    if (!scrollContainer || !event.shiftKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) {
+      return;
+    }
+
+    event.preventDefault();
+    scrollContainer.scrollLeft += event.deltaY;
+  }, []);
+
+  const handleKeyDown = useCallback((event) => {
+    if (event.target !== event.currentTarget || !scrollContainerRef.current) {
+      return;
+    }
+
+    let nextScrollLeft;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        nextScrollLeft = scrollContainerRef.current.scrollLeft - 96;
+        break;
+      case 'ArrowRight':
+        nextScrollLeft = scrollContainerRef.current.scrollLeft + 96;
+        break;
+      case 'Home':
+        nextScrollLeft = 0;
+        break;
+      case 'End':
+        nextScrollLeft = scrollContainerRef.current.scrollWidth;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    scrollContainerRef.current.scrollTo({
+      left: nextScrollLeft,
+      behavior: 'smooth',
+    });
   }, []);
 
   useEffect(() => {
-    window.addEventListener('mousemove', handleWindowMouseMove);
+    const scrollContainer = document.scrollingElement;
+    const scrollStyleContainer = wrapperRef.current?.closest('#app');
 
-    window.addEventListener('mouseup', handleWindowMouseRelease);
-    window.addEventListener('blur', handleWindowMouseRelease);
-    window.addEventListener('contextmenu', handleWindowMouseRelease);
+    if (!scrollContainer || !scrollStyleContainer) {
+      return undefined;
+    }
+
+    scrollContainerRef.current = scrollContainer;
+    scrollStyleContainer.classList.add(styles.kanbanScroll);
+    updateScrollability();
+
+    const resizeObserver = new ResizeObserver(updateScrollability);
+    resizeObserver.observe(scrollContainer);
+    window.addEventListener('resize', updateScrollability);
 
     return () => {
-      window.removeEventListener('mousemove', handleWindowMouseMove);
-
-      window.removeEventListener('mouseup', handleWindowMouseRelease);
-      window.removeEventListener('blur', handleWindowMouseRelease);
-      window.removeEventListener('contextmenu', handleWindowMouseRelease);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateScrollability);
+      scrollStyleContainer.classList.remove(styles.kanbanScroll);
+      scrollContainerRef.current = null;
     };
-  }, [handleWindowMouseMove, handleWindowMouseRelease]);
+  }, [updateScrollability]);
+
+  useEffect(() => {
+    updateScrollability();
+  }, [isTimelinePanelExpanded, listIds, updateScrollability]);
 
   useDidUpdate(() => {
     if (isAddListOpened) {
-      window.scroll(document.body.scrollWidth, 0);
+      const scrollContainer = scrollContainerRef.current;
+
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          left: scrollContainer.scrollWidth,
+          behavior: 'smooth',
+        });
+      }
     }
   }, [listIds, isAddListOpened]);
 
+  /* A scrollable region is intentionally focusable so keyboard users can pan the board. */
+  /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       ref={wrapperRef}
       className={`${styles.wrapper} ${
-        isTimelinePanelExpanded
-          ? styles.timelinePanelExpanded
-          : styles.timelinePanelCollapsed
+        isHorizontallyScrollable ? styles.wrapperScrollable : ''
+      } ${isDragScrolling ? styles.wrapperDragScrolling : ''} ${
+        isTimelinePanelExpanded ? styles.timelinePanelExpanded : styles.timelinePanelCollapsed
       }`}
-      onMouseDown={handleMouseDown}
+      role="region"
+      aria-label={t('common.board')}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerRelease}
+      onPointerCancel={handlePointerRelease}
+      onWheel={handleWheel}
     >
       <div>
-        <DragDropContext
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <Droppable
-            droppableId="board"
-            type={DroppableTypes.LIST}
-            direction="horizontal"
-          >
+        <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <Droppable droppableId="board" type={DroppableTypes.LIST} direction="horizontal">
             {({ innerRef, droppableProps, placeholder }) => (
               <div
                 {...droppableProps} // eslint-disable-line react/jsx-props-no-spreading
@@ -260,16 +334,12 @@ const KanbanContent = React.memo(() => {
                       >
                         <PlusMathIcon className={styles.addListButtonIcon} />
                         <span className={styles.addListButtonText}>
-                          {listIds.length > 0
-                            ? t('action.addAnotherList')
-                            : t('action.addList')}
+                          {listIds.length > 0 ? t('action.addAnotherList') : t('action.addList')}
                         </span>
                       </button>
                     )}
                     {isFileDragOverAddList && (
-                      <div className={styles.addListDropOverlay}>
-                        {t('common.dropFilesHere')}
-                      </div>
+                      <div className={styles.addListDropOverlay}>{t('common.dropFilesHere')}</div>
                     )}
                   </div>
                 )}
@@ -280,6 +350,7 @@ const KanbanContent = React.memo(() => {
       </div>
     </div>
   );
+  /* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */
 });
 
 export default KanbanContent;
