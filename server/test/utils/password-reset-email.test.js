@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const util = require('util');
 
@@ -37,7 +38,8 @@ describe('password-reset email', () => {
       helpers: {
         utils: {
           makeTranslator: (language) => {
-            const translations = require(`../../config/locales/${language}.json`);
+            const localePath = path.resolve(__dirname, `../../config/locales/${language}.json`);
+            const translations = JSON.parse(fs.readFileSync(localePath, 'utf8'));
             return (key, ...values) => util.format(translations[key], ...values);
           },
           sendEmail: {
@@ -88,11 +90,11 @@ describe('password-reset email', () => {
       expect(email.html).to.include(`<html lang="${language}">`);
       expect(email.html).to.include('17');
       expect(email.text).to.include('17');
-      expect(email.html).to.include(
-        'https://boards.example.test/app/reset-password?token=secret-token',
+      expect(email.html.replace(/&#x3D;/g, '=')).to.include(
+        'https://boards.example.test/app/reset-password#token=secret-token',
       );
       expect(email.text).to.include(
-        'https://boards.example.test/app/reset-password?token=secret-token',
+        'https://boards.example.test/app/reset-password#token=secret-token',
       );
       expect(email.html.match(/secret-token/g)).to.have.lengthOf(1);
       expect(email.text.match(/secret-token/g)).to.have.lengthOf(1);
