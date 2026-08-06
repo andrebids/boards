@@ -30,7 +30,7 @@ module.exports = {
     },
     language: {
       type: 'string',
-      isIn: User.WELCOME_EMAIL_LANGUAGES,
+      isIn: User.EMAIL_LANGUAGES,
       required: true,
     },
   },

@@ -60,5 +60,12 @@
 	"email:welcome:loginEmail": "Login email",
 	"email:welcome:temporaryPassword": "Temporary password",
 	"email:welcome:openBoards": "OPEN BLACHERE BOARDS",
-	"email:welcome:securityNotice": "For your security, you will be asked to change this temporary password when you first sign in."
+	"email:welcome:securityNotice": "For your security, you will be asked to change this temporary password when you first sign in.",
+	"email:passwordReset:subject": "Reset your Blachere Boards password",
+	"email:passwordReset:preheader": "Use this link to choose a new password.",
+	"email:passwordReset:heading": "Password reset",
+	"email:passwordReset:introduction": "We received a request to change the password for your account.",
+	"email:passwordReset:button": "CHOOSE A NEW PASSWORD",
+	"email:passwordReset:expiry": "This link is valid for %s minutes and can only be used once.",
+	"email:passwordReset:security": "If you did not request this, ignore this email. Your password will not change."
 }

@@ -9,27 +9,6 @@ const path = require('path');
 const Handlebars = require('handlebars');
 const juice = require('juice');
 
-const TRANSLATIONS = {
-  'pt-PT': {
-    subject: 'Repor palavra-passe do Blachere Boards',
-    preheader: 'Utilize este link para escolher uma nova palavra-passe.',
-    heading: 'Reposição de palavra-passe',
-    introduction: 'Recebemos um pedido para alterar a palavra-passe da sua conta.',
-    button: 'Escolher nova palavra-passe',
-    expiry: 'Este link é válido durante 30 minutos e só pode ser utilizado uma vez.',
-    security: 'Se não fez este pedido, ignore este email. A sua palavra-passe não será alterada.',
-  },
-  'en-GB': {
-    subject: 'Reset your Blachere Boards password',
-    preheader: 'Use this link to choose a new password.',
-    heading: 'Password reset',
-    introduction: 'We received a request to change the password for your account.',
-    button: 'Choose a new password',
-    expiry: 'This link is valid for 30 minutes and can only be used once.',
-    security: 'If you did not request this, ignore this email. Your password will not change.',
-  },
-};
-
 let compiledTemplate;
 
 const getTemplate = () => {
@@ -62,8 +41,22 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const language = inputs.user.language === 'pt-PT' ? 'pt-PT' : 'en-GB';
-    const copy = TRANSLATIONS[language];
+    const language = User.EMAIL_LANGUAGES.includes(inputs.user.language)
+      ? inputs.user.language
+      : 'pt-PT';
+    const t = sails.helpers.utils.makeTranslator(language);
+    const translations = {
+      subject: t('email:passwordReset:subject'),
+      preheader: t('email:passwordReset:preheader'),
+      heading: t('email:passwordReset:heading'),
+      introduction: t('email:passwordReset:introduction'),
+      button: t('email:passwordReset:button'),
+      expiry: t(
+        'email:passwordReset:expiry',
+        sails.config.custom.passwordResetTokenExpiresInMinutes,
+      ),
+      security: t('email:passwordReset:security'),
+    };
     const resetUrl = new URL(sails.config.custom.baseUrl);
     resetUrl.pathname = `${resetUrl.pathname.replace(/\/$/, '')}/reset-password`;
     resetUrl.search = '';
@@ -72,23 +65,23 @@ module.exports = {
     const html = juice(
       getTemplate()({
         language,
-        subject: copy.subject,
-        preheader: copy.preheader,
-        heading: copy.heading,
-        introduction: copy.introduction,
-        button_label: copy.button,
-        expiry_notice: copy.expiry,
-        security_notice: copy.security,
+        subject: translations.subject,
+        preheader: translations.preheader,
+        heading: translations.heading,
+        introduction: translations.introduction,
+        button_label: translations.button,
+        expiry_notice: translations.expiry,
+        security_notice: translations.security,
         reset_url: resetUrl.toString(),
         logo_url: '{{logo_url}}',
       }),
     );
 
-    const text = `${copy.heading}\n\n${copy.introduction}\n\n${copy.button}: ${resetUrl}\n\n${copy.expiry}\n${copy.security}`;
+    const text = `${translations.heading}\n\n${translations.introduction}\n\n${translations.button}: ${resetUrl}\n\n${translations.expiry}\n${translations.security}`;
 
     return sails.helpers.utils.sendEmail.with({
       to: inputs.user.email,
-      subject: copy.subject,
+      subject: translations.subject,
       html,
       text,
       messageId: inputs.messageId,

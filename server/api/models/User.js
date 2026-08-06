@@ -74,7 +74,7 @@ const LANGUAGES = [
   'zh-TW',
 ];
 
-const WELCOME_EMAIL_LANGUAGES = ['en-GB', 'en-US', 'es-ES', 'fr-FR', 'it-IT', 'pt-PT', 'ru-RU'];
+const EMAIL_LANGUAGES = ['en-GB', 'en-US', 'es-ES', 'fr-FR', 'it-IT', 'pt-PT', 'ru-RU'];
 
 const PRIVATE_FIELD_NAMES = ['email', 'isSsoUser', 'mustChangePassword', 'welcomeEmailSentAt'];
 
@@ -101,7 +101,7 @@ module.exports = {
   ProjectOrders,
   NotificationLevels,
   LANGUAGES,
-  WELCOME_EMAIL_LANGUAGES,
+  EMAIL_LANGUAGES,
   PRIVATE_FIELD_NAMES,
   PERSONAL_FIELD_NAMES,
   OIDC,

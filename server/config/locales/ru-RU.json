@@ -27,5 +27,12 @@
 	"email:welcome:loginEmail": "Электронная почта для входа",
 	"email:welcome:temporaryPassword": "Временный пароль",
 	"email:welcome:openBoards": "ОТКРЫТЬ BLACHERE BOARDS",
-	"email:welcome:securityNotice": "В целях безопасности при первом входе вам потребуется изменить этот временный пароль."
+	"email:welcome:securityNotice": "В целях безопасности при первом входе вам потребуется изменить этот временный пароль.",
+	"email:passwordReset:subject": "Сброс пароля Blachere Boards",
+	"email:passwordReset:preheader": "Используйте эту ссылку, чтобы выбрать новый пароль.",
+	"email:passwordReset:heading": "Сброс пароля",
+	"email:passwordReset:introduction": "Мы получили запрос на изменение пароля вашей учётной записи.",
+	"email:passwordReset:button": "ВЫБРАТЬ НОВЫЙ ПАРОЛЬ",
+	"email:passwordReset:expiry": "Эта ссылка действительна в течение %s минут и может быть использована только один раз.",
+	"email:passwordReset:security": "Если вы не отправляли этот запрос, проигнорируйте письмо. Ваш пароль не будет изменён."
 }

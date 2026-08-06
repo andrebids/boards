@@ -24,5 +24,12 @@
   "email:welcome:loginEmail": "E-mail di accesso",
   "email:welcome:temporaryPassword": "Password temporanea",
   "email:welcome:openBoards": "APRI BLACHERE BOARDS",
-  "email:welcome:securityNotice": "Per la tua sicurezza, al primo accesso ti verrà richiesto di modificare questa password temporanea."
+  "email:welcome:securityNotice": "Per la tua sicurezza, al primo accesso ti verrà richiesto di modificare questa password temporanea.",
+  "email:passwordReset:subject": "Reimposta la password di Blachere Boards",
+  "email:passwordReset:preheader": "Usa questo link per scegliere una nuova password.",
+  "email:passwordReset:heading": "Reimpostazione della password",
+  "email:passwordReset:introduction": "Abbiamo ricevuto una richiesta di modifica della password del tuo account.",
+  "email:passwordReset:button": "SCEGLI UNA NUOVA PASSWORD",
+  "email:passwordReset:expiry": "Questo link è valido per %s minuti e può essere utilizzato una sola volta.",
+  "email:passwordReset:security": "Se non hai effettuato questa richiesta, ignora questa e-mail. La tua password non verrà modificata."
 }

@@ -39,7 +39,7 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const language = User.WELCOME_EMAIL_LANGUAGES.includes(inputs.user.language)
+    const language = User.EMAIL_LANGUAGES.includes(inputs.user.language)
       ? inputs.user.language
       : 'pt-PT';
 

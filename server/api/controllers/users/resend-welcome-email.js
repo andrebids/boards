@@ -42,7 +42,7 @@ module.exports = {
     if (
       user.isSsoUser ||
       user.email === sails.config.custom.defaultAdminEmail ||
-      !User.WELCOME_EMAIL_LANGUAGES.includes(user.language)
+      !User.EMAIL_LANGUAGES.includes(user.language)
     ) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
