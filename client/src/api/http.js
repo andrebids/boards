@@ -20,9 +20,12 @@ const createResponseError = (body, statusCode) => {
 
 // TODO: add all methods
 ['GET', 'POST', 'DELETE'].forEach((method) => {
-  http[method.toLowerCase()] = (url, data, headers) => {
+  http[method.toLowerCase()] = (url, data, headers, options = {}) => {
     const abortController = new AbortController();
-    const timeoutId = window.setTimeout(() => abortController.abort(), REQUEST_TIMEOUT);
+    const timeoutId = window.setTimeout(
+      () => abortController.abort(),
+      options.timeout || REQUEST_TIMEOUT,
+    );
     const formData =
       data &&
       Object.keys(data).reduce((result, key) => {

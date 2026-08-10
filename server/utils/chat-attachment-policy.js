@@ -1,6 +1,8 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+const { isVideoFile } = require('./video-file');
+
 const ALLOWED_EXTENSIONS = Object.freeze([
   'aac',
   'avif',
@@ -21,6 +23,7 @@ const ALLOWED_EXTENSIONS = Object.freeze([
   'ogg',
   'pdf',
   'png',
+  'psd',
   'pptx',
   'tif',
   'tiff',
@@ -89,6 +92,7 @@ const EXPECTED_CONTENT_KIND = Object.freeze({
   ogg: 'ogg',
   pdf: 'pdf',
   png: 'png',
+  psd: 'psd',
   pptx: 'pptx',
   tif: 'tiff',
   tiff: 'tiff',
@@ -103,6 +107,8 @@ const ZIP_END_OF_CENTRAL_DIRECTORY = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
 const MAX_ZIP_CENTRAL_DIRECTORY_BYTES = 4 * 1024 * 1024;
 const MAX_TEXT_SAMPLE_BYTES = 64 * 1024;
 const CHAT_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
+const PSD_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
+const VIDEO_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
 const UNSAFE_OOXML_ENTRY_PARTS = ['/activex/', '/vbadata.xml', '/vbaproject.bin'];
 
 const startsWith = (buffer, signature) =>
@@ -231,6 +237,28 @@ const looksLikeText = (buffer) => {
   return buffer.length === 0 || controlBytes / buffer.length < 0.01;
 };
 
+const getAttachmentMaxBytes = (filename, extension, limits) => {
+  if (extension === 'psd') {
+    return limits.psd;
+  }
+  if (isVideoFile(filename)) {
+    return limits.video;
+  }
+
+  return limits.default;
+};
+
+const getAttachmentTooLargeReason = (filename, extension) => {
+  if (extension === 'psd') {
+    return 'psdAttachmentTooLarge';
+  }
+  if (isVideoFile(filename)) {
+    return 'videoAttachmentTooLarge';
+  }
+
+  return 'attachmentTooLarge';
+};
+
 const detectContentKind = async (filePath) => {
   const fileHandle = await fs.open(filePath, 'r');
 
@@ -239,6 +267,7 @@ const detectContentKind = async (filePath) => {
     const header = await readPart(fileHandle, Math.min(size, 512), 0);
 
     if (startsWith(header, Buffer.from('%PDF-'))) return 'pdf';
+    if (startsWith(header, Buffer.from('8BPS'))) return 'psd';
     if (startsWith(header, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
       return 'png';
     }
@@ -301,7 +330,14 @@ const detectContentKind = async (filePath) => {
   }
 };
 
-const validateChatAttachment = async ({ fd, filename, size }) => {
+const validateChatAttachment = async ({
+  fd,
+  filename,
+  size,
+  maxBytes = CHAT_ATTACHMENT_MAX_BYTES,
+  psdMaxBytes = PSD_ATTACHMENT_MAX_BYTES,
+  videoMaxBytes = VIDEO_ATTACHMENT_MAX_BYTES,
+}) => {
   const extension = getExtension(filename);
 
   if (
@@ -312,8 +348,16 @@ const validateChatAttachment = async ({ fd, filename, size }) => {
     return { isValid: false, reason: 'extensionNotAllowed' };
   }
 
-  if (Number.isFinite(size) && size > CHAT_ATTACHMENT_MAX_BYTES) {
-    return { isValid: false, reason: 'attachmentTooLarge' };
+  const attachmentMaxBytes = getAttachmentMaxBytes(filename, extension, {
+    default: maxBytes,
+    psd: psdMaxBytes,
+    video: videoMaxBytes,
+  });
+  if (Number.isFinite(size) && size > attachmentMaxBytes) {
+    return {
+      isValid: false,
+      reason: getAttachmentTooLargeReason(filename, extension),
+    };
   }
 
   let contentKind;
@@ -333,6 +377,8 @@ const validateChatAttachment = async ({ fd, filename, size }) => {
 module.exports = {
   ALLOWED_EXTENSIONS,
   CHAT_ATTACHMENT_MAX_BYTES,
+  PSD_ATTACHMENT_MAX_BYTES,
+  VIDEO_ATTACHMENT_MAX_BYTES,
   DANGEROUS_EXTENSIONS,
   getExtension,
   hasDangerousIntermediateExtension,

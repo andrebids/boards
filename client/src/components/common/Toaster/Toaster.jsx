@@ -4,10 +4,8 @@
  */
 
 import React from 'react';
-import {
-  Toaster as HotToaster,
-  ToastBar as HotToastBar,
-} from 'react-hot-toast';
+import { resolveValue, Toaster as HotToaster, ToastBar as HotToastBar } from 'react-hot-toast';
+import { Message } from 'semantic-ui-react';
 
 import ToastTypes from '../../../constants/ToastTypes';
 import EmptyTrashToast from './EmptyTrashToast';
@@ -18,7 +16,7 @@ const TOAST_BY_TYPE = {
 
 const Toaster = React.memo(() => (
   <HotToaster>
-    {toast => (
+    {(toast) => (
       <HotToastBar
         toast={toast}
         style={{
@@ -29,7 +27,20 @@ const Toaster = React.memo(() => (
         }}
       >
         {() => {
-          const Toast = TOAST_BY_TYPE[toast.message.type];
+          const Toast = TOAST_BY_TYPE[toast.message?.type];
+
+          if (!Toast) {
+            return (
+              <Message
+                visible
+                negative={toast.type === 'error'}
+                positive={toast.type === 'success'}
+                size="tiny"
+              >
+                {resolveValue(toast.message, toast)}
+              </Message>
+            );
+          }
 
           // eslint-disable-next-line react/jsx-props-no-spreading
           return <Toast {...toast.message.params} id={toast.id} />;

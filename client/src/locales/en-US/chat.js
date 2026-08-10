@@ -139,7 +139,9 @@ export default {
       viewAllMembers: 'View all {{count}} members',
       unavailable: 'Unavailable',
       unmute: 'Turn notifications back on',
-      attachmentTooLarge: 'Files cannot be larger than 25 MB.',
+      attachmentTooLarge: 'Files cannot be larger than {{size}} MB.',
+      psdAttachmentTooLarge: 'PSD files cannot be larger than {{size}} MB.',
+      videoAttachmentTooLarge: 'Videos cannot be larger than {{size}} MB.',
       unreadMessages_one: '{{count}} unread message',
       unreadMessages_other: '{{count}} unread messages',
       unsupportedAttachmentType:

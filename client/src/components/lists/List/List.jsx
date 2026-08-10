@@ -27,7 +27,10 @@ import DraggableCard from '../../cards/DraggableCard';
 import AddCard from '../../cards/AddCard';
 import ArchiveCardsStep from '../../cards/ArchiveCardsStep';
 import PlusMathIcon from '../../../assets/images/plus-math-icon.svg?react';
-import { processSupportedFiles } from '../../../utils/file-helpers';
+import {
+  buildProjectCardDataFromFile,
+  processSupportedFiles,
+} from '../../../utils/file-helpers';
 
 import styles from './List.module.scss';
 import globalStyles from '../../../styles.module.scss';
@@ -195,10 +198,7 @@ const List = React.memo(({ id, index }) => {
         // Processar arquivos sequencialmente para melhor controle
         for (let i = 0; i < processedFiles.length; i++) {
           const fileData = processedFiles[i];
-          const cardData = {
-            name: fileData.name,
-            type: 'story', // Adicionar tipo padrão
-          };
+          const cardData = buildProjectCardDataFromFile(fileData);
 
           console.log(`🎴 Criando card ${i + 1}/${processedFiles.length}:`, cardData);
           console.log(

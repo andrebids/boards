@@ -3,8 +3,48 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const path = require('path');
+const { rimraf } = require('rimraf');
+
 const { isUrl } = require('../../../utils/validators');
 const { idInput } = require('../../../utils/inputs');
+const { isVideoFile } = require('../../../utils/video-file');
+
+const bytesToMiB = (bytes) => Math.floor(bytes / (1024 * 1024));
+
+const isPsdFile = (filename) => path.extname(filename || '').toLowerCase() === '.psd';
+const isArchiveFile = (filename) =>
+  ['.rar', '.zip'].includes(path.extname(filename || '').toLowerCase());
+
+const getUploadLimit = (filename) => {
+  if (isPsdFile(filename)) {
+    return sails.config.custom.psdAttachmentMaxBytes;
+  }
+  if (isVideoFile(filename)) {
+    return sails.config.custom.videoAttachmentMaxBytes;
+  }
+  if (isArchiveFile(filename)) {
+    return sails.config.custom.archiveAttachmentMaxBytes;
+  }
+
+  return sails.config.custom.attachmentMaxBytes;
+};
+
+const getFileTypeLabel = (filename) => {
+  if (isPsdFile(filename)) {
+    return 'ficheiro PSD';
+  }
+  if (isVideoFile(filename)) {
+    return 'vídeo';
+  }
+  if (isArchiveFile(filename)) {
+    return 'ficheiro comprimido';
+  }
+
+  return 'ficheiro';
+};
+
+const discardFiles = (files) => Promise.allSettled(files.map(({ fd }) => rimraf(fd)));
 
 const Errors = {
   NOT_ENOUGH_RIGHTS: {
@@ -74,7 +114,7 @@ module.exports = {
       .getPathToProjectById(inputs.cardId)
       .intercept('pathNotFound', () => Errors.CARD_NOT_FOUND);
 
-            const boardMembership = await sails.models.boardmembership.qm.getOneByBoardIdAndUserId(
+    const boardMembership = await sails.models.boardmembership.qm.getOneByBoardIdAndUserId(
       board.id,
       currentUser.id,
     );
@@ -91,9 +131,30 @@ module.exports = {
     if (inputs.type === Attachment.Types.FILE) {
       let files;
       try {
-        files = await sails.helpers.utils.receiveFile('file', this.req);
+        files = await sails.helpers.utils.receiveFile.with({
+          paramName: 'file',
+          req: this.req,
+          maxBytes: Math.max(
+            sails.config.custom.attachmentMaxBytes,
+            sails.config.custom.psdAttachmentMaxBytes,
+            sails.config.custom.videoAttachmentMaxBytes,
+            sails.config.custom.archiveAttachmentMaxBytes,
+          ),
+        });
       } catch (error) {
-        return exits.uploadError(error.message); // TODO: add error
+        if (error.code === 'E_EXCEEDS_UPLOAD_LIMIT') {
+          return exits.uploadError(
+            `O ficheiro excede o limite máximo de ${bytesToMiB(
+              Math.max(
+                sails.config.custom.psdAttachmentMaxBytes,
+                sails.config.custom.videoAttachmentMaxBytes,
+                sails.config.custom.archiveAttachmentMaxBytes,
+              ),
+            )} MB.`,
+          );
+        }
+
+        return exits.uploadError(error.message || 'Não foi possível receber o ficheiro.');
       }
 
       if (files.length === 0) {
@@ -101,8 +162,17 @@ module.exports = {
       }
 
       const file = _.last(files);
+      const uploadLimit = getUploadLimit(file.filename);
+      if (Number.isFinite(file.size) && file.size > uploadLimit) {
+        await discardFiles(files);
+
+        const fileTypeLabel = getFileTypeLabel(file.filename);
+        return exits.uploadError(
+          `O ${fileTypeLabel} não pode ter mais de ${bytesToMiB(uploadLimit)} MB.`,
+        );
+      }
+
       data = await sails.helpers.attachments.processUploadedFile(file);
-      
     } else if (inputs.type === Attachment.Types.LINK) {
       if (!inputs.url) {
         throw Errors.URL_MUST_BE_PRESENT;

@@ -1,4 +1,5 @@
 import {
+  buildProjectCardDataFromFile,
   preventFileDropPropagation,
   processSupportedFiles,
   validateImageFiles,
@@ -11,6 +12,19 @@ const createFile = (index, type = 'image/jpeg', extension = 'jpg') => ({
 });
 
 describe('file helpers', () => {
+  test('always builds dropped-file cards as projects', () => {
+    const fileData = { name: 'TRANSVERSAL 3' };
+
+    expect(buildProjectCardDataFromFile(fileData)).toEqual({
+      name: 'TRANSVERSAL 3',
+      type: 'project',
+    });
+    expect(buildProjectCardDataFromFile(fileData, '  Natal  ')).toEqual({
+      name: 'Natal',
+      type: 'project',
+    });
+  });
+
   test('prevents a nested file drop from reaching the parent list', () => {
     const event = {
       preventDefault: jest.fn(),

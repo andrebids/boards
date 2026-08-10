@@ -63,6 +63,23 @@ module.exports.custom = {
   backgroundImagesPathSegment: 'public/background-images',
   attachmentsPathSegment: 'private/attachments',
 
+  attachmentMaxBytes: envToPositiveNumber(process.env.ATTACHMENT_MAX_BYTES, 25 * 1024 * 1024),
+
+  psdAttachmentMaxBytes: envToPositiveNumber(
+    process.env.PSD_ATTACHMENT_MAX_BYTES,
+    500 * 1024 * 1024,
+  ),
+
+  videoAttachmentMaxBytes: envToPositiveNumber(
+    process.env.VIDEO_ATTACHMENT_MAX_BYTES,
+    250 * 1024 * 1024,
+  ),
+
+  archiveAttachmentMaxBytes: envToPositiveNumber(
+    process.env.ARCHIVE_ATTACHMENT_MAX_BYTES,
+    500 * 1024 * 1024,
+  ),
+
   chatAttachmentMaxBytes: envToPositiveNumber(
     process.env.CHAT_ATTACHMENT_MAX_BYTES,
     25 * 1024 * 1024,

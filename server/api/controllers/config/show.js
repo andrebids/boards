@@ -44,6 +44,12 @@ module.exports = {
         item: sails.helpers.config.presentOne(
           {
             oidc,
+            attachmentLimits: {
+              archive: sails.config.custom.archiveAttachmentMaxBytes,
+              default: sails.config.custom.attachmentMaxBytes,
+              psd: sails.config.custom.psdAttachmentMaxBytes,
+              video: sails.config.custom.videoAttachmentMaxBytes,
+            },
             passwordResetEnabled:
               sails.config.custom.passwordResetEnabled &&
               sails.hooks.smtp.isEnabled() &&

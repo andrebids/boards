@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+import { CardTypes } from '../constants/Enums';
+
 export const IMAGE_TYPES = [
   'image/jpeg',
   'image/jpg',
@@ -170,3 +172,8 @@ export const processSupportedFiles = files => {
     isImage: isImageFile(file),
   }));
 };
+
+export const buildProjectCardDataFromFile = (fileData, name) => ({
+  name: name?.trim() || fileData.name,
+  type: CardTypes.PROJECT,
+});

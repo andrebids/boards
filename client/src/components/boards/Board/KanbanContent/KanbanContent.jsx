@@ -51,6 +51,7 @@ const KanbanContent = React.memo(() => {
 
   const wrapperRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  const topScrollbarWrapperRef = useRef(null);
   const topScrollbarRef = useRef(null);
   const topScrollbarDragRef = useRef(null);
   const dragPositionRef = useRef(null);
@@ -169,7 +170,13 @@ const KanbanContent = React.memo(() => {
 
   const syncTopScrollbar = useCallback(() => {
     if (topScrollbarRef.current && scrollContainerRef.current) {
-      topScrollbarRef.current.value = scrollContainerRef.current.scrollLeft;
+      const { scrollLeft } = scrollContainerRef.current;
+
+      topScrollbarRef.current.value = scrollLeft;
+
+      if (topScrollbarWrapperRef.current) {
+        topScrollbarWrapperRef.current.style.transform = `translate3d(${scrollLeft}px, 0, 0)`;
+      }
     }
   }, []);
 
@@ -431,7 +438,7 @@ const KanbanContent = React.memo(() => {
       onWheel={handleWheel}
     >
       {scrollMetrics.isScrollable && (
-        <div className={styles.topScrollbarWrapper}>
+        <div ref={topScrollbarWrapperRef} className={styles.topScrollbarWrapper}>
           <input
             ref={topScrollbarRef}
             className={styles.topScrollbar}

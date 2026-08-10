@@ -6,6 +6,8 @@ const { expect } = require('chai');
 const {
   ALLOWED_EXTENSIONS,
   CHAT_ATTACHMENT_MAX_BYTES,
+  PSD_ATTACHMENT_MAX_BYTES,
+  VIDEO_ATTACHMENT_MAX_BYTES,
   validateChatAttachment,
 } = require('../../utils/chat-attachment-policy');
 
@@ -71,6 +73,10 @@ describe('Chat attachment policy', () => {
       extension: 'docx',
       isValid: true,
     });
+    expect(await validateBuffer('design.psd', Buffer.from('8BPS\0\x01content'))).to.include({
+      extension: 'psd',
+      isValid: true,
+    });
   });
 
   it('rejects executable, script, archive and macro-enabled extensions', async () => {
@@ -125,6 +131,39 @@ describe('Chat attachment policy', () => {
     expect(await validateBuffer('brief.pdf', pdf, CHAT_ATTACHMENT_MAX_BYTES + 1)).to.deep.equal({
       isValid: false,
       reason: 'attachmentTooLarge',
+    });
+  });
+
+  it('allows PSD attachments up to 500 MiB and rejects larger ones', async () => {
+    const psd = Buffer.from('8BPS\0\x01content');
+
+    expect(await validateBuffer('design.psd', psd, PSD_ATTACHMENT_MAX_BYTES)).to.include({
+      extension: 'psd',
+      isValid: true,
+    });
+    expect(await validateBuffer('design.psd', psd, PSD_ATTACHMENT_MAX_BYTES + 1)).to.deep.equal({
+      isValid: false,
+      reason: 'psdAttachmentTooLarge',
+    });
+  });
+
+  it('rejects a non-PSD file renamed with a PSD extension', async () => {
+    expect(await validateBuffer('fake.psd', Buffer.from('%PDF-1.7\ncontent'))).to.deep.equal({
+      isValid: false,
+      reason: 'contentMismatch',
+    });
+  });
+
+  it('allows MP4 attachments up to 250 MiB and rejects larger ones', async () => {
+    const mp4 = Buffer.concat([Buffer.alloc(4), Buffer.from('ftypisom'), Buffer.from('content')]);
+
+    expect(await validateBuffer('video.mp4', mp4, VIDEO_ATTACHMENT_MAX_BYTES)).to.include({
+      extension: 'mp4',
+      isValid: true,
+    });
+    expect(await validateBuffer('video.mp4', mp4, VIDEO_ATTACHMENT_MAX_BYTES + 1)).to.deep.equal({
+      isValid: false,
+      reason: 'videoAttachmentTooLarge',
     });
   });
 });

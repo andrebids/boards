@@ -15,7 +15,6 @@ import styles from './SelectCardType.module.scss';
 
 const DESCRIPTION_BY_TYPE = {
   [CardTypes.PROJECT]: 'common.taskAssignmentAndProjectCompletion',
-  [CardTypes.STORY]: 'common.referenceDataAndKnowledgeStorage',
 };
 
 const SelectCardType = React.memo(({ value, onSelect }) => {
@@ -32,7 +31,7 @@ const SelectCardType = React.memo(({ value, onSelect }) => {
 
   return (
     <Menu secondary vertical className={styles.menu}>
-      {[CardTypes.PROJECT, CardTypes.STORY].map(type => (
+      {[CardTypes.PROJECT].map(type => (
         <Menu.Item
           key={type}
           value={type}

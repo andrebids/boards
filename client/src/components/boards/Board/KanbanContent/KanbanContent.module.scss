@@ -135,10 +135,10 @@
     .topScrollbarWrapper {
       box-sizing: border-box;
       height: 14px;
-      left: 20px;
+      margin-left: -20px;
       padding: 1px 0 3px;
-      position: sticky;
-      width: calc(100vw - 40px);
+      position: relative;
+      width: 100vw;
       z-index: 1002;
     }
 
@@ -163,9 +163,11 @@
       &::-webkit-slider-thumb {
         appearance: none;
         background: var(--app-dark-surface-hover, #303947);
-        border: 1px solid rgba(255, 255, 255, 0.16);
+        background-clip: padding-box;
+        border: 1px solid transparent;
         border-radius: 999px;
         box-sizing: border-box;
+        box-shadow: none;
         height: 8px;
         margin-top: -2px;
         width: var(--scroll-thumb-width);
@@ -174,6 +176,12 @@
       &:hover::-webkit-slider-thumb,
       &:focus-visible::-webkit-slider-thumb {
         background: #465263;
+        background-clip: padding-box;
+      }
+
+      &:active::-webkit-slider-thumb {
+        background: #566477;
+        background-clip: padding-box;
       }
 
       &::-moz-range-track {
@@ -186,11 +194,24 @@
 
       &::-moz-range-thumb {
         background: var(--app-dark-surface-hover, #303947);
-        border: 1px solid rgba(255, 255, 255, 0.16);
+        background-clip: padding-box;
+        border: 1px solid transparent;
         border-radius: 999px;
         box-sizing: border-box;
+        box-shadow: none;
         height: 8px;
         width: var(--scroll-thumb-width);
+      }
+
+      &:hover::-moz-range-thumb,
+      &:focus-visible::-moz-range-thumb {
+        background: #465263;
+        background-clip: padding-box;
+      }
+
+      &:active::-moz-range-thumb {
+        background: #566477;
+        background-clip: padding-box;
       }
 
       &:focus-visible {
@@ -204,7 +225,7 @@
       padding-right: 320px;
 
       .topScrollbarWrapper {
-        width: calc(100vw - 348px);
+        width: calc(100vw - 320px);
       }
     }
 
@@ -221,7 +242,7 @@
         padding-right: 280px;
 
         .topScrollbarWrapper {
-          width: calc(100vw - 308px);
+          width: calc(100vw - 280px);
         }
       }
 

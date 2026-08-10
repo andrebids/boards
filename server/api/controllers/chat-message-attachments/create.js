@@ -22,6 +22,9 @@ const Errors = {
   ATTACHMENT_TOO_LARGE: {
     attachmentTooLarge: 'File cannot be larger than 25 MB',
   },
+  PSD_ATTACHMENT_TOO_LARGE: {
+    psdAttachmentTooLarge: 'PSD file cannot be larger than 500 MB',
+  },
 };
 
 module.exports = {
@@ -40,6 +43,7 @@ module.exports = {
     attachmentLimitReached: { responseType: 'unprocessableEntity' },
     unsupportedFileType: { responseType: 'unprocessableEntity' },
     attachmentTooLarge: { responseType: 'unprocessableEntity' },
+    psdAttachmentTooLarge: { responseType: 'unprocessableEntity' },
     uploadError: { responseType: 'unprocessableEntity' },
   },
 
@@ -117,7 +121,11 @@ module.exports = {
       files = await sails.helpers.utils.receiveFile.with({
         paramName: 'file',
         req: this.req,
-        maxBytes: sails.config.custom.chatAttachmentMaxBytes,
+        maxBytes: Math.max(
+          sails.config.custom.chatAttachmentMaxBytes,
+          sails.config.custom.psdAttachmentMaxBytes,
+          sails.config.custom.videoAttachmentMaxBytes,
+        ),
       });
     } catch (error) {
       sails.log.error('[CHAT_UPLOAD][RECEIVE_ERROR]', {
@@ -142,7 +150,12 @@ module.exports = {
       throw Errors.ATTACHMENT_LIMIT_REACHED;
     }
 
-    const validation = await validateChatAttachment(files[0]);
+    const validation = await validateChatAttachment({
+      ...files[0],
+      maxBytes: sails.config.custom.chatAttachmentMaxBytes,
+      psdMaxBytes: sails.config.custom.psdAttachmentMaxBytes,
+      videoMaxBytes: sails.config.custom.videoAttachmentMaxBytes,
+    });
     if (!validation.isValid) {
       await rimraf(files[0].fd);
       if (validation.reason === 'attachmentTooLarge') {
@@ -153,6 +166,28 @@ module.exports = {
           durationMs: Date.now() - startedAt,
         });
         throw Errors.ATTACHMENT_TOO_LARGE;
+      }
+      if (validation.reason === 'psdAttachmentTooLarge') {
+        sails.log.warn('[CHAT_UPLOAD][FILE_SIZE_REJECTED]', {
+          ...logContext,
+          reason: validation.reason,
+          size: files[0].size,
+          durationMs: Date.now() - startedAt,
+        });
+        throw Errors.PSD_ATTACHMENT_TOO_LARGE;
+      }
+      if (validation.reason === 'videoAttachmentTooLarge') {
+        sails.log.warn('[CHAT_UPLOAD][FILE_SIZE_REJECTED]', {
+          ...logContext,
+          reason: validation.reason,
+          size: files[0].size,
+          durationMs: Date.now() - startedAt,
+        });
+        return exits.uploadError(
+          `O vídeo não pode ter mais de ${Math.floor(
+            sails.config.custom.videoAttachmentMaxBytes / (1024 * 1024),
+          )} MB.`,
+        );
       }
       sails.log.warn('[CHAT_UPLOAD][FILE_TYPE_REJECTED]', {
         ...logContext,

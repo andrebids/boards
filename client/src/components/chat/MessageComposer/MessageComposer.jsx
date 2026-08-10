@@ -20,8 +20,11 @@ import LazyEmojiPicker, {
 import { getClipboardImageFiles } from '../utils';
 import {
   CHAT_ATTACHMENT_ACCEPT,
+  getChatAttachmentMaxBytes,
   isChatAttachmentAllowed,
+  isChatPsdAttachment,
   isChatAttachmentTooLarge,
+  isChatVideoAttachment,
 } from '../attachmentPolicy';
 
 import styles from './MessageComposer.module.scss';
@@ -114,6 +117,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   const members = useSelector(selectors.selectChatMembersForCurrentProject);
   const selectConversationById = useMemo(() => selectors.makeSelectChatConversationById(), []);
   const conversation = useSelector((state) => selectConversationById(state, conversationId));
+  const { attachmentLimits = {} } = useSelector(selectors.selectConfig) || {};
   const mentionUsers = useMemo(() => {
     const participantIds = conversation?.participantUserIds || [];
     const allowedMembers =
@@ -199,15 +203,46 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
     (selectedFiles) => {
       const candidateFiles = Array.isArray(selectedFiles) ? selectedFiles : [selectedFiles];
       const typeAllowedFiles = candidateFiles.filter(isChatAttachmentAllowed);
-      const oversizedFiles = typeAllowedFiles.filter(isChatAttachmentTooLarge);
-      const allowedFiles = typeAllowedFiles.filter((file) => !isChatAttachmentTooLarge(file));
+      const oversizedFiles = typeAllowedFiles.filter((file) =>
+        isChatAttachmentTooLarge(file, attachmentLimits),
+      );
+      const allowedFiles = typeAllowedFiles.filter(
+        (file) => !isChatAttachmentTooLarge(file, attachmentLimits),
+      );
 
       const errors = [];
       if (typeAllowedFiles.length !== candidateFiles.length) {
         errors.push(t('chat.unsupportedAttachmentType'));
       }
       if (oversizedFiles.length > 0) {
-        errors.push(t('chat.attachmentTooLarge'));
+        if (oversizedFiles.some(isChatPsdAttachment)) {
+          const file = oversizedFiles.find(isChatPsdAttachment);
+          errors.push(
+            t('chat.psdAttachmentTooLarge', {
+              size: Math.floor(getChatAttachmentMaxBytes(file, attachmentLimits) / 1048576),
+            }),
+          );
+        }
+        if (oversizedFiles.some(isChatVideoAttachment)) {
+          const file = oversizedFiles.find(isChatVideoAttachment);
+          errors.push(
+            t('chat.videoAttachmentTooLarge', {
+              size: Math.floor(getChatAttachmentMaxBytes(file, attachmentLimits) / 1048576),
+            }),
+          );
+        }
+        if (
+          oversizedFiles.some((file) => !isChatPsdAttachment(file) && !isChatVideoAttachment(file))
+        ) {
+          const file = oversizedFiles.find(
+            (candidate) => !isChatPsdAttachment(candidate) && !isChatVideoAttachment(candidate),
+          );
+          errors.push(
+            t('chat.attachmentTooLarge', {
+              size: Math.floor(getChatAttachmentMaxBytes(file, attachmentLimits) / 1048576),
+            }),
+          );
+        }
       }
 
       setAttachmentError(errors.length > 0 ? errors.join(' ') : null);
@@ -216,7 +251,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
       }
       setIsAttachmentMenuOpen(false);
     },
-    [t],
+    [attachmentLimits, t],
   );
   const handlePaste = useCallback(
     (event) => {

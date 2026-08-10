@@ -18,6 +18,7 @@ export const CHAT_ATTACHMENT_ALLOWED_EXTENSIONS = Object.freeze([
   'ogg',
   'pdf',
   'png',
+  'psd',
   'pptx',
   'tif',
   'tiff',
@@ -29,6 +30,10 @@ export const CHAT_ATTACHMENT_ALLOWED_EXTENSIONS = Object.freeze([
 ]);
 
 export const CHAT_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
+export const PSD_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
+export const VIDEO_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
+
+const VIDEO_EXTENSIONS = new Set(['3g2', '3gp', 'm4v', 'mov', 'mp4', 'ogg', 'webm']);
 
 const DANGEROUS_EXTENSIONS = new Set([
   'apk',
@@ -94,5 +99,24 @@ export const isChatAttachmentAllowed = (file) => {
   return !parts.slice(1, -1).some((part) => DANGEROUS_EXTENSIONS.has(part));
 };
 
-export const isChatAttachmentTooLarge = (file) =>
-  Number.isFinite(file?.size) && file.size > CHAT_ATTACHMENT_MAX_BYTES;
+export const isChatPsdAttachment = (file) => getChatAttachmentExtension(file?.name) === 'psd';
+
+export const isChatVideoAttachment = (file) =>
+  VIDEO_EXTENSIONS.has(getChatAttachmentExtension(file?.name));
+
+export const getChatAttachmentMaxBytes = (file, limits = {}) => {
+  if (isChatPsdAttachment(file)) {
+    return limits.psd || PSD_ATTACHMENT_MAX_BYTES;
+  }
+  if (isChatVideoAttachment(file)) {
+    return limits.video || VIDEO_ATTACHMENT_MAX_BYTES;
+  }
+
+  return limits.default || CHAT_ATTACHMENT_MAX_BYTES;
+};
+
+export const isChatAttachmentTooLarge = (file, limits) => {
+  const maxBytes = getChatAttachmentMaxBytes(file, limits);
+
+  return Number.isFinite(file?.size) && file.size > maxBytes;
+};

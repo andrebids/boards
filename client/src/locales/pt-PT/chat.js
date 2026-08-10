@@ -139,7 +139,9 @@ export default {
       viewAllMembers: 'Ver todos os {{count}} membros',
       unavailable: 'Indisponível',
       unmute: 'Voltar a ativar notificações',
-      attachmentTooLarge: 'O ficheiro não pode ter mais de 25 MB.',
+      attachmentTooLarge: 'O ficheiro não pode ter mais de {{size}} MB.',
+      psdAttachmentTooLarge: 'O ficheiro PSD não pode ter mais de {{size}} MB.',
+      videoAttachmentTooLarge: 'O vídeo não pode ter mais de {{size}} MB.',
       unreadMessages_one: '{{count}} mensagem não lida',
       unreadMessages_other: '{{count}} mensagens não lidas',
       unsupportedAttachmentType:

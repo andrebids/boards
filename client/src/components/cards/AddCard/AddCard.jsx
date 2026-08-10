@@ -15,22 +15,19 @@ import { Button } from '../../../lib/custom-ui';
 import {
   useClickAwayListener,
   useDidUpdate,
-  usePrevious,
   useToggle,
 } from '../../../lib/hooks';
-import { usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
-import { useClosable, useForm, useNestedRef } from '../../../hooks';
+import { useForm, useNestedRef } from '../../../hooks';
 import { isModifierKeyPressed } from '../../../utils/event-helpers';
-import { CardTypeIcons } from '../../../constants/Icons';
-import { MentionPlaceholders } from '../../../constants/Enums';
+import { CardTypes, MentionPlaceholders } from '../../../constants/Enums';
 import MentionTriggers from '../../../constants/MentionTriggers';
 import {
+  buildProjectCardDataFromFile,
   preventFileDropPropagation,
   processSupportedFiles,
 } from '../../../utils/file-helpers';
-import SelectCardTypeStep from '../SelectCardTypeStep';
 import UserAvatar from '../../users/UserAvatar';
 import LabelChip from '../../labels/LabelChip';
 
@@ -42,27 +39,17 @@ const DEFAULT_DATA = {
 
 const AddCard = React.memo(
   ({ isOpened, className, onCreate, onCreateWithAttachment, onClose }) => {
-    const {
-      defaultCardType: defaultType,
-      limitCardTypesToDefaultOne: limitTypesToDefaultOne,
-    } = useSelector(selectors.selectCurrentBoard);
-
     // Dados Redux para mentions
     const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
     const labels = useSelector(selectors.selectLabelsForCurrentBoard);
 
     const [t] = useTranslation();
-    const prevDefaultType = usePrevious(defaultType);
-
-    const [data, handleFieldChange, setData] = useForm(() => ({
+    const [data, , setData] = useForm(() => ({
       ...DEFAULT_DATA,
-      type: defaultType,
+      type: CardTypes.PROJECT,
     }));
 
     const [focusNameFieldState, focusNameField] = useToggle();
-    const [isClosableActiveRef, activateClosable, deactivateClosable] =
-      useClosable();
-
     // Estados para drag & drop
     const [isDragOver, setIsDragOver] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -105,7 +92,6 @@ const AddCard = React.memo(
     const nameMentionsRef = useRef(null);
     const nameInputRef = useRef(null);
     const [submitButtonRef, handleSubmitButtonRef] = useNestedRef();
-    const [selectTypeButtonRef, handleSelectTypeButtonRef] = useNestedRef();
 
     // Callbacks para mentions
     const handleUserAdd = useCallback((id, display, startPos, endPos) => {
@@ -324,7 +310,7 @@ const AddCard = React.memo(
         const cleanData = {
           ...data,
           name: data.name.trim(),
-          type: defaultType, // Sempre usar o tipo padrão do board para consistência
+          type: CardTypes.PROJECT,
         };
 
         if (!cleanData.name) {
@@ -339,7 +325,7 @@ const AddCard = React.memo(
         // Limpar estado do formulário e arrays de mentions
         setData({
           ...DEFAULT_DATA,
-          type: defaultType,
+          type: CardTypes.PROJECT,
         });
 
         setUsersToAdd([]);
@@ -354,7 +340,6 @@ const AddCard = React.memo(
       [
         onCreate,
         onClose,
-        defaultType,
         data,
         setData,
         focusNameField,
@@ -366,16 +351,6 @@ const AddCard = React.memo(
     const handleSubmit = useCallback(() => {
       submit();
     }, [submit]);
-
-    const handleTypeSelect = useCallback(
-      type => {
-        setData(prevData => ({
-          ...prevData,
-          type,
-        }));
-      },
-      [setData]
-    );
 
     const handleFieldKeyDown = useCallback(
       event => {
@@ -395,20 +370,13 @@ const AddCard = React.memo(
       [onClose, submit]
     );
 
-    const handleSelectTypeClose = useCallback(() => {
-      deactivateClosable();
-      if (nameInputRef.current) {
-        nameInputRef.current.focus();
-      }
-    }, [deactivateClosable]);
-
     const handleAwayClick = useCallback(() => {
-      if (!isOpened || isClosableActiveRef.current) {
+      if (!isOpened) {
         return;
       }
 
       onClose();
-    }, [isOpened, onClose, isClosableActiveRef]);
+    }, [isOpened, onClose]);
 
     const handleClickAwayCancel = useCallback(() => {
       if (nameInputRef.current) {
@@ -417,7 +385,7 @@ const AddCard = React.memo(
     }, []);
 
     const clickAwayProps = useClickAwayListener(
-      [nameFieldRef, submitButtonRef, selectTypeButtonRef],
+      [nameFieldRef, submitButtonRef],
       handleAwayClick,
       handleClickAwayCancel
     );
@@ -459,11 +427,7 @@ const AddCard = React.memo(
 
         try {
           for (const fileData of processedFiles) {
-            const cardName = data.name.trim() || fileData.name;
-            const cardData = {
-              name: cardName,
-              type: defaultType, // Sempre usar o tipo padrão do board para consistência
-            };
+            const cardData = buildProjectCardDataFromFile(fileData, data.name);
 
             // Usar a action createCardWithAttachment para criar card com anexo
             if (onCreateWithAttachment) {
@@ -478,7 +442,7 @@ const AddCard = React.memo(
           setIsProcessing(false);
         }
       },
-      [data.name, defaultType, onCreate, onCreateWithAttachment]
+      [data.name, onCreate, onCreateWithAttachment]
     );
 
     useEffect(() => {
@@ -487,25 +451,11 @@ const AddCard = React.memo(
       }
     }, [isOpened]);
 
-    useEffect(() => {
-      if (!isOpened && defaultType !== prevDefaultType) {
-        setData(prevData => ({
-          ...prevData,
-          type: defaultType,
-        }));
-      }
-    }, [isOpened, defaultType, prevDefaultType, setData]);
-
     useDidUpdate(() => {
       if (nameInputRef.current) {
         nameInputRef.current.focus();
       }
     }, [focusNameFieldState]);
-
-    const SelectCardTypePopup = usePopup(SelectCardTypeStep, {
-      onOpen: activateClosable,
-      onClose: handleSelectTypeClose,
-    });
 
 
     return (
@@ -676,24 +626,6 @@ const AddCard = React.memo(
             className={styles.button}
             disabled={isProcessing}
           />
-          <SelectCardTypePopup
-            defaultValue={data.type}
-            onSelect={handleTypeSelect}
-          >
-            <Button variant="secondary"
-              {...clickAwayProps}
-              ref={handleSelectTypeButtonRef}
-              type="button"
-              disabled={limitTypesToDefaultOne || isProcessing}
-              className={classNames(styles.button, styles.selectTypeButton)}
-            >
-              <Icon
-                name={CardTypeIcons[data.type]}
-                className={styles.selectTypeButtonIcon}
-              />
-              {t(`common.${data.type}`)}
-            </Button>
-          </SelectCardTypePopup>
         </div>
       </Form>
     );

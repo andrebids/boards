@@ -87,14 +87,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
-    const values = _.pick(inputs, [
-      'type',
-      'position',
-      'name',
-      'description',
-      'dueDate',
-      'stopwatch',
-    ]);
+    const values = {
+      ..._.pick(inputs, ['position', 'name', 'description', 'dueDate', 'stopwatch']),
+      type: Card.Types.PROJECT,
+    };
 
     const card = await sails.helpers.cards.createOne
       .with({
