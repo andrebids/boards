@@ -16,6 +16,7 @@ import { ClosableContext } from '../../../../contexts';
 import { isListArchiveOrTrash } from '../../../../utils/record-helpers';
 import { BoardMembershipRoles } from '../../../../constants/Enums';
 import VideoPlayer from '../../../common/VideoPlayer';
+import TimeAgo from '../../../common/TimeAgo';
 
 import styles from './CardImageCarousel.module.scss';
 
@@ -39,6 +40,12 @@ const getThumbnailUrl = (attachment, preferredSize = '720') => {
     attachment.data.thumbnailUrls[`outside${fallbackSize}`] ||
     null
   );
+};
+
+const getAttachmentTimestamp = (attachment) => {
+  const timestamp = attachment.createdAt?.getTime?.() ?? new Date(attachment.createdAt).getTime();
+
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 };
 
 const CardImageCarousel = React.memo(() => {
@@ -91,22 +98,67 @@ const CardImageCarousel = React.memo(() => {
   const [loadedImageKeys, setLoadedImageKeys] = useState({});
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
+  const [thumbnailScrollState, setThumbnailScrollState] = useState({
+    hasOverflow: false,
+    canScrollPrevious: false,
+    canScrollNext: false,
+  });
   const [activateClosable, deactivateClosable] = useContext(ClosableContext);
   const rootRef = useRef(null);
+  const thumbnailsRef = useRef(null);
   const actionToolbarRef = useRef(null);
   const actionsButtonRef = useRef(null);
   const actionsMenuRef = useRef(null);
   const pointerStartXRef = useRef(null);
   const didSwipeRef = useRef(false);
 
-  const selectedIndex = Math.max(
-    0,
-    images.findIndex((image) => image.id === selectedId),
+  const latestImage = useMemo(
+    () =>
+      images.reduce(
+        (latest, image) =>
+          !latest || getAttachmentTimestamp(image) > getAttachmentTimestamp(latest)
+            ? image
+            : latest,
+        null,
+      ),
+    [images],
   );
+  const selectedImageIndex = images.findIndex((image) => image.id === selectedId);
+  const selectedIndex =
+    selectedImageIndex >= 0
+      ? selectedImageIndex
+      : Math.max(
+          0,
+          images.findIndex((image) => image.id === latestImage?.id),
+        );
   const selectedImage = images[selectedIndex];
   const hasMultipleImages = images.length > 1;
   const selectedIsVideo = selectedImage ? isVideoAttachment(selectedImage) : false;
   const isCover = selectedImage?.id === card.coverAttachmentId;
+
+  const updateThumbnailScrollState = useCallback(() => {
+    const thumbnailsElement = thumbnailsRef.current;
+
+    if (!thumbnailsElement) {
+      return;
+    }
+
+    const maximumScrollLeft = thumbnailsElement.scrollWidth - thumbnailsElement.clientWidth;
+    const hasOverflow = maximumScrollLeft > 2;
+    const nextState = {
+      hasOverflow,
+      canScrollPrevious: hasOverflow && thumbnailsElement.scrollLeft > 2,
+      canScrollNext: hasOverflow && thumbnailsElement.scrollLeft < maximumScrollLeft - 2,
+    };
+
+    setThumbnailScrollState((currentState) =>
+      currentState.hasOverflow === nextState.hasOverflow &&
+      currentState.canScrollPrevious === nextState.canScrollPrevious &&
+      currentState.canScrollNext === nextState.canScrollNext
+        ? currentState
+        : nextState,
+    );
+  }, []);
 
   useEffect(() => {
     if (!images.length) {
@@ -115,14 +167,66 @@ const CardImageCarousel = React.memo(() => {
     }
 
     if (!images.some((image) => image.id === selectedId)) {
-      setSelectedId(images[0].id);
+      setSelectedId(latestImage.id);
     }
-  }, [images, selectedId]);
+  }, [images, latestImage, selectedId]);
 
   useEffect(() => {
     setIsActionsMenuOpen(false);
     setIsDeleteConfirmationOpen(false);
   }, [selectedId]);
+
+  useEffect(() => {
+    const thumbnailsElement = thumbnailsRef.current;
+
+    if (!thumbnailsElement) {
+      return undefined;
+    }
+
+    const frameId = window.requestAnimationFrame(updateThumbnailScrollState);
+    const resizeObserver = new ResizeObserver(updateThumbnailScrollState);
+
+    resizeObserver.observe(thumbnailsElement);
+    thumbnailsElement.addEventListener('scroll', updateThumbnailScrollState, {
+      passive: true,
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+      thumbnailsElement.removeEventListener('scroll', updateThumbnailScrollState);
+    };
+  }, [images.length, updateThumbnailScrollState]);
+
+  useEffect(() => {
+    const thumbnailsElement = thumbnailsRef.current;
+    const selectedThumbnail = thumbnailsElement?.querySelector(
+      `[data-carousel-thumbnail="${selectedIndex}"]`,
+    );
+
+    if (!selectedThumbnail) {
+      return;
+    }
+
+    const thumbnailLeft = selectedThumbnail.offsetLeft;
+    const thumbnailRight = thumbnailLeft + selectedThumbnail.offsetWidth;
+    const thumbnailsStyles = window.getComputedStyle(thumbnailsElement);
+    const scrollPaddingLeft = Number.parseFloat(thumbnailsStyles.scrollPaddingLeft) || 0;
+    const scrollPaddingRight = Number.parseFloat(thumbnailsStyles.scrollPaddingRight) || 0;
+    const visibleLeft = thumbnailsElement.scrollLeft + scrollPaddingLeft;
+    const visibleRight =
+      thumbnailsElement.scrollLeft + thumbnailsElement.clientWidth - scrollPaddingRight;
+
+    if (thumbnailLeft >= visibleLeft && thumbnailRight <= visibleRight) {
+      return;
+    }
+
+    selectedThumbnail.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    });
+  }, [selectedIndex]);
 
   useEffect(() => {
     if (!isActionsMenuOpen) {
@@ -181,6 +285,19 @@ const CardImageCarousel = React.memo(() => {
   const selectNext = useCallback(() => {
     selectIndex(selectedIndex + 1);
   }, [selectIndex, selectedIndex]);
+
+  const scrollThumbnails = useCallback((direction) => {
+    const thumbnailsElement = thumbnailsRef.current;
+
+    if (!thumbnailsElement) {
+      return;
+    }
+
+    thumbnailsElement.scrollBy({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      left: direction * Math.max(78, thumbnailsElement.clientWidth * 0.75),
+    });
+  }, []);
 
   const handleBeforeGalleryOpen = useCallback(
     (gallery) => {
@@ -649,58 +766,105 @@ const CardImageCarousel = React.memo(() => {
           })}
         </div>
         {hasMultipleImages && (
-          <div className={styles.thumbnails} role="group" aria-label={t('common.cardMedia')}>
-            {images.map((image, index) => {
-              const isSelected = index === selectedIndex;
-              const isVideo = isVideoAttachment(image);
-              const thumbnailUrl = getThumbnailUrl(image, '360');
-              let thumbnailNode;
+          <div
+            className={classNames(
+              styles.thumbnailRail,
+              thumbnailScrollState.canScrollPrevious && styles.thumbnailRailHasPrevious,
+              thumbnailScrollState.canScrollNext && styles.thumbnailRailHasNext,
+            )}
+          >
+            {thumbnailScrollState.hasOverflow && (
+              <button
+                type="button"
+                className={classNames(styles.thumbnailNavigation, styles.thumbnailPrevious)}
+                aria-label={t('action.previousMedia')}
+                disabled={!thumbnailScrollState.canScrollPrevious}
+                onClick={() => scrollThumbnails(-1)}
+              >
+                <Icon fitted name="chevron left" aria-hidden="true" />
+              </button>
+            )}
+            <div
+              ref={thumbnailsRef}
+              className={styles.thumbnails}
+              role="group"
+              aria-label={t('common.cardMedia')}
+            >
+              {images.map((image, index) => {
+                const isSelected = index === selectedIndex;
+                const isVideo = isVideoAttachment(image);
+                const thumbnailUrl = getThumbnailUrl(image, '360');
+                let thumbnailNode;
 
-              if (thumbnailUrl) {
-                thumbnailNode = <img src={thumbnailUrl} alt="" className={styles.thumbnailImage} />;
-              } else if (isVideo) {
-                thumbnailNode = (
-                  <video
-                    src={image.data.url}
-                    muted
-                    playsInline
-                    preload="metadata"
-                    aria-hidden="true"
-                    className={styles.thumbnailImage}
-                  />
-                );
-              } else {
-                thumbnailNode = (
-                  <span className={styles.thumbnailFallback} aria-hidden="true">
-                    <Icon fitted name="file image outline" />
-                  </span>
-                );
-              }
-
-              return (
-                <button
-                  key={image.id}
-                  type="button"
-                  tabIndex={isSelected ? 0 : -1}
-                  aria-current={isSelected ? 'true' : undefined}
-                  aria-label={t('common.mediaPosition', {
-                    current: index + 1,
-                    total: images.length,
-                  })}
-                  data-carousel-thumbnail={index}
-                  className={classNames(styles.thumbnail, isSelected && styles.thumbnailSelected)}
-                  onKeyDown={handleKeyDown}
-                  onClick={() => setSelectedId(image.id)}
-                >
-                  {thumbnailNode}
-                  {isVideo && (
-                    <span className={styles.thumbnailVideoIndicator} aria-hidden="true">
-                      <Icon fitted name="play" />
+                if (thumbnailUrl) {
+                  thumbnailNode = (
+                    <img
+                      src={thumbnailUrl}
+                      alt=""
+                      loading="lazy"
+                      className={styles.thumbnailImage}
+                    />
+                  );
+                } else if (isVideo) {
+                  thumbnailNode = (
+                    <video
+                      src={image.data.url}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      aria-hidden="true"
+                      className={styles.thumbnailImage}
+                    />
+                  );
+                } else {
+                  thumbnailNode = (
+                    <span className={styles.thumbnailFallback} aria-hidden="true">
+                      <Icon fitted name="file image outline" />
                     </span>
-                  )}
-                </button>
-              );
-            })}
+                  );
+                }
+
+                return (
+                  <button
+                    key={image.id}
+                    type="button"
+                    tabIndex={isSelected ? 0 : -1}
+                    aria-current={isSelected ? 'true' : undefined}
+                    aria-label={t('common.mediaPosition', {
+                      current: index + 1,
+                      total: images.length,
+                    })}
+                    data-carousel-thumbnail={index}
+                    className={classNames(styles.thumbnail, isSelected && styles.thumbnailSelected)}
+                    onKeyDown={handleKeyDown}
+                    onClick={() => setSelectedId(image.id)}
+                  >
+                    <span className={styles.thumbnailPreview}>
+                      {thumbnailNode}
+                      {isVideo && (
+                        <span className={styles.thumbnailVideoIndicator} aria-hidden="true">
+                          <Icon fitted name="play" />
+                        </span>
+                      )}
+                    </span>
+                    <span className={styles.thumbnailTime}>
+                      <TimeAgo date={image.createdAt} />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {thumbnailScrollState.hasOverflow && (
+              <button
+                type="button"
+                className={classNames(styles.thumbnailNavigation, styles.thumbnailNext)}
+                aria-label={t('action.nextMedia')}
+                disabled={!thumbnailScrollState.canScrollNext}
+                onClick={() => scrollThumbnails(1)}
+              >
+                <Icon fitted name="chevron right" aria-hidden="true" />
+              </button>
+            )}
           </div>
         )}
       </section>

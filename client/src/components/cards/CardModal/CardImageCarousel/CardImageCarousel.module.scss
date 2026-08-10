@@ -127,17 +127,14 @@
 
   .thumbnail {
     background: transparent;
-    border: 2px solid transparent;
-    border-radius: 13px;
+    border: 0;
+    border-radius: 11px;
     cursor: pointer;
     flex: 0 0 66px;
-    height: 58px;
-    overflow: hidden;
     padding: 0;
     position: relative;
     scroll-snap-align: start;
     transition:
-      border-color 160ms ease,
       opacity 160ms ease,
       transform 160ms ease;
 
@@ -149,6 +146,17 @@
       box-shadow: 0 0 0 3px rgba(22, 142, 241, 0.34);
       outline: none;
     }
+  }
+
+  .thumbnailPreview {
+    border: 2px solid transparent;
+    border-radius: 13px;
+    display: block;
+    height: 58px;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 160ms ease;
+    width: 66px;
   }
 
   .thumbnailImage {
@@ -191,7 +199,105 @@
   }
 
   .thumbnailSelected {
-    border-color: var(--card-modal-accent, #168ef1);
+    .thumbnailPreview {
+      border-color: var(--card-modal-accent, #168ef1);
+    }
+  }
+
+  .thumbnailTime {
+    color: var(--card-modal-muted, #a1a1aa);
+    display: block;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    line-height: 14px;
+    margin-top: 3px;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .thumbnailRail {
+    margin: 0 46px;
+    position: relative;
+
+    &::before,
+    &::after {
+      content: '';
+      height: 100%;
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      transition: opacity 140ms ease;
+      width: 28px;
+      z-index: 1;
+    }
+
+    &::before {
+      background: linear-gradient(to right, var(--card-modal-background, #101216), transparent);
+      left: 0;
+    }
+
+    &::after {
+      background: linear-gradient(to left, var(--card-modal-background, #101216), transparent);
+      right: 0;
+    }
+  }
+
+  .thumbnailRailHasPrevious::before,
+  .thumbnailRailHasNext::after {
+    opacity: 1;
+  }
+
+  .thumbnailNavigation {
+    align-items: center;
+    background: rgba(var(--glass-bg-strong-rgb), 0.94);
+    border: 1px solid var(--card-modal-border, transparent);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.16);
+    color: var(--card-modal-text, #f4f4f5);
+    cursor: pointer;
+    display: flex;
+    height: 36px;
+    justify-content: center;
+    padding: 0;
+    position: absolute;
+    top: 23px;
+    transition:
+      background-color 140ms ease,
+      color 140ms ease,
+      opacity 140ms ease,
+      transform 140ms ease;
+    width: 36px;
+    z-index: 2;
+
+    &:hover:not(:disabled) {
+      background: var(--card-modal-surface-hover, #202a38);
+      transform: scale(1.04);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px rgba(22, 142, 241, 0.34);
+      outline: none;
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.32;
+    }
+  }
+
+  .thumbnailPrevious {
+    left: -42px;
+  }
+
+  .thumbnailNext {
+    right: -42px;
   }
 
   .thumbnails {
@@ -200,6 +306,7 @@
     justify-content: safe center;
     overflow-x: auto;
     padding: 10px 3px 4px;
+    scroll-padding-inline: 30px;
     scroll-snap-type: x proximity;
     scrollbar-color: #b6bec4 transparent;
     scrollbar-width: thin;
@@ -433,6 +540,9 @@
     .navigation,
     .slide,
     .thumbnail,
+    .thumbnailNavigation,
+    .thumbnailRail::before,
+    .thumbnailRail::after,
     .mediaLoadingSpinner {
       animation: none;
       transition: none;
@@ -450,7 +560,11 @@
 
     .thumbnail {
       flex-basis: 60px;
+    }
+
+    .thumbnailPreview {
       height: 52px;
+      width: 60px;
     }
 
     .actionToolbar {
@@ -477,6 +591,36 @@
 
     .actionToolbar {
       margin-right: 0;
+    }
+
+    .thumbnailRail {
+      margin: 0;
+    }
+
+    .thumbnails {
+      scroll-padding-inline: 52px;
+    }
+
+    .thumbnailNavigation {
+      height: 44px;
+      top: 19px;
+      width: 44px;
+    }
+
+    .thumbnailPrevious {
+      left: 4px;
+    }
+
+    .thumbnailNext {
+      right: 4px;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .thumbnailNavigation {
+      height: 44px;
+      top: 19px;
+      width: 44px;
     }
   }
 }
