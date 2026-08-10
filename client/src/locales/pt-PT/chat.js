@@ -66,6 +66,7 @@ export default {
       emptyConversationDescription: 'As mensagens deste projeto ficam reunidas aqui.',
       emptyConversationTitle: 'Começa a conversa',
       failedRetry: 'Falhou · tentar novamente',
+      failedRetryWithReason: 'Falhou: {{reason}} · tentar novamente',
       forwardMessage: 'Encaminhar mensagem',
       forwardTo: 'Encaminhar para',
       forwarded: 'Encaminhada',
@@ -142,6 +143,9 @@ export default {
       attachmentTooLarge: 'O ficheiro não pode ter mais de {{size}} MB.',
       psdAttachmentTooLarge: 'O ficheiro PSD não pode ter mais de {{size}} MB.',
       videoAttachmentTooLarge: 'O vídeo não pode ter mais de {{size}} MB.',
+      uploadFailed: 'Não foi possível enviar o ficheiro.',
+      uploadNetworkError: 'Sem ligação durante o envio do ficheiro.',
+      uploadTimedOut: 'O envio do ficheiro demorou demasiado tempo.',
       unreadMessages_one: '{{count}} mensagem não lida',
       unreadMessages_other: '{{count}} mensagens não lidas',
       unsupportedAttachmentType:

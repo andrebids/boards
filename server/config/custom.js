@@ -26,6 +26,10 @@ const envToPositiveNumber = (value, defaultValue) => {
 };
 
 const parsedBasedUrl = new URL(process.env.BASE_URL);
+const designAttachmentMaxBytes = envToPositiveNumber(
+  process.env.DESIGN_ATTACHMENT_MAX_BYTES || process.env.PSD_ATTACHMENT_MAX_BYTES,
+  500 * 1024 * 1024,
+);
 
 module.exports.custom = {
   /**
@@ -65,10 +69,8 @@ module.exports.custom = {
 
   attachmentMaxBytes: envToPositiveNumber(process.env.ATTACHMENT_MAX_BYTES, 25 * 1024 * 1024),
 
-  psdAttachmentMaxBytes: envToPositiveNumber(
-    process.env.PSD_ATTACHMENT_MAX_BYTES,
-    500 * 1024 * 1024,
-  ),
+  designAttachmentMaxBytes,
+  psdAttachmentMaxBytes: designAttachmentMaxBytes,
 
   videoAttachmentMaxBytes: envToPositiveNumber(
     process.env.VIDEO_ATTACHMENT_MAX_BYTES,

@@ -24,6 +24,7 @@ import StopwatchChip from '../StopwatchChip';
 import LabelChip from '../../labels/LabelChip';
 import CustomFieldValueChip from '../../custom-field-values/CustomFieldValueChip';
 import CardMembers from './CardMembers';
+import getCoverThumbnailUrl from './cover-helpers';
 
 import styles from './ProjectContent.module.scss';
 
@@ -87,7 +88,7 @@ const ProjectContent = React.memo(({ cardId }) => {
 
   const coverUrl = useSelector(state => {
     const attachment = selectAttachmentById(state, card.coverAttachmentId);
-    return attachment && attachment.data.thumbnailUrls.outside360;
+    return getCoverThumbnailUrl(attachment);
   });
 
   const { listName, withCreator } = useSelector(state => {

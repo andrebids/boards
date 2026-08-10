@@ -66,6 +66,7 @@ export default {
       emptyConversationDescription: 'Messages from this project are collected here.',
       emptyConversationTitle: 'Start the conversation',
       failedRetry: 'Failed · try again',
+      failedRetryWithReason: 'Failed: {{reason}} · try again',
       forwardMessage: 'Forward message',
       forwardTo: 'Forward to',
       forwarded: 'Forwarded',
@@ -142,6 +143,9 @@ export default {
       attachmentTooLarge: 'Files cannot be larger than {{size}} MB.',
       psdAttachmentTooLarge: 'PSD files cannot be larger than {{size}} MB.',
       videoAttachmentTooLarge: 'Videos cannot be larger than {{size}} MB.',
+      uploadFailed: 'The file could not be uploaded.',
+      uploadNetworkError: 'The connection was lost while uploading the file.',
+      uploadTimedOut: 'The file upload took too long.',
       unreadMessages_one: '{{count}} unread message',
       unreadMessages_other: '{{count}} unread messages',
       unsupportedAttachmentType:

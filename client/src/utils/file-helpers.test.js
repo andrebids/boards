@@ -54,4 +54,14 @@ describe('file helpers', () => {
 
     expect(processSupportedFiles(files).map(({ file }) => file)).toEqual([files[0], files[2]]);
   });
+
+  test('accepts Photoshop, Illustrator and EPS design files by extension', () => {
+    const files = [
+      createFile(1, 'application/octet-stream', 'psd'),
+      createFile(2, 'application/octet-stream', 'ai'),
+      createFile(3, 'application/octet-stream', 'eps'),
+    ];
+
+    expect(validateSupportedFiles(files)).toEqual(files);
+  });
 });

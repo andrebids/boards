@@ -83,7 +83,8 @@ describe('attachment upload limit', () => {
     expect(custom.attachmentMaxBytes).to.equal(25 * 1024 * 1024);
   });
 
-  it('accepts PSD attachments up to 500 MiB by default', () => {
+  it('accepts design attachments up to 500 MiB by default', () => {
+    expect(custom.designAttachmentMaxBytes).to.equal(500 * 1024 * 1024);
     expect(custom.psdAttachmentMaxBytes).to.equal(500 * 1024 * 1024);
   });
 
@@ -108,6 +109,32 @@ describe('attachment upload limit', () => {
     expect(result.processedFile).to.equal(file);
     expect(result.uploadError).to.equal(undefined);
     expect(result.result.item.id).to.equal('attachment-1');
+  });
+
+  ['ai', 'eps'].forEach((extension) => {
+    it(`allows ${extension.toUpperCase()} files up to the 500 MiB design limit`, async () => {
+      const file = {
+        fd: path.join(__dirname, `missing-design.${extension}`),
+        filename: `design.${extension}`,
+        size: 400 * 1024 * 1024,
+      };
+
+      const result = await runFileUpload(file);
+
+      expect(result.processedFile).to.equal(file);
+      expect(result.uploadError).to.equal(undefined);
+    });
+  });
+
+  it('rejects Illustrator files above the 500 MiB design limit', async () => {
+    const result = await runFileUpload({
+      fd: path.join(__dirname, 'missing-large-design.ai'),
+      filename: 'large-design.ai',
+      size: 501 * 1024 * 1024,
+    });
+
+    expect(result.processedFile).to.equal(undefined);
+    expect(result.uploadError).to.equal('O ficheiro de design não pode ter mais de 500 MB.');
   });
 
   it('rejects a non-PSD attachment above the regular 25 MiB limit', async () => {

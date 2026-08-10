@@ -17,6 +17,7 @@ import { isListArchiveOrTrash } from '../../../../utils/record-helpers';
 import { BoardMembershipRoles } from '../../../../constants/Enums';
 import VideoPlayer from '../../../common/VideoPlayer';
 import TimeAgo from '../../../common/TimeAgo';
+import getDefaultMedia from './selection';
 
 import styles from './CardImageCarousel.module.scss';
 
@@ -40,12 +41,6 @@ const getThumbnailUrl = (attachment, preferredSize = '720') => {
     attachment.data.thumbnailUrls[`outside${fallbackSize}`] ||
     null
   );
-};
-
-const getAttachmentTimestamp = (attachment) => {
-  const timestamp = attachment.createdAt?.getTime?.() ?? new Date(attachment.createdAt).getTime();
-
-  return Number.isNaN(timestamp) ? 0 : timestamp;
 };
 
 const getLocalDateKey = (date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
@@ -117,16 +112,9 @@ const CardImageCarousel = React.memo(() => {
   const pointerStartXRef = useRef(null);
   const didSwipeRef = useRef(false);
 
-  const latestImage = useMemo(
-    () =>
-      images.reduce(
-        (latest, image) =>
-          !latest || getAttachmentTimestamp(image) > getAttachmentTimestamp(latest)
-            ? image
-            : latest,
-        null,
-      ),
-    [images],
+  const defaultImage = useMemo(
+    () => getDefaultMedia(images, card.coverAttachmentId),
+    [images, card.coverAttachmentId],
   );
   const temporalMetadataById = useMemo(() => {
     const dayGroups = new Map();
@@ -193,7 +181,7 @@ const CardImageCarousel = React.memo(() => {
       ? selectedImageIndex
       : Math.max(
           0,
-          images.findIndex((image) => image.id === latestImage?.id),
+          images.findIndex((image) => image.id === defaultImage?.id),
         );
   const selectedImage = images[selectedIndex];
   const hasMultipleImages = images.length > 1;
@@ -231,9 +219,9 @@ const CardImageCarousel = React.memo(() => {
     }
 
     if (!images.some((image) => image.id === selectedId)) {
-      setSelectedId(latestImage.id);
+      setSelectedId(defaultImage.id);
     }
-  }, [images, latestImage, selectedId]);
+  }, [defaultImage, images, selectedId]);
 
   useEffect(() => {
     setIsActionsMenuOpen(false);

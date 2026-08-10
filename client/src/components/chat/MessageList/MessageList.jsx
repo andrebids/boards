@@ -60,6 +60,24 @@ const formatDay = (value) =>
     year: 'numeric',
   }).format(new Date(value));
 
+const getDeliveryErrorMessage = (error, t) => {
+  if (error?.code === 'E_HTTP_TIMEOUT') {
+    return t('chat.uploadTimedOut');
+  }
+  if (error?.code === 'E_HTTP_NETWORK') {
+    return t('chat.uploadNetworkError');
+  }
+  if (
+    typeof error?.message === 'string' &&
+    error.message !== 'HTTP request failed' &&
+    error.message !== 'Invalid HTTP response'
+  ) {
+    return error.message;
+  }
+
+  return t('chat.uploadFailed');
+};
+
 const isSameDay = (first, second) => {
   const firstDate = new Date(first);
   const secondDate = new Date(second);
@@ -485,19 +503,22 @@ const MessageList = React.memo(
       [dispatch],
     );
 
-    const handleReactionMenuToggle = useCallback((event) => {
-      const { messageId } = event.currentTarget.dataset;
-      if (activeReactionMenuMessageId === messageId) {
-        setActiveReactionMenuMessageId(null);
-        setIsReactionEmojiPickerOpen(false);
-        setReactionEmojiPickerPosition(null);
-        return;
-      }
+    const handleReactionMenuToggle = useCallback(
+      (event) => {
+        const { messageId } = event.currentTarget.dataset;
+        if (activeReactionMenuMessageId === messageId) {
+          setActiveReactionMenuMessageId(null);
+          setIsReactionEmojiPickerOpen(false);
+          setReactionEmojiPickerPosition(null);
+          return;
+        }
 
-      setActiveReactionMenuMessageId(messageId);
-      setReactionEmojiPickerPosition(getReactionEmojiPickerPosition(event.currentTarget));
-      setIsReactionEmojiPickerOpen(true);
-    }, [activeReactionMenuMessageId]);
+        setActiveReactionMenuMessageId(messageId);
+        setReactionEmojiPickerPosition(getReactionEmojiPickerPosition(event.currentTarget));
+        setIsReactionEmojiPickerOpen(true);
+      },
+      [activeReactionMenuMessageId],
+    );
 
     const chooseReaction = useCallback(
       (messageId, emoji) => {
@@ -693,11 +714,7 @@ const MessageList = React.memo(
                   }`}
                 >
                   {!isOwn && !continuesNext && (
-                    <UserAvatar
-                      id={message.userId}
-                      size="tiny"
-                      className={styles.messageAvatar}
-                    />
+                    <UserAvatar id={message.userId} size="tiny" className={styles.messageAvatar} />
                   )}
                   {!isOwn && continuesNext && <span className={styles.avatarSpacer} />}
                   <div className={styles.messageContent}>
@@ -775,7 +792,8 @@ const MessageList = React.memo(
                         </button>
                         <div
                           ref={
-                            activeActionsMessageId === message.id || forwardingMessageId === message.id
+                            activeActionsMessageId === message.id ||
+                            forwardingMessageId === message.id
                               ? activeMessageActionsRef
                               : null
                           }
@@ -897,8 +915,7 @@ const MessageList = React.memo(
                             const url =
                               attachment.data?.url ||
                               `${Config.SERVER_BASE_URL}/api/chat-message-attachments/${attachment.id}/download`;
-                            const previewUrl =
-                              attachment.data?.thumbnailUrls?.outside360 || url;
+                            const previewUrl = attachment.data?.thumbnailUrls?.outside360 || url;
                             return (
                               <button
                                 type="button"
@@ -1026,11 +1043,14 @@ const MessageList = React.memo(
                         {message.isFailed && (
                           <button
                             type="button"
+                            title={getDeliveryErrorMessage(message.error, t)}
                             onClick={() =>
                               dispatch(entryActions.retryChatMessage(message.localId || message.id))
                             }
                           >
-                            {t('chat.failedRetry')}
+                            {t('chat.failedRetryWithReason', {
+                              reason: getDeliveryErrorMessage(message.error, t),
+                            })}
                           </button>
                         )}
                       </span>

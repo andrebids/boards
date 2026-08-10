@@ -47,6 +47,7 @@ module.exports = {
             attachmentLimits: {
               archive: sails.config.custom.archiveAttachmentMaxBytes,
               default: sails.config.custom.attachmentMaxBytes,
+              design: sails.config.custom.designAttachmentMaxBytes,
               psd: sails.config.custom.psdAttachmentMaxBytes,
               video: sails.config.custom.videoAttachmentMaxBytes,
             },

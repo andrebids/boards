@@ -96,7 +96,9 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
   if (!attachment.isPersisted) {
     return (
       <div className={classNames(styles.wrapper, styles.wrapperSubmitting)}>
-        <Loader inverted />
+        <Loader active inverted inline="centered">
+          {t('common.loading')}
+        </Loader>
       </div>
     );
   }

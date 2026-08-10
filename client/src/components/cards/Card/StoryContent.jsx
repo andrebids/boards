@@ -15,6 +15,7 @@ import { BoardViews, ListTypes } from '../../../constants/Enums';
 import LabelChip from '../../labels/LabelChip';
 import CustomFieldValueChip from '../../custom-field-values/CustomFieldValueChip';
 import CardMembers from './CardMembers';
+import getCoverThumbnailUrl from './cover-helpers';
 
 import styles from './StoryContent.module.scss';
 
@@ -73,7 +74,7 @@ const StoryContent = React.memo(({ cardId }) => {
 
   const coverUrl = useSelector((state) => {
     const attachment = selectAttachmentById(state, card.coverAttachmentId);
-    return attachment && attachment.data.thumbnailUrls.outside360;
+    return getCoverThumbnailUrl(attachment);
   });
 
   const descriptionText = useMemo(

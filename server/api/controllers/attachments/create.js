@@ -12,13 +12,14 @@ const { isVideoFile } = require('../../../utils/video-file');
 
 const bytesToMiB = (bytes) => Math.floor(bytes / (1024 * 1024));
 
-const isPsdFile = (filename) => path.extname(filename || '').toLowerCase() === '.psd';
+const isDesignFile = (filename) =>
+  ['.ai', '.eps', '.psd'].includes(path.extname(filename || '').toLowerCase());
 const isArchiveFile = (filename) =>
   ['.rar', '.zip'].includes(path.extname(filename || '').toLowerCase());
 
 const getUploadLimit = (filename) => {
-  if (isPsdFile(filename)) {
-    return sails.config.custom.psdAttachmentMaxBytes;
+  if (isDesignFile(filename)) {
+    return sails.config.custom.designAttachmentMaxBytes;
   }
   if (isVideoFile(filename)) {
     return sails.config.custom.videoAttachmentMaxBytes;
@@ -31,8 +32,8 @@ const getUploadLimit = (filename) => {
 };
 
 const getFileTypeLabel = (filename) => {
-  if (isPsdFile(filename)) {
-    return 'ficheiro PSD';
+  if (isDesignFile(filename)) {
+    return 'ficheiro de design';
   }
   if (isVideoFile(filename)) {
     return 'vídeo';
@@ -136,7 +137,7 @@ module.exports = {
           req: this.req,
           maxBytes: Math.max(
             sails.config.custom.attachmentMaxBytes,
-            sails.config.custom.psdAttachmentMaxBytes,
+            sails.config.custom.designAttachmentMaxBytes,
             sails.config.custom.videoAttachmentMaxBytes,
             sails.config.custom.archiveAttachmentMaxBytes,
           ),
@@ -146,7 +147,7 @@ module.exports = {
           return exits.uploadError(
             `O ficheiro excede o limite máximo de ${bytesToMiB(
               Math.max(
-                sails.config.custom.psdAttachmentMaxBytes,
+                sails.config.custom.designAttachmentMaxBytes,
                 sails.config.custom.videoAttachmentMaxBytes,
                 sails.config.custom.archiveAttachmentMaxBytes,
               ),
