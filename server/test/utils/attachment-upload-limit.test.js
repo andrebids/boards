@@ -18,9 +18,10 @@ global.sails = sails;
 
 const createAttachmentAction = require('../../api/controllers/attachments/create');
 
-const runFileUpload = async (file) => {
+const runFileUpload = async (file, inputOverrides = {}) => {
   let receivedMaxBytes;
   let processedFile;
+  let createOneInputs;
 
   sails.config.custom = custom;
   sails.helpers = {
@@ -49,7 +50,10 @@ const runFileUpload = async (file) => {
         return { filename: nextFile.filename };
       },
       createOne: {
-        with: async () => ({ id: 'attachment-1' }),
+        with: async (inputs) => {
+          createOneInputs = inputs;
+          return { id: 'attachment-1' };
+        },
       },
       presentOne: (attachment) => attachment,
     },
@@ -65,7 +69,7 @@ const runFileUpload = async (file) => {
   let uploadError;
   const result = await createAttachmentAction.fn.call(
     { req: { currentUser: { id: 'user-1' } } },
-    { cardId: 'card-1', type: FILE_TYPE, name: file.filename },
+    { cardId: 'card-1', type: FILE_TYPE, name: file.filename, ...inputOverrides },
     {
       success: (body) => body,
       uploadError: (message) => {
@@ -75,7 +79,7 @@ const runFileUpload = async (file) => {
     },
   );
 
-  return { processedFile, receivedMaxBytes, result, uploadError };
+  return { createOneInputs, processedFile, receivedMaxBytes, result, uploadError };
 };
 
 describe('attachment upload limit', () => {
@@ -109,6 +113,19 @@ describe('attachment upload limit', () => {
     expect(result.processedFile).to.equal(file);
     expect(result.uploadError).to.equal(undefined);
     expect(result.result.item.id).to.equal('attachment-1');
+  });
+
+  it('forwards the inline-comment flag so the image does not become the card cover', async () => {
+    const result = await runFileUpload(
+      {
+        fd: path.join(__dirname, 'missing-comment-image.png'),
+        filename: 'comment-image.png',
+        size: 1024,
+      },
+      { skipCover: true },
+    );
+
+    expect(result.createOneInputs.skipCover).to.equal(true);
   });
 
   ['ai', 'eps'].forEach((extension) => {

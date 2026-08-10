@@ -27,6 +27,10 @@ module.exports = {
     requestId: {
       type: 'string',
     },
+    skipCover: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
     request: {
       type: 'ref',
     },
@@ -80,7 +84,7 @@ module.exports = {
       // Não deixar o erro parar o processo
     }
 
-    if (!values.card.coverAttachmentId) {
+    if (!inputs.skipCover && !values.card.coverAttachmentId) {
       if (
         attachment.type === sails.models.attachment.Types.FILE &&
         (attachment.data.image || attachment.data.video)

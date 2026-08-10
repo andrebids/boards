@@ -88,6 +88,10 @@ module.exports = {
       isNotEmptyString: true,
       maxLength: 128,
     },
+    skipCover: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
   },
 
   exits: {
@@ -197,6 +201,7 @@ module.exports = {
         creatorUser: currentUser,
       },
       requestId: inputs.requestId,
+      skipCover: inputs.skipCover,
       request: this.req,
     });
 

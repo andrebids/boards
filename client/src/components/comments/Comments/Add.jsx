@@ -15,6 +15,7 @@ import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useForm } from '../../../hooks';
 import MarkdownEditor from '../../common/MarkdownEditor';
+import { uploadCommentImage } from './image-upload';
 
 import styles from './Add.module.scss';
 
@@ -27,6 +28,8 @@ const DEFAULT_DATA = {
 const Add = React.memo(({ onSubmit }) => {
   const defaultMode = useSelector((state) => selectors.selectCurrentUser(state).defaultEditorMode);
   const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
+  const accessToken = useSelector(selectors.selectAccessToken);
+  const { cardId } = useSelector(selectors.selectPath);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -97,6 +100,21 @@ const Add = React.memo(({ onSubmit }) => {
     [dispatch],
   );
 
+  const handleFileUpload = useCallback(
+    async (file) => {
+      const { attachment, requestId, url } = await uploadCommentImage({
+        cardId,
+        accessToken,
+        file,
+      });
+
+      dispatch(entryActions.handleAttachmentCreate(attachment, requestId));
+
+      return { url };
+    },
+    [accessToken, cardId, dispatch],
+  );
+
   const handleClickAwayCancel = useCallback(() => {}, []);
 
   const clickAwayProps = useClickAwayListener(
@@ -118,6 +136,7 @@ const Add = React.memo(({ onSubmit }) => {
               defaultValue={data.text}
               defaultMode={defaultMode}
               mentionUsers={mentionUsers}
+              fileUploadHandler={handleFileUpload}
               isError={isExceeded}
               onChange={handleEditorChange}
               onSubmit={handleSubmit}

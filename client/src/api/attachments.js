@@ -45,10 +45,15 @@ const createAttachment = (cardId, data, headers) =>
     item: transformAttachment(body.item),
   }));
 
-const createAttachmentWithFile = (cardId, { file, ...data }, requestId, headers) =>
+const createAttachmentWithFile = (
+  cardId,
+  { file, skipCover = false, ...data },
+  requestId,
+  headers,
+) =>
   http
     .post(
-      `/cards/${cardId}/attachments?requestId=${requestId}`,
+      `/cards/${cardId}/attachments?requestId=${requestId}${skipCover ? '&skipCover=true' : ''}`,
       {
         ...data,
         file,

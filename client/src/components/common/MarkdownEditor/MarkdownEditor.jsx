@@ -67,6 +67,7 @@ const MarkdownEditor = React.forwardRef(
       defaultValue,
       defaultMode,
       mentionUsers,
+      fileUploadHandler: customFileUploadHandler,
       isError,
       onChange,
       onSubmit,
@@ -105,7 +106,7 @@ const MarkdownEditor = React.forwardRef(
         linkify: true,
       },
       handlers: {
-        uploadFile: fileUploadHandler,
+        uploadFile: customFileUploadHandler,
       },
       markupConfig: {
         autocompletion: {
@@ -203,6 +204,7 @@ MarkdownEditor.propTypes = {
       name: PropTypes.string,
     }),
   ),
+  fileUploadHandler: PropTypes.func,
   isError: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
@@ -213,6 +215,7 @@ MarkdownEditor.propTypes = {
 MarkdownEditor.defaultProps = {
   defaultMode: EditorModes.WYSIWYG,
   mentionUsers: EMPTY_MENTION_USERS,
+  fileUploadHandler,
   isError: false,
   onModeChange: undefined,
 };
