@@ -26,7 +26,6 @@ import {
   Paperclip,
   Pencil,
   Quote,
-  Reply,
   SmilePlus,
   Trash2,
   X,
@@ -813,12 +812,6 @@ const MessageList = React.memo(
                           </button>
                           {activeActionsMessageId === message.id && (
                             <div className={styles.actionsMenu} role="menu">
-                              <button
-                                type="button"
-                                onClick={() => handleMessageAction('reply', message)}
-                              >
-                                <Reply aria-hidden="true" size={14} /> {t('chat.reply')}
-                              </button>
                               {isOwn && (
                                 <button
                                   type="button"

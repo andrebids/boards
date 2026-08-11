@@ -40,6 +40,7 @@ module.exports = {
 
   async fn(inputs) {
     const { values } = inputs;
+    let repositions = [];
 
     if (sails.helpers.lists.isFinite(inputs.list)) {
       if (_.isUndefined(values.position)) {
@@ -48,82 +49,20 @@ module.exports = {
 
       const cards = await Card.qm.getByListId(inputs.list.id);
 
-      const { position, repositions } = sails.helpers.utils.insertToPositionables(
-        values.position,
-        cards,
-      );
+      const insertion = sails.helpers.utils.insertToPositionables(values.position, cards);
 
-      values.position = position;
-
-      if (repositions.length > 0) {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const reposition of repositions) {
-          // eslint-disable-next-line no-await-in-loop
-          await Card.qm.updateOne(
-            {
-              id: reposition.record.id,
-              listId: reposition.record.listId,
-            },
-            {
-              position: reposition.position,
-            },
-          );
-
-          sails.sockets.broadcast(`board:${inputs.record.boardId}`, 'cardUpdate', {
-            item: {
-              id: reposition.record.id,
-              position: reposition.position,
-            },
-          });
-
-          // TODO: send webhooks
-        }
-      }
+      values.position = insertion.position;
+      repositions = insertion.repositions;
     }
 
-    let card = await Card.qm.createOne({
-      ..._.pick(inputs.record, [
-        'boardId',
-        'listId',
-        'prevListId',
-        'type',
-        'name',
-        'description',
-        'dueDate',
-        'stopwatch',
-      ]),
-      ...values,
-      creatorUserId: values.creatorUser.id,
-      listChangedAt: new Date().toISOString(),
-    });
-
     const cardMemberships = await CardMembership.qm.getByCardId(inputs.record.id);
-
-    const cardMembershipsValues = cardMemberships.map((cardMembership) => ({
-      ..._.pick(cardMembership, ['userId']),
-      cardId: card.id,
-    }));
-
-    const nextCardMemberships = await CardMembership.qm.create(cardMembershipsValues);
-
     const cardLabels = await CardLabel.qm.getByCardId(inputs.record.id);
-
-    const cardLabelsValues = cardLabels.map((cardLabel) => ({
-      ..._.pick(cardLabel, ['labelId']),
-      cardId: card.id,
-    }));
-
-    const nextCardLabels = await CardLabel.qm.create(cardLabelsValues);
-
     const taskLists = await TaskList.qm.getByCardId(inputs.record.id);
     const taskListIds = sails.helpers.utils.mapRecords(taskLists);
-
     const tasks = await Task.qm.getByTaskListIds(taskListIds);
     const attachments = await sails.models.attachment.qm.getByCardId(inputs.record.id);
-
     const customFieldGroups = await CustomFieldGroup.qm.getByCardId(inputs.record.id);
     const customFieldGroupIds = sails.helpers.utils.mapRecords(customFieldGroups);
-
     const customFields = await CustomField.qm.getByCustomFieldGroupIds(customFieldGroupIds);
     const customFieldValues = await CustomFieldValue.qm.getByCardId(inputs.record.id);
 
@@ -131,93 +70,198 @@ module.exports = {
       taskLists.length + attachments.length + customFieldGroups.length + customFields.length,
     );
 
-    const nextTaskListIdByTaskListId = {};
-    const nextTaskListsValues = await taskLists.map((taskList) => {
-      const id = ids.shift();
-      nextTaskListIdByTaskListId[taskList.id] = id;
-
-      return {
-        ..._.pick(taskList, ['position', 'name', 'showOnFrontOfCard']),
-        id,
-        cardId: card.id,
-      };
-    });
-
-    const nextTaskLists = await TaskList.qm.create(nextTaskListsValues);
-
-    const nextTasksValues = tasks.map((task) => ({
-      ..._.pick(task, ['assigneeUserId', 'position', 'name', 'isCompleted']),
-      taskListId: nextTaskListIdByTaskListId[task.taskListId],
-    }));
-
-    const nextTasks = await Task.qm.create(nextTasksValues);
-
-    const nextAttachmentIdByAttachmentId = {};
-    const nextAttachmentsValues = attachments.map((attachment) => {
-      const id = ids.shift();
-      nextAttachmentIdByAttachmentId[attachment.id] = id;
-
-      return {
-        ..._.pick(attachment, ['type', 'data', 'name']),
-        id,
-        cardId: card.id,
-        creatorUserId: card.creatorUserId,
-      };
-    });
-
-    const nextAttachments = await sails.models.attachment.qm.create(nextAttachmentsValues);
-
-    if (inputs.record.coverAttachmentId) {
-      const nextCoverAttachmentId = nextAttachmentIdByAttachmentId[inputs.record.coverAttachmentId];
-
-      if (nextCoverAttachmentId) {
-        card = await Card.qm.updateOne(card.id, {
-          coverAttachmentId: nextCoverAttachmentId,
-        });
+    const duplicated = await sails.getDatastore().transaction(async (db) => {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const reposition of repositions) {
+        // eslint-disable-next-line no-await-in-loop
+        await Card.qm
+          .updateOne(
+            {
+              id: reposition.record.id,
+              listId: reposition.record.listId,
+            },
+            {
+              position: reposition.position,
+            },
+          )
+          .usingConnection(db);
       }
-    }
 
-    const nextCustomFieldGroupIdByCustomFieldGroupId = {};
-    const nextCustomFieldGroupsValues = customFieldGroups.map((customFieldGroup) => {
-      const id = ids.shift();
-      nextCustomFieldGroupIdByCustomFieldGroupId[customFieldGroup.id] = id;
+      let card = await Card.qm
+        .createOne({
+          ..._.pick(inputs.record, [
+            'boardId',
+            'listId',
+            'prevListId',
+            'type',
+            'name',
+            'description',
+            'dueDate',
+            'stopwatch',
+          ]),
+          ...values,
+          creatorUserId: values.creatorUser.id,
+          listChangedAt: new Date().toISOString(),
+        })
+        .usingConnection(db);
 
-      return {
-        ..._.pick(customFieldGroup, ['baseCustomFieldGroupId', 'position', 'name']),
-        id,
+      const cardMembershipsValues = cardMemberships.map((cardMembership) => ({
+        ..._.pick(cardMembership, ['userId']),
         cardId: card.id,
-      };
-    });
+      }));
+      const nextCardMemberships = await CardMembership.qm
+        .create(cardMembershipsValues)
+        .usingConnection(db);
 
-    const nextCustomFieldGroups = await CustomFieldGroup.qm.create(nextCustomFieldGroupsValues);
+      const cardLabelsValues = cardLabels.map((cardLabel) => ({
+        ..._.pick(cardLabel, ['labelId']),
+        cardId: card.id,
+      }));
+      const nextCardLabels = await CardLabel.qm.create(cardLabelsValues).usingConnection(db);
 
-    const nextCustomFieldIdByCustomFieldId = {};
-    const nextCustomFieldsValues = customFields.map((customField) => {
-      const id = ids.shift();
-      nextCustomFieldIdByCustomFieldId[customField.id] = id;
+      const nextTaskListIdByTaskListId = {};
+      const nextTaskListsValues = taskLists.map((taskList) => {
+        const id = ids.shift();
+        nextTaskListIdByTaskListId[taskList.id] = id;
+
+        return {
+          ..._.pick(taskList, ['position', 'name', 'showOnFrontOfCard']),
+          id,
+          cardId: card.id,
+        };
+      });
+      const nextTaskLists = await TaskList.qm.create(nextTaskListsValues).usingConnection(db);
+
+      const nextTasksValues = tasks.map((task) => ({
+        ..._.pick(task, ['assigneeUserId', 'position', 'name', 'isCompleted']),
+        taskListId: nextTaskListIdByTaskListId[task.taskListId],
+      }));
+      const nextTasks = await Task.qm.create(nextTasksValues).usingConnection(db);
+
+      const nextAttachmentIdByAttachmentId = {};
+      const nextAttachmentsValues = attachments.map((attachment) => {
+        const id = ids.shift();
+        nextAttachmentIdByAttachmentId[attachment.id] = id;
+
+        return {
+          ..._.pick(attachment, ['type', 'data', 'name']),
+          id,
+          cardId: card.id,
+          creatorUserId: card.creatorUserId,
+        };
+      });
+      const nextAttachments = await sails.models.attachment.qm.create(nextAttachmentsValues, {
+        connection: db,
+      });
+
+      if (inputs.record.coverAttachmentId) {
+        const nextCoverAttachmentId =
+          nextAttachmentIdByAttachmentId[inputs.record.coverAttachmentId];
+
+        if (nextCoverAttachmentId) {
+          card = await Card.qm
+            .updateOne(card.id, {
+              coverAttachmentId: nextCoverAttachmentId,
+            })
+            .usingConnection(db);
+        }
+      }
+
+      const nextCustomFieldGroupIdByCustomFieldGroupId = {};
+      const nextCustomFieldGroupsValues = customFieldGroups.map((customFieldGroup) => {
+        const id = ids.shift();
+        nextCustomFieldGroupIdByCustomFieldGroupId[customFieldGroup.id] = id;
+
+        return {
+          ..._.pick(customFieldGroup, ['baseCustomFieldGroupId', 'position', 'name']),
+          id,
+          cardId: card.id,
+        };
+      });
+      const nextCustomFieldGroups = await CustomFieldGroup.qm
+        .create(nextCustomFieldGroupsValues)
+        .usingConnection(db);
+
+      const nextCustomFieldIdByCustomFieldId = {};
+      const nextCustomFieldsValues = customFields.map((customField) => {
+        const id = ids.shift();
+        nextCustomFieldIdByCustomFieldId[customField.id] = id;
+
+        return {
+          ..._.pick(customField, ['position', 'name', 'showOnFrontOfCard']),
+          id,
+          customFieldGroupId:
+            nextCustomFieldGroupIdByCustomFieldGroupId[customField.customFieldGroupId],
+        };
+      });
+      const nextCustomFields = await CustomField.qm
+        .create(nextCustomFieldsValues)
+        .usingConnection(db);
+
+      const nextCustomFieldValuesValues = customFieldValues.map((customFieldValue) => ({
+        ..._.pick(customFieldValue, ['content']),
+        cardId: card.id,
+        customFieldGroupId:
+          nextCustomFieldGroupIdByCustomFieldGroupId[customFieldValue.customFieldGroupId] ||
+          customFieldValue.customFieldGroupId,
+        customFieldId:
+          nextCustomFieldIdByCustomFieldId[customFieldValue.customFieldId] ||
+          customFieldValue.customFieldId,
+      }));
+      const nextCustomFieldValues = await CustomFieldValue.qm
+        .create(nextCustomFieldValuesValues)
+        .usingConnection(db);
+
+      if (values.creatorUser.subscribeToOwnCards) {
+        try {
+          await CardSubscription.qm
+            .createOne({
+              cardId: card.id,
+              userId: card.creatorUserId,
+            })
+            .usingConnection(db);
+        } catch (error) {
+          if (error.code !== 'E_UNIQUE') {
+            throw error;
+          }
+        }
+      }
 
       return {
-        ..._.pick(customField, ['position', 'name', 'showOnFrontOfCard']),
-        id,
-        customFieldGroupId:
-          nextCustomFieldGroupIdByCustomFieldGroupId[customField.customFieldGroupId],
+        card,
+        cardMemberships: nextCardMemberships,
+        cardLabels: nextCardLabels,
+        taskLists: nextTaskLists,
+        tasks: nextTasks,
+        attachments: nextAttachments,
+        customFieldGroups: nextCustomFieldGroups,
+        customFields: nextCustomFields,
+        customFieldValues: nextCustomFieldValues,
       };
     });
 
-    const nextCustomFields = await CustomField.qm.create(nextCustomFieldsValues);
+    const {
+      card,
+      cardMemberships: nextCardMemberships,
+      cardLabels: nextCardLabels,
+      taskLists: nextTaskLists,
+      tasks: nextTasks,
+      attachments: nextAttachments,
+      customFieldGroups: nextCustomFieldGroups,
+      customFields: nextCustomFields,
+      customFieldValues: nextCustomFieldValues,
+    } = duplicated;
 
-    const nextCustomFieldValuesValues = customFieldValues.map((customFieldValue) => ({
-      ..._.pick(customFieldValue, ['content']),
-      cardId: card.id,
-      customFieldGroupId:
-        nextCustomFieldGroupIdByCustomFieldGroupId[customFieldValue.customFieldGroupId] ||
-        customFieldValue.customFieldGroupId,
-      customFieldId:
-        nextCustomFieldIdByCustomFieldId[customFieldValue.customFieldId] ||
-        customFieldValue.customFieldId,
-    }));
+    repositions.forEach((reposition) => {
+      sails.sockets.broadcast(`board:${inputs.record.boardId}`, 'cardUpdate', {
+        item: {
+          id: reposition.record.id,
+          position: reposition.position,
+        },
+      });
 
-    const nextCustomFieldValues = await CustomFieldValue.qm.create(nextCustomFieldValuesValues);
+      // TODO: send webhooks
+    });
 
     sails.sockets.broadcast(
       `board:${card.boardId}`,
@@ -250,17 +294,6 @@ module.exports = {
     });
 
     if (values.creatorUser.subscribeToOwnCards) {
-      try {
-        await CardSubscription.qm.createOne({
-          cardId: card.id,
-          userId: card.creatorUserId,
-        });
-      } catch (error) {
-        if (error.code !== 'E_UNIQUE') {
-          throw error;
-        }
-      }
-
       sails.sockets.broadcast(`user:${card.creatorUserId}`, 'cardUpdate', {
         item: {
           id: card.id,
@@ -271,20 +304,24 @@ module.exports = {
       // TODO: send webhooks
     }
 
-    await sails.helpers.actions.createOne.with({
-      values: {
-        card,
-        type: Action.Types.CREATE_CARD, // TODO: introduce separate type?
-        data: {
-          card: _.pick(card, ['name']),
-          list: _.pick(inputs.list, ['id', 'type', 'name']),
+    try {
+      await sails.helpers.actions.createOne.with({
+        values: {
+          card,
+          type: Action.Types.CREATE_CARD, // TODO: introduce separate type?
+          data: {
+            card: _.pick(card, ['name']),
+            list: _.pick(inputs.list, ['id', 'type', 'name']),
+          },
+          user: values.creatorUser,
         },
-        user: values.creatorUser,
-      },
-      project: inputs.project,
-      board: inputs.board,
-      list: inputs.list,
-    });
+        project: inputs.project,
+        board: inputs.board,
+        list: inputs.list,
+      });
+    } catch (error) {
+      sails.log.error(`Failed to create action for duplicated card ${card.id}:`, error);
+    }
 
     return {
       card,

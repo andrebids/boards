@@ -9,7 +9,7 @@ const defaultFind = (criteria) => Attachment.find(criteria).sort('id');
 
 /* Query methods */
 
-const create = (arrayOfValues) => {
+const create = (arrayOfValues, { connection } = {}) => {
   const arrayOfFileValues = arrayOfValues.filter(({ type }) => type === Attachment.Types.FILE);
 
   if (arrayOfFileValues.length > 0) {
@@ -25,7 +25,7 @@ const create = (arrayOfValues) => {
       {},
     );
 
-    return sails.getDatastore().transaction(async (db) => {
+    const execute = async (db) => {
       const queryValues = [];
       let query = `UPDATE file_reference SET total = total + CASE `;
 
@@ -62,17 +62,21 @@ const create = (arrayOfValues) => {
       }
 
       return Attachment.createEach(arrayOfValues).fetch().usingConnection(db);
-    });
+    };
+
+    return connection ? execute(connection) : sails.getDatastore().transaction(execute);
   }
 
-  return Attachment.createEach(arrayOfValues).fetch();
+  const query = Attachment.createEach(arrayOfValues).fetch();
+
+  return connection ? query.usingConnection(connection) : query;
 };
 
-const createOne = (values) => {
+const createOne = (values, { connection } = {}) => {
   if (values.type === Attachment.Types.FILE) {
     const { fileReferenceId } = values.data;
 
-    return sails.getDatastore().transaction(async (db) => {
+    const execute = async (db) => {
       const attachment = await Attachment.create({ ...values })
         .fetch()
         .usingConnection(db);
@@ -102,10 +106,14 @@ const createOne = (values) => {
       }
 
       return attachment;
-    });
+    };
+
+    return connection ? execute(connection) : sails.getDatastore().transaction(execute);
   }
 
-  return Attachment.create({ ...values }).fetch();
+  const query = Attachment.create({ ...values }).fetch();
+
+  return connection ? query.usingConnection(connection) : query;
 };
 
 const getByIds = (ids) => defaultFind(ids);
@@ -137,8 +145,8 @@ const update = (criteria, values) => Attachment.update(criteria).set(values).fet
 const updateOne = (criteria, values) => Attachment.updateOne(criteria).set({ ...values });
 
 // eslint-disable-next-line no-underscore-dangle
-const delete_ = (criteria) =>
-  sails.getDatastore().transaction(async (db) => {
+const delete_ = (criteria, { connection } = {}) => {
+  const execute = async (db) => {
     const attachments = await Attachment.destroy(criteria).fetch().usingConnection(db);
     const fileAttachments = attachments.filter(({ type }) => type === Attachment.Types.FILE);
 
@@ -195,16 +203,19 @@ const delete_ = (criteria) =>
       attachments,
       fileReferences,
     };
-  });
+  };
 
-const deleteOne = async (criteria, { isFile } = {}) => {
+  return connection ? execute(connection) : sails.getDatastore().transaction(execute);
+};
+
+const deleteOne = async (criteria, { isFile, connection } = {}) => {
   let fileReference = null;
 
   if (isFile) {
-    return sails.getDatastore().transaction(async (db) => {
+    const execute = async (db) => {
       const attachment = await Attachment.destroyOne(criteria).usingConnection(db);
 
-      if (attachment.type === Attachment.Types.FILE) {
+      if (attachment && attachment.type === Attachment.Types.FILE) {
         const queryResult = await sails
           .sendNativeQuery(
             'UPDATE file_reference SET total = CASE WHEN total > 1 THEN total - 1 END, updated_at = $1 WHERE id = $2 RETURNING id, total',
@@ -219,10 +230,13 @@ const deleteOne = async (criteria, { isFile } = {}) => {
         attachment,
         fileReference,
       };
-    });
+    };
+
+    return connection ? execute(connection) : sails.getDatastore().transaction(execute);
   }
 
-  const attachment = await Attachment.destroyOne(criteria);
+  const query = Attachment.destroyOne(criteria);
+  const attachment = await (connection ? query.usingConnection(connection) : query);
 
   return {
     attachment,

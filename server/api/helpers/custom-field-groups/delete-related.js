@@ -9,6 +9,9 @@ module.exports = {
       type: 'ref',
       required: true,
     },
+    connection: {
+      type: 'ref',
+    },
   },
 
   async fn(inputs) {
@@ -21,12 +24,14 @@ module.exports = {
       customFieldGroupIdOrIds = sails.helpers.utils.mapRecords(inputs.recordOrRecords);
     }
 
-    await CustomFieldValue.qm.delete({
+    let query = CustomFieldValue.qm.delete({
       customFieldGroupId: customFieldGroupIdOrIds,
     });
+    await (inputs.connection ? query.usingConnection(inputs.connection) : query);
 
-    await CustomField.qm.delete({
+    query = CustomField.qm.delete({
       customFieldGroupId: customFieldGroupIdOrIds,
     });
+    await (inputs.connection ? query.usingConnection(inputs.connection) : query);
   },
 };

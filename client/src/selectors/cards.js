@@ -32,6 +32,54 @@ export const makeSelectCardById = () =>
 
 export const selectCardById = makeSelectCardById();
 
+export const makeSelectCardRollbackDataById = () =>
+  createSelector(
+    orm,
+    (_, id) => id,
+    ({ Card }, id) => {
+      const cardModel = Card.withId(id);
+
+      if (!cardModel) {
+        return cardModel;
+      }
+
+      const taskListModels = cardModel.taskLists.toModelArray();
+      const customFieldGroupModels = cardModel.customFieldGroups.toModelArray();
+
+      return {
+        card: { ...cardModel.ref },
+        userIds: cardModel.users.toRefArray().map(user => user.id),
+        labelIds: cardModel.labels.toRefArray().map(label => label.id),
+        taskLists: taskListModels.map(taskListModel => ({
+          ...taskListModel.ref,
+        })),
+        tasks: taskListModels.flatMap(taskListModel =>
+          taskListModel.tasks.toRefArray().map(task => ({ ...task })),
+        ),
+        attachments: cardModel.attachments
+          .toRefArray()
+          .map(attachment => ({ ...attachment })),
+        customFieldGroups: customFieldGroupModels.map(
+          customFieldGroupModel => ({ ...customFieldGroupModel.ref }),
+        ),
+        customFields: customFieldGroupModels.flatMap(customFieldGroupModel =>
+          customFieldGroupModel.customFields
+            .toRefArray()
+            .map(customField => ({ ...customField })),
+        ),
+        customFieldValues: cardModel.customFieldValues
+          .toRefArray()
+          .map(customFieldValue => ({ ...customFieldValue })),
+        comments: cardModel.comments.toRefArray().map(comment => ({
+          ...comment,
+        })),
+      };
+    },
+  );
+
+export const selectCardRollbackDataById =
+  makeSelectCardRollbackDataById();
+
 export const makeSelectCardIndexById = () =>
   createSelector(
     orm,
@@ -497,6 +545,8 @@ export const selectIsCurrentUserInCurrentCard = createSelector(
 export default {
   makeSelectCardById,
   selectCardById,
+  makeSelectCardRollbackDataById,
+  selectCardRollbackDataById,
   makeSelectCardIndexById,
   selectCardIndexById,
   makeSelectUserIdsByCardId,

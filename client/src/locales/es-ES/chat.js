@@ -4,7 +4,6 @@ export default {
       addEmoji: 'Añadir emoji',
       addToGroup: 'Añadir',
       allAuthorizedMembers: 'Todos los miembros autorizados',
-      allMessages: 'Todos los mensajes',
       attachFiles: 'Adjuntar archivos',
       attachmentTooLarge: 'Los archivos no pueden superar los 25 MB.',
       available: 'Disponible',

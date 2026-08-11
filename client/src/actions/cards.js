@@ -108,26 +108,31 @@ const handleCardCreate = (
   },
 });
 
-const updateCard = (id, data) => ({
+const updateCard = (id, data, operationId, rollbackData) => ({
   type: ActionTypes.CARD_UPDATE,
   payload: {
     id,
     data,
+    operationId,
+    rollbackData,
   },
 });
 
-updateCard.success = card => ({
+updateCard.success = (card, operationId) => ({
   type: ActionTypes.CARD_UPDATE__SUCCESS,
   payload: {
     card,
+    operationId,
   },
 });
 
-updateCard.failure = (id, error) => ({
+updateCard.failure = (id, error, rollbackData, operationId) => ({
   type: ActionTypes.CARD_UPDATE__FAILURE,
   payload: {
     id,
     error,
+    rollbackData,
+    operationId,
   },
 });
 
@@ -204,25 +209,30 @@ duplicateCard.failure = (localId, error) => ({
   },
 });
 
-const deleteCard = id => ({
+const deleteCard = (id, operationId, rollbackData) => ({
   type: ActionTypes.CARD_DELETE,
   payload: {
     id,
+    operationId,
+    rollbackData,
   },
 });
 
-deleteCard.success = card => ({
+deleteCard.success = (card, operationId) => ({
   type: ActionTypes.CARD_DELETE__SUCCESS,
   payload: {
     card,
+    operationId,
   },
 });
 
-deleteCard.failure = (id, error) => ({
+deleteCard.failure = (id, error, rollbackData, operationId) => ({
   type: ActionTypes.CARD_DELETE__FAILURE,
   payload: {
     id,
     error,
+    rollbackData,
+    operationId,
   },
 });
 

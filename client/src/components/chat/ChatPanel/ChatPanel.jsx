@@ -323,7 +323,7 @@ const ChatPanel = React.memo(
               onKeyDown={handleScopeKeyDown}
             >
               <Inbox aria-hidden="true" size={14} strokeWidth={2} />
-              {t('chat.allMessages')}
+              {t('chat.globalInbox')}
               {globalUnreadTotal > 0 && (
                 <span
                   aria-label={t('chat.unreadConversations', {

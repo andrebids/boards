@@ -9,9 +9,11 @@ import { Message } from 'semantic-ui-react';
 
 import ToastTypes from '../../../constants/ToastTypes';
 import EmptyTrashToast from './EmptyTrashToast';
+import CardAttachmentUploadFailureToast from './CardAttachmentUploadFailureToast';
 
 const TOAST_BY_TYPE = {
   [ToastTypes.EMPTY_TRASH]: EmptyTrashToast,
+  [ToastTypes.CARD_ATTACHMENT_UPLOAD_FAILURE]: CardAttachmentUploadFailureToast,
 };
 
 const Toaster = React.memo(() => (

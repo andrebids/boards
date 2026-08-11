@@ -196,6 +196,7 @@ const buildBodyByFormat = (board, card, notification, actorUser, t) => {
 
 // ✅ Sistema de templates com fallback
 const EMAIL_TEMPLATES_ENABLED = process.env.EMAIL_TEMPLATES_ENABLED === 'true';
+const isEmailNotificationService = ({ url }) => /^mailtos?:\/\//i.test(url.trim());
 
 const buildAndSendNotifications = async (
   services,
@@ -643,6 +644,19 @@ module.exports = {
       sails.config.custom.globalNotifications && sails.config.custom.globalNotifications.enabled;
     const notificationServices = await NotificationService.qm.getByUserId(notification.userId);
     const smtpIsEnabled = sails.hooks.smtp.isEnabled();
+    const centralEmailIsEnabled = globalNotificationsEnabled || smtpIsEnabled;
+    const externalNotificationServices = centralEmailIsEnabled
+      ? notificationServices.filter(
+          (notificationService) => !isEmailNotificationService(notificationService),
+        )
+      : notificationServices;
+
+    if (externalNotificationServices.length < notificationServices.length) {
+      sails.log.info(
+        'Serviço pessoal de email ignorado porque o envio SMTP central já está ativo (userId=%s)',
+        notification.userId,
+      );
+    }
 
     sails.log.info(`🔍 [DIAGNÓSTICO_EMAIL_NOTIF] Status dos mecanismos de envio:`, {
       notificationType: notification.type,
@@ -735,8 +749,8 @@ module.exports = {
           );
         }
 
-        if (notificationServices.length > 0) {
-          const services = notificationServices.map((notificationService) =>
+        if (externalNotificationServices.length > 0) {
+          const services = externalNotificationServices.map((notificationService) =>
             _.pick(notificationService, ['url', 'format']),
           );
 

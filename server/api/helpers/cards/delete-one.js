@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const CARD_DELETE_MISSED = Symbol('CARD_DELETE_MISSED');
+
 module.exports = {
   inputs: {
     record: {
@@ -31,9 +33,36 @@ module.exports = {
   },
 
   async fn(inputs) {
-    await sails.helpers.cards.deleteRelated(inputs.record);
+    let result;
+    try {
+      result = await sails.getDatastore().transaction(async (db) => {
+        const related = await sails.helpers.cards.deleteRelated.with({
+          recordOrRecords: inputs.record,
+          connection: db,
+        });
 
-    const card = await Card.qm.deleteOne(inputs.record.id);
+        const card = await Card.qm.deleteOne(inputs.record.id).usingConnection(db);
+
+        if (!card) {
+          throw CARD_DELETE_MISSED;
+        }
+
+        return {
+          card,
+          fileReferences: related.fileReferences,
+        };
+      });
+    } catch (error) {
+      if (error === CARD_DELETE_MISSED) {
+        return null;
+      }
+
+      throw error;
+    }
+
+    const { card, fileReferences } = result;
+
+    sails.helpers.attachments.removeUnreferencedFiles(fileReferences);
 
     if (card) {
       sails.sockets.broadcast(

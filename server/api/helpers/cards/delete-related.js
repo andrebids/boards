@@ -9,6 +9,9 @@ module.exports = {
       type: 'ref',
       required: true,
     },
+    connection: {
+      type: 'ref',
+    },
   },
 
   async fn(inputs) {
@@ -21,42 +24,72 @@ module.exports = {
       cardIdOrIds = sails.helpers.utils.mapRecords(inputs.recordOrRecords);
     }
 
-    await CardSubscription.qm.delete({
-      cardId: cardIdOrIds,
+    const usingConnection = (query) =>
+      inputs.connection ? query.usingConnection(inputs.connection) : query;
+
+    await usingConnection(
+      CardSubscription.qm.delete({
+        cardId: cardIdOrIds,
+      }),
+    );
+
+    await usingConnection(
+      CardMembership.qm.delete({
+        cardId: cardIdOrIds,
+      }),
+    );
+
+    await usingConnection(
+      CardLabel.qm.delete({
+        cardId: cardIdOrIds,
+      }),
+    );
+
+    const taskLists = await usingConnection(
+      TaskList.qm.delete({
+        cardId: cardIdOrIds,
+      }),
+    );
+
+    await sails.helpers.taskLists.deleteRelated.with({
+      recordOrRecords: taskLists,
+      connection: inputs.connection,
     });
 
-    await CardMembership.qm.delete({
-      cardId: cardIdOrIds,
+    const { fileReferences } = await sails.models.attachment.qm.delete(
+      {
+        cardId: cardIdOrIds,
+      },
+      { connection: inputs.connection },
+    );
+
+    const customFieldGroups = await usingConnection(
+      CustomFieldGroup.qm.delete({
+        cardId: cardIdOrIds,
+      }),
+    );
+
+    await sails.helpers.customFieldGroups.deleteRelated.with({
+      recordOrRecords: customFieldGroups,
+      connection: inputs.connection,
     });
 
-    await CardLabel.qm.delete({
-      cardId: cardIdOrIds,
-    });
+    await usingConnection(
+      Comment.destroy({
+        cardId: cardIdOrIds,
+      }).fetch(),
+    );
 
-    const taskLists = await TaskList.qm.delete({
-      cardId: cardIdOrIds,
-    });
+    await usingConnection(
+      Action.qm.delete({
+        cardId: cardIdOrIds,
+      }),
+    );
 
-    await sails.helpers.taskLists.deleteRelated(taskLists);
+    if (!inputs.connection) {
+      sails.helpers.attachments.removeUnreferencedFiles(fileReferences);
+    }
 
-    const { fileReferences } = await sails.models.attachment.qm.delete({
-      cardId: cardIdOrIds,
-    });
-
-    sails.helpers.attachments.removeUnreferencedFiles(fileReferences);
-
-    const customFieldGroups = await CustomFieldGroup.qm.delete({
-      cardId: cardIdOrIds,
-    });
-
-    await sails.helpers.customFieldGroups.deleteRelated(customFieldGroups);
-
-    await Comment.qm.delete({
-      cardId: cardIdOrIds,
-    });
-
-    await Action.qm.delete({
-      cardId: cardIdOrIds,
-    });
+    return { fileReferences };
   },
 };

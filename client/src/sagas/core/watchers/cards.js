@@ -50,6 +50,11 @@ export default function* cardsWatchers() {
         services.createCardInFirstFiniteList(data, autoOpen)
     ),
     call(createCardWithAttachmentWatcher),
+    takeEvery(
+      EntryActionTypes.CARD_ATTACHMENT_UPLOAD,
+      ({ payload: { cardId, attachmentFile } }) =>
+        services.uploadCardAttachment(cardId, attachmentFile)
+    ),
     takeEvery(EntryActionTypes.CARD_CREATE_HANDLE, ({ payload: { card } }) =>
       services.handleCardCreate(card)
     ),

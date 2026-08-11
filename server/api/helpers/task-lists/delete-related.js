@@ -9,6 +9,9 @@ module.exports = {
       type: 'ref',
       required: true,
     },
+    connection: {
+      type: 'ref',
+    },
   },
 
   async fn(inputs) {
@@ -21,8 +24,10 @@ module.exports = {
       taskListIdOrIds = sails.helpers.utils.mapRecords(inputs.recordOrRecords);
     }
 
-    await Task.qm.delete({
+    const query = Task.qm.delete({
       taskListId: taskListIdOrIds,
     });
+
+    await (inputs.connection ? query.usingConnection(inputs.connection) : query);
   },
 };

@@ -341,6 +341,13 @@ export default class extends BaseModel {
 
         break;
       }
+      case ActionTypes.CARD_UPDATE__FAILURE:
+      case ActionTypes.CARD_DELETE__FAILURE:
+        if (payload.rollbackData) {
+          Card.restore(payload.rollbackData);
+        }
+
+        break;
       case ActionTypes.CARD_UPDATE_HANDLE:
         if (payload.card.boardId === null || payload.isFetched) {
           const cardModel = Card.withId(payload.card.id);
@@ -657,5 +664,74 @@ export default class extends BaseModel {
   deleteWithRelated() {
     this.deleteRelated();
     this.delete();
+  }
+
+  static restore({
+    card,
+    userIds,
+    labelIds,
+    taskLists,
+    tasks,
+    attachments,
+    customFieldGroups,
+    customFields,
+    customFieldValues,
+    comments,
+  }) {
+    const cardModel = this.upsert(card);
+
+    const currentUserIds = cardModel.users.toRefArray().map(user => user.id);
+    userIds.forEach(userId => {
+      if (!currentUserIds.includes(userId)) {
+        cardModel.users.add(userId);
+      }
+    });
+
+    const currentLabelIds = cardModel.labels
+      .toRefArray()
+      .map(label => label.id);
+    labelIds.forEach(labelId => {
+      if (!currentLabelIds.includes(labelId)) {
+        cardModel.labels.add(labelId);
+      }
+    });
+
+    const {
+      TaskList,
+      Task,
+      Attachment,
+      CustomFieldGroup,
+      CustomField,
+      CustomFieldValue,
+      Comment,
+    } = this.session;
+
+    taskLists.forEach(taskList => {
+      TaskList.upsert(taskList);
+    });
+
+    tasks.forEach(task => {
+      Task.upsert(task);
+    });
+
+    attachments.forEach(attachment => {
+      Attachment.upsert(attachment);
+    });
+
+    customFieldGroups.forEach(customFieldGroup => {
+      CustomFieldGroup.upsert(customFieldGroup);
+    });
+
+    customFields.forEach(customField => {
+      CustomField.upsert(customField);
+    });
+
+    customFieldValues.forEach(customFieldValue => {
+      CustomFieldValue.upsert(customFieldValue);
+    });
+
+    comments.forEach(comment => {
+      Comment.upsert(comment);
+    });
   }
 }

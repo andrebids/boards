@@ -3,7 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import { call, fork, join, put, race, select, take } from 'redux-saga/effects';
+import { call, delay, fork, join, put, race, select, take } from 'redux-saga/effects';
+import toast from 'react-hot-toast';
 import { LOCATION_CHANGE_HANDLE } from '../../../lib/redux-router';
 
 import { goToBoard, goToCard } from './router';
@@ -17,6 +18,7 @@ import {
   isListFinite,
 } from '../../../utils/record-helpers';
 import ActionTypes from '../../../constants/ActionTypes';
+import ToastTypes from '../../../constants/ToastTypes';
 import {
   BoardViews,
   ListTypes,
@@ -261,15 +263,6 @@ export function* createCardInFirstFiniteList(data, autoOpen, userIds = [], label
 }
 
 export function* createCardWithAttachment(listId, cardData, attachmentFile) {
-  console.log('🚀 Saga createCardWithAttachment iniciada');
-  console.log('📋 ListId:', listId);
-  console.log('📋 Dados do card:', cardData);
-  console.log('📎 Arquivo:', attachmentFile);
-  console.log(
-    '📎 Nome do arquivo:',
-    attachmentFile ? attachmentFile.name : 'undefined'
-  );
-
   const localId = yield call(createLocalId);
   const list = yield select(selectors.selectListById, listId);
 
@@ -289,12 +282,6 @@ export function* createCardWithAttachment(listId, cardData, attachmentFile) {
     );
   }
 
-  console.log('🎴 Criando card no servidor...');
-  console.log('🎴 Local ID:', localId);
-  console.log('🎴 Board ID:', list.boardId);
-  console.log('🎴 Creator User ID:', currentUserMembership.userId);
-
-  // Criar o card primeiro
   yield put(
     actions.createCard(
       {
@@ -304,53 +291,42 @@ export function* createCardWithAttachment(listId, cardData, attachmentFile) {
         boardId: list.boardId,
         creatorUserId: currentUserMembership.userId,
       },
-      false // Não abrir automaticamente
+      false
     )
   );
 
   let card;
   try {
-    // Criar o card no servidor
-    console.log('🎴 Chamando API createCard...');
     ({ item: card } = yield call(
       request,
       api.createCard,
       listId,
       nextCardData
     ));
-    console.log('✅ Card criado com sucesso:', card);
   } catch (error) {
-    console.error('❌ Erro ao criar card:', error);
-    console.error('❌ Detalhes do erro:', error.message);
     yield put(actions.createCard.failure(localId, error));
     return;
   }
 
   yield put(actions.createCard.success(localId, card));
-  console.log('✅ Card criado e action de sucesso disparada');
 
-  // Agora criar o anexo
-  console.log('📎 Criando anexo...');
-  console.log('📎 Card ID:', card.id);
-  console.log('📎 AttachmentTypes.FILE:', AttachmentTypes.FILE);
+  yield call(uploadCardAttachment, card.id, attachmentFile);
+}
 
+export function* uploadCardAttachment(cardId, attachmentFile) {
   try {
     const attachmentData = {
       name: attachmentFile.name,
       type: AttachmentTypes.FILE,
     };
 
-    console.log('📎 Dados do anexo:', attachmentData);
-
     const requestId = yield call(createLocalId);
-    console.log('📎 Request ID:', requestId);
 
     let attachment;
-    console.log('📎 Chamando API createAttachmentWithFile...');
     ({ item: attachment } = yield call(
       request,
       api.createAttachmentWithFile,
-      card.id,
+      cardId,
       { ...attachmentData, file: attachmentFile },
       requestId
     ));
@@ -358,18 +334,26 @@ export function* createCardWithAttachment(listId, cardData, attachmentFile) {
     // The socket event excludes the originating request, so add the uploaded attachment
     // to the local store explicitly. Otherwise a newly-created card only shows it after reload.
     yield put(actions.handleAttachmentCreate(attachment));
-    console.log('✅ Anexo criado com sucesso:', attachment);
-  } catch (error) {
-    console.error('❌ Erro ao criar anexo:', error);
-    console.error('❌ Detalhes do erro:', error.message);
-    console.error('❌ Stack trace:', error.stack);
-    // Não fazer rollback do card, apenas logar o erro
+  } catch {
+    yield call(
+      toast,
+      {
+        type: ToastTypes.CARD_ATTACHMENT_UPLOAD_FAILURE,
+        params: {
+          cardId,
+          attachmentFile,
+        },
+      },
+      {
+        duration: 10000,
+      }
+    );
   }
-
-  console.log('✅ Saga createCardWithAttachment finalizada');
 }
 
 export function* handleCardCreate(card) {
+  const socketCard = card;
+  const retryDelays = [250, 500];
   let users;
   let cardMemberships;
   let cardLabels;
@@ -380,23 +364,40 @@ export function* handleCardCreate(card) {
   let customFields;
   let customFieldValues;
 
-  try {
-    ({
-      item: card, // eslint-disable-line no-param-reassign
-      included: {
-        users,
-        cardMemberships,
-        cardLabels,
-        taskLists,
-        tasks,
-        attachments,
-        customFieldGroups,
-        customFields,
-        customFieldValues,
-      },
-    } = yield call(request, api.getCard, card.id));
-  } catch {
-    return;
+  for (let attempt = 0; attempt <= retryDelays.length; attempt += 1) {
+    try {
+      ({
+        item: card, // eslint-disable-line no-param-reassign
+        included: {
+          users,
+          cardMemberships,
+          cardLabels,
+          taskLists,
+          tasks,
+          attachments,
+          customFieldGroups,
+          customFields,
+          customFieldValues,
+        },
+      } = yield call(request, api.getCard, socketCard.id));
+      break;
+    } catch {
+      if (attempt === retryDelays.length) {
+        card = socketCard; // eslint-disable-line no-param-reassign
+        users = [];
+        cardMemberships = [];
+        cardLabels = [];
+        taskLists = [];
+        tasks = [];
+        attachments = [];
+        customFieldGroups = [];
+        customFields = [];
+        customFieldValues = [];
+        break;
+      }
+
+      yield delay(retryDelays[attempt]);
+    }
   }
 
   yield put(
@@ -432,24 +433,32 @@ export function* updateCard(id, data) {
     }
   }
 
+  const rollbackData = yield select(selectors.selectCardRollbackDataById, id);
+  const operationId = yield call(createLocalId);
+
   yield put(
-    actions.updateCard(id, {
-      ...data,
-      ...(prevListId !== undefined && {
-        prevListId,
-      }),
-    })
+    actions.updateCard(
+      id,
+      {
+        ...data,
+        ...(prevListId !== undefined && {
+          prevListId,
+        }),
+      },
+      operationId,
+      rollbackData,
+    ),
   );
 
   let card;
   try {
     ({ item: card } = yield call(request, api.updateCard, id, data));
   } catch (error) {
-    yield put(actions.updateCard.failure(id, error));
+    yield put(actions.updateCard.failure(id, error, rollbackData, operationId));
     return;
   }
 
-  yield put(actions.updateCard.success(card));
+  yield put(actions.updateCard.success(card, operationId));
 }
 
 export function* updateCurrentCard(data) {
@@ -760,8 +769,10 @@ export function* goToAdjacentCard(direction) {
 
 export function* deleteCard(id) {
   const { cardId, boardId } = yield select(selectors.selectPath);
+  const rollbackData = yield select(selectors.selectCardRollbackDataById, id);
+  const operationId = yield call(createLocalId);
 
-  yield put(actions.deleteCard(id));
+  yield put(actions.deleteCard(id, operationId, rollbackData));
 
   if (id === cardId) {
     yield call(goToBoard, boardId);
@@ -771,11 +782,11 @@ export function* deleteCard(id) {
   try {
     ({ item: card } = yield call(request, api.deleteCard, id));
   } catch (error) {
-    yield put(actions.deleteCard.failure(id, error));
+    yield put(actions.deleteCard.failure(id, error, rollbackData, operationId));
     return;
   }
 
-  yield put(actions.deleteCard.success(card));
+  yield put(actions.deleteCard.success(card, operationId));
 }
 
 export function* deleteCurrentCard() {
@@ -803,6 +814,7 @@ export default {
   handleCardCreate,
   createCardInFirstFiniteList,
   createCardWithAttachment,
+  uploadCardAttachment,
   updateCard,
   updateCurrentCard,
   handleCardUpdate,

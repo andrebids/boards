@@ -6,6 +6,7 @@
 import { createSelector } from 'redux-orm';
 
 import orm from '../orm';
+import { selectCurrentUserId } from './users';
 
 export const makeSelectNotificationById = () =>
   createSelector(
@@ -19,7 +20,7 @@ export const makeSelectNotificationById = () =>
       }
 
       return notificationModel.ref;
-    }
+    },
   );
 
 export const selectNotificationById = makeSelectNotificationById();
@@ -33,15 +34,50 @@ export const makeSelectNotificationIdsByCardId = () =>
         cardId: id,
       })
         .toRefArray()
-        .map(notification => notification.id)
+        .map((notification) => notification.id),
   );
 
-export const selectNotificationIdsByCardId =
-  makeSelectNotificationIdsByCardId();
+export const selectNotificationIdsByCardId = makeSelectNotificationIdsByCardId();
+
+export const makeSelectNotificationIdsByProjectId = () =>
+  createSelector(
+    orm,
+    (state) => selectCurrentUserId(state),
+    (_, id) => id,
+    ({ User, Board }, currentUserId, id) => {
+      const currentUserModel = User.withId(currentUserId);
+
+      if (!currentUserModel) {
+        return [];
+      }
+
+      return currentUserModel
+        .getUnreadNotificationsQuerySet()
+        .toRefArray()
+        .filter((notification) => {
+          if (notification.projectId === id) {
+            return true;
+          }
+
+          if (!notification.boardId) {
+            return false;
+          }
+
+          const boardModel = Board.withId(notification.boardId);
+
+          return boardModel && boardModel.projectId === id;
+        })
+        .map((notification) => notification.id);
+    },
+  );
+
+export const selectNotificationIdsByProjectId = makeSelectNotificationIdsByProjectId();
 
 export default {
   makeSelectNotificationById,
   selectNotificationById,
   makeSelectNotificationIdsByCardId,
   selectNotificationIdsByCardId,
+  makeSelectNotificationIdsByProjectId,
+  selectNotificationIdsByProjectId,
 };

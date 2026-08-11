@@ -1,34 +1,40 @@
 .picker {
   --epr-bg-color: var(--chat-popup) !important;
-  --epr-category-icon-active-color: #f4f6f8 !important;
+  --epr-category-icon-active-color: var(--chat-foreground) !important;
   --epr-category-label-height: 0px !important;
   --epr-category-navigation-button-size: 22px !important;
   --epr-category-padding: 0 8px !important;
-  --epr-emoji-hover-color: #303237 !important;
+  --epr-emoji-hover-color: var(--chat-surface-hover) !important;
   --epr-emoji-padding: 8px !important;
   --epr-emoji-size: 24px !important;
-  --epr-focus-bg-color: #303237 !important;
+  --epr-focus-bg-color: var(--chat-surface-hover) !important;
   --epr-header-padding: 8px !important;
-  --epr-highlight-color: #aeb5bf !important;
+  --epr-highlight-color: var(--chat-muted) !important;
   --epr-horizontal-padding: 8px !important;
-  --epr-hover-bg-color: #303237 !important;
-  --epr-hover-bg-color-reduced-opacity: rgba(48, 50, 55, 0.55) !important;
-  --epr-picker-border-color: rgba(255, 255, 255, 0.07) !important;
-  --epr-picker-border-radius: 16px !important;
+  --epr-hover-bg-color: var(--chat-surface-hover) !important;
+  --epr-hover-bg-color-reduced-opacity: color-mix(
+    in srgb,
+    var(--chat-surface-hover) 55%,
+    transparent
+  ) !important;
+  --epr-picker-border-color: var(--chat-border) !important;
+  --epr-picker-border-radius: var(--chat-radius-panel) !important;
   --epr-search-bar-inner-padding: 8px !important;
-  --epr-search-input-bg-color: #26272b !important;
-  --epr-search-input-bg-color-active: #26272b !important;
+  --epr-search-input-bg-color: var(--chat-default) !important;
+  --epr-search-input-bg-color-active: var(--chat-default-hover) !important;
   --epr-search-input-border-radius: 10px !important;
   --epr-search-input-height: 36px !important;
   --epr-search-input-padding: 0 30px !important;
-  --epr-search-input-placeholder-color: #9ca3ad !important;
-  --epr-search-input-text-color: #d7dbe1 !important;
-  --epr-skin-tone-picker-menu-color: rgba(28, 29, 32, 0.94) !important;
-  --epr-text-color: #aeb5bf !important;
-  border-color: rgba(255, 255, 255, 0.07) !important;
-  box-shadow:
-    0 18px 42px rgba(0, 0, 0, 0.42),
-    0 2px 8px rgba(0, 0, 0, 0.3);
+  --epr-search-input-placeholder-color: var(--chat-muted) !important;
+  --epr-search-input-text-color: var(--chat-foreground) !important;
+  --epr-skin-tone-picker-menu-color: color-mix(
+    in srgb,
+    var(--chat-popup) 94%,
+    transparent
+  ) !important;
+  --epr-text-color: var(--chat-muted) !important;
+  border-color: var(--chat-border) !important;
+  box-shadow: var(--chat-panel-shadow);
   height: min(350px, calc(100vh - 48px)) !important;
   max-width: calc(100vw - 28px) !important;
   width: min(280px, calc(100vw - 28px)) !important;
@@ -54,11 +60,11 @@
 
   :global(.epr-search-container input:focus) {
     border-color: var(--chat-accent);
-    box-shadow: 0 0 0 2px rgba(52, 142, 235, 0.22);
+    box-shadow: 0 0 0 2px var(--chat-focus-ring);
   }
 
   :global(.epr-search-container input::placeholder) {
-    color: #9ca3ad;
+    color: var(--chat-muted);
     opacity: 1;
   }
 
@@ -121,7 +127,7 @@
   }
 
   :global(.epr-emoji-list) {
-    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    scrollbar-color: var(--chat-scrollbar) transparent;
     scrollbar-width: thin;
   }
 
@@ -130,7 +136,7 @@
   }
 
   :global(.epr-emoji-list::-webkit-scrollbar-thumb) {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--chat-scrollbar);
     border-radius: 999px;
   }
 
@@ -156,8 +162,8 @@
 
   :global(.epr-category-nav) {
     align-items: center;
-    background: #1d1e21;
-    border-top: 1px solid rgba(255, 255, 255, 0.045);
+    background: var(--chat-popup);
+    border-top: 1px solid var(--chat-border);
     flex: 0 0 39px;
     gap: 2px;
     margin: 0;
@@ -180,7 +186,7 @@
 
   :global(.epr-cat-btn-custom-icon:hover),
   :global(.epr-cat-btn-custom-icon.epr-active) {
-    background: rgba(255, 255, 255, 0.06);
+    background: color-mix(in srgb, var(--chat-surface-hover) 60%, transparent);
     filter: saturate(1);
     opacity: 1;
     transform: translateY(-1px);

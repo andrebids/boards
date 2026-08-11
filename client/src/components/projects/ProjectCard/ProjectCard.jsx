@@ -10,14 +10,17 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Icon } from 'semantic-ui-react';
 import { Button } from '../../../lib/custom-ui';
+import { usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import Paths from '../../../constants/Paths';
 import { ProjectBackgroundTypes } from '../../../constants/Enums';
 import UserAvatar from '../../users/UserAvatar';
+import NotificationsStep from '../../notifications/NotificationsStep';
 import NotificationIndicator from './NotificationIndicator';
 
 import styles from './ProjectCard.module.scss';
@@ -29,66 +32,42 @@ const Sizes = {
 };
 
 const ProjectCard = React.memo(
-  ({
-    id,
-    size,
-    isActive,
-    withDescription,
-    withTypeIndicator,
-    withFavoriteButton,
-    className,
-  }) => {
-    const selectProjectById = useMemo(
-      () => selectors.makeSelectProjectById(),
-      []
-    );
+  ({ id, size, isActive, withDescription, withTypeIndicator, withFavoriteButton, className }) => {
+    const [t] = useTranslation();
+    const selectProjectById = useMemo(() => selectors.makeSelectProjectById(), []);
 
     const selectFirstBoardIdByProjectId = useMemo(
       () => selectors.makeSelectFirstBoardIdByProjectId(),
-      []
+      [],
     );
 
     const selectNotificationsTotalByProjectId = useMemo(
       () => selectors.makeSelectNotificationsTotalByProjectId(),
-      []
+      [],
     );
 
-    const selectProjectManagerById = useMemo(
-      () => selectors.makeSelectProjectManagerById(),
-      []
-    );
-    const selectBackgroundImageById = useMemo(
-      () => selectors.makeSelectBackgroundImageById(),
-      []
-    );
+    const selectProjectManagerById = useMemo(() => selectors.makeSelectProjectManagerById(), []);
+    const selectBackgroundImageById = useMemo(() => selectors.makeSelectBackgroundImageById(), []);
 
-    const project = useSelector(state => selectProjectById(state, id));
-    const firstBoardId = useSelector(state =>
-      selectFirstBoardIdByProjectId(state, id)
-    );
+    const project = useSelector((state) => selectProjectById(state, id));
+    const firstBoardId = useSelector((state) => selectFirstBoardIdByProjectId(state, id));
 
-    const notificationsTotal = useSelector(state =>
-      selectNotificationsTotalByProjectId(state, id)
+    const notificationsTotal = useSelector((state) =>
+      selectNotificationsTotalByProjectId(state, id),
     );
 
     const ownerProjectManager = useSelector(
-      state =>
+      (state) =>
         project.ownerProjectManagerId &&
-        selectProjectManagerById(state, project.ownerProjectManagerId)
+        selectProjectManagerById(state, project.ownerProjectManagerId),
     );
 
-    const backgroundImageUrl = useSelector(state => {
-      if (
-        !project.backgroundType ||
-        project.backgroundType !== ProjectBackgroundTypes.IMAGE
-      ) {
+    const backgroundImageUrl = useSelector((state) => {
+      if (!project.backgroundType || project.backgroundType !== ProjectBackgroundTypes.IMAGE) {
         return null;
       }
 
-      const backgroundImage = selectBackgroundImageById(
-        state,
-        project.backgroundImageId
-      );
+      const backgroundImage = selectBackgroundImageById(state, project.backgroundImageId);
 
       if (!backgroundImage) {
         return null;
@@ -98,17 +77,23 @@ const ProjectCard = React.memo(
     });
 
     const dispatch = useDispatch();
+    const NotificationsPopup = usePopup(NotificationsStep, {
+      position: 'bottom left',
+      variantClass: 'notifications',
+    });
 
     const handleToggleFavoriteClick = useCallback(() => {
       dispatch(
         entryActions.updateProject(project.id, {
           isFavorite: !project.isFavorite,
-        })
+        }),
       );
     }, [project, dispatch]);
 
-    const withSidebar =
-      withTypeIndicator || (withFavoriteButton && !project.isHidden);
+    const withSidebar = withTypeIndicator || (withFavoriteButton && !project.isHidden);
+    const notificationsLabel = t('common.unreadProjectNotifications', {
+      count: notificationsTotal,
+    });
 
     return (
       <div
@@ -116,7 +101,7 @@ const ProjectCard = React.memo(
           className,
           styles.wrapper,
           styles[`wrapper${upperFirst(size)}`],
-          project.isHidden && styles.wrapperHidden
+          project.isHidden && styles.wrapperHidden,
         )}
       >
         <Link
@@ -131,32 +116,20 @@ const ProjectCard = React.memo(
             className={classNames(
               styles.cover,
               project.backgroundType === ProjectBackgroundTypes.GRADIENT &&
-                globalStyles[
-                  `background${upperFirst(camelCase(project.backgroundGradient))}`
-                ]
+                globalStyles[`background${upperFirst(camelCase(project.backgroundGradient))}`],
             )}
             style={{
-              background:
-                backgroundImageUrl &&
-                `url("${backgroundImageUrl}") center / cover`,
+              background: backgroundImageUrl && `url("${backgroundImageUrl}") center / cover`,
             }}
           />
-          {notificationsTotal > 0 && (
-            <div className={styles.notificationsWrapper}>
-              <NotificationIndicator count={notificationsTotal} />
-            </div>
-          )}
           <div
-            className={classNames(
-              styles.information,
-              withSidebar && styles.informationWithSidebar
-            )}
+            className={classNames(styles.information, withSidebar && styles.informationWithSidebar)}
           >
             <div
               className={classNames(
                 styles.title,
                 isActive !== undefined && styles.titleActivatable,
-                isActive && styles.titleActive
+                isActive && styles.titleActive,
               )}
             >
               {project.name}
@@ -169,7 +142,7 @@ const ProjectCard = React.memo(
             <div
               className={classNames(
                 styles.typeIndicator,
-                ownerProjectManager && styles.typeIndicatorWithUser
+                ownerProjectManager && styles.typeIndicatorWithUser,
               )}
             >
               {ownerProjectManager ? (
@@ -184,11 +157,24 @@ const ProjectCard = React.memo(
             </div>
           )}
         </Link>
+        {notificationsTotal > 0 && (
+          <NotificationsPopup projectId={id}>
+            <button
+              type="button"
+              className={styles.notificationsWrapper}
+              aria-label={notificationsLabel}
+              title={notificationsLabel}
+            >
+              <NotificationIndicator count={notificationsTotal} />
+            </button>
+          </NotificationsPopup>
+        )}
         {withFavoriteButton && !project.isHidden && (
-          <Button variant="secondary"
+          <Button
+            variant="secondary"
             className={classNames(
               styles.favoriteButton,
-              !project.isFavorite && styles.favoriteButtonAppearable
+              !project.isFavorite && styles.favoriteButtonAppearable,
             )}
             onClick={handleToggleFavoriteClick}
           >
@@ -201,7 +187,7 @@ const ProjectCard = React.memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 ProjectCard.propTypes = {

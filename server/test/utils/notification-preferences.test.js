@@ -199,4 +199,70 @@ describe('Personal notification preferences', () => {
     assert.equal(createdNotifications.length, 0);
     assert.equal(broadcasts.length, 0);
   });
+
+  it('does not send a second mailto notification when central email is enabled', async () => {
+    const centralEmails = [];
+    const personalServiceBatches = [];
+
+    global.NotificationService.qm.getByUserId = async () => [
+      {
+        url: 'mailto://legacy-smtp.example.test?to=recipient%40example.test',
+        format: 'html',
+      },
+      {
+        url: 'discord://webhook-token',
+        format: 'markdown',
+      },
+    ];
+    global.sails.config.custom.baseUrl = 'http://localhost:3008';
+    global.sails.config.custom.globalNotifications.enabled = true;
+    global.sails.helpers.utils.makeTranslator = () => (key) => key;
+    global.sails.helpers.utils.compileEmailTemplate = {
+      with: async () => '<html>Central template</html>',
+    };
+    global.sails.helpers.utils.sendGlobalNotification = {
+      with: async (email) => {
+        centralEmails.push(email);
+      },
+    };
+    global.sails.helpers.utils.sendNotifications = async (services) => {
+      personalServiceBatches.push(services);
+    };
+
+    await createNotification.fn({
+      values: {
+        type: Notification.Types.ADD_MEMBER_TO_BOARD,
+        data: {},
+        user: {
+          id: 'recipient',
+          name: 'Recipient',
+          email: 'recipient@example.test',
+          language: 'pt-PT',
+          notificationLevel: User.NotificationLevels.ALL,
+        },
+        creatorUser: {
+          id: 'actor',
+          name: 'Actor',
+        },
+      },
+      project: {
+        id: 'project-1',
+        name: 'Project',
+      },
+      board: {
+        id: 'board-1',
+        name: 'Board',
+      },
+    });
+
+    assert.equal(centralEmails.length, 1);
+    assert.deepEqual(personalServiceBatches, [
+      [
+        {
+          url: 'discord://webhook-token',
+          format: 'markdown',
+        },
+      ],
+    ]);
+  });
 });

@@ -3,7 +3,6 @@ export default {
     chat: {
       addEmoji: 'Add emoji',
       allAuthorizedMembers: 'All authorized members',
-      allMessages: 'All messages',
       chatScope: 'Conversation scope',
       currentProject: 'Current project',
       globalInbox: 'All conversations',

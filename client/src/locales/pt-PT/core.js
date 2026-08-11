@@ -379,6 +379,8 @@ export default {
       canOnlyViewBoard: 'Só pode visualizar o quadro.',
       cardActions_title: 'Ações do Cartão',
       cardNotFound_title: 'Cartão não encontrado',
+      cardCreatedButAttachmentUploadFailed:
+        'O cartão foi criado, mas não foi possível carregar o anexo.',
       cardsOnThisListAreAvailableToAllBoardMembers:
         'Os cartões nesta lista estão disponíveis para todos os membros do quadro.',
       cardsOnThisListAreCompleteAndReadyToBeArchived:
@@ -543,11 +545,15 @@ export default {
       noConnectionToServer: 'Sem conexão com o servidor',
       noLists: 'Sem listas',
       noProjects: 'Sem projetos',
+      noUnreadProjectNotifications: 'Não há notificações por ler neste projeto.',
       noUnreadNotifications: 'Nenhuma notificação não lida.',
       notifications: 'Notificações',
       personalNotifications: 'Notificações pessoais',
       personalNotificationsDescription:
         'Escolha quanta atividade chega à sua caixa de notificações.',
+      unreadProjectNotifications_one: '{{count}} notificação por ler neste projeto',
+      unreadProjectNotifications_other: '{{count}} notificações por ler neste projeto',
+      unreadProjectNotifications_title: 'Notificações por ler neste projeto',
       allNotifications: 'Todas as notificações',
       allNotificationsDescription:
         'Atividade dos cartões e quadros que acompanha.',
@@ -810,6 +816,7 @@ export default {
     },
 
     action: {
+      retry: 'Tentar novamente',
       activateUser: 'Ativar utilizador',
       activateUser_title: 'Ativar Utilizador',
       addAnotherCard: 'Adicionar outro cartão',
@@ -914,6 +921,7 @@ export default {
       leaveBoard: 'Sair do quadro',
       leaveProject: 'Sair do projeto',
       logOut_title: 'Sair',
+      markAsRead: 'Marcar como lida',
       makeCover_title: 'Tornar Capa',
       makeProjectShared: 'Tornar projeto partilhado',
       makeProjectShared_title: 'Tornar Projeto Partilhado',

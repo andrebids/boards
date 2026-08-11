@@ -121,6 +121,8 @@ export default {
       canOnlyViewBoard: 'Can only view the board.',
       cardActions_title: 'Card Actions',
       cardNotFound_title: 'Card Not Found',
+      cardCreatedButAttachmentUploadFailed:
+        'The card was created, but its attachment could not be uploaded.',
       cardsOnThisListAreAvailableToAllBoardMembers:
         'Cards on this list are available to all board members.',
       cardsOnThisListAreCompleteAndReadyToBeArchived:
@@ -274,11 +276,15 @@ export default {
       noConnectionToServer: 'No connection to server',
       noLists: 'No lists',
       noProjects: 'No projects',
+      noUnreadProjectNotifications: 'There are no unread notifications in this project.',
       noUnreadNotifications: 'No unread notifications.',
       notifications: 'Notifications',
       personalNotifications: 'Personal notifications',
       personalNotificationsDescription:
         'Choose how much activity reaches your notification inbox.',
+      unreadProjectNotifications_one: '{{count}} unread notification in this project',
+      unreadProjectNotifications_other: '{{count}} unread notifications in this project',
+      unreadProjectNotifications_title: 'Unread notifications in this project',
       allNotifications: 'All notifications',
       allNotificationsDescription: 'Activity from cards and boards you follow.',
       essentialNotificationsOnly: 'Essential only',
@@ -533,6 +539,7 @@ export default {
     },
 
     action: {
+      retry: 'Try again',
       activateUser: 'Activate user',
       activateUser_title: 'Activate User',
       addAnotherCard: 'Add another card',
@@ -630,6 +637,7 @@ export default {
       leaveBoard: 'Leave board',
       leaveProject: 'Leave project',
       logOut_title: 'Log Out',
+      markAsRead: 'Mark as read',
       makeCover_title: 'Make Cover',
       makeProjectShared: 'Make project shared',
       makeProjectShared_title: 'Make Project Shared',

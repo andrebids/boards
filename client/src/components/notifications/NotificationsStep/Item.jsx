@@ -39,9 +39,14 @@ const Item = React.memo(({ id, onClose }) => {
   const dispatch = useDispatch();
   const [t, i18n] = useTranslation();
 
-  const handleDeleteClick = useCallback(() => {
+  const handleMarkAsReadClick = useCallback(() => {
     dispatch(entryActions.deleteNotification(id));
   }, [id, dispatch]);
+
+  const handleOpenClick = useCallback(() => {
+    dispatch(entryActions.deleteNotification(id));
+    onClose();
+  }, [id, dispatch, onClose]);
 
   const creatorUserName =
     creatorUser.id === StaticUserIds.DELETED
@@ -71,7 +76,7 @@ const Item = React.memo(({ id, onClose }) => {
       {beforeDetail}
       <strong>{detail}</strong>
       {afterDetail}
-      <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+      <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
         {cardName}
       </Link>
     </Trans>
@@ -105,7 +110,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {' added you to board '}
-          <Link to={Paths.BOARDS.replace(':id', notification.boardId)} onClick={onClose}>
+          <Link to={Paths.BOARDS.replace(':id', notification.boardId)} onClick={handleOpenClick}>
             {boardName}
           </Link>
         </Trans>
@@ -131,7 +136,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {' moved '}
-          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
             {cardName}
           </Link>
           {' from '}
@@ -157,7 +162,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {` left a new comment «${commentText}» to `}
-          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
             {cardName}
           </Link>
         </Trans>
@@ -176,7 +181,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {` added you to `}
-          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
             {cardName}
           </Link>
         </Trans>
@@ -197,7 +202,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {` mentioned you in «${commentText}» on `}
-          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
             {cardName}
           </Link>
         </Trans>
@@ -220,7 +225,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {' added '}
-          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
             {cardName}
           </Link>
           {' to '}
@@ -446,7 +451,7 @@ const Item = React.memo(({ id, onClose }) => {
           >
             <span className={styles.author}>{creatorUserName}</span>
             {' removed the due date from '}
-            <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+            <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
               {cardName}
             </Link>
           </Trans>
@@ -468,7 +473,7 @@ const Item = React.memo(({ id, onClose }) => {
             {' to '}
             <strong>{newDate}</strong>
             {' for '}
-            <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+            <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
               {cardName}
             </Link>
           </Trans>
@@ -488,7 +493,7 @@ const Item = React.memo(({ id, onClose }) => {
         >
           <span className={styles.author}>{creatorUserName}</span>
           {' updated '}
-          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={onClose}>
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
             {cardName}
           </Link>
         </Trans>
@@ -507,10 +512,10 @@ const Item = React.memo(({ id, onClose }) => {
       <Button
         variant="secondary"
         type="button"
-        icon="trash alternate outline"
-        aria-label={t('action.delete')}
+        icon="check"
+        aria-label={t('action.markAsRead')}
         className={styles.button}
-        onClick={handleDeleteClick}
+        onClick={handleMarkAsReadClick}
       />
     </div>
   );
