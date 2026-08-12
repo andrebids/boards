@@ -6,6 +6,8 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
 
+const { prepareEmailLogo } = require('../../../utils/email-logo');
+
 module.exports = {
   inputs: {
     to: { type: 'string', required: true },
@@ -55,21 +57,8 @@ module.exports = {
       await transporter.verify();
       sails.log.info('✅ [GLOBAL_NOTIFICATIONS] Conexão SMTP verificada com sucesso');
 
-      // Preparar anexos (logo inline)
-      const attachments = [];
       const logoPath = path.join(sails.config.appPath, 'client', 'public', 'logo192.png');
-      const logoCid = 'logo@planka';
-
-      if (require('fs').existsSync(logoPath)) {
-        attachments.push({
-          filename: 'logo.png',
-          path: logoPath,
-          cid: logoCid,
-        });
-      }
-
-      // Substituir placeholder do logo no HTML
-      const htmlWithLogo = inputs.html.replace('{{logo_url}}', `cid:${logoCid}`);
+      const preparedEmail = prepareEmailLogo(inputs.html, logoPath);
 
       // Gerar texto simples (fallback automático)
       const generatePlainText = (data) => {
@@ -94,10 +83,10 @@ ${data.card_url}
         to: inputs.to,
         subject: inputs.subject,
         // HTML e texto automático
-        html: htmlWithLogo,
+        html: preparedEmail.html,
         text: inputs.data ? generatePlainText(inputs.data) : undefined,
         // Anexos
-        attachments: attachments.length > 0 ? attachments : undefined,
+        attachments: preparedEmail.attachments,
         // Headers adicionais
         headers: {
           'X-Mailer': 'Blachere Boards Global Notifications',

@@ -4,7 +4,8 @@
  */
 
 const path = require('path');
-const fs = require('fs');
+
+const { prepareEmailLogo } = require('../../../utils/email-logo');
 
 const generatePlainText = (data) => {
   return `${data.actor_name} ${data.action_verb} ${data.action_object}
@@ -61,27 +62,15 @@ module.exports = {
     }
 
     try {
-      // Preparar anexos (logo inline)
-      const attachments = [];
       const logoPath = path.join(sails.config.appPath, 'public', 'logo192.png');
-      const logoCid = 'logo@planka';
-      if (fs.existsSync(logoPath)) {
-        attachments.push({
-          filename: 'logo.png',
-          path: logoPath,
-          cid: logoCid,
-        });
-      }
-
-      // Substituir placeholder do logo no HTML
-      const htmlWithLogo = inputs.html.replace('{{logo_url}}', `cid:${logoCid}`);
+      const preparedEmail = prepareEmailLogo(inputs.html, logoPath);
 
       const mailOptions = {
         to: inputs.to,
         subject: inputs.subject,
-        html: htmlWithLogo,
+        html: preparedEmail.html,
         text: inputs.text || (inputs.data ? generatePlainText(inputs.data) : undefined),
-        attachments: attachments.length > 0 ? attachments : undefined,
+        attachments: preparedEmail.attachments,
         from: sails.config.custom.smtpFrom,
         messageId: inputs.messageId,
       };
