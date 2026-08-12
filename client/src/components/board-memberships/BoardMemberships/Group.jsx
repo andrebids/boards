@@ -34,13 +34,14 @@ const Group = React.memo(({ items, role, groupsTotal }) => {
     <div className={styles.wrapper}>
       <Icon name={BoardMembershipRoleIcons[role]} className={styles.icon} />
       {items.slice(0, visibleTotal).map((item) => (
-        <span key={item.id} className={styles.user}>
+        <span key={item.id} className={styles.user} data-tooltip={item.user.name}>
           <ActionsPopup boardMembershipId={item.id}>
             <UserAvatar
               id={item.user.id}
               size="large"
               variant="board"
               isDisabled={!item.isPersisted}
+              withTitle={false}
             />
           </ActionsPopup>
         </span>

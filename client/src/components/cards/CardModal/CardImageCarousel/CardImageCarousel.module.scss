@@ -14,7 +14,7 @@
   }
 
   .image {
-    background: var(--card-modal-surface-hover, #eef1f4);
+    background: transparent;
     display: block;
     height: 100%;
     object-fit: contain;
@@ -163,7 +163,7 @@
     border-radius: 10px;
     display: block;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     pointer-events: none;
     width: 100%;
   }

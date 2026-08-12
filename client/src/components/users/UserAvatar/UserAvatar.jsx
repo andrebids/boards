@@ -50,21 +50,21 @@ const getColor = (name) => {
 };
 
 const UserAvatar = React.memo(
-  ({ id, size, variant, isDisabled, withCreatorIndicator, className, onClick }) => {
+  ({ id, size, variant, isDisabled, withCreatorIndicator, withTitle, className, onClick }) => {
     const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
 
     const user = useSelector((state) => selectUserById(state, id));
     const [t] = useTranslation();
+    const title =
+      user.id === StaticUserIds.DELETED
+        ? t(`common.${user.name}`, {
+            context: 'title',
+          })
+        : user.name;
 
     const contentNode = (
       <span
-        title={
-          user.id === StaticUserIds.DELETED
-            ? t(`common.${user.name}`, {
-                context: 'title',
-              })
-            : user.name
-        }
+        title={withTitle ? title : undefined}
         className={classNames(
           styles.wrapper,
           styles[`wrapper${upperFirst(size)}`],
@@ -85,6 +85,7 @@ const UserAvatar = React.memo(
       <button
         data-id={id}
         type="button"
+        aria-label={title}
         disabled={isDisabled}
         className={classNames(styles.button, className)}
         onClick={onClick}
@@ -103,6 +104,7 @@ UserAvatar.propTypes = {
   variant: PropTypes.oneOf(Object.values(Variants)),
   isDisabled: PropTypes.bool,
   withCreatorIndicator: PropTypes.bool,
+  withTitle: PropTypes.bool,
   className: PropTypes.string,
   onClick: PropTypes.func,
 };
@@ -113,6 +115,7 @@ UserAvatar.defaultProps = {
   variant: Variants.DEFAULT,
   isDisabled: false,
   withCreatorIndicator: false,
+  withTitle: true,
   className: undefined,
   onClick: undefined,
 };

@@ -5,10 +5,11 @@
 
 :global(#app) {
   .addButton {
+    align-self: center;
     background: transparent;
     color: #fff;
-    margin-right: 0;
-    vertical-align: top;
+    flex: 0 0 auto;
+    margin: 0 8px;
 
     &:hover {
       background: rgba(34, 36, 38, 0.3);

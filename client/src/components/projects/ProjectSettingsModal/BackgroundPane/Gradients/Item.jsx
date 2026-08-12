@@ -53,7 +53,9 @@ const Item = React.memo(({ name }) => {
     .join(' ');
 
   return (
-    <Button variant="secondary"
+    <Button
+      fullWidth
+      variant="secondary"
       type="button"
       className={classNames(
         styles.wrapper,
