@@ -15,6 +15,12 @@ const updateGanttPlan = (id, data, headers) => socket.patch(`/gantt-plans/${id}`
 
 const disableGanttPlan = (id, headers) => socket.post(`/gantt-plans/${id}/disable`, {}, headers);
 
+const getGanttSourceTasks = (id, data, headers) =>
+  socket.get(`/gantt-plans/${id}/source-tasks`, data, headers);
+
+const importGanttSourceTasks = (id, taskIds, headers) =>
+  socket.post(`/gantt-plans/${id}/import-source-tasks`, { taskIds }, headers);
+
 const createGanttItem = (ganttPlanId, data, headers) =>
   socket.post(`/gantt-plans/${ganttPlanId}/items`, data, headers);
 
@@ -30,6 +36,8 @@ export default {
   createProjectGanttPlan,
   updateGanttPlan,
   disableGanttPlan,
+  getGanttSourceTasks,
+  importGanttSourceTasks,
   createGanttItem,
   updateGanttItem,
   updateGanttItemDependencies,

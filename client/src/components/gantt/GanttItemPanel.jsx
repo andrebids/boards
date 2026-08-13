@@ -7,24 +7,38 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types';
 import { Dropdown, Icon } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '../../lib/custom-ui';
+import { usePopup } from '../../lib/popup';
+import GANTT_COLORS from '../../constants/GanttColors';
 import { addGanttDays, differenceInGanttDays } from '../../utils/gantt-dates';
+import PureBoardMembershipsStep from '../board-memberships/PureBoardMembershipsStep';
+import UserAvatar from '../users/UserAvatar';
+import Paths from '../../constants/Paths';
 
 import styles from './GanttItemPanel.module.scss';
 
-const COLORS = ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'gray'];
+const COLORS = Object.keys(GANTT_COLORS);
+const DURATION_UNIT_DAYS = { day: 1, week: 7, month: 30 };
+const MAX_VISIBLE_ASSIGNEES = 5;
 
-const createInitialData = (item, initialParentId) => ({
+const getItemStatus = (item, defaultStatus) => {
+  if (!item?.sourceTask) {
+    return item?.status || defaultStatus;
+  }
+  return item.sourceTask.isCompleted ? 'completed' : 'notStarted';
+};
+
+const createInitialData = (item, initialParentId, defaultStatus) => ({
   task: item?.task || '',
   itemType: item?.itemType || 'task',
   parentId: item?.parentId || initialParentId || '',
-  description: item?.description || '',
   assigneeUserIds: item?.assigneeUserIds || [],
-  status: item?.status || '',
-  progress: item?.progress || 0,
+  status: getItemStatus(item, defaultStatus),
   color: item?.color || 'blue',
   expectedDurationDays: item?.expectedDurationDays || 1,
+  durationUnit: 'day',
   startDate: item?.startDate || '',
   endDate: item?.endDate || '',
 });
@@ -45,18 +59,28 @@ const GanttItemPanel = React.memo(
     onClose,
   }) => {
     const [t] = useTranslation();
+    const navigate = useNavigate();
+    const isLinked = Boolean(item?.sourceTaskId && item?.sourceTask);
+    const defaultStatus = t('common.ganttStatus_notStarted');
     const [data, setData] = useState(() => ({
-      ...createInitialData(item, initialParentId),
+      ...createInitialData(item, initialParentId, defaultStatus),
       predecessorIds,
     }));
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const taskInputRef = useRef(null);
+    const PeoplePopup = usePopup(PureBoardMembershipsStep, { position: 'bottom right' });
 
     useEffect(() => {
-      setData({ ...createInitialData(item, initialParentId), predecessorIds });
+      const initialData = createInitialData(item, initialParentId, defaultStatus);
+      if (item?.sourceTask) {
+        initialData.status = item.sourceTask.isCompleted
+          ? t('common.ganttStatus_completed')
+          : t('common.ganttStatus_notStarted');
+      }
+      setData({ ...initialData, predecessorIds });
       setError(null);
-    }, [initialParentId, item, predecessorIds]);
+    }, [defaultStatus, initialParentId, item, predecessorIds, t]);
 
     useEffect(() => {
       taskInputRef.current?.focus({ preventScroll: true });
@@ -73,14 +97,22 @@ const GanttItemPanel = React.memo(
       return () => document.removeEventListener('keydown', handleKeyDown);
     }, [isSubmitting, onClose]);
 
-    const userOptions = useMemo(
-      () =>
-        users.map((user) => ({
-          key: user.id,
-          value: user.id,
-          text: user.name || user.username || user.email,
-        })),
+    const peopleItems = useMemo(
+      () => users.map((user) => ({ id: user.id, user, isPersisted: true })),
       [users],
+    );
+    const selectedUsers = users.filter(({ id }) => data.assigneeUserIds.includes(id));
+    const hiddenAssignees = Math.max(0, selectedUsers.length - MAX_VISIBLE_ASSIGNEES);
+    const statusOptions = useMemo(
+      () => [
+        ...new Set([
+          defaultStatus,
+          t('common.ganttStatus_inProgress'),
+          t('common.ganttStatus_completed'),
+          ...statuses,
+        ]),
+      ],
+      [defaultStatus, statuses, t],
     );
     const generalOptions = useMemo(
       () => generalItems.map(({ id, task }) => ({ key: id, value: id, text: task })),
@@ -95,8 +127,28 @@ const GanttItemPanel = React.memo(
       setData((current) => ({ ...current, [name]: value }));
     }, []);
 
-    const handlePeopleChange = useCallback((_, { value }) => {
-      setData((current) => ({ ...current, assigneeUserIds: value }));
+    const handleDropdownChange = useCallback((_, { name, value }) => {
+      setData((current) => ({ ...current, [name]: value }));
+    }, []);
+
+    const handlePeopleSelect = useCallback((userId) => {
+      setData((current) => ({
+        ...current,
+        assigneeUserIds: current.assigneeUserIds.includes(userId)
+          ? current.assigneeUserIds
+          : [...current.assigneeUserIds, userId],
+      }));
+    }, []);
+
+    const handlePeopleDeselect = useCallback((userId) => {
+      setData((current) => ({
+        ...current,
+        assigneeUserIds: current.assigneeUserIds.filter((id) => id !== userId),
+      }));
+    }, []);
+
+    const handlePeopleClear = useCallback(() => {
+      setData((current) => ({ ...current, assigneeUserIds: [] }));
     }, []);
 
     const handleParentChange = useCallback((_, { value }) => {
@@ -117,12 +169,36 @@ const GanttItemPanel = React.memo(
     }, []);
 
     const handleDurationChange = useCallback((event) => {
-      const expectedDurationDays = Math.max(1, Number(event.currentTarget.value) || 1);
+      const durationValue = Math.max(1, Number(event.currentTarget.value) || 1);
       setData((current) => ({
         ...current,
-        expectedDurationDays,
-        endDate: current.startDate ? addGanttDays(current.startDate, expectedDurationDays - 1) : '',
+        expectedDurationDays: durationValue * DURATION_UNIT_DAYS[current.durationUnit],
+        endDate: current.startDate
+          ? addGanttDays(
+              current.startDate,
+              durationValue * DURATION_UNIT_DAYS[current.durationUnit] - 1,
+            )
+          : '',
       }));
+    }, []);
+
+    const handleDurationUnitChange = useCallback((_, { value: durationUnit }) => {
+      setData((current) => {
+        const durationValue = Math.max(
+          1,
+          Math.ceil(current.expectedDurationDays / DURATION_UNIT_DAYS[durationUnit]),
+        );
+        const expectedDurationDays = durationValue * DURATION_UNIT_DAYS[durationUnit];
+
+        return {
+          ...current,
+          durationUnit,
+          expectedDurationDays,
+          endDate: current.startDate
+            ? addGanttDays(current.startDate, expectedDurationDays - 1)
+            : '',
+        };
+      });
     }, []);
 
     const handleEndChange = useCallback((event) => {
@@ -134,7 +210,7 @@ const GanttItemPanel = React.memo(
 
         const expectedDurationDays = differenceInGanttDays(current.startDate, value) + 1;
         return expectedDurationDays > 0
-          ? { ...current, endDate: value, expectedDurationDays }
+          ? { ...current, endDate: value, expectedDurationDays, durationUnit: 'day' }
           : { ...current, endDate: value };
       });
     }, []);
@@ -154,21 +230,25 @@ const GanttItemPanel = React.memo(
         setIsSubmitting(true);
         setError(null);
         try {
-          await onSave({
+          const payload = {
             task: data.task.trim(),
             itemType: data.itemType,
             parentId: data.itemType === 'task' ? data.parentId || null : null,
-            description: data.description.trim() || null,
             assigneeUserIds: data.assigneeUserIds,
             status: data.status.trim() || null,
-            progress: data.itemType === 'task' ? Number(data.progress) : 0,
             color: data.color,
             predecessorIds: data.itemType === 'task' ? data.predecessorIds : [],
             expectedDurationDays: Number(data.expectedDurationDays),
             startDate: data.itemType === 'task' ? data.startDate || null : null,
             endDate: data.itemType === 'task' ? data.endDate || null : null,
             ...(item && { version: item.version }),
-          });
+          };
+          if (isLinked) {
+            delete payload.task;
+            delete payload.assigneeUserIds;
+            delete payload.status;
+          }
+          await onSave(payload);
           onClose();
         } catch (nextError) {
           setError(
@@ -180,18 +260,19 @@ const GanttItemPanel = React.memo(
           setIsSubmitting(false);
         }
       },
-      [data, item, onClose, onSave, t],
+      [data, isLinked, item, onClose, onSave, t],
     );
 
     const handleDelete = useCallback(async () => {
-      if (
-        // eslint-disable-next-line no-alert
-        !window.confirm(
-          item.itemType === 'summary' && childCount > 0
-            ? t('common.ganttDeleteGeneralTaskConfirmation', { count: childCount })
-            : t('common.ganttDeleteTaskConfirmation'),
-        )
-      ) {
+      let confirmation = t('common.ganttDeleteTaskConfirmation');
+      if (item.itemType === 'summary' && childCount > 0) {
+        confirmation = t('common.ganttDeleteGeneralTaskConfirmation', { count: childCount });
+      } else if (isLinked) {
+        confirmation = t('common.ganttRemoveLinkedTaskConfirmation');
+      }
+
+      // eslint-disable-next-line no-alert
+      if (!window.confirm(confirmation)) {
         return;
       }
 
@@ -203,7 +284,7 @@ const GanttItemPanel = React.memo(
         setError(t('common.ganttTaskDeleteFailed'));
         setIsSubmitting(false);
       }
-    }, [childCount, item, onClose, onDelete, t]);
+    }, [childCount, isLinked, item, onClose, onDelete, t]);
 
     const isSummary = data.itemType === 'summary';
 
@@ -231,8 +312,32 @@ const GanttItemPanel = React.memo(
           onSubmit={handleSubmit}
           aria-describedby={error ? 'gantt-item-error' : undefined}
         >
+          {isLinked && (
+            <div className={styles.sourceBanner}>
+              <div>
+                <span>
+                  <Icon name="columns" />
+                  {t('common.ganttFromBoard')}
+                </span>
+                <strong>
+                  {item.sourceTask.boardName} / {item.sourceTask.cardName}
+                </strong>
+                <small>
+                  {item.sourceTask.taskListName} · {t('common.ganttEditSourceFieldsInCard')}
+                </small>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                type="button"
+                onClick={() => navigate(Paths.CARDS.replace(':id', item.sourceTask.cardId))}
+              >
+                {t('common.ganttOpenCard')}
+              </Button>
+            </div>
+          )}
           <label className={styles.field} htmlFor="gantt-task-name">
-            <span>{t('common.ganttTask')}</span>
+            <span>{isSummary ? t('common.project') : t('common.ganttTask')}</span>
             <input
               ref={taskInputRef}
               id="gantt-task-name"
@@ -240,24 +345,37 @@ const GanttItemPanel = React.memo(
               value={data.task}
               maxLength={1024}
               required
+              disabled={isLinked}
               aria-invalid={Boolean(error && !data.task.trim())}
               onChange={handleFieldChange}
             />
           </label>
 
           {!item && (
-            <label className={styles.field} htmlFor="gantt-task-type">
-              <span>{t('common.ganttTaskType')}</span>
-              <select
+            <div className={styles.field}>
+              <span id="gantt-task-type-label">{t('common.ganttTaskType')}</span>
+              <Dropdown
+                fluid
+                selection
                 id="gantt-task-type"
                 name="itemType"
                 value={data.itemType}
-                onChange={handleFieldChange}
-              >
-                <option value="task">{t('common.ganttTaskType_task')}</option>
-                <option value="summary">{t('common.ganttTaskType_summary')}</option>
-              </select>
-            </label>
+                options={[
+                  {
+                    key: 'task',
+                    text: t('common.ganttTaskType_task'),
+                    value: 'task',
+                  },
+                  {
+                    key: 'summary',
+                    text: t('common.ganttTaskType_summary'),
+                    value: 'summary',
+                  },
+                ]}
+                aria-labelledby="gantt-task-type-label"
+                onChange={handleDropdownChange}
+              />
+            </div>
           )}
 
           {!isSummary && (
@@ -278,108 +396,159 @@ const GanttItemPanel = React.memo(
             </div>
           )}
 
-          <label className={styles.field} htmlFor="gantt-task-description">
-            <span>{t('common.ganttDescription')}</span>
-            <textarea
-              id="gantt-task-description"
-              name="description"
-              value={data.description}
-              maxLength={4096}
-              rows={3}
-              onChange={handleFieldChange}
-            />
-          </label>
-
           <div className={styles.field}>
             <span id="gantt-task-people-label">{t('common.ganttPerson')}</span>
-            <Dropdown
-              fluid
-              multiple
-              search
-              selection
-              placeholder={t('common.ganttSelectProjectMembers')}
-              value={data.assigneeUserIds}
-              options={userOptions}
-              noResultsMessage={t('common.ganttNoMembersFound')}
-              aria-labelledby="gantt-task-people-label"
-              onChange={handlePeopleChange}
-            />
+            <div className={styles.people} role="group" aria-labelledby="gantt-task-people-label">
+              {selectedUsers.slice(0, MAX_VISIBLE_ASSIGNEES).map((user) =>
+                isLinked ? (
+                  <UserAvatar key={user.id} id={user.id} size="medium" variant="board" />
+                ) : (
+                  <PeoplePopup
+                    key={user.id}
+                    items={peopleItems}
+                    currentUserIds={data.assigneeUserIds}
+                    onUserSelect={handlePeopleSelect}
+                    onUserDeselect={handlePeopleDeselect}
+                    onClear={handlePeopleClear}
+                  >
+                    <button
+                      type="button"
+                      className={styles.personButton}
+                      aria-label={user.name || user.username || user.email}
+                      title={user.name || user.username || user.email}
+                    >
+                      <UserAvatar id={user.id} size="medium" variant="board" withTitle={false} />
+                    </button>
+                  </PeoplePopup>
+                ),
+              )}
+              {!isLinked && hiddenAssignees > 0 && (
+                <PeoplePopup
+                  items={peopleItems}
+                  currentUserIds={data.assigneeUserIds}
+                  onUserSelect={handlePeopleSelect}
+                  onUserDeselect={handlePeopleDeselect}
+                  onClear={handlePeopleClear}
+                >
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="secondary"
+                    type="button"
+                    className={styles.peopleButton}
+                    aria-label={`+${hiddenAssignees} ${t('common.members')}`}
+                    title={`+${hiddenAssignees} ${t('common.members')}`}
+                  >
+                    +{hiddenAssignees}
+                  </Button>
+                </PeoplePopup>
+              )}
+              {!isLinked && (
+                <PeoplePopup
+                  items={peopleItems}
+                  currentUserIds={data.assigneeUserIds}
+                  onUserSelect={handlePeopleSelect}
+                  onUserDeselect={handlePeopleDeselect}
+                  onClear={handlePeopleClear}
+                >
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="secondary"
+                    type="button"
+                    className={styles.peopleButton}
+                    aria-label={t('action.addMember')}
+                    title={t('action.addMember')}
+                  >
+                    <Icon fitted name="add user" aria-hidden="true" />
+                  </Button>
+                </PeoplePopup>
+              )}
+              {isLinked && selectedUsers.length === 0 && (
+                <span className={styles.sourceEmpty}>{t('common.ganttNoAssignee')}</span>
+              )}
+            </div>
           </div>
 
           <div className={styles.twoColumns}>
-            <label className={styles.field} htmlFor="gantt-task-status">
-              <span>{t('common.ganttStatus')}</span>
-              <input
+            <div className={styles.field}>
+              <span id="gantt-task-status-label">{t('common.ganttStatus')}</span>
+              <Dropdown
+                fluid
+                selection
                 id="gantt-task-status"
                 name="status"
                 value={data.status}
-                maxLength={128}
-                list="gantt-statuses"
-                onChange={handleFieldChange}
+                disabled={isLinked}
+                options={statusOptions.map((status) => ({
+                  key: status,
+                  text: status,
+                  value: status,
+                }))}
+                aria-labelledby="gantt-task-status-label"
+                onChange={handleDropdownChange}
               />
-              <datalist id="gantt-statuses">
-                {statuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </datalist>
-            </label>
-            <label className={styles.field} htmlFor="gantt-task-color">
-              <span>{t('common.ganttColor')}</span>
-              <select
+            </div>
+            <div className={styles.field}>
+              <span id="gantt-task-color-label">{t('common.ganttColor')}</span>
+              <Dropdown
+                fluid
+                selection
                 id="gantt-task-color"
                 name="color"
                 value={data.color}
-                onChange={handleFieldChange}
-              >
-                {COLORS.map((color) => (
-                  <option key={color} value={color}>
-                    {t(`common.ganttColor_${color}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
+                options={COLORS.map((color) => ({
+                  key: color,
+                  text: (
+                    <span className={styles.colorOption}>
+                      <span
+                        className={styles.colorDot}
+                        style={{ backgroundColor: GANTT_COLORS[color] }}
+                        aria-hidden="true"
+                      />
+                      {t(`common.ganttColor_${color}`)}
+                    </span>
+                  ),
+                  value: color,
+                }))}
+                aria-labelledby="gantt-task-color-label"
+                onChange={handleDropdownChange}
+              />
+            </div>
           </div>
 
           {!isSummary && (
-            <label className={styles.field} htmlFor="gantt-task-progress">
-              <span>{t('common.ganttProgress')}</span>
-              <div className={styles.progressInput}>
-                <input
-                  id="gantt-task-progress"
-                  name="progress"
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="5"
-                  value={data.progress}
-                  onChange={handleFieldChange}
-                />
-                <output htmlFor="gantt-task-progress">{data.progress}%</output>
-              </div>
-            </label>
-          )}
-
-          {!isSummary && (
-            <label className={styles.field} htmlFor="gantt-task-duration">
-              <span>{t('common.ganttExpectedDuration')}</span>
+            <div className={styles.field}>
+              <label htmlFor="gantt-task-duration">{t('common.ganttExpectedDuration')}</label>
               <div className={styles.durationInput}>
                 <input
                   id="gantt-task-duration"
                   type="number"
                   min="1"
                   step="1"
-                  value={data.expectedDurationDays}
+                  value={Math.max(
+                    1,
+                    Math.ceil(data.expectedDurationDays / DURATION_UNIT_DAYS[data.durationUnit]),
+                  )}
                   aria-describedby="gantt-task-duration-help"
                   onChange={handleDurationChange}
                 />
-                <span aria-hidden="true">
-                  {t('common.ganttDayUnit', { count: Number(data.expectedDurationDays) })}
-                </span>
+                <Dropdown
+                  compact
+                  selection
+                  id="gantt-task-duration-unit"
+                  value={data.durationUnit}
+                  options={['day', 'week', 'month'].map((unit) => ({
+                    key: unit,
+                    text: t(`common.ganttDurationUnit_${unit}`),
+                    value: unit,
+                  }))}
+                  aria-label={t('common.ganttDurationUnit')}
+                  onChange={handleDurationUnitChange}
+                />
               </div>
               <small id="gantt-task-duration-help">{t('common.ganttDurationHelp')}</small>
-            </label>
+            </div>
           )}
 
           {!isSummary && (
@@ -438,24 +607,43 @@ const GanttItemPanel = React.memo(
 
           <footer className={styles.footer}>
             {item?.itemType === 'summary' && (
-              <Button variant="secondary" type="button" onClick={() => onAddSubtask(item.id)}>
-                {t('common.ganttAddSubtask')}
+              <Button
+                isIconOnly
+                size="sm"
+                variant="secondary"
+                type="button"
+                title={t('common.ganttAddSubtask')}
+                aria-label={t('common.ganttAddSubtask')}
+                onClick={() => onAddSubtask(item.id)}
+              >
+                <Icon fitted name="plus" aria-hidden="true" />
               </Button>
             )}
             {item && (
               <Button
+                isIconOnly
+                size="sm"
                 variant="danger-soft"
                 type="button"
+                title={t('common.delete')}
+                aria-label={t('common.delete')}
                 disabled={isSubmitting}
                 onClick={handleDelete}
               >
-                {t('common.delete')}
+                <Icon fitted name="trash alternate outline" aria-hidden="true" />
               </Button>
             )}
-            <Button variant="secondary" type="button" disabled={isSubmitting} onClick={onClose}>
+            <Button
+              size="sm"
+              variant="secondary"
+              type="button"
+              className={styles.cancelButton}
+              disabled={isSubmitting}
+              onClick={onClose}
+            >
               {t('common.cancel')}
             </Button>
-            <Button variant="primary" type="submit" loading={isSubmitting}>
+            <Button size="sm" variant="primary" type="submit" loading={isSubmitting}>
               {item ? t('common.ganttSaveChanges') : t('common.ganttCreateTask')}
             </Button>
           </footer>

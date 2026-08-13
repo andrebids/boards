@@ -12,6 +12,7 @@ const Errors = {
   INVALID_DATES: { invalidDates: 'Invalid Gantt dates or duration' },
   NOT_ENOUGH_RIGHTS: { notEnoughRights: 'Not enough rights' },
   USER_NOT_FOUND: { userNotFound: 'User not found in project' },
+  SOURCE_FIELDS_READ_ONLY: { sourceFieldsReadOnly: 'Linked task fields are read only' },
 };
 
 module.exports = {
@@ -56,11 +57,6 @@ module.exports = {
       isIn: ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'gray'],
       allowNull: true,
     },
-    progress: {
-      type: 'number',
-      min: 0,
-      max: 100,
-    },
     position: {
       type: 'number',
       min: 0,
@@ -81,6 +77,7 @@ module.exports = {
     invalidDates: { responseType: 'unprocessableEntity' },
     notEnoughRights: { responseType: 'forbidden' },
     userNotFound: { responseType: 'unprocessableEntity' },
+    sourceFieldsReadOnly: { responseType: 'unprocessableEntity' },
   },
 
   async fn(inputs) {
@@ -99,6 +96,14 @@ module.exports = {
     }
     if (item.version !== inputs.version) {
       throw Errors.CONFLICT;
+    }
+    if (
+      item.sourceTaskId &&
+      (inputs.task !== undefined ||
+        inputs.status !== undefined ||
+        inputs.assigneeUserIds !== undefined)
+    ) {
+      throw Errors.SOURCE_FIELDS_READ_ONLY;
     }
 
     if (inputs.parentId !== undefined) {
@@ -130,7 +135,6 @@ module.exports = {
       'description',
       'status',
       'color',
-      'progress',
       'position',
     ]);
     ['task', 'description', 'status'].forEach((key) => {
@@ -169,7 +173,12 @@ module.exports = {
       assignees = await sails.helpers.gantt.syncItemAssignees(item.id, assigneeUserIds);
     }
 
-    const presentedItem = sails.helpers.gantt.presentItem(item, assignees);
+    const sourceTasksById = await sails.helpers.gantt.buildSourceTaskMap([item]);
+    const presentedItem = sails.helpers.gantt.presentItem(
+      item,
+      assignees,
+      sourceTasksById[item.sourceTaskId],
+    );
     const payload = { item: presentedItem };
     sails.sockets.broadcast(`ganttPlan:${plan.id}`, 'ganttItemUpdate', payload, this.req);
 

@@ -8,7 +8,6 @@ exports.up = async (knex) => {
     table.text('item_type').notNullable().defaultTo('task');
     table.bigInteger('parent_id');
     table.text('description');
-    table.integer('progress').notNullable().defaultTo(0);
 
     table.foreign('parent_id').references('id').inTable('gantt_item').onDelete('CASCADE');
     table.index(['parent_id', 'position'], 'gantt_item_parent_position_idx');
@@ -17,7 +16,6 @@ exports.up = async (knex) => {
   await knex.raw(`
     ALTER TABLE gantt_item
     ADD CONSTRAINT gantt_item_type_check CHECK (item_type IN ('task', 'summary')),
-    ADD CONSTRAINT gantt_item_progress_check CHECK (progress BETWEEN 0 AND 100),
     ADD CONSTRAINT gantt_item_parent_check CHECK (
       (item_type = 'summary' AND parent_id IS NULL) OR item_type = 'task'
     )
@@ -37,14 +35,13 @@ exports.up = async (knex) => {
       LOOP
         summary_id := next_id();
         INSERT INTO gantt_item (
-          id, gantt_plan_id, task, item_type, expected_duration_days, progress, position
+          id, gantt_plan_id, task, item_type, expected_duration_days, position
         ) VALUES (
           summary_id,
           legacy_group.gantt_plan_id,
           legacy_group.project,
           'summary',
           1,
-          0,
           legacy_group.first_position - 0.5
         );
 
@@ -106,6 +103,5 @@ exports.down = async (knex) => {
     table.dropColumn('parent_id');
     table.dropColumn('item_type');
     table.dropColumn('description');
-    table.dropColumn('progress');
   });
 };

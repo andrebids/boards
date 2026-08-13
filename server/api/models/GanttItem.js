@@ -51,10 +51,6 @@ module.exports = {
       type: 'string',
       allowNull: true,
     },
-    progress: {
-      type: 'number',
-      defaultsTo: 0,
-    },
     position: {
       type: 'number',
       required: true,
@@ -67,6 +63,11 @@ module.exports = {
       model: 'GanttPlan',
       required: true,
       columnName: 'gantt_plan_id',
+    },
+    sourceTaskId: {
+      model: 'Task',
+      unique: true,
+      columnName: 'source_task_id',
     },
     assignees: {
       collection: 'User',

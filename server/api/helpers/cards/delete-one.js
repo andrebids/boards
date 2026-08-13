@@ -33,6 +33,13 @@ module.exports = {
   },
 
   async fn(inputs) {
+    const taskLists = await TaskList.qm.getByCardId(inputs.record.id);
+    const tasks = taskLists.length
+      ? await Task.qm.getByTaskListIds(taskLists.map(({ id }) => id))
+      : [];
+    const linkedGanttItems = tasks.length
+      ? await GanttItem.qm.getBySourceTaskIds(tasks.map(({ id }) => id))
+      : [];
     let result;
     try {
       result = await sails.getDatastore().transaction(async (db) => {
@@ -63,6 +70,13 @@ module.exports = {
     const { card, fileReferences } = result;
 
     sails.helpers.attachments.removeUnreferencedFiles(fileReferences);
+
+    if (linkedGanttItems.length > 0) {
+      await sails.helpers.gantt.broadcastDetachedItems.with({
+        items: linkedGanttItems,
+        request: inputs.request,
+      });
+    }
 
     if (card) {
       sails.sockets.broadcast(

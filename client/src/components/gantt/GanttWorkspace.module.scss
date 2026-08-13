@@ -13,7 +13,7 @@
 
   .toolbar {
     align-items: center;
-    background: var(--app-dark-canvas);
+    background: #2a2b2d;
     border-bottom: 1px solid var(--app-dark-border);
     display: flex;
     flex: 0 0 auto;
@@ -94,11 +94,6 @@
       }
     }
 
-    > :global(.wx-willow-dark-theme) {
-      background: transparent;
-      width: 120px;
-    }
-
     button:focus-visible {
       box-shadow: 0 0 0 2px var(--app-focus);
       outline: none;
@@ -167,6 +162,11 @@
     height: 48px;
     justify-content: center;
     width: 48px;
+  }
+
+  .emptyActions {
+    display: flex;
+    gap: 8px;
   }
 
   .unscheduled {

@@ -6,13 +6,16 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { Icon } from 'semantic-ui-react';
 import { Gantt, WillowDark } from '@svar-ui/react-gantt';
 // The package exposes this stylesheet through "./all.css"; the legacy ESLint
 // resolver used by this project does not understand package export maps.
 // eslint-disable-next-line import/no-unresolved
 import '@svar-ui/react-gantt/all.css';
 
+import GANTT_COLORS from '../../constants/GanttColors';
 import { addGanttDays, formatGanttDate, parseGanttDate } from '../../utils/gantt-dates';
+import CardMembers from '../cards/Card/CardMembers';
 
 import styles from './GanttTimelineAdapter.module.scss';
 
@@ -25,35 +28,80 @@ const getWeekNumber = (value) => {
 
 const NATIVE_ZOOM_LEVELS = ['quarter', 'month', 'week', 'day'];
 
+const formatDateLabel = (value) => {
+  const [year, month, day] = value.split('-');
+  return `${day}-${month}-${year.slice(-2)}`;
+};
+
+const AssigneesCell = React.memo(({ row }) => <CardMembers userIds={row.assigneeUserIds} />);
+
+AssigneesCell.propTypes = {
+  row: PropTypes.shape({
+    assigneeUserIds: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+};
+
+const ColumnHeader = React.memo(({ cell }) => (
+  <span className={cell.icon ? styles.iconHeader : styles.columnHeader} title={cell.text}>
+    {cell.icon ? (
+      <>
+        <Icon fitted name={cell.icon} aria-hidden="true" />
+        <span className={styles.visuallyHidden}>{cell.text}</span>
+      </>
+    ) : (
+      cell.text
+    )}
+  </span>
+));
+
+ColumnHeader.propTypes = {
+  cell: PropTypes.shape({
+    icon: PropTypes.string,
+    text: PropTypes.string.isRequired,
+  }).isRequired,
+};
+
+const createHeader = (text, icon) => ({ text, icon, cell: ColumnHeader });
+
 const GanttTimelineAdapter = React.memo(
-  ({ items, links, usersById, zoomLevel, readonly, onItemSelect, onItemChange }) => {
+  ({ items, links, zoomLevel, readonly, onZoomLevelChange, onItemSelect, onItemChange }) => {
     const [t, i18n] = useTranslation();
     const locale = i18n.resolvedLanguage || i18n.language;
+    const todayLabel = useMemo(() => {
+      const label = new Intl.RelativeTimeFormat(locale, {
+        numeric: 'auto',
+      }).format(0, 'day');
+      return `${label.charAt(0).toLocaleUpperCase(locale)}${label.slice(1)}`;
+    }, [locale]);
     const onItemSelectRef = useRef(onItemSelect);
     const onItemChangeRef = useRef(onItemChange);
+    const onZoomLevelChangeRef = useRef(onZoomLevelChange);
     const wrapperRef = useRef(null);
 
     useEffect(() => {
       onItemSelectRef.current = onItemSelect;
       onItemChangeRef.current = onItemChange;
-    }, [onItemChange, onItemSelect]);
+      onZoomLevelChangeRef.current = onZoomLevelChange;
+    }, [onItemChange, onItemSelect, onZoomLevelChange]);
 
     const zoomConfig = useMemo(() => {
       const monthYear = new Intl.DateTimeFormat(locale, {
         month: 'long',
         year: 'numeric',
       });
-      const day = new Intl.DateTimeFormat(locale, {
-        weekday: 'short',
-        day: 'numeric',
-      });
+      const formatDay = (date) => {
+        const day = i18n.dateFns.format(date, 'd', { language: locale });
+        const weekday = i18n.dateFns.format(date, 'EEE', { language: locale });
+        const capitalizedWeekday = `${weekday.charAt(0).toLocaleUpperCase(locale)}${weekday.slice(1)}`;
+        return `${day}\n${capitalizedWeekday}`;
+      };
       const year = new Intl.DateTimeFormat(locale, { year: 'numeric' });
       const month = new Intl.DateTimeFormat(locale, { month: 'short' });
       const quarter = (date) => `Q${Math.floor(date.getMonth() / 3) + 1}`;
 
       return {
         day: {
-          cellWidth: 42,
+          cellWidth: 36,
           minCellWidth: 28,
           maxCellWidth: 100,
           scales: [
@@ -61,10 +109,8 @@ const GanttTimelineAdapter = React.memo(
               unit: 'month',
               step: 1,
               format: (date) => monthYear.format(date),
-              css: (date) =>
-                date.getMonth() % 2 === 1 ? styles.monthBand : styles.monthBandAlternate,
             },
-            { unit: 'day', step: 1, format: (date) => day.format(date) },
+            { unit: 'day', step: 1, format: formatDay },
           ],
         },
         week: {
@@ -78,8 +124,6 @@ const GanttTimelineAdapter = React.memo(
               unit: 'month',
               step: 1,
               format: (date) => monthYear.format(date),
-              css: (date) =>
-                date.getMonth() % 2 === 1 ? styles.monthBand : styles.monthBandAlternate,
             },
             {
               unit: 'week',
@@ -95,13 +139,7 @@ const GanttTimelineAdapter = React.memo(
           maxCellWidth: 240,
           scales: [
             { unit: 'year', step: 1, format: (date) => year.format(date) },
-            {
-              unit: 'month',
-              step: 1,
-              format: (date) => month.format(date),
-              css: (date) =>
-                date.getMonth() % 2 === 1 ? styles.monthBand : styles.monthBandAlternate,
-            },
+            { unit: 'month', step: 1, format: (date) => month.format(date) },
           ],
         },
         quarter: {
@@ -114,7 +152,7 @@ const GanttTimelineAdapter = React.memo(
           ],
         },
       };
-    }, [locale, t]);
+    }, [i18n.dateFns, locale, t]);
 
     const tasks = useMemo(
       () =>
@@ -127,102 +165,138 @@ const GanttTimelineAdapter = React.memo(
           type: item.itemType || 'task',
           parent: item.parentId || 0,
           ...(item.itemType === 'summary' && { open: true }),
-          progress: item.progress || 0,
           details: item.description || '',
           color: item.color || 'blue',
-          assignees: (item.assigneeUserIds || [])
-            .map((userId) => usersById[userId]?.name)
-            .filter(Boolean)
-            .join(', '),
-          startLabel: item.startDate,
-          endLabel: item.endDate,
-          durationLabel: t('common.ganttDayShort', { count: item.expectedDurationDays }),
-          statusLabel: item.status || '—',
+          assigneeUserIds: item.assigneeUserIds || [],
+          startLabel: formatDateLabel(item.startDate),
+          endLabel: formatDateLabel(item.endDate),
+          durationLabel: t('common.ganttDayShort', {
+            count: item.expectedDurationDays,
+          }),
+          statusLabel: item.sourceTask
+            ? t(
+                item.sourceTask.isCompleted
+                  ? 'common.ganttStatus_completed'
+                  : 'common.ganttStatus_notStarted',
+              )
+            : item.status || '—',
         })),
-      [items, t, usersById],
+      [items, t],
     );
+
+    const assigneesColumnWidth = useMemo(() => {
+      const maximum = Math.max(0, ...items.map((item) => item.assigneeUserIds?.length || 0));
+      const visibleSlots = Math.min(4, maximum);
+      return 44 + Math.max(0, visibleSlots - 1) * 18;
+    }, [items]);
 
     const columns = useMemo(
       () => [
         {
           id: 'assignees',
-          header: t('common.ganttPerson'),
-          width: 110,
+          header: createHeader(t('common.ganttPerson'), 'users'),
+          width: assigneesColumnWidth,
+          resize: true,
+          cell: AssigneesCell,
+        },
+        {
+          id: 'text',
+          header: createHeader(t('common.ganttTask')),
+          width: 190,
           resize: true,
         },
-        { id: 'text', header: t('common.ganttTask'), width: 190, resize: true },
         {
           id: 'startLabel',
-          header: t('common.ganttStart'),
-          width: 80,
+          header: createHeader(t('common.ganttStart')),
+          width: 64,
+          align: 'center',
           resize: true,
         },
         {
           id: 'endLabel',
-          header: t('common.ganttEnd'),
-          width: 80,
+          header: createHeader(t('common.ganttEnd')),
+          width: 64,
+          align: 'center',
           resize: true,
         },
         {
           id: 'durationLabel',
-          header: t('common.ganttDuration'),
-          width: 65,
+          header: createHeader(t('common.ganttDuration'), 'clock outline'),
+          width: 48,
           align: 'right',
         },
         {
           id: 'statusLabel',
-          header: t('common.ganttStatus'),
+          header: createHeader(t('common.ganttStatus')),
           width: 104,
           resize: true,
         },
-        {
-          id: 'progress',
-          header: t('common.ganttProgress'),
-          width: 72,
-          align: 'right',
-        },
       ],
-      [t],
+      [assigneesColumnWidth, t],
     );
 
-    const handleInit = useCallback((ganttApi) => {
-      ganttApi.on('select-task', ({ id }) => {
-        onItemSelectRef.current(String(id));
-      });
+    const handleInit = useCallback(
+      (ganttApi) => {
+        const updateTodayMarker = () => {
+          const state = ganttApi.getState();
+          const { _scales: scales, _start: scaleStart, cellWidth } = state;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
 
-      ganttApi.on('update-task', ({ id, inProgress }) => {
-        if (inProgress) {
-          return;
-        }
+          if (!scales || !scaleStart || !cellWidth) {
+            return;
+          }
 
-        const task = ganttApi.getTask(id);
-        if (!task?.start || !task?.end) {
-          return;
-        }
+          ganttApi.getStores().data.setState({
+            _markers: [
+              {
+                left: Math.round(scales.diff(today, scaleStart, 'hour') * cellWidth),
+                start: today,
+                text: todayLabel,
+              },
+            ],
+          });
+        };
 
-        onItemChangeRef.current(String(id), {
-          startDate: formatGanttDate(task.start),
-          endDate: formatGanttDate(new Date(task.end.getTime() - 86400000)),
-          expectedDurationDays: Math.max(1, Math.round(task.duration || 1)),
-          progress: Math.max(0, Math.min(100, Math.round(task.progress || 0))),
+        updateTodayMarker();
+        ganttApi.on('resize-chart', updateTodayMarker);
+        ganttApi.on('zoom-scale', () => {
+          updateTodayMarker();
+          const nativeZoomLevel = NATIVE_ZOOM_LEVELS[ganttApi.getState().zoom.level];
+          if (nativeZoomLevel) {
+            onZoomLevelChangeRef.current(nativeZoomLevel);
+          }
         });
-      });
-    }, []);
+
+        ganttApi.on('select-task', ({ id }) => {
+          onItemSelectRef.current(String(id));
+        });
+
+        ganttApi.on('update-task', ({ id, inProgress }) => {
+          if (inProgress) {
+            return;
+          }
+
+          const task = ganttApi.getTask(id);
+          if (!task?.start || !task?.end) {
+            return;
+          }
+
+          onItemChangeRef.current(String(id), {
+            startDate: formatGanttDate(task.start),
+            endDate: formatGanttDate(new Date(task.end.getTime() - 86400000)),
+            expectedDurationDays: Math.max(1, Math.round(task.duration || 1)),
+          });
+        });
+      },
+      [todayLabel],
+    );
 
     useEffect(() => {
-      const colors = {
-        blue: '#3983eb',
-        green: '#2fa36b',
-        orange: '#d9822b',
-        red: '#d64545',
-        purple: '#8b5cf6',
-        teal: '#0f9f9a',
-        gray: '#697386',
-      };
       const frame = requestAnimationFrame(() => {
         wrapperRef.current?.querySelectorAll('.wx-bar[data-task-id]').forEach((element) => {
           const task = tasks.find(({ id }) => String(id) === element.dataset.taskId);
-          const color = colors[task?.color] || colors.blue;
+          const color = GANTT_COLORS[task?.color] || GANTT_COLORS.blue;
           const prefix = task?.type === 'summary' ? 'summary' : 'task';
           element.style.setProperty(`--wx-gantt-${prefix}-color`, color);
           element.style.setProperty(`--wx-gantt-${prefix}-fill-color`, color);
@@ -233,6 +307,13 @@ const GanttTimelineAdapter = React.memo(
     }, [tasks, zoomLevel]);
 
     const zoom = zoomConfig[zoomLevel] || zoomConfig.week;
+    const highlightTime = useCallback(
+      (date, unit) =>
+        zoomLevel === 'day' && unit === 'day' && (date.getDay() === 0 || date.getDay() === 6)
+          ? 'wx-weekend'
+          : '',
+      [zoomLevel],
+    );
     const nativeZoom = useMemo(
       () => ({
         level: NATIVE_ZOOM_LEVELS.indexOf(zoomLevel),
@@ -246,7 +327,7 @@ const GanttTimelineAdapter = React.memo(
     );
 
     return (
-      <div ref={wrapperRef} className={styles.wrapper}>
+      <div ref={wrapperRef} className={styles.wrapper} data-zoom-level={zoomLevel}>
         <WillowDark fonts={false}>
           <Gantt
             key={zoomLevel}
@@ -258,7 +339,7 @@ const GanttTimelineAdapter = React.memo(
               type,
             }))}
             columns={columns}
-            gridWidth={650}
+            gridWidth={523 + assigneesColumnWidth}
             readonly={readonly}
             cellBorders="full"
             cellHeight={42}
@@ -268,6 +349,7 @@ const GanttTimelineAdapter = React.memo(
             cellWidth={zoom.cellWidth}
             scales={zoom.scales}
             zoom={nativeZoom}
+            highlightTime={highlightTime}
             autoScale
             init={handleInit}
           />
@@ -280,9 +362,9 @@ const GanttTimelineAdapter = React.memo(
 GanttTimelineAdapter.propTypes = {
   items: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
   links: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
-  usersById: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   zoomLevel: PropTypes.oneOf(['day', 'week', 'month', 'quarter']).isRequired,
   readonly: PropTypes.bool.isRequired,
+  onZoomLevelChange: PropTypes.func.isRequired,
   onItemSelect: PropTypes.func.isRequired,
   onItemChange: PropTypes.func.isRequired,
 };

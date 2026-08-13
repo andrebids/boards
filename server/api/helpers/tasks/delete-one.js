@@ -3,9 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-const Action = require('../../models/Action');
-const Task = require('../../models/Task');
 const _ = require('lodash');
+const Action = require('../../models/Action');
 
 module.exports = {
   inputs: {
@@ -43,6 +42,7 @@ module.exports = {
   },
 
   async fn(inputs) {
+    const linkedItem = await GanttItem.qm.getOneBySourceTaskId(inputs.record.id);
     const task = await sails.models.task.qm.deleteOne(inputs.record.id);
 
     if (task) {
@@ -85,6 +85,13 @@ module.exports = {
         board: inputs.board,
         list: inputs.list,
       });
+
+      if (linkedItem) {
+        await sails.helpers.gantt.broadcastDetachedItems.with({
+          items: [linkedItem],
+          request: inputs.request,
+        });
+      }
     }
 
     return task;

@@ -48,13 +48,18 @@ module.exports = {
     }
 
     const assigneesByItemId = _.groupBy(assignees, 'ganttItemId');
+    const sourceTasksById = await sails.helpers.gantt.buildSourceTaskMap(items);
     const users = await User.qm.getByIds(access.memberUserIds);
 
     return {
       item: plan || null,
       included: {
         ganttItems: items.map((item) =>
-          sails.helpers.gantt.presentItem(item, assigneesByItemId[item.id] || []),
+          sails.helpers.gantt.presentItem(
+            item,
+            assigneesByItemId[item.id] || [],
+            sourceTasksById[item.sourceTaskId],
+          ),
         ),
         ganttLinks: links,
         users: sails.helpers.users.presentMany(users, currentUser),

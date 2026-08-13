@@ -5,11 +5,10 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Icon, Loader } from 'semantic-ui-react';
-import { RichSelect, WillowDark } from '@svar-ui/react-core';
+import { Dropdown, Icon, Loader } from 'semantic-ui-react';
 
 import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
@@ -17,6 +16,7 @@ import Paths from '../../constants/Paths';
 import { useGantt } from './GanttContext';
 import GanttTimelineAdapter from './GanttTimelineAdapter';
 import GanttItemPanel from './GanttItemPanel';
+import GanttSourceTaskImportPanel from './GanttSourceTaskImportPanel';
 
 import styles from './GanttWorkspace.module.scss';
 
@@ -40,10 +40,12 @@ const GanttWorkspace = React.memo(() => {
   } = useGantt();
   const [zoomLevel, setZoomLevel] = useState('week');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isImportPanelOpen, setIsImportPanelOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [initialParentId, setInitialParentId] = useState(null);
   const panelTriggerRef = useRef(null);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [t] = useTranslation();
 
   const canMutate = canEdit && isEditModeEnabled;
@@ -60,6 +62,15 @@ const GanttWorkspace = React.memo(() => {
       navigate(Paths.PROJECTS.replace(':id', project.id), { replace: true });
     }
   }, [isLoading, navigate, plan, project]);
+
+  useEffect(() => {
+    const itemId = searchParams.get('item');
+    if (itemId && items.some(({ id }) => id === itemId)) {
+      setSelectedItemId(itemId);
+      setIsPanelOpen(true);
+      setIsImportPanelOpen(false);
+    }
+  }, [items, searchParams]);
 
   const generalItems = useMemo(
     () => items.filter(({ itemType }) => itemType === 'summary'),
@@ -82,19 +93,6 @@ const GanttWorkspace = React.memo(() => {
           return [];
         }
 
-        const totalDuration = children.reduce(
-          (total, child) => total + child.expectedDurationDays,
-          0,
-        );
-        const progress = totalDuration
-          ? Math.round(
-              children.reduce(
-                (total, child) => total + child.progress * child.expectedDurationDays,
-                0,
-              ) / totalDuration,
-            )
-          : 0;
-
         return [
           {
             ...item,
@@ -107,7 +105,6 @@ const GanttWorkspace = React.memo(() => {
               (total, child) => total + child.expectedDurationDays,
               0,
             ),
-            progress,
           },
         ];
       }),
@@ -129,10 +126,6 @@ const GanttWorkspace = React.memo(() => {
     () => items.filter(({ itemType, startDate }) => itemType === 'task' && !startDate),
     [items],
   );
-  const usersById = useMemo(
-    () => Object.fromEntries(users.map((user) => [user.id, user])),
-    [users],
-  );
   const statuses = useMemo(
     () => [...new Set(items.map(({ status }) => status).filter(Boolean))].sort(),
     [items],
@@ -143,6 +136,13 @@ const GanttWorkspace = React.memo(() => {
     setSelectedItemId(null);
     setInitialParentId(null);
     setIsPanelOpen(true);
+    setIsImportPanelOpen(false);
+  }, []);
+
+  const handleImportOpen = useCallback(() => {
+    panelTriggerRef.current = document.activeElement;
+    setIsPanelOpen(false);
+    setIsImportPanelOpen(true);
   }, []);
 
   const handleItemSelect = useCallback((id) => {
@@ -150,6 +150,7 @@ const GanttWorkspace = React.memo(() => {
     setSelectedItemId(id);
     setInitialParentId(null);
     setIsPanelOpen(true);
+    setIsImportPanelOpen(false);
   }, []);
 
   const handlePanelClose = useCallback(() => {
@@ -158,6 +159,34 @@ const GanttWorkspace = React.memo(() => {
     setInitialParentId(null);
     requestAnimationFrame(() => panelTriggerRef.current?.focus?.({ preventScroll: true }));
   }, []);
+
+  const handleImportClose = useCallback(() => {
+    setIsImportPanelOpen(false);
+    requestAnimationFrame(() => panelTriggerRef.current?.focus?.({ preventScroll: true }));
+  }, []);
+
+  const handleImported = useCallback(
+    (importedItems) => {
+      setIsImportPanelOpen(false);
+      if (importedItems.length === 1) {
+        const itemId = importedItems[0].id;
+        setSearchParams({ item: itemId }, { replace: true });
+        setSelectedItemId(itemId);
+        setIsPanelOpen(true);
+      }
+    },
+    [setSearchParams],
+  );
+
+  const handleOpenImportedItem = useCallback(
+    (itemId) => {
+      setSearchParams({ item: itemId }, { replace: true });
+      setIsImportPanelOpen(false);
+      setSelectedItemId(itemId);
+      setIsPanelOpen(true);
+    },
+    [setSearchParams],
+  );
 
   const handleSave = useCallback(
     (data) => {
@@ -239,10 +268,16 @@ const GanttWorkspace = React.memo(() => {
         </div>
 
         {canMutate && (
-          <Button variant="primary" className={styles.newButton} onClick={handleNewItem}>
-            <Icon name="plus" />
-            {t('common.newGanttTask')}
-          </Button>
+          <>
+            <Button variant="primary" className={styles.newButton} onClick={handleNewItem}>
+              <Icon name="plus" />
+              {t('common.newGanttTask')}
+            </Button>
+            <Button variant="secondary" className={styles.newButton} onClick={handleImportOpen}>
+              <Icon name="download" />
+              {t('common.ganttImportFromBoards')}
+            </Button>
+          </>
         )}
 
         <div className={styles.toolbarSpacer} />
@@ -267,19 +302,20 @@ const GanttWorkspace = React.memo(() => {
           >
             −
           </button>
-          <WillowDark fonts={false}>
-            <RichSelect
-              value={zoomLevel}
-              options={ZOOM_LEVELS.map((level) => ({
-                id: level,
-                label: t(`common.ganttZoom_${level}`),
-              }))}
-              title={t('common.ganttZoomLevel')}
-              css={styles.zoomSelect}
-              dropdown={{ position: 'bottom', align: 'end', width: 'auto' }}
-              onChange={({ value }) => setZoomLevel(value)}
-            />
-          </WillowDark>
+          <Dropdown
+            compact
+            selection
+            value={zoomLevel}
+            options={ZOOM_LEVELS.map((level) => ({
+              key: level,
+              text: t(`common.ganttZoom_${level}`),
+              value: level,
+            }))}
+            aria-label={t('common.ganttZoomLevel')}
+            data-testid="gantt-zoom-select"
+            className={styles.zoomSelect}
+            onChange={(event, { value }) => setZoomLevel(value)}
+          />
           <button
             type="button"
             onClick={handleZoomIn}
@@ -296,9 +332,9 @@ const GanttWorkspace = React.memo(() => {
           <GanttTimelineAdapter
             items={timelineItems}
             links={timelineLinks}
-            usersById={usersById}
             zoomLevel={zoomLevel}
             readonly={!canMutate}
+            onZoomLevelChange={setZoomLevel}
             onItemSelect={handleItemSelect}
             onItemChange={handleItemChange}
           />
@@ -310,9 +346,14 @@ const GanttWorkspace = React.memo(() => {
             <h2>{t('common.ganttEmptyTitle')}</h2>
             <p>{t('common.ganttEmptyDescription')}</p>
             {canMutate && (
-              <Button variant="primary" onClick={handleNewItem}>
-                {t('common.createFirstGanttTask')}
-              </Button>
+              <div className={styles.emptyActions}>
+                <Button variant="primary" onClick={handleNewItem}>
+                  {t('common.createFirstGanttTask')}
+                </Button>
+                <Button variant="secondary" onClick={handleImportOpen}>
+                  {t('common.ganttImportFromBoards')}
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -364,6 +405,14 @@ const GanttWorkspace = React.memo(() => {
           onDelete={deleteItem}
           onAddSubtask={handleAddSubtask}
           onClose={handlePanelClose}
+        />
+      )}
+
+      {isImportPanelOpen && canMutate && (
+        <GanttSourceTaskImportPanel
+          onImported={handleImported}
+          onOpenItem={handleOpenImportedItem}
+          onClose={handleImportClose}
         />
       )}
     </main>

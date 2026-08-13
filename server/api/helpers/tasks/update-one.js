@@ -3,9 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-const Action = require('../../models/Action');
-const Task = require('../../models/Task');
 const _ = require('lodash');
+const Action = require('../../models/Action');
 
 module.exports = {
   inputs: {
@@ -167,6 +166,20 @@ module.exports = {
           project: inputs.project,
           board: inputs.board,
           list: inputs.list,
+        });
+      }
+
+      if (
+        inputs.record.name !== task.name ||
+        inputs.record.assigneeUserId !== task.assigneeUserId ||
+        inputs.record.isCompleted !== task.isCompleted
+      ) {
+        await sails.helpers.gantt.syncLinkedItemFromTask.with({
+          task,
+          taskList,
+          card: inputs.card,
+          board: inputs.board,
+          request: inputs.request,
         });
       }
     }

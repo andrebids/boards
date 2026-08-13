@@ -62,12 +62,6 @@ module.exports = {
       isIn: ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'gray'],
       allowNull: true,
     },
-    progress: {
-      type: 'number',
-      min: 0,
-      max: 100,
-      defaultsTo: 0,
-    },
     assigneeUserIds: {
       type: 'json',
       defaultsTo: [],
@@ -142,7 +136,6 @@ module.exports = {
       description: inputs.description ? inputs.description.trim() : null,
       status: inputs.status ? inputs.status.trim() : null,
       color: inputs.color || null,
-      progress: inputs.progress,
       position,
       ...dates,
     });

@@ -21,13 +21,13 @@
     border-bottom: 1px solid var(--app-dark-border);
     display: flex;
     justify-content: space-between;
-    padding: 20px 22px;
+    padding: 16px 18px;
 
     h2 {
       color: var(--app-dark-text);
       font-size: 20px;
       line-height: 1.25;
-      margin: 3px 0 0;
+      margin: 2px 0 0;
     }
   }
 
@@ -65,16 +65,16 @@
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    gap: 18px;
+    gap: 12px;
     min-height: 0;
     overflow-y: auto;
-    padding: 22px;
+    padding: 16px 18px;
   }
 
   .field {
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 5px;
 
     > label,
     > span {
@@ -89,10 +89,7 @@
       line-height: 1.45;
     }
 
-    input,
-    select,
-    textarea,
-    :global(.ui.selection.dropdown) {
+    input {
       background: var(--app-dark-surface-hover);
       border: 1px solid var(--app-dark-border);
       border-radius: 8px;
@@ -102,16 +99,7 @@
       padding: 10px 12px;
     }
 
-    textarea {
-      min-height: 78px;
-      resize: vertical;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus,
-    :global(.ui.selection.dropdown:focus),
-    :global(.ui.selection.active.dropdown) {
+    input:focus {
       border-color: var(--app-focus);
       box-shadow: 0 0 0 3px var(--app-accent-soft);
       outline: none;
@@ -121,38 +109,78 @@
       color: var(--app-dark-text-muted);
       opacity: var(--app-disabled-opacity);
     }
-
-    :global(.ui.multiple.dropdown > .label) {
-      background: var(--app-accent-soft);
-      border: 1px solid color-mix(in oklab, var(--app-accent) 35%, transparent);
-      color: var(--app-dark-text);
-    }
-
-    :global(.ui.selection.dropdown .menu) {
-      background: var(--app-dark-surface-hover);
-      border-color: var(--app-dark-border);
-    }
-
-    :global(.ui.selection.dropdown .menu > .item) {
-      border-color: var(--app-dark-border);
-      color: var(--app-dark-text);
-    }
-
-    :global(.ui.selection.dropdown .menu > .item:hover),
-    :global(.ui.selection.dropdown .menu > .selected.item) {
-      background: var(--app-dark-surface);
-      color: var(--app-dark-text);
-    }
-
-    :global(.ui.selection.dropdown > .default.text) {
-      color: var(--app-dark-text-muted);
-    }
   }
 
   .twoColumns {
     display: grid;
     gap: 12px;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .colorOption {
+    align-items: center;
+    display: inline-flex;
+    gap: 8px;
+  }
+
+  .colorDot {
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    border-radius: 50%;
+    flex: 0 0 auto;
+    height: 10px;
+    width: 10px;
+  }
+
+  .sourceBanner {
+    align-items: center;
+    background: var(--app-accent-soft);
+    border: 1px solid color-mix(in oklab, var(--app-accent) 30%, transparent);
+    border-radius: 10px;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    padding: 10px 12px;
+
+    > div { display: flex; flex-direction: column; min-width: 0; }
+    span { color: var(--app-accent); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    strong { color: var(--app-dark-text); font-size: 12px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    small { color: var(--app-dark-text-muted); font-size: 10px; margin-top: 2px; }
+  }
+
+  .sourceEmpty { color: var(--app-dark-text-muted) !important; font-weight: 400 !important; }
+
+  .people {
+    align-items: center;
+    display: flex;
+    min-height: 32px;
+    overflow: visible;
+    padding-left: 8px;
+    white-space: nowrap;
+  }
+
+  .personButton {
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    height: 32px;
+    margin-left: -8px;
+    outline: none;
+    padding: 0;
+    width: 32px;
+
+    &:focus-visible {
+      box-shadow:
+        0 0 0 2px var(--app-dark-surface),
+        0 0 0 4px var(--app-focus);
+    }
+  }
+
+  .peopleButton:global(.ui.button) {
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 4px;
   }
 
   .durationInput {
@@ -164,38 +192,9 @@
       min-width: 0;
     }
 
-    > span {
-      align-items: center;
-      background: var(--app-default);
-      border: 1px solid var(--app-dark-border);
-      border-left: 0;
-      border-radius: 0 8px 8px 0;
-      color: var(--app-dark-text-muted);
-      display: flex;
-      font-size: 12px;
-      padding: 0 12px;
-    }
-  }
-
-  .progressInput {
-    align-items: center;
-    display: flex;
-    gap: 12px;
-
-    input[type='range'] {
-      accent-color: var(--app-accent);
-      border: 0;
-      flex: 1 1 auto;
-      min-height: 32px;
-      padding: 0;
-    }
-
-    output {
-      color: var(--app-dark-text);
-      font-size: 12px;
-      font-variant-numeric: tabular-nums;
-      min-width: 36px;
-      text-align: right;
+    > :global(.ui.dropdown) {
+      flex: 0 0 124px;
+      min-width: 0;
     }
   }
 
@@ -222,8 +221,12 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    margin: auto -22px -22px;
-    padding: 16px 22px;
+    margin: auto -18px -16px;
+    padding: 12px 72px 12px 18px;
+  }
+
+  .cancelButton {
+    margin-left: auto !important;
   }
 
   @media only screen and (width < 680px) {
@@ -233,6 +236,11 @@
 
     .twoColumns {
       grid-template-columns: 1fr;
+    }
+
+    .personButton {
+      height: 36px;
+      width: 36px;
     }
   }
 }

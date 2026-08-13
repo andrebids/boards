@@ -22,6 +22,7 @@
 
   .colorButton {
     border: 0;
+    border-radius: 50%;
     box-sizing: border-box;
     cursor: pointer;
     float: left;
@@ -30,7 +31,7 @@
     padding: 0;
     position: relative;
     transition: background-color 0.16s ease;
-    width: 49.6px;
+    width: 40px;
 
     &:hover,
     &:focus-visible {
@@ -46,12 +47,13 @@
     content: "✓";
     font-size: 18px;
     line-height: 36px;
+    left: 0;
     position: absolute;
-    right: 6px;
+    right: 0;
     text-align: center;
     text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
     top: 0;
-    width: 36px;
+    width: auto;
   }
 
   .colorButtonActive {

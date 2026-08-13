@@ -34,8 +34,9 @@ const PureBoardMembershipsStep = React.memo(
       () =>
         items.filter(
           ({ user }) =>
-            user.name.toLowerCase().includes(cleanSearch) ||
-            (user.username && user.username.includes(cleanSearch)),
+            (user.name && user.name.toLowerCase().includes(cleanSearch)) ||
+            (user.username && user.username.toLowerCase().includes(cleanSearch)) ||
+            (user.email && user.email.toLowerCase().includes(cleanSearch)),
         ),
       [items, cleanSearch],
     );
@@ -91,8 +92,9 @@ const PureBoardMembershipsStep = React.memo(
               {filteredItems.map((boardMembership) => (
                 <Item
                   key={boardMembership.id}
-                  id={boardMembership.id}
+                  user={boardMembership.user}
                   isActive={currentUserIds.includes(boardMembership.user.id)}
+                  isDisabled={boardMembership.isPersisted === false}
                   onUserSelect={onUserSelect}
                   onUserDeselect={onUserDeselect}
                 />

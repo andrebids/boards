@@ -17,14 +17,23 @@ module.exports = {
       type: 'ref',
       defaultsTo: [],
     },
+    sourceTask: {
+      type: 'ref',
+    },
   },
 
   fn(inputs) {
-    return {
-      ...inputs.record,
+    const presentedItem = {
+      ..._.omit(inputs.record, ['progress']),
       startDate: normalizeStoredDate(inputs.record.startDate),
       endDate: normalizeStoredDate(inputs.record.endDate),
       assigneeUserIds: inputs.assignees.map(({ userId }) => userId),
     };
+
+    if (inputs.sourceTask) {
+      presentedItem.sourceTask = inputs.sourceTask;
+    }
+
+    return presentedItem;
   },
 };

@@ -181,6 +181,37 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
     return body.item;
   }, []);
 
+  const getSourceTasks = useCallback(
+    async (filters = {}) => {
+      if (!plan) {
+        return { items: [], included: { boards: [] }, meta: { canImport: false } };
+      }
+      return api.getGanttSourceTasks(plan.id, filters);
+    },
+    [plan],
+  );
+
+  const importSourceTasks = useCallback(
+    async (taskIds) => {
+      const body = await api.importGanttSourceTasks(plan.id, taskIds);
+      setItems((currentItems) => {
+        const nextItemsById = new Map(currentItems.map((item) => [item.id, item]));
+        body.items.forEach((item) => nextItemsById.set(item.id, item));
+        return [...nextItemsById.values()];
+      });
+      return body;
+    },
+    [plan],
+  );
+
+  const linkedItemsByTaskId = useMemo(
+    () =>
+      Object.fromEntries(
+        items.filter(({ sourceTaskId }) => sourceTaskId).map((item) => [item.sourceTaskId, item]),
+      ),
+    [items],
+  );
+
   const value = useMemo(
     () => ({
       plan,
@@ -196,6 +227,9 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
       createItem,
       updateItem,
       deleteItem,
+      getSourceTasks,
+      importSourceTasks,
+      linkedItemsByTaskId,
       reload: load,
     }),
     [
@@ -212,6 +246,9 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
       createItem,
       updateItem,
       deleteItem,
+      getSourceTasks,
+      importSourceTasks,
+      linkedItemsByTaskId,
       load,
     ],
   );

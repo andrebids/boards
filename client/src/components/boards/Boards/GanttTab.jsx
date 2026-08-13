@@ -6,7 +6,6 @@
 import React from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
-import { Icon } from 'semantic-ui-react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
@@ -35,7 +34,6 @@ const GanttTab = React.memo(() => {
         className={classNames(styles.tab, isActive && styles.tabActive)}
         aria-current={isActive ? 'page' : undefined}
       >
-        <Icon fitted name="calendar alternate outline" className={styles.icon} />
         <span>{t('common.gantt')}</span>
       </Link>
     </div>

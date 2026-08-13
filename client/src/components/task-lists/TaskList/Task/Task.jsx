@@ -25,6 +25,7 @@ import SelectAssigneeStep from './SelectAssigneeStep';
 import ActionsStep from './ActionsStep';
 import Linkify from '../../../common/Linkify';
 import UserAvatar from '../../../users/UserAvatar';
+import { useGantt } from '../../../gantt';
 
 import styles from './Task.module.scss';
 
@@ -34,6 +35,8 @@ const Task = React.memo(({ id, index }) => {
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
 
   const task = useSelector((state) => selectTaskById(state, id));
+  const isEditModeEnabled = useSelector(selectors.selectIsEditModeEnabled);
+  const { plan, canEdit: canEditGantt } = useGantt();
 
   const { canEdit, canToggle } = useSelector((state) => {
     const { listId } = selectors.selectCurrentCard(state);
@@ -87,6 +90,7 @@ const Task = React.memo(({ id, index }) => {
   }, [id, dispatch]);
 
   const isEditable = task.isPersisted && canEdit;
+  const canUseGantt = task.isPersisted && plan?.isEnabled && canEditGantt && isEditModeEnabled;
 
   const handleClick = useCallback(() => {
     if (isEditable) {
@@ -116,6 +120,43 @@ const Task = React.memo(({ id, index }) => {
       isDragDisabled={isEditNameOpened || !isEditable}
     >
       {({ innerRef, draggableProps, dragHandleProps }, { isDragging }) => {
+        let assigneeControl = null;
+        if (isEditable) {
+          assigneeControl = (
+            <SelectAssigneePopup
+              currentUserId={task.assigneeUserId}
+              onUserSelect={handleUserSelect}
+              onUserDeselect={handleUserDeselect}
+            >
+              {task.assigneeUserId ? (
+                <UserAvatar
+                  id={task.assigneeUserId}
+                  size="tiny"
+                  className={styles.assigneeUserAvatar}
+                />
+              ) : (
+                <Button
+                  variant="secondary"
+                  type="button"
+                  aria-label={t('action.addMember')}
+                  title={t('action.addMember')}
+                  className={styles.button}
+                >
+                  <Icon fitted name="add user" size="small" />
+                </Button>
+              )}
+            </SelectAssigneePopup>
+          );
+        } else if (task.assigneeUserId) {
+          assigneeControl = (
+            <UserAvatar
+              id={task.assigneeUserId}
+              size="tiny"
+              className={styles.assigneeUserAvatar}
+            />
+          );
+        }
+
         const contentNode = (
           <div
             {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
@@ -148,34 +189,23 @@ const Task = React.memo(({ id, index }) => {
                     <Linkify linkStopPropagation>{task.name}</Linkify>
                   </span>
                 </span>
-                {(task.assigneeUserId || isEditable) && (
-                  <div className={classNames(styles.actions, isEditable && styles.actionsEditable)}>
-                    {isEditable ? (
+                {(task.assigneeUserId || isEditable || canUseGantt) && (
+                  <div
+                    className={classNames(
+                      styles.actions,
+                      (isEditable || canUseGantt) && styles.actionsEditable,
+                    )}
+                  >
+                    {isEditable || canUseGantt ? (
                       <>
-                        <SelectAssigneePopup
-                          currentUserId={task.assigneeUserId}
-                          onUserSelect={handleUserSelect}
-                          onUserDeselect={handleUserDeselect}
+                        {assigneeControl}
+                        <ActionsPopup
+                          taskId={id}
+                          canEditTask={isEditable}
+                          onNameEdit={handleNameEdit}
                         >
-                          {task.assigneeUserId ? (
-                            <UserAvatar
-                              id={task.assigneeUserId}
-                              size="tiny"
-                              className={styles.assigneeUserAvatar}
-                            />
-                          ) : (
-                            <Button variant="secondary"
-                              type="button"
-                              aria-label={t('action.addMember')}
-                              title={t('action.addMember')}
-                              className={styles.button}
-                            >
-                              <Icon fitted name="add user" size="small" />
-                            </Button>
-                          )}
-                        </SelectAssigneePopup>
-                        <ActionsPopup taskId={id} onNameEdit={handleNameEdit}>
-                          <Button variant="secondary"
+                          <Button
+                            variant="secondary"
                             type="button"
                             aria-label={t('action.edit')}
                             title={t('action.edit')}

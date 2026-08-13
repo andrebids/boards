@@ -40,6 +40,9 @@ const waitForSite = async () => {
     const main = page.getByRole('main');
     await main.waitFor({ state: 'visible', timeout: 90000 });
     await page.locator('.wx-bar.wx-summary').waitFor({ state: 'visible', timeout: 30000 });
+    if (await page.locator('.wx-progress-wrapper, .wx-progress-marker').count()) {
+      throw new Error('The Gantt timeline still renders progress');
+    }
     const mainText = await main.innerText();
     if (!mainText.includes('te') || !mainText.includes('tete')) {
       throw new Error('Converted hierarchy is not visible');
@@ -48,14 +51,35 @@ const waitForSite = async () => {
     await page.getByRole('button', { name: 'Nova tarefa' }).click();
     const dialog = page.getByRole('dialog', { name: 'Nova tarefa' });
     const dialogText = await dialog.innerText();
-    ['Tipo de tarefa', 'Descrição', 'Cor', 'Progresso', 'Tarefa geral'].forEach((label) => {
+    ['Tipo', 'Projeto', 'Cor', 'Estado', 'Duração esperada'].forEach((label) => {
       if (!dialogText.includes(label)) {
         throw new Error(`Missing panel field: ${label}`);
       }
     });
-    await dialog.locator('#gantt-task-type').selectOption('summary');
+    if (await dialog.locator('#gantt-task-description').count()) {
+      throw new Error('The compact panel still exposes a description field');
+    }
+    await dialog.getByRole('button', { name: 'Adicionar membro' }).click();
+    await page.getByRole('menuitemcheckbox').first().waitFor({ state: 'visible' });
+    await page.locator('.ui.popup').getByRole('button', { name: 'Fechar' }).click();
     if (await dialog.locator('#gantt-task-progress').count()) {
-      throw new Error('Summary task exposes editable progress');
+      throw new Error('The compact panel still exposes editable progress');
+    }
+    if ((await dialog.locator('#gantt-task-status input').inputValue()) !== 'Por iniciar') {
+      throw new Error('A new task does not use the default status');
+    }
+    await dialog.locator('#gantt-task-duration-unit').click();
+    await dialog
+      .locator('#gantt-task-duration-unit .menu .item', { hasText: 'Meses' })
+      .click();
+    await dialog.locator('#gantt-task-start').fill('2026-08-10');
+    if ((await dialog.locator('#gantt-task-end').inputValue()) !== '2026-09-08') {
+      throw new Error('A one-month duration was not converted to thirty calendar days');
+    }
+    await dialog.locator('#gantt-task-type').click();
+    await dialog.locator('#gantt-task-type .menu .item', { hasText: 'Projeto' }).click();
+    if (await dialog.locator('#gantt-task-duration').count()) {
+      throw new Error('Project exposes task duration controls');
     }
     await page.keyboard.press('Escape');
 

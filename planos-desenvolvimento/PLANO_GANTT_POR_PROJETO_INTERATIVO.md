@@ -930,7 +930,9 @@ motor temporal de raiz.
 
 ## 15. Evoluções futuras
 
-- ligações opcionais das tarefas Gantt a quadros ou cartões do Planka;
+- ligações opcionais de tarefas de checklist dos cartões ao Gantt — implementado; a tarefa do
+  cartão governa nome, responsável e conclusão, enquanto o Gantt governa datas, duração,
+  hierarquia e dependências;
 - dependências entre tarefas;
 - marcos;
 - calendário laboral e feriados;
@@ -943,8 +945,9 @@ motor temporal de raiz.
 - histórico detalhado de cada reagendamento.
 
 Estas evoluções não devem alterar os campos próprios das tarefas Gantt. A associação do plano ao
-projeto e a seleção de pessoas a partir dos seus membros mantêm-se; futuras ligações a quadros ou
-cartões devem ser opcionais e coexistir com os valores textuais.
+projeto e a seleção de pessoas a partir dos seus membros mantêm-se. A ligação implementada às
+tarefas de checklist é opcional, preserva os itens Gantt autónomos e usa o UI próprio da superfície
+onde a ação começa: Gantt dentro do Gantt e ações nativas do Board dentro do cartão.
 
 ---
 

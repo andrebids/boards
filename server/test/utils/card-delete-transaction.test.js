@@ -30,6 +30,8 @@ describe('Card deletion transaction', () => {
     'CardSubscription',
     'Comment',
     'CustomFieldGroup',
+    'GanttItem',
+    'Task',
     'TaskList',
   ];
 
@@ -38,6 +40,9 @@ describe('Card deletion transaction', () => {
   beforeEach(() => {
     previousGlobals = Object.fromEntries(globalNames.map((name) => [name, global[name]]));
     global._ = lodash;
+    global.TaskList = { qm: { getByCardId: async () => [] } };
+    global.Task = { qm: { getByTaskListIds: async () => [] } };
+    global.GanttItem = { qm: { getBySourceTaskIds: async () => [] } };
   });
 
   afterEach(() => {

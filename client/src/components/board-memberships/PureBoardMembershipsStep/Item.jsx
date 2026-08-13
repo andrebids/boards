@@ -3,34 +3,26 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { useSelector } from 'react-redux';
 import { Check } from 'lucide-react';
 import { Menu } from 'semantic-ui-react';
 
-import selectors from '../../../selectors';
 import UserAvatar from '../../users/UserAvatar';
 
 import styles from './Item.module.scss';
 
-const Item = React.memo(({ id, isActive, onUserSelect, onUserDeselect }) => {
-  const selectBoardMembershipById = useMemo(() => selectors.makeSelectBoardMembershipById(), []);
-  const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
-
-  const boardMembership = useSelector((state) => selectBoardMembershipById(state, id));
-  const user = useSelector((state) => selectUserById(state, boardMembership.userId));
-
+const Item = React.memo(({ user, isActive, isDisabled, onUserSelect, onUserDeselect }) => {
   const handleToggleClick = useCallback(() => {
     if (isActive) {
       if (onUserDeselect) {
-        onUserDeselect(boardMembership.userId);
+        onUserDeselect(user.id);
       }
     } else {
-      onUserSelect(boardMembership.userId);
+      onUserSelect(user.id);
     }
-  }, [isActive, onUserSelect, onUserDeselect, boardMembership.userId]);
+  }, [isActive, onUserSelect, onUserDeselect, user.id]);
 
   return (
     <Menu.Item
@@ -39,15 +31,15 @@ const Item = React.memo(({ id, isActive, onUserSelect, onUserDeselect }) => {
       active={isActive}
       role="menuitemcheckbox"
       aria-checked={isActive}
-      disabled={!boardMembership.isPersisted}
+      disabled={isDisabled}
       className={classNames(styles.menuItem, isActive && styles.menuItemActive)}
       onClick={handleToggleClick}
     >
       <span className={styles.user}>
-        <UserAvatar id={boardMembership.userId} />
+        <UserAvatar id={user.id} />
       </span>
       <div className={styles.menuItemText}>
-        <span className={styles.userName}>{user.name}</span>
+        <span className={styles.userName}>{user.name || user.username || user.email}</span>
         {user.username && <span className={styles.userUsername}>@{user.username}</span>}
       </div>
       <span
@@ -64,13 +56,15 @@ const Item = React.memo(({ id, isActive, onUserSelect, onUserDeselect }) => {
 });
 
 Item.propTypes = {
-  id: PropTypes.string.isRequired,
+  user: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   isActive: PropTypes.bool.isRequired,
+  isDisabled: PropTypes.bool,
   onUserSelect: PropTypes.func.isRequired,
   onUserDeselect: PropTypes.func,
 };
 
 Item.defaultProps = {
+  isDisabled: false,
   onUserDeselect: undefined,
 };
 

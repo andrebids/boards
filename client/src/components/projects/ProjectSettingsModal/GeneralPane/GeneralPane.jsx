@@ -7,7 +7,7 @@ import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Form, Radio, Tab } from 'semantic-ui-react';
+import { Checkbox, Form, Radio, Tab } from 'semantic-ui-react';
 import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
@@ -64,16 +64,16 @@ const GeneralPane = React.memo(() => {
     [dispatch],
   );
 
-  const handleGanttModeChange = useCallback(
-    async (_, { value }) => {
+  const handleGanttToggleChange = useCallback(
+    async (_, { checked }) => {
       const isEnabled = Boolean(ganttPlan?.isEnabled);
-      if ((value === 'enabled') === isEnabled) {
+      if (checked === isEnabled) {
         return;
       }
 
       setIsGanttSubmitting(true);
       try {
-        if (value === 'enabled') {
+        if (checked) {
           await activateGantt();
           toast.success(t('common.ganttActivated'));
         } else {
@@ -154,27 +154,14 @@ const GeneralPane = React.memo(() => {
       {canManageChat && (
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>{t('common.gantt')}</h3>
-          <div className={styles.accessField}>
-            <Form.Select
-              fluid
-              upward
+          <div className={styles.settingRow}>
+            <Checkbox
+              toggle
               label={t('common.ganttAvailability')}
-              value={ganttPlan?.isEnabled ? 'enabled' : 'disabled'}
-              options={[
-                {
-                  key: 'disabled',
-                  value: 'disabled',
-                  text: t('common.ganttDisabledOption'),
-                },
-                {
-                  key: 'enabled',
-                  value: 'enabled',
-                  text: t('common.ganttEnabledOption'),
-                },
-              ]}
+              checked={Boolean(ganttPlan?.isEnabled)}
+              className={styles.radio}
               disabled={isGanttLoading || isGanttSubmitting || Boolean(ganttError)}
-              loading={isGanttLoading || isGanttSubmitting}
-              onChange={handleGanttModeChange}
+              onChange={handleGanttToggleChange}
             />
           </div>
           <p className={styles.hint} role={ganttError ? 'alert' : undefined}>

@@ -62,6 +62,9 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       },
     });
     firstItemId = firstItemBody.item.id;
+    if ('progress' in firstItemBody.item) {
+      throw new Error('The Gantt API still exposes progress');
+    }
     await request(`/gantt-plans/${planId}/items`, {
       token,
       method: 'POST',
@@ -116,17 +119,18 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     if (!barBox) {
       throw new Error('The first Gantt bar is not visible');
     }
+    if (await page.locator('.wx-progress-wrapper, .wx-progress-marker').count()) {
+      throw new Error('The Gantt timeline still renders progress');
+    }
+    if (!(await page.locator('.wx-marker').first().isVisible())) {
+      throw new Error('The Gantt today marker is not visible');
+    }
 
     const themeContract = await page.getByRole('main').evaluate((element) => ({
-      backgroundColor: getComputedStyle(element).backgroundColor,
       hasDarkTheme: Boolean(element.querySelector('.wx-willow-dark-theme')),
       hasLightTheme: Boolean(element.querySelector('.wx-willow-theme')),
     }));
-    if (
-      !themeContract.hasDarkTheme ||
-      themeContract.hasLightTheme ||
-      themeContract.backgroundColor === 'rgb(255, 255, 255)'
-    ) {
+    if (!themeContract.hasDarkTheme || themeContract.hasLightTheme) {
       throw new Error(`Unexpected Gantt theme contract: ${JSON.stringify(themeContract)}`);
     }
 
@@ -185,9 +189,25 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       );
     }
 
-    const zoomSelect = page.locator('.wx-richselect').first();
+    const zoomSelect = page.getByTestId('gantt-zoom-select');
+    /* eslint-disable no-await-in-loop */
+    for (
+      let attempt = 0;
+      attempt < 10 && !(await zoomSelect.innerText()).includes('Dia');
+      attempt += 1
+    ) {
+      await page.keyboard.down('Control');
+      await page.mouse.wheel(0, -200);
+      await page.keyboard.up('Control');
+      await page.waitForTimeout(40);
+    }
+    /* eslint-enable no-await-in-loop */
+    if (!(await zoomSelect.innerText()).includes('Dia')) {
+      throw new Error('The zoom dropdown did not follow Ctrl+wheel zoom');
+    }
+
     await zoomSelect.click();
-    const quarterOption = page.locator('.wx-dropdown .wx-item', { hasText: 'Trimestre' });
+    const quarterOption = zoomSelect.locator('.menu .item', { hasText: 'Trimestre' });
     await quarterOption.waitFor({ state: 'visible' });
     await page.screenshot({ path: '/tmp/gantt-zoom-dropdown.png', fullPage: true });
     await quarterOption.click();
@@ -197,7 +217,26 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     }
 
     await zoomSelect.click();
-    await page.locator('.wx-dropdown .wx-item', { hasText: 'Semana' }).click();
+    await zoomSelect.locator('.menu .item', { hasText: 'Dia', exact: true }).click();
+    await page.waitForTimeout(200);
+    const weekendContract = await page.locator('[data-zoom-level="day"]').evaluate((element) => {
+      const cells = [...element.querySelectorAll('.wx-scale .wx-row:last-child .wx-cell')];
+      const weekend = cells.find((cell) => cell.classList.contains('wx-weekend'));
+      const weekday = cells.find((cell) => !cell.classList.contains('wx-weekend'));
+      return {
+        weekendBackground: weekend && getComputedStyle(weekend).backgroundColor,
+        weekdayBackground: weekday && getComputedStyle(weekday).backgroundColor,
+      };
+    });
+    if (
+      !weekendContract.weekendBackground ||
+      weekendContract.weekendBackground === weekendContract.weekdayBackground
+    ) {
+      throw new Error(`Unexpected weekend highlight: ${JSON.stringify(weekendContract)}`);
+    }
+
+    await zoomSelect.click();
+    await zoomSelect.locator('.menu .item', { hasText: 'Semana', exact: true }).click();
 
     const newTaskButton = page.getByRole('button', { name: 'Nova tarefa' });
     await newTaskButton.click();
@@ -207,6 +246,39 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     if (initialFocusId !== 'gantt-task-name') {
       throw new Error(`Unexpected initial panel focus: ${initialFocusId}`);
     }
+    if (await itemDialog.locator('#gantt-task-description').count()) {
+      throw new Error('The compact panel still exposes a description field');
+    }
+    if (await itemDialog.locator('#gantt-task-progress').count()) {
+      throw new Error('The compact panel still exposes editable progress');
+    }
+    if ((await itemDialog.locator('#gantt-task-status input').inputValue()) !== 'Por iniciar') {
+      throw new Error('The compact panel does not use the default task status');
+    }
+    const durationUnits = await itemDialog
+      .locator('#gantt-task-duration-unit .menu .item')
+      .allTextContents();
+    if (durationUnits.join('|') !== 'Dias|Semanas|Meses') {
+      throw new Error(`Unexpected duration units: ${durationUnits.join('|')}`);
+    }
+    const panelLayout = await itemDialog.evaluate((element) => {
+      const footer = element.querySelector('footer');
+      return {
+        footerBottom: footer.getBoundingClientRect().bottom,
+        panelBottom: element.getBoundingClientRect().bottom,
+      };
+    });
+    if (panelLayout.footerBottom > panelLayout.panelBottom + 1) {
+      throw new Error(`The compact panel footer is clipped: ${JSON.stringify(panelLayout)}`);
+    }
+
+    await itemDialog.getByRole('button', { name: 'Adicionar membro' }).click();
+    const firstMemberOption = page.getByRole('menuitemcheckbox').first();
+    await firstMemberOption.waitFor({ state: 'visible' });
+    const firstMemberName = (await firstMemberOption.innerText()).split('\n')[0];
+    await firstMemberOption.click();
+    await page.locator('.ui.popup').getByRole('button', { name: 'Fechar' }).click();
+    await itemDialog.getByRole('button', { name: firstMemberName, exact: true }).waitFor();
     await page.keyboard.press('Escape');
     await itemDialog.waitFor({ state: 'hidden' });
     await page.waitForTimeout(50);
@@ -225,46 +297,32 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     if (await settingsModal.getByText('Escala inicial', { exact: true }).count()) {
       throw new Error('The initial timeline scale is still exposed in project settings');
     }
-    if (await settingsModal.getByText('Gantt', { exact: true }).count() !== 1) {
+    if ((await settingsModal.getByText('Gantt', { exact: true }).count()) !== 1) {
       throw new Error('Gantt should appear once as a General settings section, not as a tab');
     }
     await page.screenshot({ path: '/tmp/gantt-general-settings.png', fullPage: true });
 
-    const ganttSettingsDropdown = settingsModal.locator('.ui.dropdown').last();
-    if ((await ganttSettingsDropdown.count()) === 0) {
-      const ganttLabel = settingsModal.getByText('Disponibilidade do Gantt', { exact: true });
-      throw new Error(`Gantt dropdown DOM: ${await ganttLabel.evaluate((element) => element.parentElement.outerHTML)}`);
-    }
-    const clickCenter = async (locator) => {
-      const box = await locator.boundingBox();
-      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-    };
-    await clickCenter(ganttSettingsDropdown);
-    const disabledOption = ganttSettingsDropdown.getByRole('option', {
-      name: 'Desativado',
+    const ganttSettingsToggle = settingsModal.getByRole('checkbox', {
+      name: 'Disponibilidade do Gantt',
       exact: true,
     });
-    await disabledOption.waitFor({ state: 'visible' });
-    await clickCenter(disabledOption);
+    await ganttSettingsToggle.uncheck();
     await page.waitForTimeout(500);
     const disabledPlan = await request(`/projects/${projectId}/gantt-plan`, { token });
     if (disabledPlan.item.isEnabled) {
       throw new Error('Gantt was not disabled from General project settings');
     }
 
-    let reenableDropdown = ganttSettingsDropdown;
+    let reenableToggle = ganttSettingsToggle;
     if (!(await settingsModal.isVisible())) {
       await page.getByRole('button', { name: 'Editar' }).click();
       await settingsModal.waitFor({ state: 'visible' });
-      reenableDropdown = settingsModal.locator('.ui.dropdown').last();
+      reenableToggle = settingsModal.getByRole('checkbox', {
+        name: 'Disponibilidade do Gantt',
+        exact: true,
+      });
     }
-    await clickCenter(reenableDropdown);
-    const enabledOption = reenableDropdown.getByRole('option', {
-      name: 'Ativado',
-      exact: true,
-    });
-    await enabledOption.waitFor({ state: 'visible' });
-    await clickCenter(enabledOption);
+    await reenableToggle.check();
     await page.waitForTimeout(500);
     const reenabledPlan = await request(`/projects/${projectId}/gantt-plan`, { token });
     if (!reenabledPlan.item.isEnabled || reenabledPlan.included.ganttItems.length !== 3) {

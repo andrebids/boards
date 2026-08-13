@@ -24,10 +24,21 @@ module.exports = {
       taskListIdOrIds = sails.helpers.utils.mapRecords(inputs.recordOrRecords);
     }
 
+    const tasks = await Task.qm.getByTaskListIds(
+      Array.isArray(taskListIdOrIds) ? taskListIdOrIds : [taskListIdOrIds],
+    );
+    const linkedItems = tasks.length
+      ? await GanttItem.qm.getBySourceTaskIds(tasks.map(({ id }) => id))
+      : [];
+
     const query = Task.qm.delete({
       taskListId: taskListIdOrIds,
     });
 
     await (inputs.connection ? query.usingConnection(inputs.connection) : query);
+
+    if (!inputs.connection && linkedItems.length > 0) {
+      await sails.helpers.gantt.broadcastDetachedItems(linkedItems);
+    }
   },
 };
