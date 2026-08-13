@@ -15,6 +15,7 @@ import entryActions from '../../../entry-actions';
 import DroppableTypes from '../../../constants/DroppableTypes';
 import Item from './Item';
 import AddStep from './AddStep';
+import GanttTab from './GanttTab';
 
 import styles from './Boards.module.scss';
 import globalStyles from '../../../styles.module.scss';
@@ -81,6 +82,7 @@ const Boards = React.memo(() => {
                   <Item key={boardId} id={boardId} index={index} />
                 ))}
                 {placeholder}
+                <GanttTab />
                 {canAdd && (
                   <AddPopup>
                     <Button variant="secondary" icon="plus" className={styles.addButton} />

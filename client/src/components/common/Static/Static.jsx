@@ -15,11 +15,14 @@ import { selectIsSidebarExpanded } from '../../../selectors/sidebarSelectors';
 import { BoardViews } from '../../../constants/Enums';
 import Home from '../Home';
 import Board from '../../boards/Board';
+import GanttWorkspace from '../../gantt';
+import Paths from '../../../constants/Paths';
 
 import styles from './Static.module.scss';
 
 const Static = React.memo(() => {
   const { cardId, projectId } = useSelector(selectors.selectPath);
+  const pathsMatch = useSelector(selectors.selectPathsMatch);
   const board = useSelector(selectors.selectCurrentBoard);
   const isFetching = useSelector(selectors.selectIsContentFetching);
   const isFavoritesActive = useSelector(
@@ -94,6 +97,12 @@ const Static = React.memo(() => {
         </h1>
       </div>
     );
+  } else if (pathsMatch?.pattern.path === Paths.GANTT) {
+    wrapperClassNames = [
+      isFavoritesActive ? styles.wrapperGanttWithFavorites : styles.wrapperGantt,
+      styles.wrapperFlex,
+    ];
+    contentNode = <GanttWorkspace />;
   } else if (board === undefined) {
     wrapperClassNames = [
       isFavoritesActive

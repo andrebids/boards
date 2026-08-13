@@ -20,6 +20,7 @@ const Project = React.memo(() => {
   const modal = useSelector(selectors.selectCurrentModal);
   const project = useSelector(selectors.selectCurrentProject);
   const board = useSelector(selectors.selectCurrentBoard);
+  const pathsMatch = useSelector(selectors.selectPathsMatch);
   const firstBoardId = useSelector(state => {
     if (!project) return null;
     return selectors.selectFirstBoardIdByProjectId(state, project.id);
@@ -33,10 +34,10 @@ const Project = React.memo(() => {
     // 1. Temos um projeto
     // 2. Não temos um quadro selecionado (estamos na página do projeto)
     // 3. Existe pelo menos um quadro no projeto
-    if (project && !board && firstBoardId) {
+    if (project && !board && firstBoardId && pathsMatch?.pattern.path !== Paths.GANTT) {
       navigate(Paths.BOARDS.replace(':id', firstBoardId));
     }
-  }, [project, board, firstBoardId, navigate]);
+  }, [project, board, firstBoardId, pathsMatch, navigate]);
 
   let modalNode = null;
   if (modal) {

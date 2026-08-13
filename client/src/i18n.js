@@ -38,7 +38,7 @@ import { i18n as markdownEditorI18n } from '@gravity-ui/markdown-editor/_/i18n/i
 import { embeddedLocales, languages } from './locales';
 import { resolveDetectedLanguage } from './utils/language-detection';
 
-const FALLBACK_LANGUAGE = 'pt-PT';
+const FALLBACK_LANGUAGE = 'en-US';
 
 i18n.dateFns = {
   locales: {},
@@ -228,18 +228,18 @@ i18n
   })
   .then(() => {
     console.log('i18n inicializado com sucesso');
-    // Carregar o locale padrão pt-PT
+    // Carregar o locale de fallback
     i18n.loadCoreLocale(FALLBACK_LANGUAGE).then(() => {
-      console.log('Locale pt-PT carregado com sucesso');
+      console.log(`Locale ${FALLBACK_LANGUAGE} carregado com sucesso`);
     }).catch((error) => {
-      console.error('❌ Erro ao carregar locale pt-PT:', error);
+      console.error(`❌ Erro ao carregar locale ${FALLBACK_LANGUAGE}:`, error);
     });
   });
 
 i18n.loadCoreLocale = async (language = i18n.resolvedLanguage) => {
   if (language === FALLBACK_LANGUAGE) {
-    console.log('Carregando locale padrão pt-PT');
-    // Carregar o locale pt-PT mesmo sendo o padrão
+    console.log(`Carregando locale de fallback ${FALLBACK_LANGUAGE}`);
+    // Carregar o locale mesmo sendo o fallback
     try {
       const { default: locale } = await import(`./locales/${language}/core.js`);
 

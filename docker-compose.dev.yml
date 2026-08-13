@@ -7,7 +7,26 @@ services:
       dockerfile: Dockerfile.dev
     image: planka-dev-video-test
     pull_policy: never
-    command: [ "bash", "-c", "if [ ! -f node_modules/.planka-dev-lock ] || ! sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1; then npm install && npm rebuild bcrypt lodepng --build-from-source --force && sha256sum package-lock.json > node_modules/.planka-dev-lock; fi && npm run db:init && npm start" ]
+    command:
+      - bash
+      - -ec
+      - |
+        dependencies_valid() {
+          test -f node_modules/.planka-dev-lock &&
+            sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1 &&
+            npm ls --depth=0 >/dev/null 2>&1
+        }
+
+        if ! dependencies_valid; then
+          echo "Dependências do servidor ausentes ou incompletas; a reinstalar..."
+          rm -f node_modules/.planka-dev-lock
+          npm install
+          npm rebuild bcrypt lodepng --build-from-source --force
+          sha256sum package-lock.json > node_modules/.planka-dev-lock
+        fi
+
+        npm run db:init
+        npm start
     restart: on-failure
     dns:
       - 8.8.8.8
@@ -47,7 +66,24 @@ services:
   planka-client:
     image: planka-dev-video-test
     pull_policy: never
-    command: [ "bash", "-c", "if [ ! -f node_modules/.planka-dev-lock ] || ! sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1; then npm install && sha256sum package-lock.json > node_modules/.planka-dev-lock; fi && npx vite --host" ]
+    command:
+      - bash
+      - -ec
+      - |
+        dependencies_valid() {
+          test -f node_modules/.planka-dev-lock &&
+            sha256sum -c node_modules/.planka-dev-lock >/dev/null 2>&1 &&
+            npm ls --depth=0 >/dev/null 2>&1
+        }
+
+        if ! dependencies_valid; then
+          echo "Dependências do cliente ausentes ou incompletas; a reinstalar..."
+          rm -f node_modules/.planka-dev-lock
+          npm install
+          sha256sum package-lock.json > node_modules/.planka-dev-lock
+        fi
+
+        npx vite --host
     working_dir: /app/client
     restart: on-failure
     depends_on:

@@ -84,7 +84,7 @@
     }
   }
 
-  .chatModeField {
+  .accessField {
     position: relative;
     z-index: var(--project-settings-layer-field);
 
@@ -187,6 +187,10 @@
     line-height: 1.55;
     margin: 8px 0 0;
     max-width: 64ch;
+  }
+
+  .retryButton:global(.ui.button) {
+    margin-top: 10px;
   }
 
   .dangerSection {

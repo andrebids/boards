@@ -103,7 +103,8 @@ export function* handleLocationChange() {
       isEditModeEnabled = false;
 
       break;
-    case Paths.PROJECTS: {
+    case Paths.PROJECTS:
+    case Paths.GANTT: {
       const boardIds = yield select(selectors.selectBoardIdsForCurrentProject);
 
       if (boardIds && boardIds.length === 0) {

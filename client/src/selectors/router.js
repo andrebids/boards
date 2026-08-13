@@ -31,7 +31,8 @@ export const selectPath = createReduxOrmSelector(
       const currentUserModel = User.withId(currentUserId);
 
       switch (pathsMatch.pattern.path) {
-        case Paths.PROJECTS: {
+        case Paths.PROJECTS:
+        case Paths.GANTT: {
           const projectModel = Project.withId(pathsMatch.params.id);
 
           if (

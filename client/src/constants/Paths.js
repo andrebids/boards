@@ -9,6 +9,7 @@ const FORGOT_PASSWORD = '/forgot-password';
 const RESET_PASSWORD = '/reset-password';
 const OIDC_CALLBACK = '/oidc-callback';
 const PROJECTS = '/projects/:id';
+const GANTT = '/projects/:id/gantt';
 const BOARDS = '/boards/:id';
 const CARDS = '/cards/:id';
 
@@ -19,6 +20,7 @@ export default {
   RESET_PASSWORD,
   OIDC_CALLBACK,
   PROJECTS,
+  GANTT,
   BOARDS,
   CARDS,
 };

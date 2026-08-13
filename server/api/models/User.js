@@ -252,6 +252,11 @@ module.exports = {
       via: 'userId',
       through: 'CardMembership',
     },
+    assignedGanttItems: {
+      collection: 'GanttItem',
+      via: 'userId',
+      through: 'GanttItemAssignee',
+    },
   },
 
   tableName: 'user_account',

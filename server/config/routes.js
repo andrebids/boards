@@ -88,6 +88,14 @@ module.exports.routes = {
   'PATCH /api/projects/:id': 'projects/update',
   'DELETE /api/projects/:id': 'projects/delete',
 
+  'GET /api/projects/:projectId/gantt-plan': 'gantt-plans/show',
+  'POST /api/projects/:projectId/gantt-plan': 'gantt-plans/create',
+  'PATCH /api/gantt-plans/:id': 'gantt-plans/update',
+  'POST /api/gantt-plans/:id/disable': 'gantt-plans/disable',
+  'POST /api/gantt-plans/:ganttPlanId/items': 'gantt-items/create',
+  'PATCH /api/gantt-items/:id': 'gantt-items/update',
+  'DELETE /api/gantt-items/:id': 'gantt-items/delete',
+
   'GET /api/projects/:projectId/chat-members': 'chat-members/index',
   'GET /api/chat-inbox': 'chat-inbox/index',
   'POST /api/chat-inbox/read': 'chat-inbox/read',

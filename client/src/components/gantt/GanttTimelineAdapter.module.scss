@@ -1,0 +1,110 @@
+:global(#app) {
+  .wrapper {
+    background: var(--app-dark-canvas);
+    color-scheme: dark;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+
+    > :global(*) {
+      height: 100%;
+    }
+
+    :global(.wx-willow-dark-theme) {
+      --wx-background: var(--app-dark-canvas);
+      --wx-background-alt: var(--app-dark-surface);
+      --wx-background-hover: var(--app-dark-surface-hover);
+      --wx-border: 1px solid var(--app-dark-border);
+      --wx-border-color: var(--app-dark-border);
+      --wx-color-font: var(--app-dark-text);
+      --wx-color-font-alt: var(--app-dark-text-muted);
+      --wx-color-primary: var(--app-accent);
+      --wx-color-primary-font: var(--app-accent-foreground);
+      --wx-color-primary-hover: var(--app-accent-hover);
+      --wx-gantt-border: 1px solid var(--app-dark-border);
+      --wx-gantt-border-color: var(--app-dark-border);
+      --wx-gantt-holiday-background: color-mix(
+        in oklab,
+        var(--app-dark-surface) 72%,
+        var(--app-dark-canvas)
+      );
+      --wx-gantt-holiday-color: var(--app-dark-text-muted);
+      --wx-gantt-select-color: var(--app-accent-soft);
+      --wx-gantt-task-color: var(--app-accent);
+      --wx-gantt-task-fill-color: var(--app-accent-hover);
+      --wx-gantt-task-border-color: var(--app-accent-hover);
+      --wx-gantt-task-font-color: var(--app-accent-foreground);
+      --wx-gantt-bar-border-radius: 3px;
+      --wx-grid-body-font: 400 12px var(--wx-font-family);
+      --wx-grid-body-font-color: var(--app-dark-text);
+      --wx-grid-body-row-border: 1px solid var(--app-dark-border);
+      --wx-grid-body-cell-border: 1px solid var(--app-dark-border);
+      --wx-grid-header-font: 700 12px var(--wx-font-family);
+      --wx-grid-header-font-color: var(--app-dark-text-muted);
+      --wx-grid-header-shadow: none;
+      --wx-table-header-background: var(--app-dark-surface);
+      --wx-table-header-border: 0;
+      --wx-table-header-cell-border: 0;
+      --wx-timescale-font: 700 11px var(--wx-font-family);
+      --wx-timescale-font-color: var(--app-dark-text-muted);
+      --wx-timescale-shadow: none;
+      --wx-timescale-border: 1px solid var(--app-dark-border);
+      scrollbar-color: var(--app-dark-surface-hover) var(--app-dark-canvas);
+      height: 100%;
+
+      :global(.wx-grid .wx-header) {
+        background: var(--app-dark-surface);
+      }
+
+      :global(.wx-grid .wx-header .wx-cell) {
+        background: var(--app-dark-surface);
+        border-right: 0;
+        color: var(--app-dark-text-muted);
+      }
+
+      :global(.wx-grid .wx-body .wx-row:nth-child(even) .wx-cell) {
+        background: color-mix(
+          in oklab,
+          var(--app-dark-surface) 38%,
+          var(--app-dark-canvas)
+        );
+      }
+
+      :global(.wx-grid .wx-body .wx-row:hover .wx-cell) {
+        background: var(--app-dark-surface-hover);
+      }
+
+      :global(.wx-task) {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+      }
+
+      :global(*::-webkit-scrollbar-track) {
+        background: var(--app-dark-canvas);
+      }
+
+      :global(*::-webkit-scrollbar-thumb) {
+        background: var(--app-dark-surface-hover);
+        border: 2px solid var(--app-dark-canvas);
+        border-radius: 999px;
+      }
+
+      :global(*::-webkit-scrollbar-thumb:hover) {
+        background: var(--app-default-hover);
+      }
+    }
+  }
+
+  .monthBand {
+    background: var(--app-dark-surface) !important;
+    color: var(--app-dark-text) !important;
+  }
+
+  .monthBandAlternate {
+    background: color-mix(
+      in oklab,
+      var(--app-dark-surface) 92%,
+      var(--app-accent) 8%
+    ) !important;
+    color: var(--app-dark-text) !important;
+  }
+}

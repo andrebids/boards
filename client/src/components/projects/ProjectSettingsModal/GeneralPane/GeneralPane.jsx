@@ -3,9 +3,10 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { Form, Radio, Tab } from 'semantic-ui-react';
 import { Button } from '../../../../lib/custom-ui';
 
@@ -14,6 +15,7 @@ import entryActions from '../../../../entry-actions';
 import { usePopupInClosableContext } from '../../../../hooks';
 import EditInformation from './EditInformation';
 import ConfirmationStep from '../../../common/ConfirmationStep';
+import { useGantt } from '../../../gantt';
 
 import styles from './GeneralPane.module.scss';
 
@@ -26,6 +28,16 @@ const GeneralPane = React.memo(() => {
 
   const canEdit = useSelector(selectors.selectIsCurrentUserManagerForCurrentProject);
   const canManageChat = useSelector(selectors.selectCanCurrentUserManageCurrentProjectChat);
+  const canManageGantt = canManageChat;
+  const {
+    plan: ganttPlan,
+    isLoading: isGanttLoading,
+    error: ganttError,
+    activate: activateGantt,
+    disable: disableGantt,
+    reload: reloadGantt,
+  } = useGantt();
+  const [isGanttSubmitting, setIsGanttSubmitting] = useState(false);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -50,6 +62,31 @@ const GeneralPane = React.memo(() => {
       );
     },
     [dispatch],
+  );
+
+  const handleGanttModeChange = useCallback(
+    async (_, { value }) => {
+      const isEnabled = Boolean(ganttPlan?.isEnabled);
+      if ((value === 'enabled') === isEnabled) {
+        return;
+      }
+
+      setIsGanttSubmitting(true);
+      try {
+        if (value === 'enabled') {
+          await activateGantt();
+          toast.success(t('common.ganttActivated'));
+        } else {
+          await disableGantt();
+          toast.success(t('common.ganttDeactivated'));
+        }
+      } catch {
+        toast.error(t('common.ganttSaveFailed'));
+      } finally {
+        setIsGanttSubmitting(false);
+      }
+    },
+    [activateGantt, disableGantt, ganttPlan?.isEnabled, t],
   );
 
   const handleDeleteConfirm = useCallback(() => {
@@ -82,10 +119,10 @@ const GeneralPane = React.memo(() => {
           />
         </div>
       </section>
-      {canManageChat && (
+      {canManageGantt && (
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>{t('common.projectChat')}</h3>
-          <div className={styles.chatModeField}>
+          <div className={styles.accessField}>
             <Form.Select
               fluid
               upward
@@ -112,6 +149,42 @@ const GeneralPane = React.memo(() => {
             />
           </div>
           <p className={styles.hint}>{t('common.projectChatAccessHint')}</p>
+        </section>
+      )}
+      {canManageChat && (
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle}>{t('common.gantt')}</h3>
+          <div className={styles.accessField}>
+            <Form.Select
+              fluid
+              upward
+              label={t('common.ganttAvailability')}
+              value={ganttPlan?.isEnabled ? 'enabled' : 'disabled'}
+              options={[
+                {
+                  key: 'disabled',
+                  value: 'disabled',
+                  text: t('common.ganttDisabledOption'),
+                },
+                {
+                  key: 'enabled',
+                  value: 'enabled',
+                  text: t('common.ganttEnabledOption'),
+                },
+              ]}
+              disabled={isGanttLoading || isGanttSubmitting || Boolean(ganttError)}
+              loading={isGanttLoading || isGanttSubmitting}
+              onChange={handleGanttModeChange}
+            />
+          </div>
+          <p className={styles.hint} role={ganttError ? 'alert' : undefined}>
+            {ganttError ? t('common.ganttLoadFailed') : t('common.ganttAvailabilityHint')}
+          </p>
+          {ganttError && (
+            <Button variant="secondary" className={styles.retryButton} onClick={reloadGantt}>
+              {t('action.retry')}
+            </Button>
+          )}
         </section>
       )}
       {canEdit && (

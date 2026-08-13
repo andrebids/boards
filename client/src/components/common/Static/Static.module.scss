@@ -59,6 +59,16 @@
     margin-top: 188px;
   }
 
+  .wrapperGantt {
+    height: calc(100% - 116px);
+    margin-top: 116px;
+  }
+
+  .wrapperGanttWithFavorites {
+    height: calc(100% - 206px);
+    margin-top: 206px;
+  }
+
   .wrapperTransitioning {
     transition: margin-top 0.2s ease;
   }

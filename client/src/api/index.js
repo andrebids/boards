@@ -31,6 +31,7 @@ import notifications from './notifications';
 import notificationServices from './notification-services';
 import organizationDefaultLabels from './organization-default-labels';
 import chat from './chat';
+import gantt from './gantt';
 
 export { http, socket };
 
@@ -61,4 +62,5 @@ export default {
   ...notificationServices,
   ...organizationDefaultLabels,
   ...chat,
+  ...gantt,
 };
