@@ -77,7 +77,7 @@ const SOURCE_ITEMS = [
   ],
   [
     'Carlos',
-    'Prism: merge strtuture with Simu Studio',
+    'Prism: merge structure with Simu Studio',
     'Simu Studio',
     '2026-09-07',
     '2026-09-11',

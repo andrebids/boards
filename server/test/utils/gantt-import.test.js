@@ -24,6 +24,10 @@ describe('AI development Gantt import', () => {
       endDate: '2026-09-04',
       expectedDurationDays: 5,
     });
+    expect(items.some(({ task }) => task === 'Prism: merge structure with Simu Studio')).to.equal(
+      true,
+    );
+    expect(items.some(({ task }) => task.includes('strtuture'))).to.equal(false);
   });
 
   it('parses a safe dry-run command', () => {
