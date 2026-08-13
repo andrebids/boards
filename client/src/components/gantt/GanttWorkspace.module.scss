@@ -53,6 +53,12 @@
     width: 36px;
   }
 
+  .newButton :global(i.icon) {
+    font-size: 14px;
+    height: 16px;
+    width: 16px;
+  }
+
   .toolbarSpacer {
     flex: 1 1 auto;
   }
