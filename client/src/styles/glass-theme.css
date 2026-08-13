@@ -1,6 +1,7 @@
 :root {
   /* Escala escura partilhada: canvas -> superfície -> estado interativo. */
   --app-dark-canvas: oklch(0.177 0.013 264.15);
+  --app-board-background: oklch(0.32 0.02 260);
   --app-dark-surface: oklch(0.213 0.019 262.066);
   --app-dark-surface-hover: oklch(0.282 0.029 256.846);
   --app-dark-border: oklch(0.943 0.011 243.657 / 0.1);

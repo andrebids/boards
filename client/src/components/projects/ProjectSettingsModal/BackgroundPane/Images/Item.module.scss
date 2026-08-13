@@ -7,8 +7,9 @@
   .wrapperSubmitting {
     background: var(--project-settings-field);
     border: 1px solid var(--project-settings-border);
-    border-radius: 9px;
-    height: 84px;
+    border-radius: 999px;
+    height: 64px;
     position: relative;
+    width: 64px;
   }
 }

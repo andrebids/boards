@@ -216,7 +216,7 @@
     .ui.dropdown.active {
       z-index: 10021 !important;
     }
-    background: #202936;
+    background: var(--app-board-background);
     overflow-x: auto;
 
     &::-webkit-scrollbar {

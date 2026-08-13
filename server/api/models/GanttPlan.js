@@ -40,5 +40,9 @@ module.exports = {
       collection: 'GanttItem',
       via: 'ganttPlanId',
     },
+    links: {
+      collection: 'GanttLink',
+      via: 'ganttPlanId',
+    },
   },
 };

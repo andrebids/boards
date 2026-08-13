@@ -4,6 +4,11 @@
  */
 
 module.exports = {
+  Types: {
+    TASK: 'task',
+    SUMMARY: 'summary',
+  },
+
   tableName: 'gantt_item',
 
   attributes: {
@@ -11,7 +16,17 @@ module.exports = {
       type: 'string',
       required: true,
     },
-    project: {
+    itemType: {
+      type: 'string',
+      isIn: ['task', 'summary'],
+      defaultsTo: 'task',
+      columnName: 'item_type',
+    },
+    parentId: {
+      model: 'GanttItem',
+      columnName: 'parent_id',
+    },
+    description: {
       type: 'string',
       allowNull: true,
     },
@@ -36,6 +51,10 @@ module.exports = {
       type: 'string',
       allowNull: true,
     },
+    progress: {
+      type: 'number',
+      defaultsTo: 0,
+    },
     position: {
       type: 'number',
       required: true,
@@ -53,6 +72,10 @@ module.exports = {
       collection: 'User',
       via: 'ganttItemId',
       through: 'GanttItemAssignee',
+    },
+    children: {
+      collection: 'GanttItem',
+      via: 'parentId',
     },
   },
 };

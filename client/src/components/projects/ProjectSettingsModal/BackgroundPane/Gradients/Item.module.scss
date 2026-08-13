@@ -6,11 +6,11 @@
 :global(#app) {
   .wrapper:global(.ui.button) {
     border: 1px solid var(--project-settings-border);
-    border-radius: 9px;
+    border-radius: 999px;
     box-shadow: none;
     box-sizing: border-box;
     cursor: pointer;
-    height: 84px;
+    height: 64px;
     margin: 0;
     overflow: hidden;
     padding: 0;
@@ -44,7 +44,7 @@
   }
 
   .wrapper:global(.ui.button:active) {
-    transform: scale(0.99);
+    transform: scale(0.96);
   }
 
   .wrapperActive:global(.ui.button) {
@@ -60,12 +60,19 @@
     position: absolute;
   }
 
-  .label {
-    border-color: var(--project-settings-accent);
+  .checkIcon {
+    align-items: center;
+    background: rgba(8, 10, 15, 0.52);
+    border-radius: 999px;
+    color: #f8f9fc;
+    display: flex;
+    height: 26px;
+    justify-content: center;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 26px;
     z-index: 2;
-
-    i {
-      cursor: inherit;
-    }
   }
 }

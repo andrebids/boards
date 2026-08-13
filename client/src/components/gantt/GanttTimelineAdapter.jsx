@@ -26,16 +26,17 @@ const getWeekNumber = (value) => {
 const NATIVE_ZOOM_LEVELS = ['quarter', 'month', 'week', 'day'];
 
 const GanttTimelineAdapter = React.memo(
-  ({ items, usersById, zoomLevel, readonly, onItemSelect, onItemDatesChange }) => {
+  ({ items, links, usersById, zoomLevel, readonly, onItemSelect, onItemChange }) => {
     const [t, i18n] = useTranslation();
     const locale = i18n.resolvedLanguage || i18n.language;
     const onItemSelectRef = useRef(onItemSelect);
-    const onItemDatesChangeRef = useRef(onItemDatesChange);
+    const onItemChangeRef = useRef(onItemChange);
+    const wrapperRef = useRef(null);
 
     useEffect(() => {
       onItemSelectRef.current = onItemSelect;
-      onItemDatesChangeRef.current = onItemDatesChange;
-    }, [onItemDatesChange, onItemSelect]);
+      onItemChangeRef.current = onItemChange;
+    }, [onItemChange, onItemSelect]);
 
     const zoomConfig = useMemo(() => {
       const monthYear = new Intl.DateTimeFormat(locale, {
@@ -123,13 +124,16 @@ const GanttTimelineAdapter = React.memo(
           start: parseGanttDate(item.startDate),
           end: parseGanttDate(addGanttDays(item.endDate, 1)),
           duration: item.expectedDurationDays,
-          type: 'task',
-          progress: 0,
+          type: item.itemType || 'task',
+          parent: item.parentId || 0,
+          ...(item.itemType === 'summary' && { open: true }),
+          progress: item.progress || 0,
+          details: item.description || '',
+          color: item.color || 'blue',
           assignees: (item.assigneeUserIds || [])
             .map((userId) => usersById[userId]?.name)
             .filter(Boolean)
             .join(', '),
-          projectLabel: item.project || '—',
           startLabel: item.startDate,
           endLabel: item.endDate,
           durationLabel: t('common.ganttDayShort', { count: item.expectedDurationDays }),
@@ -147,12 +151,6 @@ const GanttTimelineAdapter = React.memo(
           resize: true,
         },
         { id: 'text', header: t('common.ganttTask'), width: 190, resize: true },
-        {
-          id: 'projectLabel',
-          header: t('common.project'),
-          width: 105,
-          resize: true,
-        },
         {
           id: 'startLabel',
           header: t('common.ganttStart'),
@@ -177,6 +175,12 @@ const GanttTimelineAdapter = React.memo(
           width: 104,
           resize: true,
         },
+        {
+          id: 'progress',
+          header: t('common.ganttProgress'),
+          width: 72,
+          align: 'right',
+        },
       ],
       [t],
     );
@@ -196,13 +200,37 @@ const GanttTimelineAdapter = React.memo(
           return;
         }
 
-        onItemDatesChangeRef.current(String(id), {
+        onItemChangeRef.current(String(id), {
           startDate: formatGanttDate(task.start),
           endDate: formatGanttDate(new Date(task.end.getTime() - 86400000)),
           expectedDurationDays: Math.max(1, Math.round(task.duration || 1)),
+          progress: Math.max(0, Math.min(100, Math.round(task.progress || 0))),
         });
       });
     }, []);
+
+    useEffect(() => {
+      const colors = {
+        blue: '#3983eb',
+        green: '#2fa36b',
+        orange: '#d9822b',
+        red: '#d64545',
+        purple: '#8b5cf6',
+        teal: '#0f9f9a',
+        gray: '#697386',
+      };
+      const frame = requestAnimationFrame(() => {
+        wrapperRef.current?.querySelectorAll('.wx-bar[data-task-id]').forEach((element) => {
+          const task = tasks.find(({ id }) => String(id) === element.dataset.taskId);
+          const color = colors[task?.color] || colors.blue;
+          const prefix = task?.type === 'summary' ? 'summary' : 'task';
+          element.style.setProperty(`--wx-gantt-${prefix}-color`, color);
+          element.style.setProperty(`--wx-gantt-${prefix}-fill-color`, color);
+          element.style.setProperty(`--wx-gantt-${prefix}-border-color`, color);
+        });
+      });
+      return () => cancelAnimationFrame(frame);
+    }, [tasks, zoomLevel]);
 
     const zoom = zoomConfig[zoomLevel] || zoomConfig.week;
     const nativeZoom = useMemo(
@@ -218,14 +246,19 @@ const GanttTimelineAdapter = React.memo(
     );
 
     return (
-      <div className={styles.wrapper}>
+      <div ref={wrapperRef} className={styles.wrapper}>
         <WillowDark fonts={false}>
           <Gantt
             key={zoomLevel}
             tasks={tasks}
-            links={[]}
+            links={links.map(({ id, sourceItemId, targetItemId, type }) => ({
+              id,
+              source: sourceItemId,
+              target: targetItemId,
+              type,
+            }))}
             columns={columns}
-            gridWidth={730}
+            gridWidth={650}
             readonly={readonly}
             cellBorders="full"
             cellHeight={42}
@@ -246,11 +279,12 @@ const GanttTimelineAdapter = React.memo(
 
 GanttTimelineAdapter.propTypes = {
   items: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
+  links: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
   usersById: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
   zoomLevel: PropTypes.oneOf(['day', 'week', 'month', 'quarter']).isRequired,
   readonly: PropTypes.bool.isRequired,
   onItemSelect: PropTypes.func.isRequired,
-  onItemDatesChange: PropTypes.func.isRequired,
+  onItemChange: PropTypes.func.isRequired,
 };
 
 export default GanttTimelineAdapter;

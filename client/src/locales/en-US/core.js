@@ -42,52 +42,36 @@ export default {
       archive: 'Archive',
       archiveCard_title: 'Archive Card',
       archiveCards_title: 'Archive Cards',
-      areYouSureYouWantToActivateThisUser:
-        'Are you sure you want to activate this user?',
-      areYouSureYouWantToArchiveCards:
-        'Are you sure you want to archive cards?',
-      areYouSureYouWantToArchiveThisCard:
-        'Are you sure you want to archive this card?',
+      areYouSureYouWantToActivateThisUser: 'Are you sure you want to activate this user?',
+      areYouSureYouWantToArchiveCards: 'Are you sure you want to archive cards?',
+      areYouSureYouWantToArchiveThisCard: 'Are you sure you want to archive this card?',
       areYouSureYouWantToAssignThisProjectManagerAsOwner:
         'Are you sure you want to assign this project manager as owner?',
-      areYouSureYouWantToDeactivateThisUser:
-        'Are you sure you want to deactivate this user?',
-      areYouSureYouWantToDeleteThisAttachment:
-        'Are you sure you want to delete this attachment?',
+      areYouSureYouWantToDeactivateThisUser: 'Are you sure you want to deactivate this user?',
+      areYouSureYouWantToDeleteThisAttachment: 'Are you sure you want to delete this attachment?',
       areYouSureYouWantToDeleteThisBackgroundImage:
         'Are you sure you want to delete this background image?',
-      areYouSureYouWantToDeleteThisBoard:
-        'Are you sure you want to delete this board?',
-      areYouSureYouWantToDeleteThisCard:
-        'Are you sure you want to delete this card?',
+      areYouSureYouWantToDeleteThisBoard: 'Are you sure you want to delete this board?',
+      areYouSureYouWantToDeleteThisCard: 'Are you sure you want to delete this card?',
       areYouSureYouWantToDeleteThisCardForever:
         'Are you sure you want to delete this card forever?',
-      areYouSureYouWantToDeleteThisComment:
-        'Are you sure you want to delete this comment?',
+      areYouSureYouWantToDeleteThisComment: 'Are you sure you want to delete this comment?',
       areYouSureYouWantToDeleteThisCustomField:
         'Are you sure you want to delete this custom field?',
       areYouSureYouWantToDeleteThisCustomFieldGroup:
         'Are you sure you want to delete this custom field group?',
-      areYouSureYouWantToDeleteThisLabel:
-        'Are you sure you want to delete this label?',
+      areYouSureYouWantToDeleteThisLabel: 'Are you sure you want to delete this label?',
       areYouSureYouWantToDeleteThisList:
         'Are you sure you want to delete this list? All cards will be moved to trash.',
       areYouSureYouWantToDeleteThisNotificationService:
         'Are you sure you want to delete this notification service?',
-      areYouSureYouWantToDeleteThisProject:
-        'Are you sure you want to delete this project?',
-      areYouSureYouWantToDeleteThisTask:
-        'Are you sure you want to delete this task?',
-      areYouSureYouWantToDeleteThisTaskList:
-        'Are you sure you want to delete this task list?',
-      areYouSureYouWantToDeleteThisUser:
-        'Are you sure you want to delete this user?',
-      areYouSureYouWantToEmptyTrash:
-        'Are you sure you want to empty the trash?',
-      areYouSureYouWantToLeaveBoard:
-        'Are you sure you want to leave the board?',
-      areYouSureYouWantToLeaveProject:
-        'Are you sure you want to leave the project?',
+      areYouSureYouWantToDeleteThisProject: 'Are you sure you want to delete this project?',
+      areYouSureYouWantToDeleteThisTask: 'Are you sure you want to delete this task?',
+      areYouSureYouWantToDeleteThisTaskList: 'Are you sure you want to delete this task list?',
+      areYouSureYouWantToDeleteThisUser: 'Are you sure you want to delete this user?',
+      areYouSureYouWantToEmptyTrash: 'Are you sure you want to empty the trash?',
+      areYouSureYouWantToLeaveBoard: 'Are you sure you want to leave the board?',
+      areYouSureYouWantToLeaveProject: 'Are you sure you want to leave the project?',
       areYouSureYouWantToMakeThisProjectShared:
         'Are you sure you want to make this project shared?',
       areYouSureYouWantToRemoveThisManagerFromProject:
@@ -127,22 +111,18 @@ export default {
         'Cards on this list are available to all board members.',
       cardsOnThisListAreCompleteAndReadyToBeArchived:
         'Cards on this list are complete and ready to be archived.',
-      cardsOnThisListAreReadyToBeWorkedOn:
-        'Cards on this list are ready to be worked on.',
-      clickHereOrRefreshPageToUpdate:
-        '<0>Click here</0> or refresh the page to update.',
+      cardsOnThisListAreReadyToBeWorkedOn: 'Cards on this list are ready to be worked on.',
+      clickHereOrRefreshPageToUpdate: '<0>Click here</0> or refresh the page to update.',
       closed: 'Closed',
       color: 'Color',
       comments: 'Comments',
       contentExceedsLimit: 'Content exceeds {{limit}}',
-      contentOfThisAttachmentIsTooBigToDisplay:
-        'Content of this attachment is too big to display.',
+      contentOfThisAttachmentIsTooBigToDisplay: 'Content of this attachment is too big to display.',
       copy_inline: 'copy',
       createBoard_title: 'Create Board',
       createCustomFieldGroup_title: 'Create Custom Field Group',
       createLabel_title: 'Create Label',
-      createNewOneOrSelectExistingOne:
-        'Create a new one or select<br />an existing one.',
+      createNewOneOrSelectExistingOne: 'Create a new one or select<br />an existing one.',
       createProject_title: 'Create Project',
       createTextFile_title: 'Create Text File',
       creator: 'Creator',
@@ -222,15 +202,12 @@ export default {
       labels: 'Labels',
       language: 'Language',
       defaultLabels: 'Default Labels',
-      defaultLabelsDescription:
-        'These labels are automatically added to all new boards.',
+      defaultLabelsDescription: 'These labels are automatically added to all new boards.',
       noDefaultLabelsYet: 'No default labels yet.',
-      addCommonLabelsForAllProjects:
-        'Add common labels you want to use in all projects.',
+      addCommonLabelsForAllProjects: 'Add common labels you want to use in all projects.',
       editDefaultLabel: 'Edit Pre-defined Label',
       addDefaultLabel: 'Create Pre-defined Label',
-      areYouSureYouWantToDeleteThisLabel:
-        'Are you sure you want to delete this label?',
+      areYouSureYouWantToDeleteThisLabel: 'Are you sure you want to delete this label?',
       nameMustBeProvided: 'Name is required',
       nameTooLong: 'Name is too long (maximum 60 characters)',
       nameAlreadyExists: 'A label with this name already exists',
@@ -264,10 +241,8 @@ export default {
       userCreatedEmailPending_title: 'User Created',
       userCreatedButWelcomeEmailFailed:
         'The user was created, but the welcome email could not be sent.',
-      welcomeEmailResendFailed:
-        'The welcome email could not be resent. Please try again.',
-      welcomeEmailResentSuccessfully:
-        'The welcome email was resent successfully.',
+      welcomeEmailResendFailed: 'The welcome email could not be resent. Please try again.',
+      welcomeEmailResentSuccessfully: 'The welcome email was resent successfully.',
       resendingWelcomeEmail: 'Resending welcome email…',
       newUsername: 'New username',
       newVersionAvailable: 'New version available',
@@ -280,22 +255,18 @@ export default {
       noUnreadNotifications: 'No unread notifications.',
       notifications: 'Notifications',
       personalNotifications: 'Personal notifications',
-      personalNotificationsDescription:
-        'Choose how much activity reaches your notification inbox.',
+      personalNotificationsDescription: 'Choose how much activity reaches your notification inbox.',
       unreadProjectNotifications_one: '{{count}} unread notification in this project',
       unreadProjectNotifications_other: '{{count}} unread notifications in this project',
       unreadProjectNotifications_title: 'Unread notifications in this project',
       allNotifications: 'All notifications',
       allNotificationsDescription: 'Activity from cards and boards you follow.',
       essentialNotificationsOnly: 'Essential only',
-      essentialNotificationsDescription:
-        'Mentions and when you are added to a board or card.',
+      essentialNotificationsDescription: 'Mentions and when you are added to a board or card.',
       noNotifications: 'No notifications',
-      noNotificationsDescription:
-        'Do not create or send personal notifications for this account.',
+      noNotificationsDescription: 'Do not create or send personal notifications for this account.',
       savingNotificationPreference: 'Saving notification preference…',
-      notificationPreferenceSaveFailed:
-        "We couldn't save your notification preference. Try again.",
+      notificationPreferenceSaveFailed: "We couldn't save your notification preference. Try again.",
       notificationDelivery: 'Notification delivery',
       notificationDeliveryDescription:
         'These delivery services follow the personal preference above.',
@@ -337,6 +308,27 @@ export default {
       ganttEnd: 'End',
       ganttDuration: 'Duration',
       ganttStatus: 'Status',
+      ganttProgress: 'Progress',
+      ganttDescription: 'Description',
+      ganttColor: 'Color',
+      ganttColor_blue: 'Blue',
+      ganttColor_green: 'Green',
+      ganttColor_orange: 'Orange',
+      ganttColor_red: 'Red',
+      ganttColor_purple: 'Purple',
+      ganttColor_teal: 'Teal',
+      ganttColor_gray: 'Gray',
+      ganttTaskType: 'Task type',
+      ganttTaskType_task: 'Task',
+      ganttTaskType_summary: 'General task',
+      ganttGeneralTask: 'General task',
+      ganttIndependentTask: 'No general task',
+      ganttNoGeneralTasksFound: 'No general tasks found',
+      ganttAddSubtask: 'Add subtask',
+      ganttDependsOn: 'Depends on',
+      ganttSelectDependencies: 'Select previous tasks',
+      ganttNoDependenciesFound: 'No tasks available',
+      ganttDependenciesHint: 'The dependency is visual and does not change dates automatically.',
       ganttWeekShort: 'W',
       ganttPlanningEyebrow: 'PLANNING',
       ganttEditTask: 'Edit task',
@@ -372,6 +364,9 @@ export default {
       ganttTaskConflict: 'This task was changed by someone else. Reopen it and try again.',
       ganttTaskSaveFailed: 'The task could not be saved.',
       ganttDeleteTaskConfirmation: 'Delete this Gantt task?',
+      ganttDeleteGeneralTaskConfirmation_one: 'Delete this general task and its subtask?',
+      ganttDeleteGeneralTaskConfirmation_other:
+        'Delete this general task and its {{count}} subtasks?',
       ganttTaskDeleteFailed: 'The task could not be deleted.',
       ganttSaveChanges: 'Save changes',
       ganttCreateTask: 'Create task',
@@ -422,8 +417,7 @@ export default {
       subscribeToCardWhenCommenting: 'Subscribe to card when commenting',
       subscribeToMyOwnCardsByDefault: 'Subscribe to my own cards by default',
       taskActions_title: 'Task Actions',
-      taskAssignmentAndProjectCompletion:
-        'Task assignment and project completion.',
+      taskAssignmentAndProjectCompletion: 'Task assignment and project completion.',
       taskListActions_title: 'Task List Actions',
       taskList_title: 'Task List',
       team: 'Team',
@@ -441,50 +435,37 @@ export default {
       userActions_title: 'User Actions',
       userAddedCardToList: '<0>{{user}}</0> added <2>{{card}}</2> to {{list}}',
       userAddedThisCardToList: '<0>{{user}}</0> added this card to {{list}}',
-      userAddedUserToCard:
-        '<0>{{actorUser}}</0> added {{addedUser}} to <4>{{card}}</4>',
-      userAddedUserToThisCard:
-        '<0>{{actorUser}}</0> added {{addedUser}} to this card',
+      userAddedUserToCard: '<0>{{actorUser}}</0> added {{addedUser}} to <4>{{card}}</4>',
+      userAddedUserToThisCard: '<0>{{actorUser}}</0> added {{addedUser}} to this card',
       userAddedYouToCard: '<0>{{user}}</0> added you to <2>{{card}}</2>',
-      userAddedYouToBoard:
-        '<0>{{user}}</0> added you to board <2>{{board}}</2>',
-      userCompletedTaskOnCard:
-        '<0>{{user}}</0> completed {{task}} on <4>{{card}}</4>',
-      userCompletedTaskOnThisCard:
-        '<0>{{user}}</0> completed {{task}} on this card',
+      userAddedYouToBoard: '<0>{{user}}</0> added you to board <2>{{board}}</2>',
+      userCompletedTaskOnCard: '<0>{{user}}</0> completed {{task}} on <4>{{card}}</4>',
+      userCompletedTaskOnThisCard: '<0>{{user}}</0> completed {{task}} on this card',
       userJoinedCard: '<0>{{user}}</0> joined <2>{{card}}</2>',
       userJoinedThisCard: '<0>{{user}}</0> joined this card',
       userLeftCard: '<0>{{user}}</0> left <2>{{card}}</2>',
       userLeftNewCommentToCard:
         '<0>{{user}}</0> left a new comment «{{comment}}» to <2>{{card}}</2>',
       userCommentedOnCard: '<0>{{user}}</0> commented on <2>{{card}}</2>',
-      userRepliedToCommentOnCard:
-        '<0>{{user}}</0> replied to a comment on <2>{{card}}</2>',
-      userUpdatedCommentOnCard:
-        '<0>{{user}}</0> updated comment on <2>{{card}}</2>',
-      userDeletedCommentOnCard:
-        '<0>{{user}}</0> deleted comment on <2>{{card}}</2>',
+      userRepliedToCommentOnCard: '<0>{{user}}</0> replied to a comment on <2>{{card}}</2>',
+      userUpdatedCommentOnCard: '<0>{{user}}</0> updated comment on <2>{{card}}</2>',
+      userDeletedCommentOnCard: '<0>{{user}}</0> deleted comment on <2>{{card}}</2>',
       userLeftThisCard: '<0>{{user}}</0> left this card',
       userMarkedTaskIncompleteOnCard:
         '<0>{{user}}</0> marked {{task}} incomplete on <4>{{card}}</4>',
-      userMarkedTaskIncompleteOnThisCard:
-        '<0>{{user}}</0> marked {{task}} incomplete on this card',
+      userMarkedTaskIncompleteOnThisCard: '<0>{{user}}</0> marked {{task}} incomplete on this card',
       userMentionedYouInCommentOnCard:
         '<0>{{user}}</0> mentioned you in a comment «{{comment}}» on <2>{{card}}</2>',
       userMovedCardFromListToList:
         '<0>{{user}}</0> moved <2>{{card}}</2> from {{fromList}} to {{toList}}',
       userMovedThisCardFromListToList:
         '<0>{{user}}</0> moved this card from {{fromList}} to {{toList}}',
-      userSetDueDateToCard:
-        '<0>{{user}}</0> set due date to {{date}} for <2>{{card}}</2>',
-      userRemovedDueDateFromCard:
-        '<0>{{user}}</0> removed due date from <1>{{card}}</1>',
+      userSetDueDateToCard: '<0>{{user}}</0> set due date to {{date}} for <2>{{card}}</2>',
+      userRemovedDueDateFromCard: '<0>{{user}}</0> removed due date from <1>{{card}}</1>',
       userChangedDueDateOfCard:
         '<0>{{user}}</0> changed due date from {{oldDate}} to {{newDate}} for <5>{{card}}</5>',
-      userRemovedUserFromCard:
-        '<0>{{actorUser}}</0> removed {{removedUser}} from <4>{{card}}</4>',
-      userRemovedUserFromThisCard:
-        '<0>{{actorUser}}</0> removed {{removedUser}} from this card',
+      userRemovedUserFromCard: '<0>{{actorUser}}</0> removed {{removedUser}} from <4>{{card}}</4>',
+      userRemovedUserFromThisCard: '<0>{{actorUser}}</0> removed {{removedUser}} from this card',
       username: 'Username',
       users: 'Users',
       viewer: 'Viewer',
@@ -505,8 +486,7 @@ export default {
       clickToRemove: 'Click to remove',
       resetProjectsOrder: 'Restore default order',
       resetFavoritesOrder: 'Restore favorites order',
-      unexpectedApplicationError:
-        'An unexpected error occurred. Reload the page to continue.',
+      unexpectedApplicationError: 'An unexpected error occurred. Reload the page to continue.',
       loadMoreActivities: 'Load more activities ({{count}} loaded)',
       pdfDocument: 'PDF document',
       bytes: 'Bytes',
@@ -533,22 +513,15 @@ export default {
         'Are you sure you want to delete the default label "{{name}}"?',
       deleteDefaultLabelWarning:
         'Existing labels will not be affected. This label will no longer be added automatically to new projects.',
-      userCreatedCard:
-        '<0>{{user}}</0> created a card <2>{{card}}</2> in {{list}}',
-      userAddedAttachmentToCard:
-        '<0>{{user}}</0> added an attachment to card <2>{{card}}</2>',
-      userCreatedTaskOnCard:
-        '<0>{{user}}</0> created task <2>{{task}}</2> on card <4>{{card}}</4>',
-      userCreatedTaskOnThisCard:
-        '<0>{{user}}</0> created task <2>{{task}}</2> on this card',
+      userCreatedCard: '<0>{{user}}</0> created a card <2>{{card}}</2> in {{list}}',
+      userAddedAttachmentToCard: '<0>{{user}}</0> added an attachment to card <2>{{card}}</2>',
+      userCreatedTaskOnCard: '<0>{{user}}</0> created task <2>{{task}}</2> on card <4>{{card}}</4>',
+      userCreatedTaskOnThisCard: '<0>{{user}}</0> created task <2>{{task}}</2> on this card',
       userDeletedTaskOnCard:
         '<0>{{user}}</0> deleted task <2>{{task}}</2> from card <4>{{card}}</4>',
-      userDeletedTaskOnThisCard:
-        '<0>{{user}}</0> deleted task <2>{{task}}</2> from this card',
-      userUpdatedTaskOnCard:
-        '<0>{{user}}</0> updated task <2>{{task}}</2> on card <4>{{card}}</4>',
-      userUpdatedTaskOnThisCard:
-        '<0>{{user}}</0> updated task <2>{{task}}</2> on this card',
+      userDeletedTaskOnThisCard: '<0>{{user}}</0> deleted task <2>{{task}}</2> from this card',
+      userUpdatedTaskOnCard: '<0>{{user}}</0> updated task <2>{{task}}</2> on card <4>{{card}}</4>',
+      userUpdatedTaskOnThisCard: '<0>{{user}}</0> updated task <2>{{task}}</2> on this card',
       userCreatedTaskListOnCard:
         '<0>{{user}}</0> created task list <2>{{taskList}}</2> on card <4>{{card}}</4>',
       userCreatedTaskListOnThisCard:
@@ -563,8 +536,7 @@ export default {
         '<0>{{user}}</0> created attachment <2>{{attachment}}</2> on this card',
       userCreatedVideoOnCard:
         '<0>{{user}}</0> added video <2>{{attachment}}</2> to card <4>{{card}}</4>',
-      userCreatedVideoOnThisCard:
-        '<0>{{user}}</0> added video <2>{{attachment}}</2> to this card',
+      userCreatedVideoOnThisCard: '<0>{{user}}</0> added video <2>{{attachment}}</2> to this card',
       userDeletedAttachmentOnCard:
         '<0>{{user}}</0> deleted attachment <2>{{attachment}}</2> from card <4>{{card}}</4>',
       userDeletedAttachmentOnThisCard:
@@ -573,16 +545,14 @@ export default {
         '<0>{{user}}</0> removed video <2>{{attachment}}</2> from card <4>{{card}}</4>',
       userDeletedVideoOnThisCard:
         '<0>{{user}}</0> removed video <2>{{attachment}}</2> from this card',
-      userAddedLabelToCard:
-        '<0>{{user}}</0> added label <2>{{label}}</2> to card <4>{{card}}</4>',
+      userAddedLabelToCard: '<0>{{user}}</0> added label <2>{{label}}</2> to card <4>{{card}}</4>',
       userRemovedLabelFromCard:
         '<0>{{user}}</0> removed label <2>{{label}}</2> from card <4>{{card}}</4>',
       userUncompletedTaskOnCard:
         '<0>{{user}}</0> marked task <2>{{task}}</2> incomplete on card <4>{{card}}</4>',
       userSetDueDateOnCard:
         '<0>{{user}}</0> set the due date <2>{{date}}</2> for card <4>{{card}}</4>',
-      activityLogMessage:
-        '<0>{{user}}</0> performed an action on card <2>{{card}}</2>',
+      activityLogMessage: '<0>{{user}}</0> performed an action on card <2>{{card}}</2>',
       video: 'Video',
       loading: 'Loading...',
       loadingVideoPreview: 'Loading video preview...',

@@ -23,6 +23,7 @@ export const useGantt = () => {
 export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
   const [plan, setPlan] = useState(null);
   const [items, setItems] = useState([]);
+  const [links, setLinks] = useState([]);
   const [users, setUsers] = useState([]);
   const [canEdit, setCanEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(Boolean(projectId));
@@ -32,6 +33,7 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
     if (!projectId) {
       setPlan(null);
       setItems([]);
+      setLinks([]);
       setUsers([]);
       setCanEdit(false);
       setIsLoading(false);
@@ -46,6 +48,7 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
       const body = await api.getProjectGanttPlan(projectId);
       setPlan(body.item || null);
       setItems(body.included?.ganttItems || []);
+      setLinks(body.included?.ganttLinks || []);
       setUsers(body.included?.users || []);
       setCanEdit(Boolean(body.meta?.canEdit));
     } catch (nextError) {
@@ -75,20 +78,32 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
         currentItems.map((currentItem) => (currentItem.id === item.id ? item : currentItem)),
       );
     };
-    const handleItemDelete = ({ item }) => {
-      setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
+    const handleItemDelete = ({ item, included }) => {
+      const deletedItemIds = new Set(included?.deletedItemIds || [item.id]);
+      setItems((currentItems) =>
+        currentItems.filter((currentItem) => !deletedItemIds.has(currentItem.id)),
+      );
+      setLinks((currentLinks) =>
+        currentLinks.filter(
+          ({ sourceItemId, targetItemId }) =>
+            !deletedItemIds.has(sourceItemId) && !deletedItemIds.has(targetItemId),
+        ),
+      );
     };
+    const handleLinksUpdate = ({ items: nextLinks }) => setLinks(nextLinks);
 
     socket.on('ganttPlanUpdate', handlePlanUpdate);
     socket.on('ganttItemCreate', handleItemCreate);
     socket.on('ganttItemUpdate', handleItemUpdate);
     socket.on('ganttItemDelete', handleItemDelete);
+    socket.on('ganttLinksUpdate', handleLinksUpdate);
 
     return () => {
       socket.off('ganttPlanUpdate', handlePlanUpdate);
       socket.off('ganttItemCreate', handleItemCreate);
       socket.off('ganttItemUpdate', handleItemUpdate);
       socket.off('ganttItemDelete', handleItemDelete);
+      socket.off('ganttLinksUpdate', handleLinksUpdate);
     };
   }, [projectId]);
 
@@ -96,9 +111,10 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
     const body = await api.createProjectGanttPlan(projectId);
     setPlan(body.item);
     setItems(body.included?.ganttItems || items);
+    setLinks(body.included?.ganttLinks || links);
     setCanEdit(Boolean(body.meta?.canEdit));
     return body.item;
-  }, [items, projectId]);
+  }, [items, links, projectId]);
 
   const disable = useCallback(async () => {
     if (!plan) {
@@ -121,8 +137,13 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
 
   const createItem = useCallback(
     async (data) => {
-      const body = await api.createGanttItem(plan.id, data);
+      const { predecessorIds = [], ...itemData } = data;
+      const body = await api.createGanttItem(plan.id, itemData);
       setItems((currentItems) => [...currentItems, body.item]);
+      if (body.item.itemType === 'task') {
+        const linksBody = await api.updateGanttItemDependencies(body.item.id, predecessorIds);
+        setLinks(linksBody.items);
+      }
       return body.item;
     },
     [plan],
@@ -131,8 +152,13 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
   const updateItem = useCallback(
     async (id, data) => {
       try {
-        const body = await api.updateGanttItem(id, data);
+        const { predecessorIds, ...itemData } = data;
+        const body = await api.updateGanttItem(id, itemData);
         setItems((currentItems) => currentItems.map((item) => (item.id === id ? body.item : item)));
+        if (predecessorIds) {
+          const linksBody = await api.updateGanttItemDependencies(id, predecessorIds);
+          setLinks(linksBody.items);
+        }
         return body.item;
       } catch (nextError) {
         await load();
@@ -144,7 +170,14 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
 
   const deleteItem = useCallback(async (id) => {
     const body = await api.deleteGanttItem(id);
-    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
+    const deletedItemIds = new Set(body.included?.deletedItemIds || [id]);
+    setItems((currentItems) => currentItems.filter((item) => !deletedItemIds.has(item.id)));
+    setLinks((currentLinks) =>
+      currentLinks.filter(
+        ({ sourceItemId, targetItemId }) =>
+          !deletedItemIds.has(sourceItemId) && !deletedItemIds.has(targetItemId),
+      ),
+    );
     return body.item;
   }, []);
 
@@ -152,6 +185,7 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
     () => ({
       plan,
       items,
+      links,
       users,
       canEdit,
       isLoading,
@@ -167,6 +201,7 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
     [
       plan,
       items,
+      links,
       users,
       canEdit,
       isLoading,

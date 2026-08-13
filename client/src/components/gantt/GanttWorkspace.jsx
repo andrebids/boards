@@ -28,6 +28,7 @@ const GanttWorkspace = React.memo(() => {
   const {
     plan,
     items,
+    links,
     users,
     canEdit,
     isLoading,
@@ -40,6 +41,7 @@ const GanttWorkspace = React.memo(() => {
   const [zoomLevel, setZoomLevel] = useState('week');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
+  const [initialParentId, setInitialParentId] = useState(null);
   const panelTriggerRef = useRef(null);
   const navigate = useNavigate();
   const [t] = useTranslation();
@@ -59,8 +61,74 @@ const GanttWorkspace = React.memo(() => {
     }
   }, [isLoading, navigate, plan, project]);
 
-  const scheduledItems = useMemo(() => items.filter(({ startDate }) => startDate), [items]);
-  const unscheduledItems = useMemo(() => items.filter(({ startDate }) => !startDate), [items]);
+  const generalItems = useMemo(
+    () => items.filter(({ itemType }) => itemType === 'summary'),
+    [items],
+  );
+  const itemsById = useMemo(
+    () => Object.fromEntries(items.map((item) => [item.id, item])),
+    [items],
+  );
+  const timelineItems = useMemo(
+    () =>
+      items.flatMap((item) => {
+        if (item.itemType !== 'summary') {
+          return item.startDate ? [item] : [];
+        }
+
+        const children = items.filter(({ parentId }) => parentId === item.id);
+        const scheduledChildren = children.filter(({ startDate }) => startDate);
+        if (scheduledChildren.length === 0) {
+          return [];
+        }
+
+        const totalDuration = children.reduce(
+          (total, child) => total + child.expectedDurationDays,
+          0,
+        );
+        const progress = totalDuration
+          ? Math.round(
+              children.reduce(
+                (total, child) => total + child.progress * child.expectedDurationDays,
+                0,
+              ) / totalDuration,
+            )
+          : 0;
+
+        return [
+          {
+            ...item,
+            startDate: scheduledChildren.map(({ startDate }) => startDate).sort()[0],
+            endDate: scheduledChildren
+              .map(({ endDate }) => endDate)
+              .sort()
+              .at(-1),
+            expectedDurationDays: scheduledChildren.reduce(
+              (total, child) => total + child.expectedDurationDays,
+              0,
+            ),
+            progress,
+          },
+        ];
+      }),
+    [items],
+  );
+  const timelineItemIds = useMemo(
+    () => new Set(timelineItems.map(({ id }) => id)),
+    [timelineItems],
+  );
+  const timelineLinks = useMemo(
+    () =>
+      links.filter(
+        ({ sourceItemId, targetItemId }) =>
+          timelineItemIds.has(sourceItemId) && timelineItemIds.has(targetItemId),
+      ),
+    [links, timelineItemIds],
+  );
+  const unscheduledItems = useMemo(
+    () => items.filter(({ itemType, startDate }) => itemType === 'task' && !startDate),
+    [items],
+  );
   const usersById = useMemo(
     () => Object.fromEntries(users.map((user) => [user.id, user])),
     [users],
@@ -73,35 +141,49 @@ const GanttWorkspace = React.memo(() => {
   const handleNewItem = useCallback(() => {
     panelTriggerRef.current = document.activeElement;
     setSelectedItemId(null);
+    setInitialParentId(null);
     setIsPanelOpen(true);
   }, []);
 
   const handleItemSelect = useCallback((id) => {
     panelTriggerRef.current = document.activeElement;
     setSelectedItemId(id);
+    setInitialParentId(null);
     setIsPanelOpen(true);
   }, []);
 
   const handlePanelClose = useCallback(() => {
     setIsPanelOpen(false);
     setSelectedItemId(null);
+    setInitialParentId(null);
     requestAnimationFrame(() => panelTriggerRef.current?.focus?.({ preventScroll: true }));
   }, []);
 
   const handleSave = useCallback(
-    (data) => (selectedItem ? updateItem(selectedItem.id, data) : createItem(data)),
+    (data) => {
+      if (!selectedItem) {
+        return createItem(data);
+      }
+      const { itemType, ...updateData } = data;
+      return updateItem(selectedItem.id, updateData);
+    },
     [createItem, selectedItem, updateItem],
   );
 
-  const handleDatesChange = useCallback(
-    async (id, dates) => {
+  const handleAddSubtask = useCallback((parentId) => {
+    setSelectedItemId(null);
+    setInitialParentId(parentId);
+  }, []);
+
+  const handleItemChange = useCallback(
+    async (id, changes) => {
       const item = items.find((candidate) => candidate.id === id);
-      if (!item) {
+      if (!item || item.itemType === 'summary') {
         return;
       }
 
       try {
-        await updateItem(id, { ...dates, version: item.version });
+        await updateItem(id, { ...changes, version: item.version });
       } catch {
         toast.error(t('common.ganttSaveFailed'));
       }
@@ -111,8 +193,7 @@ const GanttWorkspace = React.memo(() => {
 
   const handleZoomOut = useCallback(() => {
     setZoomLevel(
-      (current) =>
-        ZOOM_LEVELS[Math.min(ZOOM_LEVELS.indexOf(current) + 1, ZOOM_LEVELS.length - 1)],
+      (current) => ZOOM_LEVELS[Math.min(ZOOM_LEVELS.indexOf(current) + 1, ZOOM_LEVELS.length - 1)],
     );
   }, []);
 
@@ -211,14 +292,15 @@ const GanttWorkspace = React.memo(() => {
       </header>
 
       <section className={styles.timelineArea}>
-        {scheduledItems.length > 0 ? (
+        {timelineItems.length > 0 ? (
           <GanttTimelineAdapter
-            items={scheduledItems}
+            items={timelineItems}
+            links={timelineLinks}
             usersById={usersById}
             zoomLevel={zoomLevel}
             readonly={!canMutate}
             onItemSelect={handleItemSelect}
-            onItemDatesChange={handleDatesChange}
+            onItemChange={handleItemChange}
           />
         ) : (
           <div className={styles.emptyState}>
@@ -252,7 +334,12 @@ const GanttWorkspace = React.memo(() => {
                 onClick={() => handleItemSelect(item.id)}
               >
                 <strong>{item.task}</strong>
-                <span>{t('common.ganttDayCount', { count: item.expectedDurationDays })}</span>
+                <span>
+                  {item.parentId && itemsById[item.parentId]
+                    ? `${itemsById[item.parentId].task} · `
+                    : ''}
+                  {t('common.ganttDayCount', { count: item.expectedDurationDays })}
+                </span>
               </button>
             ))}
           </div>
@@ -263,9 +350,19 @@ const GanttWorkspace = React.memo(() => {
         <GanttItemPanel
           item={selectedItem}
           users={users}
+          generalItems={generalItems}
+          dependencyItems={items.filter(
+            ({ id, itemType }) => itemType === 'task' && id !== selectedItem?.id,
+          )}
+          predecessorIds={links
+            .filter(({ targetItemId }) => targetItemId === selectedItem?.id)
+            .map(({ sourceItemId }) => sourceItemId)}
           statuses={statuses}
+          initialParentId={initialParentId || undefined}
+          childCount={items.filter(({ parentId }) => parentId === selectedItem?.id).length}
           onSave={handleSave}
           onDelete={deleteItem}
+          onAddSubtask={handleAddSubtask}
           onClose={handlePanelClose}
         />
       )}

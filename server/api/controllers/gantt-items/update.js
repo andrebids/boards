@@ -25,9 +25,13 @@ module.exports = {
       isNotEmptyString: true,
       maxLength: 1024,
     },
-    project: {
+    parentId: {
+      ...idInput,
+      allowNull: true,
+    },
+    description: {
       type: 'string',
-      maxLength: 256,
+      maxLength: 4096,
       allowNull: true,
     },
     status: {
@@ -49,8 +53,13 @@ module.exports = {
     },
     color: {
       type: 'string',
-      maxLength: 32,
+      isIn: ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'gray'],
       allowNull: true,
+    },
+    progress: {
+      type: 'number',
+      min: 0,
+      max: 100,
     },
     position: {
       type: 'number',
@@ -92,6 +101,17 @@ module.exports = {
       throw Errors.CONFLICT;
     }
 
+    if (inputs.parentId !== undefined) {
+      const parent = inputs.parentId && (await GanttItem.qm.getOneById(inputs.parentId));
+      if (
+        item.itemType !== 'task' ||
+        (inputs.parentId &&
+          (!parent || parent.ganttPlanId !== plan.id || parent.itemType !== 'summary'))
+      ) {
+        throw Errors.GANTT_ITEM_NOT_FOUND;
+      }
+    }
+
     let assigneeUserIds;
     if (inputs.assigneeUserIds !== undefined) {
       if (!Array.isArray(inputs.assigneeUserIds)) {
@@ -104,17 +124,26 @@ module.exports = {
       }
     }
 
-    const values = _.pick(inputs, ['task', 'project', 'status', 'color', 'position']);
-    ['task', 'project', 'status'].forEach((key) => {
+    const values = _.pick(inputs, [
+      'task',
+      'parentId',
+      'description',
+      'status',
+      'color',
+      'progress',
+      'position',
+    ]);
+    ['task', 'description', 'status'].forEach((key) => {
       if (typeof values[key] === 'string') {
         values[key] = values[key].trim() || null;
       }
     });
 
     if (
-      inputs.startDate !== undefined ||
-      inputs.endDate !== undefined ||
-      inputs.expectedDurationDays !== undefined
+      item.itemType === 'task' &&
+      (inputs.startDate !== undefined ||
+        inputs.endDate !== undefined ||
+        inputs.expectedDurationDays !== undefined)
     ) {
       try {
         Object.assign(

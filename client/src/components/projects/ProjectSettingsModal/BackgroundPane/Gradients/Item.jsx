@@ -9,7 +9,7 @@ import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
-import { Label } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
 import { Button } from '../../../../../lib/custom-ui';
 
 import selectors from '../../../../../selectors';
@@ -66,18 +66,7 @@ const Item = React.memo(({ name }) => {
       aria-label={label}
       onClick={handleClick}
     >
-      {isActive && (
-        <Label
-          corner="left"
-          size="mini"
-          icon={{
-            name: 'checkmark',
-            color: 'grey',
-            inverted: true,
-          }}
-          className={styles.label}
-        />
-      )}
+      {isActive && <Icon fitted name="checkmark" className={styles.checkIcon} />}
     </Button>
   );
 });

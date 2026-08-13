@@ -299,52 +299,37 @@ export default {
       archive: 'Arquivar',
       archiveCard_title: 'Arquivar Cartão',
       archiveCards_title: 'Arquivar Cartões',
-      areYouSureYouWantToActivateThisUser:
-        'Tem certeza de que deseja ativar este utilizador?',
-      areYouSureYouWantToArchiveCards:
-        'Tem certeza de que deseja arquivar os cartões?',
-      areYouSureYouWantToArchiveThisCard:
-        'Tem certeza de que deseja arquivar este cartão?',
+      areYouSureYouWantToActivateThisUser: 'Tem certeza de que deseja ativar este utilizador?',
+      areYouSureYouWantToArchiveCards: 'Tem certeza de que deseja arquivar os cartões?',
+      areYouSureYouWantToArchiveThisCard: 'Tem certeza de que deseja arquivar este cartão?',
       areYouSureYouWantToAssignThisProjectManagerAsOwner:
         'Tem certeza de que deseja atribuir este gerente de projeto como proprietário?',
-      areYouSureYouWantToDeactivateThisUser:
-        'Tem certeza de que deseja desativar este utilizador?',
-      areYouSureYouWantToDeleteThisAttachment:
-        'Tem certeza de que deseja excluir este anexo?',
+      areYouSureYouWantToDeactivateThisUser: 'Tem certeza de que deseja desativar este utilizador?',
+      areYouSureYouWantToDeleteThisAttachment: 'Tem certeza de que deseja excluir este anexo?',
       areYouSureYouWantToDeleteThisBackgroundImage:
         'Tem certeza de que deseja excluir esta imagem de fundo?',
-      areYouSureYouWantToDeleteThisBoard:
-        'Tem certeza de que deseja apagar este quadro?',
-      areYouSureYouWantToDeleteThisCard:
-        'Tem certeza de que deseja excluir este cartão?',
+      areYouSureYouWantToDeleteThisBoard: 'Tem certeza de que deseja apagar este quadro?',
+      areYouSureYouWantToDeleteThisCard: 'Tem certeza de que deseja excluir este cartão?',
       areYouSureYouWantToDeleteThisCardForever:
         'Tem certeza de que deseja excluir este cartão permanentemente?',
-      areYouSureYouWantToDeleteThisComment:
-        'Tem certeza de que deseja excluir este comentário?',
+      areYouSureYouWantToDeleteThisComment: 'Tem certeza de que deseja excluir este comentário?',
       areYouSureYouWantToDeleteThisCustomField:
         'Tem certeza de que deseja excluir este campo personalizado?',
       areYouSureYouWantToDeleteThisCustomFieldGroup:
         'Tem certeza de que deseja excluir este grupo de campos personalizados?',
-      areYouSureYouWantToDeleteThisLabel:
-        'Tem certeza de que deseja excluir este rótulo?',
+      areYouSureYouWantToDeleteThisLabel: 'Tem certeza de que deseja excluir este rótulo?',
       areYouSureYouWantToDeleteThisList:
         'Tem certeza de que deseja excluir esta lista? Todos os cartões serão movidos para o lixo.',
       areYouSureYouWantToDeleteThisNotificationService:
         'Tem certeza de que deseja excluir este serviço de notificação?',
-      areYouSureYouWantToDeleteThisProject:
-        'Tem certeza de que deseja apagar este projeto?',
-      areYouSureYouWantToDeleteThisTask:
-        'Tem certeza de que deseja excluir esta tarefa?',
+      areYouSureYouWantToDeleteThisProject: 'Tem certeza de que deseja apagar este projeto?',
+      areYouSureYouWantToDeleteThisTask: 'Tem certeza de que deseja excluir esta tarefa?',
       areYouSureYouWantToDeleteThisTaskList:
         'Tem certeza de que deseja excluir esta lista de tarefas?',
-      areYouSureYouWantToDeleteThisUser:
-        'Tem a certeza de que deseja eliminar este utilizador?',
-      areYouSureYouWantToEmptyTrash:
-        'Tem certeza de que deseja esvaziar o lixo?',
-      areYouSureYouWantToLeaveBoard:
-        'Tem certeza de que deseja sair do quadro?',
-      areYouSureYouWantToLeaveProject:
-        'Tem certeza de que deseja sair do projeto?',
+      areYouSureYouWantToDeleteThisUser: 'Tem a certeza de que deseja eliminar este utilizador?',
+      areYouSureYouWantToEmptyTrash: 'Tem certeza de que deseja esvaziar o lixo?',
+      areYouSureYouWantToLeaveBoard: 'Tem certeza de que deseja sair do quadro?',
+      areYouSureYouWantToLeaveProject: 'Tem certeza de que deseja sair do projeto?',
       areYouSureYouWantToMakeThisProjectShared:
         'Tem certeza de que deseja tornar este projeto partilhado?',
       areYouSureYouWantToRemoveThisManagerFromProject:
@@ -367,8 +352,7 @@ export default {
       byCreationTime: 'Por tempo de criação',
       byDefault: 'Por padrão',
       byDueDate: 'Por data limite',
-      canBeInvitedToWorkInBoards:
-        'Pode ser convidado para trabalhar em quadros.',
+      canBeInvitedToWorkInBoards: 'Pode ser convidado para trabalhar em quadros.',
       canComment: 'Pode comentar',
       canCreateOwnProjectsAndBeInvitedToWorkInOthers:
         'Pode criar projetos próprios e ser convidado para trabalhar em outros.',
@@ -387,8 +371,7 @@ export default {
         'Os cartões nesta lista estão completos e prontos para serem arquivados.',
       cardsOnThisListAreReadyToBeWorkedOn:
         'Os cartões nesta lista estão prontos para serem trabalhados.',
-      clickHereOrRefreshPageToUpdate:
-        '<0>Clique aqui</0> ou atualize a página para atualizar.',
+      clickHereOrRefreshPageToUpdate: '<0>Clique aqui</0> ou atualize a página para atualizar.',
       closed: 'Fechado',
       color: 'Cor',
       comments: 'Comentários',
@@ -399,8 +382,7 @@ export default {
       createBoard_title: 'Criar Quadro',
       createCustomFieldGroup_title: 'Criar Grupo de Campos Personalizados',
       createLabel_title: 'Criar Rótulo',
-      createNewOneOrSelectExistingOne:
-        'Criar um novo ou selecionar<br />um existente.',
+      createNewOneOrSelectExistingOne: 'Criar um novo ou selecionar<br />um existente.',
       createProject_title: 'Criar Projeto',
       createTextFile_title: 'Criar Arquivo de Texto',
       creator: 'Criador',
@@ -438,8 +420,7 @@ export default {
       display: 'Exibir',
       dropFileToUpload: 'Solte o ficheiro para enviar',
       dueDate_title: 'Data Limite',
-      dynamicAndUnevenlySpacedLayout:
-        'Layout dinâmico e espaçado irregularmente.',
+      dynamicAndUnevenlySpacedLayout: 'Layout dinâmico e espaçado irregularmente.',
       editAttachment_title: 'Editar Anexo',
       editAvatar_title: 'Editar Avatar',
       editColor_title: 'Editar Cor',
@@ -477,8 +458,7 @@ export default {
       general: 'Geral',
       gradients: 'Gradientes',
       grid: 'Grelha',
-      hideFromProjectListAndFavorites:
-        'Ocultar da lista de projetos e favoritos',
+      hideFromProjectListAndFavorites: 'Ocultar da lista de projetos e favoritos',
       hours: 'Horas',
       importBoard_title: 'Importar Quadro',
       invalidCurrentPassword: 'Palavra-passe atual inválida',
@@ -498,8 +478,7 @@ export default {
         'Tem a certeza de que pretende eliminar a etiqueta pré‑definida "{{name}}"?',
       deleteDefaultLabelWarning:
         'As etiquetas existentes não serão afetadas. Esta etiqueta deixará de ser adicionada automaticamente ao criar novos projetos.',
-      areYouSureYouWantToDeleteThisLabel:
-        'Tem certeza que deseja eliminar esta etiqueta?',
+      areYouSureYouWantToDeleteThisLabel: 'Tem certeza que deseja eliminar esta etiqueta?',
       nameMustBeProvided: 'O nome é obrigatório',
       nameTooLong: 'O nome é muito longo (máximo 60 caracteres)',
       nameAlreadyExists: 'Já existe uma etiqueta com este nome',
@@ -533,10 +512,8 @@ export default {
       userCreatedEmailPending_title: 'Utilizador Criado',
       userCreatedButWelcomeEmailFailed:
         'O utilizador foi criado, mas não foi possível enviar o email de boas-vindas.',
-      welcomeEmailResendFailed:
-        'Não foi possível reenviar o email. Tente novamente.',
-      welcomeEmailResentSuccessfully:
-        'O email de boas-vindas foi reenviado com sucesso.',
+      welcomeEmailResendFailed: 'Não foi possível reenviar o email. Tente novamente.',
+      welcomeEmailResentSuccessfully: 'O email de boas-vindas foi reenviado com sucesso.',
       resendingWelcomeEmail: 'A reenviar email de boas-vindas…',
       newUsername: 'Novo nome de utilizador',
       newVersionAvailable: 'Nova versão disponível',
@@ -555,14 +532,11 @@ export default {
       unreadProjectNotifications_other: '{{count}} notificações por ler neste projeto',
       unreadProjectNotifications_title: 'Notificações por ler neste projeto',
       allNotifications: 'Todas as notificações',
-      allNotificationsDescription:
-        'Atividade dos cartões e quadros que acompanha.',
+      allNotificationsDescription: 'Atividade dos cartões e quadros que acompanha.',
       essentialNotificationsOnly: 'Apenas essenciais',
-      essentialNotificationsDescription:
-        'Menções e quando é adicionado a um quadro ou cartão.',
+      essentialNotificationsDescription: 'Menções e quando é adicionado a um quadro ou cartão.',
       noNotifications: 'Nenhuma notificação',
-      noNotificationsDescription:
-        'Não criar nem enviar notificações pessoais para esta conta.',
+      noNotificationsDescription: 'Não criar nem enviar notificações pessoais para esta conta.',
       savingNotificationPreference: 'A guardar a preferência de notificações…',
       notificationPreferenceSaveFailed:
         'Não foi possível guardar a preferência de notificações. Tente novamente.',
@@ -607,6 +581,27 @@ export default {
       ganttEnd: 'Fim',
       ganttDuration: 'Duração',
       ganttStatus: 'Estado',
+      ganttProgress: 'Progresso',
+      ganttDescription: 'Descrição',
+      ganttColor: 'Cor',
+      ganttColor_blue: 'Azul',
+      ganttColor_green: 'Verde',
+      ganttColor_orange: 'Laranja',
+      ganttColor_red: 'Vermelho',
+      ganttColor_purple: 'Roxo',
+      ganttColor_teal: 'Turquesa',
+      ganttColor_gray: 'Cinzento',
+      ganttTaskType: 'Tipo de tarefa',
+      ganttTaskType_task: 'Tarefa',
+      ganttTaskType_summary: 'Tarefa geral',
+      ganttGeneralTask: 'Tarefa geral',
+      ganttIndependentTask: 'Sem tarefa geral',
+      ganttNoGeneralTasksFound: 'Nenhuma tarefa geral encontrada',
+      ganttAddSubtask: 'Adicionar subtarefa',
+      ganttDependsOn: 'Depende de',
+      ganttSelectDependencies: 'Selecionar tarefas anteriores',
+      ganttNoDependenciesFound: 'Nenhuma tarefa disponível',
+      ganttDependenciesHint: 'A dependência é visual e não altera datas automaticamente.',
       ganttWeekShort: 'S',
       ganttPlanningEyebrow: 'PLANEAMENTO',
       ganttEditTask: 'Editar tarefa',
@@ -642,6 +637,9 @@ export default {
       ganttTaskConflict: 'Esta tarefa foi alterada por outra pessoa. Reabra-a e tente novamente.',
       ganttTaskSaveFailed: 'Não foi possível guardar a tarefa.',
       ganttDeleteTaskConfirmation: 'Eliminar esta tarefa Gantt?',
+      ganttDeleteGeneralTaskConfirmation_one: 'Eliminar esta tarefa geral e a respetiva subtarefa?',
+      ganttDeleteGeneralTaskConfirmation_other:
+        'Eliminar esta tarefa geral e as respetivas {{count}} subtarefas?',
       ganttTaskDeleteFailed: 'Não foi possível eliminar a tarefa.',
       ganttSaveChanges: 'Guardar alterações',
       ganttCreateTask: 'Criar tarefa',
@@ -659,8 +657,7 @@ export default {
       createFirstGanttTask: 'Criar primeira tarefa',
       projectNotFound_title: 'Projeto não encontrado',
       projectOwner: 'Proprietário do projeto',
-      referenceDataAndKnowledgeStorage:
-        'Armazenamento de dados de referência e conhecimento.',
+      referenceDataAndKnowledgeStorage: 'Armazenamento de dados de referência e conhecimento.',
       removeManager_title: 'Remover Gestor',
       removeMember_title: 'Remover Membro',
       role: 'Função',
@@ -676,8 +673,7 @@ export default {
       selectAssignee_title: 'Selecionar Responsável',
       selectBoard: 'Selecionar quadro',
       selectList: 'Selecionar lista',
-      selectListToRestoreThisCard:
-        'Selecionar lista para restaurar este cartão',
+      selectListToRestoreThisCard: 'Selecionar lista para restaurar este cartão',
       selectOrder_title: 'Selecionar Ordem',
       selectPermissions_title: 'Selecionar Permissões',
       selectProject: 'Selecionar projeto',
@@ -692,11 +688,9 @@ export default {
       stopwatch: 'Cronômetro',
       story: 'História',
       subscribeToCardWhenCommenting: 'Entrar no cartão ao comentar',
-      subscribeToMyOwnCardsByDefault:
-        'Entrar automaticamente nos meus próprios cartões',
+      subscribeToMyOwnCardsByDefault: 'Entrar automaticamente nos meus próprios cartões',
       taskActions_title: 'Ações da Tarefa',
-      taskAssignmentAndProjectCompletion:
-        'Atribuição de tarefas e conclusão de projetos.',
+      taskAssignmentAndProjectCompletion: 'Atribuição de tarefas e conclusão de projetos.',
       taskListActions_title: 'Ações da Lista de Tarefas',
       taskList_title: 'Lista de Tarefas',
       team: 'Boards de equipa',
@@ -712,22 +706,14 @@ export default {
       unsavedChanges: 'Alterações não guardadas',
       uploadedImages: 'Imagens',
       userActions_title: 'Ações do Utilizador',
-      userAddedCardToList:
-        '<0>{{user}}</0> adicionou um cartão <2>{{card}}</2> à {{list}}',
-      userCreatedCard:
-        '<0>{{user}}</0> criou um cartão <2>{{card}}</2> em {{list}}',
-      userAddedThisCardToList:
-        '<0>{{user}}</0> adicionou este cartão à {{list}}',
-      userAddedUserToCard:
-        '<0>{{actorUser}}</0> adicionou {{addedUser}} ao cartão <4>{{card}}</4>',
-      userAddedUserToThisCard:
-        '<0>{{actorUser}}</0> adicionou {{addedUser}} a este cartão',
-      userAddedYouToCard:
-        '<0>{{user}}</0> adicionou-o ao cartão <2>{{card}}</2>',
-      userAddedYouToBoard:
-        '<0>{{user}}</0> adicionou-o ao quadro <2>{{board}}</2>',
-      userAddedAttachmentToCard:
-        '<0>{{user}}</0> adicionou um anexo ao cartão <2>{{card}}</2>',
+      userAddedCardToList: '<0>{{user}}</0> adicionou um cartão <2>{{card}}</2> à {{list}}',
+      userCreatedCard: '<0>{{user}}</0> criou um cartão <2>{{card}}</2> em {{list}}',
+      userAddedThisCardToList: '<0>{{user}}</0> adicionou este cartão à {{list}}',
+      userAddedUserToCard: '<0>{{actorUser}}</0> adicionou {{addedUser}} ao cartão <4>{{card}}</4>',
+      userAddedUserToThisCard: '<0>{{actorUser}}</0> adicionou {{addedUser}} a este cartão',
+      userAddedYouToCard: '<0>{{user}}</0> adicionou-o ao cartão <2>{{card}}</2>',
+      userAddedYouToBoard: '<0>{{user}}</0> adicionou-o ao quadro <2>{{board}}</2>',
+      userAddedAttachmentToCard: '<0>{{user}}</0> adicionou um anexo ao cartão <2>{{card}}</2>',
       userCompletedTaskOnCard:
         '<0>{{user}}</0> completou a tarefa <2>{{task}}</2> no cartão <4>{{card}}</4>',
       userCompletedTaskOnThisCard:
@@ -740,10 +726,8 @@ export default {
       userCommentedOnCard: '<0>{{user}}</0> comentou no cartão <2>{{card}}</2>',
       userRepliedToCommentOnCard:
         '<0>{{user}}</0> respondeu a um comentário no cartão <2>{{card}}</2>',
-      userUpdatedCommentOnCard:
-        '<0>{{user}}</0> editou comentário no cartão <2>{{card}}</2>',
-      userDeletedCommentOnCard:
-        '<0>{{user}}</0> removeu comentário no cartão <2>{{card}}</2>',
+      userUpdatedCommentOnCard: '<0>{{user}}</0> editou comentário no cartão <2>{{card}}</2>',
+      userDeletedCommentOnCard: '<0>{{user}}</0> removeu comentário no cartão <2>{{card}}</2>',
       userLeftThisCard: '<0>{{user}}</0> saiu deste cartão',
       userMarkedTaskIncompleteOnCard:
         '<0>{{user}}</0> marcou a tarefa <2>{{task}}</2> como incompleta no cartão <4>{{card}}</4>',
@@ -751,16 +735,13 @@ export default {
         '<0>{{user}}</0> marcou a tarefa <2>{{task}}</2> como incompleta neste cartão',
       userCreatedTaskOnCard:
         '<0>{{user}}</0> criou a tarefa <2>{{task}}</2> no cartão <4>{{card}}</4>',
-      userCreatedTaskOnThisCard:
-        '<0>{{user}}</0> criou a tarefa <2>{{task}}</2> neste cartão',
+      userCreatedTaskOnThisCard: '<0>{{user}}</0> criou a tarefa <2>{{task}}</2> neste cartão',
       userDeletedTaskOnCard:
         '<0>{{user}}</0> excluiu a tarefa <2>{{task}}</2> do cartão <4>{{card}}</4>',
-      userDeletedTaskOnThisCard:
-        '<0>{{user}}</0> excluiu a tarefa <2>{{task}}</2> deste cartão',
+      userDeletedTaskOnThisCard: '<0>{{user}}</0> excluiu a tarefa <2>{{task}}</2> deste cartão',
       userUpdatedTaskOnCard:
         '<0>{{user}}</0> atualizou a tarefa <2>{{task}}</2> no cartão <4>{{card}}</4>',
-      userUpdatedTaskOnThisCard:
-        '<0>{{user}}</0> atualizou a tarefa <2>{{task}}</2> neste cartão',
+      userUpdatedTaskOnThisCard: '<0>{{user}}</0> atualizou a tarefa <2>{{task}}</2> neste cartão',
       userCreatedTaskListOnCard:
         '<0>{{user}}</0> criou lista de tarefas <2>{{taskList}}</2> no cartão <4>{{card}}</4>',
       userCreatedTaskListOnThisCard:
@@ -793,12 +774,10 @@ export default {
         '<0>{{user}}</0> moveu este cartão de {{fromList}} para {{toList}}',
       userRemovedUserFromCard:
         '<0>{{actorUser}}</0> removeu {{removedUser}} do cartão <4>{{card}}</4>',
-      userRemovedUserFromThisCard:
-        '<0>{{actorUser}}</0> removeu {{removedUser}} deste cartão',
+      userRemovedUserFromThisCard: '<0>{{actorUser}}</0> removeu {{removedUser}} deste cartão',
       userSetDueDateToCard:
         '<0>{{user}}</0> definiu data limite para <2>{{date}}</2> no cartão <4>{{card}}</4>',
-      userRemovedDueDateFromCard:
-        '<0>{{user}}</0> removeu data limite do cartão <2>{{card}}</2>',
+      userRemovedDueDateFromCard: '<0>{{user}}</0> removeu data limite do cartão <2>{{card}}</2>',
       userChangedDueDateOfCard:
         '<0>{{user}}</0> alterou data limite de <2>{{oldDate}}</2> para <4>{{newDate}}</4> no cartão <6>{{card}}</6>',
       userAddedLabelToCard:
@@ -819,8 +798,7 @@ export default {
         '<0>{{user}}</0> excluiu lista de tarefas <2>{{taskList}}</2> do cartão <4>{{card}}</4>',
       userSetDueDateOnCard:
         '<0>{{user}}</0> definiu data limite <2>{{date}}</2> para o cartão <4>{{card}}</4>',
-      activityLogMessage:
-        '<0>{{user}}</0> realizou uma ação no cartão <2>{{card}}</2>',
+      activityLogMessage: '<0>{{user}}</0> realizou uma ação no cartão <2>{{card}}</2>',
       username: 'Nome de utilizador',
       users: 'Utilizadores',
       viewer: 'Visualizador',
@@ -859,8 +837,7 @@ export default {
       clickToRemove: 'Clique para remover',
       resetProjectsOrder: 'Restaurar ordenação predefinida',
       resetFavoritesOrder: 'Restaurar ordenação dos favoritos',
-      unexpectedApplicationError:
-        'Ocorreu um erro inesperado. Recarregue a página para continuar.',
+      unexpectedApplicationError: 'Ocorreu um erro inesperado. Recarregue a página para continuar.',
       loadMoreActivities: 'Carregar mais atividades ({{count}} carregadas)',
       pdfDocument: 'Documento PDF',
       bytes: 'Bytes',

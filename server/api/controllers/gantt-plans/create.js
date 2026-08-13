@@ -51,6 +51,7 @@ module.exports = {
       item: plan,
       included: {
         ganttItems: [],
+        ganttLinks: [],
       },
       meta: {
         canEdit: true,

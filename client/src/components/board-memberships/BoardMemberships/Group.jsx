@@ -5,7 +5,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Icon } from 'semantic-ui-react';
+import { Icon, Popup } from 'semantic-ui-react';
 import { Button } from '../../../lib/custom-ui';
 import { usePopup } from '../../../lib/popup';
 
@@ -34,17 +34,26 @@ const Group = React.memo(({ items, role, groupsTotal }) => {
     <div className={styles.wrapper}>
       <Icon name={BoardMembershipRoleIcons[role]} className={styles.icon} />
       {items.slice(0, visibleTotal).map((item) => (
-        <span key={item.id} className={styles.user} data-tooltip={item.user.name}>
-          <ActionsPopup boardMembershipId={item.id}>
-            <UserAvatar
-              id={item.user.id}
-              size="large"
-              variant="board"
-              isDisabled={!item.isPersisted}
-              withTitle={false}
-            />
-          </ActionsPopup>
-        </span>
+        <Popup
+          key={item.id}
+          content={item.user.name}
+          inverted
+          on={['hover', 'focus']}
+          position="bottom center"
+          trigger={
+            <span className={styles.user}>
+              <ActionsPopup boardMembershipId={item.id}>
+                <UserAvatar
+                  id={item.user.id}
+                  size="large"
+                  variant="board"
+                  isDisabled={!item.isPersisted}
+                  withTitle={false}
+                />
+              </ActionsPopup>
+            </span>
+          }
+        />
       ))}
       {hiddenTotal > 0 && (
         <GroupItemsPopup items={items} title={`common.${role}s`}>

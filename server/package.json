@@ -9,6 +9,7 @@
     "db:init": "node db/init.js",
     "db:migrate": "knex migrate:latest --cwd db",
     "db:updater": "node scripts/db-updater.js",
+    "gantt:import-ai-development": "node scripts/import-ai-development-gantt.js",
     "video:backfill": "node scripts/video-backfill.js",
     "db:seed": "knex seed:run --cwd db",
     "db:upgrade": "node db/upgrade.js",

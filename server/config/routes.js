@@ -94,6 +94,7 @@ module.exports.routes = {
   'POST /api/gantt-plans/:id/disable': 'gantt-plans/disable',
   'POST /api/gantt-plans/:ganttPlanId/items': 'gantt-items/create',
   'PATCH /api/gantt-items/:id': 'gantt-items/update',
+  'PATCH /api/gantt-items/:id/dependencies': 'gantt-item-dependencies/update',
   'DELETE /api/gantt-items/:id': 'gantt-items/delete',
 
   'GET /api/projects/:projectId/chat-members': 'chat-members/index',

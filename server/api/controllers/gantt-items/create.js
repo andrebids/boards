@@ -25,9 +25,18 @@ module.exports = {
       maxLength: 1024,
       required: true,
     },
-    project: {
+    itemType: {
       type: 'string',
-      maxLength: 256,
+      isIn: ['task', 'summary'],
+      defaultsTo: 'task',
+    },
+    parentId: {
+      ...idInput,
+      allowNull: true,
+    },
+    description: {
+      type: 'string',
+      maxLength: 4096,
       allowNull: true,
     },
     status: {
@@ -50,8 +59,14 @@ module.exports = {
     },
     color: {
       type: 'string',
-      maxLength: 32,
+      isIn: ['blue', 'green', 'orange', 'red', 'purple', 'teal', 'gray'],
       allowNull: true,
+    },
+    progress: {
+      type: 'number',
+      min: 0,
+      max: 100,
+      defaultsTo: 0,
     },
     assigneeUserIds: {
       type: 'json',
@@ -80,6 +95,19 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    let parent = null;
+    if (inputs.parentId) {
+      parent = await GanttItem.qm.getOneById(inputs.parentId);
+      if (
+        inputs.itemType !== 'task' ||
+        !parent ||
+        parent.ganttPlanId !== plan.id ||
+        parent.itemType !== 'summary'
+      ) {
+        throw Errors.GANTT_PLAN_NOT_FOUND;
+      }
+    }
+
     if (!Array.isArray(inputs.assigneeUserIds)) {
       throw Errors.USER_NOT_FOUND;
     }
@@ -89,17 +117,19 @@ module.exports = {
       throw Errors.USER_NOT_FOUND;
     }
 
-    let dates;
-    try {
-      dates = normalizeItemDates({
-        values: {
-          startDate: inputs.startDate || null,
-          endDate: inputs.endDate || null,
-          expectedDurationDays: inputs.expectedDurationDays,
-        },
-      });
-    } catch (error) {
-      throw Errors.INVALID_DATES;
+    let dates = { startDate: null, endDate: null, expectedDurationDays: 1 };
+    if (inputs.itemType === 'task') {
+      try {
+        dates = normalizeItemDates({
+          values: {
+            startDate: inputs.startDate || null,
+            endDate: inputs.endDate || null,
+            expectedDurationDays: inputs.expectedDurationDays,
+          },
+        });
+      } catch (error) {
+        throw Errors.INVALID_DATES;
+      }
     }
 
     const items = await GanttItem.qm.getByGanttPlanId(plan.id);
@@ -107,9 +137,12 @@ module.exports = {
     const item = await GanttItem.qm.createOne({
       ganttPlanId: plan.id,
       task: inputs.task.trim(),
-      project: inputs.project ? inputs.project.trim() : null,
+      itemType: inputs.itemType,
+      parentId: parent ? parent.id : null,
+      description: inputs.description ? inputs.description.trim() : null,
       status: inputs.status ? inputs.status.trim() : null,
       color: inputs.color || null,
+      progress: inputs.progress,
       position,
       ...dates,
     });

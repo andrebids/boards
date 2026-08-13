@@ -90,6 +90,8 @@
     }
 
     input,
+    select,
+    textarea,
     :global(.ui.selection.dropdown) {
       background: var(--app-dark-surface-hover);
       border: 1px solid var(--app-dark-border);
@@ -100,7 +102,14 @@
       padding: 10px 12px;
     }
 
+    textarea {
+      min-height: 78px;
+      resize: vertical;
+    }
+
     input:focus,
+    select:focus,
+    textarea:focus,
     :global(.ui.selection.dropdown:focus),
     :global(.ui.selection.active.dropdown) {
       border-color: var(--app-focus);
@@ -168,6 +177,28 @@
     }
   }
 
+  .progressInput {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+
+    input[type='range'] {
+      accent-color: var(--app-accent);
+      border: 0;
+      flex: 1 1 auto;
+      min-height: 32px;
+      padding: 0;
+    }
+
+    output {
+      color: var(--app-dark-text);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      min-width: 36px;
+      text-align: right;
+    }
+  }
+
   .unscheduledHint {
     background: var(--app-accent-soft);
     border: 1px solid color-mix(in oklab, var(--app-accent) 30%, transparent);
@@ -190,6 +221,7 @@
     border-top: 1px solid var(--app-dark-border);
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
     margin: auto -22px -22px;
     padding: 16px 22px;
   }

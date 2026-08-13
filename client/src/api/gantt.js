@@ -20,6 +20,9 @@ const createGanttItem = (ganttPlanId, data, headers) =>
 
 const updateGanttItem = (id, data, headers) => socket.patch(`/gantt-items/${id}`, data, headers);
 
+const updateGanttItemDependencies = (id, predecessorIds, headers) =>
+  socket.patch(`/gantt-items/${id}/dependencies`, { predecessorIds }, headers);
+
 const deleteGanttItem = (id, headers) => socket.delete(`/gantt-items/${id}`, undefined, headers);
 
 export default {
@@ -29,5 +32,6 @@ export default {
   disableGanttPlan,
   createGanttItem,
   updateGanttItem,
+  updateGanttItemDependencies,
   deleteGanttItem,
 };

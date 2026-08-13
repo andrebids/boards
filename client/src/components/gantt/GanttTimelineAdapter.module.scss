@@ -94,6 +94,10 @@
     }
   }
 
+  .wrapper :global(.wx-bar > .wx-link) {
+    display: none;
+  }
+
   .monthBand {
     background: var(--app-dark-surface) !important;
     color: var(--app-dark-text) !important;

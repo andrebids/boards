@@ -33,12 +33,14 @@ module.exports = {
     const plan = await GanttPlan.qm.getOneByProjectId(project.id);
     let items = [];
     let assignees = [];
+    let links = [];
 
     if (plan) {
       items = await GanttItem.qm.getByGanttPlanId(plan.id);
       assignees = await GanttItemAssignee.qm.getByGanttItemIds(
         sails.helpers.utils.mapRecords(items),
       );
+      links = await GanttLink.qm.getByGanttPlanId(plan.id);
 
       if (this.req.isSocket) {
         sails.sockets.join(this.req, `ganttPlan:${plan.id}`);
@@ -54,6 +56,7 @@ module.exports = {
         ganttItems: items.map((item) =>
           sails.helpers.gantt.presentItem(item, assigneesByItemId[item.id] || []),
         ),
+        ganttLinks: links,
         users: sails.helpers.users.presentMany(users, currentUser),
       },
       meta: {

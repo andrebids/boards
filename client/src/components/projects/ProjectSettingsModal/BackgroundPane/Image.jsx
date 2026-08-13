@@ -6,7 +6,7 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Icon, Label } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
 import { Button } from '../../../../lib/custom-ui';
 
 import { usePopupInClosableContext } from '../../../../hooks';
@@ -47,18 +47,7 @@ const Image = React.memo(({ url, isActive, onSelect, onDeselect, onDelete }) => 
       onClick={handleClick}
       onKeyDown={handleKeyDown}
     >
-      {isActive && (
-        <Label
-          corner="left"
-          size="mini"
-          icon={{
-            name: 'checkmark',
-            color: 'grey',
-            inverted: true,
-          }}
-          className={styles.label}
-        />
-      )}
+      {isActive && <Icon fitted name="checkmark" className={styles.checkIcon} />}
       {onDelete && (
         <ConfirmationPopup
           title="common.deleteBackgroundImage"

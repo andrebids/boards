@@ -37,8 +37,16 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    const deletedItems = await GanttItem.find({
+      or: [{ id: item.id }, { parentId: item.id }],
+    });
     const deletedItem = await GanttItem.qm.deleteOne(item.id);
-    const payload = { item: deletedItem };
+    const payload = {
+      item: deletedItem,
+      included: {
+        deletedItemIds: deletedItems.map(({ id }) => id),
+      },
+    };
     sails.sockets.broadcast(`ganttPlan:${plan.id}`, 'ganttItemDelete', payload, this.req);
 
     return payload;
