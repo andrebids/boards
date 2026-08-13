@@ -256,9 +256,9 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       throw new Error('The compact panel does not use the default task status');
     }
     const durationUnits = await itemDialog
-      .locator('#gantt-task-duration-unit .menu .item')
+      .locator('#gantt-task-duration-unit button')
       .allTextContents();
-    if (durationUnits.join('|') !== 'Dias|Semanas|Meses') {
+    if (durationUnits.join('|') !== 'Dias úteis|Semanas|Meses') {
       throw new Error(`Unexpected duration units: ${durationUnits.join('|')}`);
     }
     const panelLayout = await itemDialog.evaluate((element) => {

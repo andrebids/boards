@@ -22,6 +22,41 @@ export const addGanttDays = (value, amount) => {
   return formatGanttDate(date);
 };
 
+const isBusinessDay = (date) => date.getDay() !== 0 && date.getDay() !== 6;
+
+export const addGanttBusinessDays = (value, amount) => {
+  const date = typeof value === 'string' ? parseGanttDate(value) : new Date(value);
+  let remaining = Math.max(0, amount);
+
+  while (!isBusinessDay(date)) {
+    date.setDate(date.getDate() + 1);
+  }
+
+  while (remaining > 0) {
+    date.setDate(date.getDate() + 1);
+    if (isBusinessDay(date)) {
+      remaining -= 1;
+    }
+  }
+
+  return formatGanttDate(date);
+};
+
+export const countGanttBusinessDays = (startDate, endDate) => {
+  const current = parseGanttDate(startDate);
+  const end = parseGanttDate(endDate);
+  let count = 0;
+
+  while (current <= end) {
+    if (isBusinessDay(current)) {
+      count += 1;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  return Math.max(1, count);
+};
+
 export const differenceInGanttDays = (startDate, endDate) => {
   const start = parseGanttDate(startDate);
   const end = parseGanttDate(endDate);

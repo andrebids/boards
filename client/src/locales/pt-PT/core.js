@@ -630,10 +630,11 @@ export default {
       ganttProjectPlaceholder: 'Ex.: Campanha de Natal',
       ganttExpectedDuration: 'Duração esperada',
       ganttDurationUnit: 'Unidade da duração',
-      ganttDurationUnit_day: 'Dias',
+      ganttDurationUnit_day: 'Dias úteis',
       ganttDurationUnit_week: 'Semanas',
       ganttDurationUnit_month: 'Meses',
-      ganttDurationHelp: '1 semana equivale a 7 dias e 1 mês a 30 dias de calendário.',
+      ganttDurationHelp:
+        'Dias úteis excluem sábados e domingos. 1 semana equivale a 7 dias e 1 mês a 30 dias de calendário.',
       ganttStatus_notStarted: 'Por iniciar',
       ganttStatus_inProgress: 'Em curso',
       ganttStatus_completed: 'Concluído',

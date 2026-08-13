@@ -269,11 +269,21 @@ const GanttWorkspace = React.memo(() => {
 
         {canMutate && (
           <>
-            <Button variant="primary" className={styles.newButton} onClick={handleNewItem}>
+            <Button
+              size="sm"
+              variant="primary"
+              className={styles.newButton}
+              onClick={handleNewItem}
+            >
               <Icon name="plus" />
               {t('common.newGanttTask')}
             </Button>
-            <Button variant="secondary" className={styles.newButton} onClick={handleImportOpen}>
+            <Button
+              size="sm"
+              variant="secondary"
+              className={styles.newButton}
+              onClick={handleImportOpen}
+            >
               <Icon name="download" />
               {t('common.ganttImportFromBoards')}
             </Button>

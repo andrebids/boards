@@ -12,7 +12,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../lib/custom-ui';
 import { usePopup } from '../../lib/popup';
 import GANTT_COLORS from '../../constants/GanttColors';
-import { addGanttDays, differenceInGanttDays } from '../../utils/gantt-dates';
+import {
+  addGanttBusinessDays,
+  addGanttDays,
+  countGanttBusinessDays,
+  differenceInGanttDays,
+} from '../../utils/gantt-dates';
 import PureBoardMembershipsStep from '../board-memberships/PureBoardMembershipsStep';
 import UserAvatar from '../users/UserAvatar';
 import Paths from '../../constants/Paths';
@@ -21,7 +26,25 @@ import styles from './GanttItemPanel.module.scss';
 
 const COLORS = Object.keys(GANTT_COLORS);
 const DURATION_UNIT_DAYS = { day: 1, week: 7, month: 30 };
+const DURATION_UNITS = Object.keys(DURATION_UNIT_DAYS);
 const MAX_VISIBLE_ASSIGNEES = 5;
+
+const getDurationValue = ({ durationUnit, endDate, expectedDurationDays, startDate }) =>
+  durationUnit === 'day' && startDate && endDate
+    ? countGanttBusinessDays(startDate, endDate)
+    : Math.max(1, Math.ceil(expectedDurationDays / DURATION_UNIT_DAYS[durationUnit]));
+
+const calculateDuration = (startDate, durationValue, durationUnit) => {
+  const endDate =
+    durationUnit === 'day'
+      ? addGanttBusinessDays(startDate, durationValue - 1)
+      : addGanttDays(startDate, durationValue * DURATION_UNIT_DAYS[durationUnit] - 1);
+
+  return {
+    endDate,
+    expectedDurationDays: differenceInGanttDays(startDate, endDate) + 1,
+  };
+};
 
 const getItemStatus = (item, defaultStatus) => {
   if (!item?.sourceTask) {
@@ -161,42 +184,49 @@ const GanttItemPanel = React.memo(
 
     const handleStartChange = useCallback((event) => {
       const { value } = event.currentTarget;
-      setData((current) => ({
-        ...current,
-        startDate: value,
-        endDate: value ? addGanttDays(value, Number(current.expectedDurationDays) - 1) : '',
-      }));
+      setData((current) => {
+        const duration = value
+          ? calculateDuration(value, getDurationValue(current), current.durationUnit)
+          : { endDate: '' };
+
+        return { ...current, startDate: value, ...duration };
+      });
     }, []);
 
     const handleDurationChange = useCallback((event) => {
       const durationValue = Math.max(1, Number(event.currentTarget.value) || 1);
-      setData((current) => ({
-        ...current,
-        expectedDurationDays: durationValue * DURATION_UNIT_DAYS[current.durationUnit],
-        endDate: current.startDate
-          ? addGanttDays(
-              current.startDate,
-              durationValue * DURATION_UNIT_DAYS[current.durationUnit] - 1,
-            )
-          : '',
-      }));
+      setData((current) => {
+        const duration = current.startDate
+          ? calculateDuration(current.startDate, durationValue, current.durationUnit)
+          : {
+              expectedDurationDays: durationValue * DURATION_UNIT_DAYS[current.durationUnit],
+              endDate: '',
+            };
+
+        return { ...current, ...duration };
+      });
     }, []);
 
     const handleDurationUnitChange = useCallback((_, { value: durationUnit }) => {
       setData((current) => {
-        const durationValue = Math.max(
-          1,
-          Math.ceil(current.expectedDurationDays / DURATION_UNIT_DAYS[durationUnit]),
-        );
-        const expectedDurationDays = durationValue * DURATION_UNIT_DAYS[durationUnit];
+        const durationValue =
+          durationUnit === 'day' && current.startDate && current.endDate
+            ? countGanttBusinessDays(current.startDate, current.endDate)
+            : Math.max(
+                1,
+                Math.ceil(current.expectedDurationDays / DURATION_UNIT_DAYS[durationUnit]),
+              );
+        const duration = current.startDate
+          ? calculateDuration(current.startDate, durationValue, durationUnit)
+          : {
+              expectedDurationDays: durationValue * DURATION_UNIT_DAYS[durationUnit],
+              endDate: '',
+            };
 
         return {
           ...current,
           durationUnit,
-          expectedDurationDays,
-          endDate: current.startDate
-            ? addGanttDays(current.startDate, expectedDurationDays - 1)
-            : '',
+          ...duration,
         };
       });
     }, []);
@@ -526,26 +556,30 @@ const GanttItemPanel = React.memo(
                   type="number"
                   min="1"
                   step="1"
-                  value={Math.max(
-                    1,
-                    Math.ceil(data.expectedDurationDays / DURATION_UNIT_DAYS[data.durationUnit]),
-                  )}
+                  value={getDurationValue(data)}
                   aria-describedby="gantt-task-duration-help"
                   onChange={handleDurationChange}
                 />
-                <Dropdown
-                  compact
-                  selection
+                <div
                   id="gantt-task-duration-unit"
-                  value={data.durationUnit}
-                  options={['day', 'week', 'month'].map((unit) => ({
-                    key: unit,
-                    text: t(`common.ganttDurationUnit_${unit}`),
-                    value: unit,
-                  }))}
+                  className={styles.durationUnits}
+                  role="group"
                   aria-label={t('common.ganttDurationUnit')}
-                  onChange={handleDurationUnitChange}
-                />
+                >
+                  {DURATION_UNITS.map((unit) => (
+                    <button
+                      key={unit}
+                      type="button"
+                      className={`${styles.durationUnit} ${
+                        data.durationUnit === unit ? styles.durationUnitActive : ''
+                      }`}
+                      aria-pressed={data.durationUnit === unit}
+                      onClick={(event) => handleDurationUnitChange(event, { value: unit })}
+                    >
+                      {t(`common.ganttDurationUnit_${unit}`)}
+                    </button>
+                  ))}
+                </div>
               </div>
               <small id="gantt-task-duration-help">{t('common.ganttDurationHelp')}</small>
             </div>

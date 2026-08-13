@@ -68,13 +68,10 @@ const waitForSite = async () => {
     if ((await dialog.locator('#gantt-task-status input').inputValue()) !== 'Por iniciar') {
       throw new Error('A new task does not use the default status');
     }
-    await dialog.locator('#gantt-task-duration-unit').click();
-    await dialog
-      .locator('#gantt-task-duration-unit .menu .item', { hasText: 'Meses' })
-      .click();
-    await dialog.locator('#gantt-task-start').fill('2026-08-10');
-    if ((await dialog.locator('#gantt-task-end').inputValue()) !== '2026-09-08') {
-      throw new Error('A one-month duration was not converted to thirty calendar days');
+    await dialog.locator('#gantt-task-duration').fill('2');
+    await dialog.locator('#gantt-task-start').fill('2026-08-14');
+    if ((await dialog.locator('#gantt-task-end').inputValue()) !== '2026-08-17') {
+      throw new Error('Two business days starting on Friday did not end on Monday');
     }
     await dialog.locator('#gantt-task-type').click();
     await dialog.locator('#gantt-task-type .menu .item', { hasText: 'Projeto' }).click();

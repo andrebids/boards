@@ -234,7 +234,12 @@ export default merge({}, enUSCore, {
       ganttNoMembersFound: 'Aucun membre trouvé',
       ganttProjectPlaceholder: 'Ex. : campagne de Noël',
       ganttExpectedDuration: 'Durée prévue',
-      ganttDurationHelp: 'Nombre de jours calendaires, dates de début et de fin incluses.',
+      ganttDurationUnit: 'Unité de durée',
+      ganttDurationUnit_day: 'Jours ouvrés',
+      ganttDurationUnit_week: 'Semaines',
+      ganttDurationUnit_month: 'Mois',
+      ganttDurationHelp:
+        'Les jours ouvrés excluent le samedi et le dimanche. 1 semaine équivaut à 7 jours et 1 mois à 30 jours calendaires.',
       ganttUnscheduledHint: 'Sans dates, la tâche restera dans la section « Non planifié ».',
       ganttTaskNameRequired: 'Saisissez le nom de la tâche.',
       ganttInvalidDateRange: 'La date de fin doit être identique ou postérieure à la date de début.',

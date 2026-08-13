@@ -357,10 +357,11 @@ export default {
       ganttProjectPlaceholder: 'E.g. Christmas campaign',
       ganttExpectedDuration: 'Expected duration',
       ganttDurationUnit: 'Duration unit',
-      ganttDurationUnit_day: 'Days',
+      ganttDurationUnit_day: 'Business days',
       ganttDurationUnit_week: 'Weeks',
       ganttDurationUnit_month: 'Months',
-      ganttDurationHelp: '1 week equals 7 days and 1 month equals 30 calendar days.',
+      ganttDurationHelp:
+        'Business days exclude Saturdays and Sundays. 1 week equals 7 days and 1 month equals 30 calendar days.',
       ganttStatus_notStarted: 'Not started',
       ganttStatus_inProgress: 'In progress',
       ganttStatus_completed: 'Completed',
