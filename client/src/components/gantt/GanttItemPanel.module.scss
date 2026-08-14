@@ -62,6 +62,8 @@
   }
 
   .form {
+    --gantt-control-height: 40px;
+
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -89,25 +91,131 @@
       line-height: 1.45;
     }
 
-    input {
-      background: var(--app-dark-surface-hover);
+    > input {
+      background: var(--app-default);
       border: 1px solid var(--app-dark-border);
-      border-radius: 8px;
+      border-radius: var(--app-radius);
       color: var(--app-dark-text);
       font-size: 14px;
-      min-height: 42px;
-      padding: 10px 12px;
+      height: var(--gantt-control-height);
+      line-height: 1.2;
+      min-height: var(--gantt-control-height);
+      padding: 0 12px;
+      transition:
+        background-color 100ms var(--app-ease-out),
+        border-color 100ms var(--app-ease-out),
+        box-shadow 100ms var(--app-ease-out);
     }
 
-    input:focus {
+    > input:hover {
+      background: var(--app-default-hover);
+    }
+
+    > input:focus {
+      background: var(--app-default);
       border-color: var(--app-focus);
       box-shadow: 0 0 0 3px var(--app-accent-soft);
       outline: none;
     }
 
-    input:disabled {
+    > input:disabled {
       color: var(--app-dark-text-muted);
       opacity: var(--app-disabled-opacity);
+    }
+
+    > :global(.ui.selection.dropdown) {
+      background: var(--app-default) !important;
+      backdrop-filter: none !important;
+      border: 1px solid var(--app-dark-border) !important;
+      border-radius: var(--app-radius) !important;
+      box-shadow: none !important;
+      color: var(--app-dark-text) !important;
+      min-height: var(--gantt-control-height);
+      transition:
+        background-color 100ms var(--app-ease-out),
+        border-color 100ms var(--app-ease-out),
+        box-shadow 100ms var(--app-ease-out) !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    > :global(.ui.selection.dropdown:not(.multiple)) {
+      align-items: center;
+      display: flex;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+
+    > :global(.ui.search.selection.dropdown:not(.multiple) > input.search) {
+      height: 100%;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+
+    > :global(.ui.selection.dropdown:hover) {
+      background: var(--app-default-hover) !important;
+    }
+
+    > :global(.ui.selection.dropdown:focus),
+    > :global(.ui.selection.dropdown.active),
+    > :global(.ui.selection.dropdown.visible) {
+      background: var(--app-default) !important;
+      border-color: var(--app-focus) !important;
+      box-shadow: 0 0 0 3px var(--app-accent-soft) !important;
+    }
+
+    > :global(.ui.selection.dropdown > .text),
+    > :global(.ui.selection.visible.dropdown > .text:not(.default)) {
+      color: var(--app-dark-text) !important;
+    }
+
+    > :global(.ui.selection.dropdown > .default.text),
+    > :global(.ui.selection.dropdown > .dropdown.icon) {
+      color: var(--app-dark-text-muted) !important;
+      opacity: 1;
+    }
+
+    > :global(.ui.selection.dropdown > .dropdown.icon) {
+      line-height: 1;
+      margin: 0;
+      padding: 0;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    > :global(.ui.selection.dropdown .menu) {
+      background: var(--app-dark-surface) !important;
+      border: 1px solid var(--app-dark-border) !important;
+      border-radius: var(--app-radius) !important;
+      box-shadow: 0 12px 28px rgba(3, 5, 10, 0.36) !important;
+      margin-top: 4px !important;
+    }
+
+    > :global(.ui.selection.dropdown .menu > .item) {
+      background: transparent !important;
+      border-color: var(--app-dark-border) !important;
+      color: var(--app-dark-text) !important;
+    }
+
+    > :global(.ui.selection.dropdown .menu > .item:hover),
+    > :global(.ui.selection.dropdown .menu > .selected.item) {
+      background: var(--app-default) !important;
+    }
+
+    > :global(.ui.selection.dropdown .menu > .active.item) {
+      background: var(--app-accent-soft) !important;
+      color: var(--app-accent) !important;
+    }
+
+    > :global(.ui.multiple.dropdown > .label) {
+      background: var(--app-accent-soft) !important;
+      box-shadow:
+        inset 0 0 0 1px color-mix(in oklab, var(--app-accent) 32%, transparent) !important;
+      color: var(--app-dark-text) !important;
+    }
+
+    > :global(.ui.multiple.search.dropdown) > :global(input.search) {
+      min-height: 0;
     }
   }
 
@@ -185,13 +293,15 @@
 
   .durationInput {
     align-items: stretch;
-    background: var(--app-dark-surface-hover);
+    background: var(--app-default);
     border: 1px solid var(--app-dark-border);
-    border-radius: 10px;
+    border-radius: var(--app-radius);
     display: grid;
     gap: 4px;
     grid-template-columns: minmax(72px, 0.45fr) minmax(0, 1.55fr);
-    padding: 4px;
+    height: var(--gantt-control-height);
+    min-height: var(--gantt-control-height);
+    padding: 3px;
     transition: border-color 150ms ease, box-shadow 150ms ease;
 
     &:focus-within {
@@ -203,10 +313,14 @@
       background: transparent;
       border: 0;
       border-radius: 6px;
+      color: var(--app-dark-text);
+      font-size: 14px;
       font-variant-numeric: tabular-nums;
       font-weight: 700;
+      line-height: 1.2;
+      min-height: 0;
       min-width: 0;
-      padding: 8px;
+      padding: 0 8px;
       text-align: center;
     }
 
@@ -216,25 +330,29 @@
   }
 
   .durationUnits {
-    background: var(--app-dark-surface);
-    border-radius: 7px;
+    background: transparent;
+    border-left: 1px solid var(--app-dark-border);
+    border-radius: 0;
     display: grid;
     gap: 2px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 2px;
+    padding: 0 0 0 4px;
   }
 
   .durationUnit {
+    align-items: center;
     background: transparent;
     border: 0;
     border-radius: 5px;
     color: var(--app-dark-text-muted);
     cursor: pointer;
+    display: flex;
     font-size: 11px;
     font-weight: 700;
+    justify-content: center;
     line-height: 1.15;
-    min-height: 34px;
-    padding: 5px 7px;
+    min-height: 28px;
+    padding: 4px 7px;
     transition: background-color 120ms ease, color 120ms ease, transform 100ms ease;
 
     &:hover {
@@ -254,7 +372,7 @@
 
   .durationUnitActive {
     background: var(--app-accent-soft);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--app-accent) 42%, transparent);
+    box-shadow: none;
     color: var(--app-accent);
   }
 

@@ -97,6 +97,13 @@
       color 120ms ease;
     width: 32px;
 
+    :global(i.icon) {
+      font-size: 12px;
+      height: 16px;
+      line-height: 16px;
+      width: 16px;
+    }
+
     &:hover {
       background: var(--card-modal-surface-hover);
       color: var(--card-modal-text);

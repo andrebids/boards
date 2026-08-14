@@ -13,7 +13,7 @@ import { Gantt, WillowDark } from '@svar-ui/react-gantt';
 // eslint-disable-next-line import/no-unresolved
 import '@svar-ui/react-gantt/all.css';
 
-import GANTT_COLORS from '../../constants/GanttColors';
+import { buildGanttTaskColorStyles } from '../../constants/GanttColors';
 import { getGanttStatusTranslationKey } from '../../constants/GanttStatuses';
 import { addGanttDays, formatGanttDate, parseGanttDate } from '../../utils/gantt-dates';
 import CardMembers from '../cards/Card/CardMembers';
@@ -88,8 +88,6 @@ const GanttTimelineAdapter = React.memo(
     const onItemSelectRef = useRef(onItemSelect);
     const onItemChangeRef = useRef(onItemChange);
     const onZoomLevelChangeRef = useRef(onZoomLevelChange);
-    const wrapperRef = useRef(null);
-
     useEffect(() => {
       onItemSelectRef.current = onItemSelect;
       onItemChangeRef.current = onItemChange;
@@ -227,7 +225,7 @@ const GanttTimelineAdapter = React.memo(
         },
         {
           id: 'durationLabel',
-          header: createHeader(t('common.ganttDuration'), 'clock outline'),
+          header: createHeader(t('common.ganttDuration')),
           width: 48,
           align: 'center',
         },
@@ -299,19 +297,7 @@ const GanttTimelineAdapter = React.memo(
       [todayLabel],
     );
 
-    useEffect(() => {
-      const frame = requestAnimationFrame(() => {
-        wrapperRef.current?.querySelectorAll('.wx-bar[data-task-id]').forEach((element) => {
-          const task = tasks.find(({ id }) => String(id) === element.dataset.taskId);
-          const color = GANTT_COLORS[task?.color] || GANTT_COLORS.blue;
-          const prefix = task?.type === 'summary' ? 'summary' : 'task';
-          element.style.setProperty(`--wx-gantt-${prefix}-color`, color);
-          element.style.setProperty(`--wx-gantt-${prefix}-fill-color`, color);
-          element.style.setProperty(`--wx-gantt-${prefix}-border-color`, color);
-        });
-      });
-      return () => cancelAnimationFrame(frame);
-    }, [tasks, zoomLevel]);
+    const taskColorStyles = useMemo(() => buildGanttTaskColorStyles(tasks), [tasks]);
 
     const zoom = zoomConfig[zoomLevel] || zoomConfig.week;
     const highlightTime = useCallback(
@@ -334,7 +320,8 @@ const GanttTimelineAdapter = React.memo(
     );
 
     return (
-      <div ref={wrapperRef} className={styles.wrapper} data-zoom-level={zoomLevel}>
+      <div className={styles.wrapper} data-gantt-color-scope data-zoom-level={zoomLevel}>
+        <style>{taskColorStyles}</style>
         <WillowDark fonts={false}>
           <Gantt
             key={zoomLevel}

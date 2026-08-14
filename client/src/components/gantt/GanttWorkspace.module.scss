@@ -79,37 +79,89 @@
     align-items: center;
     display: flex;
     gap: 6px;
+  }
 
-    button {
-      background: #384047;
-      border: 0;
-      border-radius: 3px;
-      color: rgba(255, 255, 255, 0.9);
-      cursor: pointer;
-      font-size: 18px;
-      height: 32px;
-      padding: 0;
-      width: 32px;
+  .zoomButton:global(.ui.button) {
+    border: 1px solid var(--app-dark-border);
 
-      &:hover:not(:disabled) {
-        background: #20262b;
-      }
-
-      &:disabled {
-        color: var(--app-dark-text-muted);
-        cursor: not-allowed;
-        opacity: var(--app-disabled-opacity);
-      }
-    }
-
-    button:focus-visible {
-      box-shadow: 0 0 0 2px var(--app-focus);
-      outline: none;
+    :global(i.icon) {
+      font-size: 12px;
+      height: 16px;
+      width: 16px;
     }
   }
 
-  .zoomSelect {
+  .zoomSelect:global(.ui.selection.dropdown) {
+    align-items: center;
+    background: var(--app-default) !important;
+    border: 1px solid var(--app-dark-border) !important;
+    border-radius: var(--app-radius) !important;
+    box-shadow: none !important;
+    box-sizing: border-box;
+    color: var(--app-dark-text) !important;
+    display: flex;
+    font-size: 13px;
+    min-height: 36px;
+    min-width: 120px;
+    padding: 7px 32px 7px 12px;
     width: 120px;
+  }
+
+  .zoomSelect:global(.ui.selection.dropdown:hover) {
+    background: var(--app-default-hover) !important;
+  }
+
+  .zoomSelect:global(.ui.selection.dropdown:focus),
+  .zoomSelect:global(.ui.selection.dropdown.active),
+  .zoomSelect:global(.ui.selection.dropdown.visible) {
+    background: var(--app-default) !important;
+    border-color: var(--app-focus) !important;
+    box-shadow: 0 0 0 3px var(--app-accent-soft) !important;
+  }
+
+  .zoomSelect:global(.ui.selection.dropdown > .text),
+  .zoomSelect:global(.ui.selection.visible.dropdown > .text:not(.default)) {
+    color: var(--app-dark-text) !important;
+    font-weight: 500;
+  }
+
+  .zoomSelect:global(.ui.selection.dropdown > .dropdown.icon) {
+    color: var(--app-dark-text-muted) !important;
+    opacity: 1;
+  }
+
+  .zoomSelect:global(.ui.selection.dropdown .menu) {
+    background: var(--app-dark-surface) !important;
+    border: 1px solid var(--app-dark-border) !important;
+    border-radius: var(--app-radius) !important;
+    box-shadow: 0 12px 28px rgba(3, 5, 10, 0.36) !important;
+    margin-top: 4px !important;
+    overflow: hidden auto;
+  }
+
+  .zoomSelect:global(.ui.selection.dropdown .menu > .item) {
+    background: transparent !important;
+    border-color: var(--app-dark-border) !important;
+    color: var(--app-dark-text) !important;
+    font-size: 13px;
+    padding: 9px 12px !important;
+  }
+
+  .zoomSelect:global(.ui.selection.dropdown .menu > .item:hover),
+  .zoomSelect:global(.ui.selection.dropdown .menu > .selected.item) {
+    background: var(--app-default) !important;
+  }
+
+  .zoomSelect:global(.ui.selection.dropdown .menu > .active.item) {
+    background: var(--app-accent-soft) !important;
+    color: var(--app-dark-text) !important;
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .zoomSelect:global(.ui.selection.dropdown) {
+      min-height: 32px;
+    }
   }
 
   .timelineArea {

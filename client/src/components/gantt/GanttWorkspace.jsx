@@ -299,14 +299,18 @@ const GanttWorkspace = React.memo(() => {
           role="group"
           aria-label={t('common.ganttTimelineScale')}
         >
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="secondary"
+            isIconOnly
+            className={styles.zoomButton}
             onClick={handleZoomOut}
             disabled={zoomLevel === 'quarter'}
             aria-label={t('common.ganttZoomOut')}
           >
-            −
-          </button>
+            <Icon fitted name="minus" />
+          </Button>
           <Dropdown
             compact
             selection
@@ -321,14 +325,18 @@ const GanttWorkspace = React.memo(() => {
             className={styles.zoomSelect}
             onChange={(event, { value }) => setZoomLevel(value)}
           />
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="secondary"
+            isIconOnly
+            className={styles.zoomButton}
             onClick={handleZoomIn}
             disabled={zoomLevel === 'day'}
             aria-label={t('common.ganttZoomIn')}
           >
-            +
-          </button>
+            <Icon fitted name="plus" />
+          </Button>
         </div>
       </header>
 

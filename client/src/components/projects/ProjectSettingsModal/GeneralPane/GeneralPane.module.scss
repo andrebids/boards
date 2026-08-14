@@ -11,8 +11,8 @@
 
   .section + .section {
     border-top: 1px solid var(--project-settings-border);
-    margin-top: 24px;
-    padding-top: 24px;
+    margin-top: 16px;
+    padding-top: 16px;
   }
 
   .sectionTitle {
@@ -20,7 +20,7 @@
     font-size: 14px;
     font-weight: 700;
     line-height: 1.4;
-    margin: 0 0 14px;
+    margin: 0 0 8px;
   }
 
   .settingRow {
@@ -29,8 +29,8 @@
     border: 1px solid var(--project-settings-border);
     border-radius: 10px;
     display: flex;
-    min-height: 52px;
-    padding: 14px;
+    min-height: 44px;
+    padding: 10px 14px;
   }
 
   .radio {
@@ -97,7 +97,7 @@
       font-size: 13px;
       font-weight: 600;
       line-height: 1.4;
-      margin: 0 0 8px;
+      margin: 0 0 5px;
     }
 
     :global(.ui.selection.dropdown) {
@@ -109,8 +109,8 @@
       color: var(--project-settings-text);
       display: flex;
       font-size: 14px;
-      min-height: 44px;
-      padding: 11px 42px 11px 13px;
+      min-height: 40px;
+      padding: 9px 42px 9px 13px;
       transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
     }
 
@@ -184,8 +184,8 @@
   .dangerHint {
     color: var(--project-settings-muted);
     font-size: 13px;
-    line-height: 1.55;
-    margin: 8px 0 0;
+    line-height: 1.4;
+    margin: 5px 0 0;
     max-width: 64ch;
   }
 
@@ -249,12 +249,12 @@
 
   @media only screen and (width < 768px) {
     .section + .section {
-      margin-top: 20px;
-      padding-top: 20px;
+      margin-top: 14px;
+      padding-top: 14px;
     }
 
     .settingRow {
-      padding: 13px;
+      padding: 10px 13px;
     }
   }
 }

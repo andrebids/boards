@@ -43,7 +43,7 @@ const CardModalMetadataAddButton = React.forwardRef(
       aria-label={ariaLabel}
       onClick={onClick}
     >
-      <Icon fitted name={icon} size="small" />
+      <Icon fitted name={icon} />
     </button>
   ),
 );
