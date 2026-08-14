@@ -3,7 +3,15 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const Statuses = {
+  NOT_STARTED: 'notStarted',
+  IN_PROGRESS: 'inProgress',
+  COMPLETED: 'completed',
+};
+
 module.exports = {
+  Statuses,
+
   Types: {
     TASK: 'task',
     SUMMARY: 'summary',
@@ -32,6 +40,7 @@ module.exports = {
     },
     status: {
       type: 'string',
+      isIn: Object.values(Statuses),
       allowNull: true,
     },
     startDate: {

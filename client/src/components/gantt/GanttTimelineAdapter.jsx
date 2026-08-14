@@ -14,6 +14,7 @@ import { Gantt, WillowDark } from '@svar-ui/react-gantt';
 import '@svar-ui/react-gantt/all.css';
 
 import GANTT_COLORS from '../../constants/GanttColors';
+import { getGanttStatusTranslationKey } from '../../constants/GanttStatuses';
 import { addGanttDays, formatGanttDate, parseGanttDate } from '../../utils/gantt-dates';
 import CardMembers from '../cards/Card/CardMembers';
 
@@ -31,6 +32,17 @@ const NATIVE_ZOOM_LEVELS = ['quarter', 'month', 'week', 'day'];
 const formatDateLabel = (value) => {
   const [year, month, day] = value.split('-');
   return `${day}-${month}-${year.slice(-2)}`;
+};
+
+const getStatusLabel = (item, t) => {
+  const { status: itemStatus } = item;
+  let status = itemStatus;
+  if (item.sourceTask) {
+    status = item.sourceTask.isCompleted ? 'completed' : 'notStarted';
+  }
+
+  const translationKey = getGanttStatusTranslationKey(status);
+  return translationKey ? t(translationKey) : status || '—';
 };
 
 const AssigneesCell = React.memo(({ row }) => <CardMembers userIds={row.assigneeUserIds} />);
@@ -173,13 +185,7 @@ const GanttTimelineAdapter = React.memo(
           durationLabel: t('common.ganttDayShort', {
             count: item.expectedDurationDays,
           }),
-          statusLabel: item.sourceTask
-            ? t(
-                item.sourceTask.isCompleted
-                  ? 'common.ganttStatus_completed'
-                  : 'common.ganttStatus_notStarted',
-              )
-            : item.status || '—',
+          statusLabel: getStatusLabel(item, t),
         })),
       [items, t],
     );
@@ -223,12 +229,13 @@ const GanttTimelineAdapter = React.memo(
           id: 'durationLabel',
           header: createHeader(t('common.ganttDuration'), 'clock outline'),
           width: 48,
-          align: 'right',
+          align: 'center',
         },
         {
           id: 'statusLabel',
           header: createHeader(t('common.ganttStatus')),
           width: 104,
+          align: 'center',
           resize: true,
         },
       ],

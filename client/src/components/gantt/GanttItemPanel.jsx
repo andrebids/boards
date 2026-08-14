@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../lib/custom-ui';
 import { usePopup } from '../../lib/popup';
 import GANTT_COLORS from '../../constants/GanttColors';
+import GANTT_STATUSES, { normalizeGanttStatus } from '../../constants/GanttStatuses';
 import {
   addGanttBusinessDays,
   addGanttDays,
@@ -48,7 +49,7 @@ const calculateDuration = (startDate, durationValue, durationUnit) => {
 
 const getItemStatus = (item, defaultStatus) => {
   if (!item?.sourceTask) {
-    return item?.status || defaultStatus;
+    return normalizeGanttStatus(item?.status) || defaultStatus;
   }
   return item.sourceTask.isCompleted ? 'completed' : 'notStarted';
 };
@@ -73,7 +74,6 @@ const GanttItemPanel = React.memo(
     generalItems,
     dependencyItems,
     predecessorIds,
-    statuses,
     initialParentId,
     childCount,
     onSave,
@@ -84,7 +84,7 @@ const GanttItemPanel = React.memo(
     const [t] = useTranslation();
     const navigate = useNavigate();
     const isLinked = Boolean(item?.sourceTaskId && item?.sourceTask);
-    const defaultStatus = t('common.ganttStatus_notStarted');
+    const defaultStatus = 'notStarted';
     const [data, setData] = useState(() => ({
       ...createInitialData(item, initialParentId, defaultStatus),
       predecessorIds,
@@ -97,9 +97,7 @@ const GanttItemPanel = React.memo(
     useEffect(() => {
       const initialData = createInitialData(item, initialParentId, defaultStatus);
       if (item?.sourceTask) {
-        initialData.status = item.sourceTask.isCompleted
-          ? t('common.ganttStatus_completed')
-          : t('common.ganttStatus_notStarted');
+        initialData.status = item.sourceTask.isCompleted ? 'completed' : 'notStarted';
       }
       setData({ ...initialData, predecessorIds });
       setError(null);
@@ -126,17 +124,6 @@ const GanttItemPanel = React.memo(
     );
     const selectedUsers = users.filter(({ id }) => data.assigneeUserIds.includes(id));
     const hiddenAssignees = Math.max(0, selectedUsers.length - MAX_VISIBLE_ASSIGNEES);
-    const statusOptions = useMemo(
-      () => [
-        ...new Set([
-          defaultStatus,
-          t('common.ganttStatus_inProgress'),
-          t('common.ganttStatus_completed'),
-          ...statuses,
-        ]),
-      ],
-      [defaultStatus, statuses, t],
-    );
     const generalOptions = useMemo(
       () => generalItems.map(({ id, task }) => ({ key: id, value: id, text: task })),
       [generalItems],
@@ -510,9 +497,9 @@ const GanttItemPanel = React.memo(
                 name="status"
                 value={data.status}
                 disabled={isLinked}
-                options={statusOptions.map((status) => ({
+                options={GANTT_STATUSES.map((status) => ({
                   key: status,
-                  text: status,
+                  text: t(`common.ganttStatus_${status}`),
                   value: status,
                 }))}
                 aria-labelledby="gantt-task-status-label"
@@ -693,7 +680,6 @@ GanttItemPanel.propTypes = {
   generalItems: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
   dependencyItems: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
   predecessorIds: PropTypes.arrayOf(PropTypes.string).isRequired,
-  statuses: PropTypes.arrayOf(PropTypes.string).isRequired,
   initialParentId: PropTypes.string,
   childCount: PropTypes.number.isRequired,
   onSave: PropTypes.func.isRequired,

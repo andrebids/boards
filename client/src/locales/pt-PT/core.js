@@ -576,7 +576,7 @@ export default {
       ganttEmptyDescription: 'Crie uma tarefa com datas ou deixe-a por agendar.',
       ganttUnscheduled: 'Por agendar',
       ganttPerson: 'Membro',
-      ganttTask: 'Tarefa',
+      ganttTask: 'Título da tarefa',
       ganttStart: 'Início',
       ganttEnd: 'Fim',
       ganttDuration: 'Duração',

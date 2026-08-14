@@ -65,7 +65,7 @@ const waitForSite = async () => {
     if (await dialog.locator('#gantt-task-progress').count()) {
       throw new Error('The compact panel still exposes editable progress');
     }
-    if ((await dialog.locator('#gantt-task-status input').inputValue()) !== 'Por iniciar') {
+    if ((await dialog.locator('#gantt-task-status input').inputValue()) !== 'notStarted') {
       throw new Error('A new task does not use the default status');
     }
     await dialog.locator('#gantt-task-duration').fill('2');

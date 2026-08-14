@@ -11,6 +11,12 @@
     position: relative;
   }
 
+  .panelBackdrop {
+    inset: 0;
+    position: absolute;
+    z-index: 19;
+  }
+
   .toolbar {
     align-items: center;
     background: #2a2b2d;

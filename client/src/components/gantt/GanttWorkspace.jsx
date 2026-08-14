@@ -126,11 +126,6 @@ const GanttWorkspace = React.memo(() => {
     () => items.filter(({ itemType, startDate }) => itemType === 'task' && !startDate),
     [items],
   );
-  const statuses = useMemo(
-    () => [...new Set(items.map(({ status }) => status).filter(Boolean))].sort(),
-    [items],
-  );
-
   const handleNewItem = useCallback(() => {
     panelTriggerRef.current = document.activeElement;
     setSelectedItemId(null);
@@ -398,24 +393,31 @@ const GanttWorkspace = React.memo(() => {
       )}
 
       {isPanelOpen && canMutate && (
-        <GanttItemPanel
-          item={selectedItem}
-          users={users}
-          generalItems={generalItems}
-          dependencyItems={items.filter(
-            ({ id, itemType }) => itemType === 'task' && id !== selectedItem?.id,
-          )}
-          predecessorIds={links
-            .filter(({ targetItemId }) => targetItemId === selectedItem?.id)
-            .map(({ sourceItemId }) => sourceItemId)}
-          statuses={statuses}
-          initialParentId={initialParentId || undefined}
-          childCount={items.filter(({ parentId }) => parentId === selectedItem?.id).length}
-          onSave={handleSave}
-          onDelete={deleteItem}
-          onAddSubtask={handleAddSubtask}
-          onClose={handlePanelClose}
-        />
+        <>
+          <div
+            className={styles.panelBackdrop}
+            data-testid="gantt-panel-backdrop"
+            aria-hidden="true"
+            onClick={handlePanelClose}
+          />
+          <GanttItemPanel
+            item={selectedItem}
+            users={users}
+            generalItems={generalItems}
+            dependencyItems={items.filter(
+              ({ id, itemType }) => itemType === 'task' && id !== selectedItem?.id,
+            )}
+            predecessorIds={links
+              .filter(({ targetItemId }) => targetItemId === selectedItem?.id)
+              .map(({ sourceItemId }) => sourceItemId)}
+            initialParentId={initialParentId || undefined}
+            childCount={items.filter(({ parentId }) => parentId === selectedItem?.id).length}
+            onSave={handleSave}
+            onDelete={deleteItem}
+            onAddSubtask={handleAddSubtask}
+            onClose={handlePanelClose}
+          />
+        </>
       )}
 
       {isImportPanelOpen && canMutate && (

@@ -41,7 +41,7 @@ module.exports = {
     },
     status: {
       type: 'string',
-      maxLength: 128,
+      isIn: Object.values(GanttItem.Statuses),
       allowNull: true,
     },
     startDate: {

@@ -54,7 +54,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       body: {
         task: 'Preparar campanha',
         project: 'Natal',
-        status: 'Planeado',
+        status: 'notStarted',
         startDate: '2026-08-10',
         endDate: '2026-08-14',
         expectedDurationDays: 5,
@@ -71,7 +71,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       body: {
         task: 'Aprovação criativa',
         project: 'Natal',
-        status: 'Em curso',
+        status: 'inProgress',
         startDate: '2026-08-15',
         endDate: '2026-08-17',
         expectedDurationDays: 3,
@@ -83,7 +83,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       method: 'POST',
       body: {
         task: 'Validar orçamento',
-        status: 'Por iniciar',
+        status: 'notStarted',
         expectedDurationDays: 2,
         assigneeUserIds: [],
       },
@@ -242,6 +242,10 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     await newTaskButton.click();
     const itemDialog = page.getByRole('dialog', { name: 'Nova tarefa' });
     await itemDialog.waitFor({ state: 'visible' });
+    await page.getByTestId('gantt-panel-backdrop').click({ position: { x: 10, y: 100 } });
+    await itemDialog.waitFor({ state: 'hidden' });
+    await newTaskButton.click();
+    await itemDialog.waitFor({ state: 'visible' });
     const initialFocusId = await page.evaluate(() => document.activeElement?.id);
     if (initialFocusId !== 'gantt-task-name') {
       throw new Error(`Unexpected initial panel focus: ${initialFocusId}`);
@@ -252,7 +256,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     if (await itemDialog.locator('#gantt-task-progress').count()) {
       throw new Error('The compact panel still exposes editable progress');
     }
-    if ((await itemDialog.locator('#gantt-task-status input').inputValue()) !== 'Por iniciar') {
+    if ((await itemDialog.locator('#gantt-task-status input').inputValue()) !== 'notStarted') {
       throw new Error('The compact panel does not use the default task status');
     }
     const durationUnits = await itemDialog
