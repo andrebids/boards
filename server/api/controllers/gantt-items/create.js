@@ -9,6 +9,7 @@ const { normalizeItemDates } = require('../../../utils/gantt-dates');
 const Errors = {
   GANTT_PLAN_NOT_FOUND: { ganttPlanNotFound: 'Gantt plan not found' },
   INVALID_DATES: { invalidDates: 'Invalid Gantt dates or duration' },
+  INVALID_DEPENDENCIES: { invalidDependencies: 'Invalid Gantt dependencies' },
   NOT_ENOUGH_RIGHTS: { notEnoughRights: 'Not enough rights' },
   USER_NOT_FOUND: { userNotFound: 'User not found in project' },
 };
@@ -66,11 +67,16 @@ module.exports = {
       type: 'json',
       defaultsTo: [],
     },
+    predecessorIds: {
+      type: 'json',
+      defaultsTo: [],
+    },
   },
 
   exits: {
     ganttPlanNotFound: { responseType: 'notFound' },
     invalidDates: { responseType: 'unprocessableEntity' },
+    invalidDependencies: { responseType: 'unprocessableEntity' },
     notEnoughRights: { responseType: 'forbidden' },
     userNotFound: { responseType: 'unprocessableEntity' },
   },
@@ -106,6 +112,10 @@ module.exports = {
       throw Errors.USER_NOT_FOUND;
     }
 
+    if (!Array.isArray(inputs.predecessorIds)) {
+      throw Errors.INVALID_DEPENDENCIES;
+    }
+
     const assigneeUserIds = _.uniq(inputs.assigneeUserIds);
     if (assigneeUserIds.some((userId) => !access.memberUserIds.includes(userId))) {
       throw Errors.USER_NOT_FOUND;
@@ -127,23 +137,64 @@ module.exports = {
     }
 
     const items = await GanttItem.qm.getByGanttPlanId(plan.id);
+    const predecessorIds = _.uniq(inputs.predecessorIds);
+    const itemsById = _.keyBy(items, 'id');
+    if (
+      (inputs.itemType !== 'task' && predecessorIds.length > 0) ||
+      predecessorIds.some((id) => !itemsById[id] || itemsById[id].itemType !== 'task')
+    ) {
+      throw Errors.INVALID_DEPENDENCIES;
+    }
     const position = items.length > 0 ? items[items.length - 1].position + 65535 : 65535;
-    const item = await GanttItem.qm.createOne({
-      ganttPlanId: plan.id,
-      task: inputs.task.trim(),
-      itemType: inputs.itemType,
-      parentId: parent ? parent.id : null,
-      description: inputs.description ? inputs.description.trim() : null,
-      status: inputs.status ? inputs.status.trim() : null,
-      color: inputs.color || null,
-      position,
-      ...dates,
+    const { item, assignees, links } = await sails.getDatastore().transaction(async (db) => {
+      const createdItem = await GanttItem.create({
+        ganttPlanId: plan.id,
+        task: inputs.task.trim(),
+        itemType: inputs.itemType,
+        parentId: parent ? parent.id : null,
+        description: inputs.description ? inputs.description.trim() : null,
+        status: inputs.status ? inputs.status.trim() : null,
+        color: inputs.color || null,
+        position,
+        ...dates,
+      })
+        .usingConnection(db)
+        .fetch();
+      const createdAssignees =
+        assigneeUserIds.length > 0
+          ? await GanttItemAssignee.createEach(
+              assigneeUserIds.map((userId) => ({ ganttItemId: createdItem.id, userId })),
+            )
+              .usingConnection(db)
+              .fetch()
+          : [];
+      if (predecessorIds.length > 0) {
+        await GanttLink.createEach(
+          predecessorIds.map((sourceItemId) => ({
+            ganttPlanId: plan.id,
+            sourceItemId,
+            targetItemId: createdItem.id,
+            type: 'e2s',
+          })),
+        )
+          .usingConnection(db)
+          .fetch();
+      }
+      const currentLinks = await GanttLink.find({ ganttPlanId: plan.id }).usingConnection(db);
+      return { item: createdItem, assignees: createdAssignees, links: currentLinks };
     });
-    const assignees = await sails.helpers.gantt.syncItemAssignees(item.id, assigneeUserIds);
     const presentedItem = sails.helpers.gantt.presentItem(item, assignees);
-    const payload = { item: presentedItem };
+    const payload = { item: presentedItem, included: { ganttLinks: links } };
 
     sails.sockets.broadcast(`ganttPlan:${plan.id}`, 'ganttItemCreate', payload, this.req);
+    if (predecessorIds.length > 0) {
+      sails.sockets.broadcast(
+        `ganttPlan:${plan.id}`,
+        'ganttLinksUpdate',
+        { items: links },
+        this.req,
+      );
+    }
 
     return payload;
   },

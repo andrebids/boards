@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Icon } from 'semantic-ui-react';
@@ -14,15 +14,15 @@ import { Gantt, WillowDark } from '@svar-ui/react-gantt';
 import '@svar-ui/react-gantt/all.css';
 
 import { buildGanttTaskColorStyles } from '../../constants/GanttColors';
-import {
-  getEffectiveGanttStatus,
-  getGanttStatusTranslationKey,
-} from '../../constants/GanttStatuses';
-import { addGanttDays, formatGanttDate, parseGanttDate } from '../../utils/gantt-dates';
+import { formatGanttDate } from '../../utils/gantt-dates';
 import createGanttCurrentTimeMarker, {
   getGanttTitleMarqueeMetrics,
 } from '../../utils/gantt-timeline';
 import CardMembers from '../cards/Card/CardMembers';
+import {
+  mapGanttItemsToTimelineTasks,
+  mapGanttLinksToTimelineLinks,
+} from './ganttTimelineMapper';
 
 import styles from './GanttTimelineAdapter.module.scss';
 
@@ -35,17 +35,6 @@ const getWeekNumber = (value) => {
 
 const NATIVE_ZOOM_LEVELS = ['quarter', 'month', 'week', 'day'];
 const CURRENT_TIME_MARKER_REFRESH_INTERVAL = 60000;
-
-const formatDateLabel = (value) => {
-  const [year, month, day] = value.split('-');
-  return `${day}-${month}-${year.slice(-2)}`;
-};
-
-const getStatusLabel = (item, t) => {
-  const status = getEffectiveGanttStatus(item);
-  const translationKey = getGanttStatusTranslationKey(status);
-  return translationKey ? t(translationKey) : '—';
-};
 
 const AssigneesCell = React.memo(({ row }) => <CardMembers userIds={row.assigneeUserIds} />);
 
@@ -162,6 +151,7 @@ const createHeader = (text, icon) => ({ text, icon, cell: ColumnHeader });
 const GanttTimelineAdapter = React.memo(
   ({ items, links, zoomLevel, readonly, onZoomLevelChange, onItemSelect, onItemChange }) => {
     const [t, i18n] = useTranslation();
+    const [readyZoomLevel, setReadyZoomLevel] = useState(null);
     const locale = i18n.resolvedLanguage || i18n.language;
     const todayLabel = useMemo(() => {
       const label = new Intl.RelativeTimeFormat(locale, {
@@ -251,29 +241,7 @@ const GanttTimelineAdapter = React.memo(
       };
     }, [i18n.dateFns, locale, t]);
 
-    const tasks = useMemo(
-      () =>
-        items.map((item) => ({
-          id: item.id,
-          text: item.task,
-          start: parseGanttDate(item.startDate),
-          end: parseGanttDate(addGanttDays(item.endDate, 1)),
-          duration: item.expectedDurationDays,
-          type: item.itemType || 'task',
-          parent: item.parentId || 0,
-          ...(item.itemType === 'summary' && { open: true }),
-          details: item.description || '',
-          status: getEffectiveGanttStatus(item),
-          assigneeUserIds: item.assigneeUserIds || [],
-          startLabel: formatDateLabel(item.startDate),
-          endLabel: formatDateLabel(item.endDate),
-          durationLabel: t('common.ganttDayShort', {
-            count: item.expectedDurationDays,
-          }),
-          statusLabel: getStatusLabel(item, t),
-        })),
-      [items, t],
-    );
+    const tasks = useMemo(() => mapGanttItemsToTimelineTasks(items, t), [items, t]);
 
     const assigneesColumnWidth = useMemo(() => {
       const maximum = Math.max(0, ...items.map((item) => item.assigneeUserIds?.length || 0));
@@ -398,8 +366,10 @@ const GanttTimelineAdapter = React.memo(
             expectedDurationDays: Math.max(1, Math.round(task.duration || 1)),
           });
         });
+
+        window.requestAnimationFrame(() => setReadyZoomLevel(zoomLevel));
       },
-      [updateCurrentTimeMarker],
+      [updateCurrentTimeMarker, zoomLevel],
     );
 
     const taskColorStyles = useMemo(() => buildGanttTaskColorStyles(tasks), [tasks]);
@@ -425,19 +395,19 @@ const GanttTimelineAdapter = React.memo(
     );
 
     return (
-      <div className={styles.wrapper} data-gantt-color-scope data-zoom-level={zoomLevel}>
+      <div
+        className={styles.wrapper}
+        data-gantt-color-scope
+        data-zoom-level={zoomLevel}
+        style={{ visibility: readyZoomLevel === zoomLevel ? 'visible' : 'hidden' }}
+      >
         <style>{taskColorStyles}</style>
         <WillowDark fonts={false}>
           <Gantt
             key={zoomLevel}
             tasks={tasks}
             taskTemplate={TaskBarContent}
-            links={links.map(({ id, sourceItemId, targetItemId, type }) => ({
-              id,
-              source: sourceItemId,
-              target: targetItemId,
-              type,
-            }))}
+            links={mapGanttLinksToTimelineLinks(links)}
             columns={columns}
             gridWidth={523 + assigneesColumnWidth}
             readonly={readonly}

@@ -19,6 +19,11 @@ import {
   getGanttStatusTranslationKey,
 } from '../../constants/GanttStatuses';
 import { useGantt } from './GanttContext';
+import {
+  selectGeneralItems,
+  selectItemsById,
+  selectTimelineData,
+} from './ganttSelectors';
 import GanttTimelineAdapter from './GanttTimelineAdapter';
 import GanttItemPanel from './GanttItemPanel';
 import GanttSourceTaskImportPanel from './GanttSourceTaskImportPanel';
@@ -77,59 +82,11 @@ const GanttWorkspace = React.memo(() => {
     }
   }, [items, searchParams]);
 
-  const generalItems = useMemo(
-    () => items.filter(({ itemType }) => itemType === 'summary'),
-    [items],
-  );
-  const itemsById = useMemo(
-    () => Object.fromEntries(items.map((item) => [item.id, item])),
-    [items],
-  );
-  const timelineItems = useMemo(
-    () =>
-      items.flatMap((item) => {
-        if (item.itemType !== 'summary') {
-          return item.startDate ? [item] : [];
-        }
-
-        const children = items.filter(({ parentId }) => parentId === item.id);
-        const scheduledChildren = children.filter(({ startDate }) => startDate);
-        if (scheduledChildren.length === 0) {
-          return [];
-        }
-
-        return [
-          {
-            ...item,
-            startDate: scheduledChildren.map(({ startDate }) => startDate).sort()[0],
-            endDate: scheduledChildren
-              .map(({ endDate }) => endDate)
-              .sort()
-              .at(-1),
-            expectedDurationDays: scheduledChildren.reduce(
-              (total, child) => total + child.expectedDurationDays,
-              0,
-            ),
-          },
-        ];
-      }),
-    [items],
-  );
-  const timelineItemIds = useMemo(
-    () => new Set(timelineItems.map(({ id }) => id)),
-    [timelineItems],
-  );
-  const timelineLinks = useMemo(
-    () =>
-      links.filter(
-        ({ sourceItemId, targetItemId }) =>
-          timelineItemIds.has(sourceItemId) && timelineItemIds.has(targetItemId),
-      ),
-    [links, timelineItemIds],
-  );
-  const unscheduledItems = useMemo(
-    () => items.filter(({ itemType, startDate }) => itemType === 'task' && !startDate),
-    [items],
+  const generalItems = useMemo(() => selectGeneralItems(items), [items]);
+  const itemsById = useMemo(() => selectItemsById(items), [items]);
+  const { timelineItems, timelineLinks, unscheduledItems } = useMemo(
+    () => selectTimelineData(items, links),
+    [items, links],
   );
   const handleNewItem = useCallback(() => {
     panelTriggerRef.current = document.activeElement;
@@ -348,7 +305,6 @@ const GanttWorkspace = React.memo(() => {
       <section className={styles.timelineArea}>
         {timelineItems.length > 0 ? (
           <GanttTimelineAdapter
-            key={isPanelOpen ? 'item-panel-open' : 'item-panel-closed'}
             items={timelineItems}
             links={timelineLinks}
             zoomLevel={zoomLevel}
