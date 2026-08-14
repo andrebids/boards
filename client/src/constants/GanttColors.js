@@ -6,10 +6,10 @@
 import { getEffectiveGanttStatus, normalizeGanttStatus } from './GanttStatuses';
 
 export const GANTT_STATUS_COLORS = {
-  notStarted: 'oklch(0.44 0.035 260)',
-  inProgress: 'oklch(0.49 0.14 257)',
-  testing: 'oklch(0.52 0.11 65)',
-  completed: 'oklch(0.48 0.105 157)',
+  notStarted: 'oklch(0.72 0.025 260)',
+  inProgress: 'oklch(0.703 0.143 240.76)',
+  testing: 'oklch(0.686 0.144 60.43)',
+  completed: 'oklch(0.702 0.137 171.214)',
 };
 
 export const getGanttStatusColor = (status) =>

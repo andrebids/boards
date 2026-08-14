@@ -5,6 +5,15 @@
 
 import { buildGanttTaskColorStyles, GANTT_STATUS_COLORS, getGanttStatusColor } from './GanttColors';
 
+test('uses the vivid status palette based on the original Gantt colors', () => {
+  expect(GANTT_STATUS_COLORS).toEqual({
+    notStarted: 'oklch(0.72 0.025 260)',
+    inProgress: 'oklch(0.703 0.143 240.76)',
+    testing: 'oklch(0.686 0.144 60.43)',
+    completed: 'oklch(0.702 0.137 171.214)',
+  });
+});
+
 test('builds status-driven color rules for virtualized task bars', () => {
   const styles = buildGanttTaskColorStyles([
     { id: 'task-1', status: 'testing', color: 'green', type: 'task' },
