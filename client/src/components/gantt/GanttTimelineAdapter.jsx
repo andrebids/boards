@@ -14,7 +14,10 @@ import { Gantt, WillowDark } from '@svar-ui/react-gantt';
 import '@svar-ui/react-gantt/all.css';
 
 import { buildGanttTaskColorStyles } from '../../constants/GanttColors';
-import { getGanttStatusTranslationKey } from '../../constants/GanttStatuses';
+import {
+  getEffectiveGanttStatus,
+  getGanttStatusTranslationKey,
+} from '../../constants/GanttStatuses';
 import { addGanttDays, formatGanttDate, parseGanttDate } from '../../utils/gantt-dates';
 import CardMembers from '../cards/Card/CardMembers';
 
@@ -35,14 +38,9 @@ const formatDateLabel = (value) => {
 };
 
 const getStatusLabel = (item, t) => {
-  const { status: itemStatus } = item;
-  let status = itemStatus;
-  if (item.sourceTask) {
-    status = item.sourceTask.isCompleted ? 'completed' : 'notStarted';
-  }
-
+  const status = getEffectiveGanttStatus(item);
   const translationKey = getGanttStatusTranslationKey(status);
-  return translationKey ? t(translationKey) : status || '—';
+  return translationKey ? t(translationKey) : '—';
 };
 
 const AssigneesCell = React.memo(({ row }) => <CardMembers userIds={row.assigneeUserIds} />);
@@ -176,7 +174,7 @@ const GanttTimelineAdapter = React.memo(
           parent: item.parentId || 0,
           ...(item.itemType === 'summary' && { open: true }),
           details: item.description || '',
-          color: item.color || 'blue',
+          status: getEffectiveGanttStatus(item),
           assigneeUserIds: item.assigneeUserIds || [],
           startLabel: formatDateLabel(item.startDate),
           endLabel: formatDateLabel(item.endDate),

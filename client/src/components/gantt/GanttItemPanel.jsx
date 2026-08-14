@@ -11,8 +11,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button } from '../../lib/custom-ui';
 import { usePopup } from '../../lib/popup';
-import GANTT_COLORS from '../../constants/GanttColors';
-import GANTT_STATUSES, { normalizeGanttStatus } from '../../constants/GanttStatuses';
+import { GANTT_STATUS_COLORS } from '../../constants/GanttColors';
+import GANTT_STATUSES, { getEffectiveGanttStatus } from '../../constants/GanttStatuses';
 import {
   addGanttBusinessDays,
   addGanttDays,
@@ -25,7 +25,6 @@ import Paths from '../../constants/Paths';
 
 import styles from './GanttItemPanel.module.scss';
 
-const COLORS = Object.keys(GANTT_COLORS);
 const DURATION_UNIT_DAYS = { day: 1, week: 7, month: 30 };
 const DURATION_UNITS = Object.keys(DURATION_UNIT_DAYS);
 const MAX_VISIBLE_ASSIGNEES = 5;
@@ -47,20 +46,12 @@ const calculateDuration = (startDate, durationValue, durationUnit) => {
   };
 };
 
-const getItemStatus = (item, defaultStatus) => {
-  if (!item?.sourceTask) {
-    return normalizeGanttStatus(item?.status) || defaultStatus;
-  }
-  return item.sourceTask.isCompleted ? 'completed' : 'notStarted';
-};
-
 const createInitialData = (item, initialParentId, defaultStatus) => ({
   task: item?.task || '',
   itemType: item?.itemType || 'task',
   parentId: item?.parentId || initialParentId || '',
   assigneeUserIds: item?.assigneeUserIds || [],
-  status: getItemStatus(item, defaultStatus),
-  color: item?.color || 'blue',
+  status: getEffectiveGanttStatus(item, defaultStatus),
   expectedDurationDays: item?.expectedDurationDays || 1,
   durationUnit: 'day',
   startDate: item?.startDate || '',
@@ -96,12 +87,9 @@ const GanttItemPanel = React.memo(
 
     useEffect(() => {
       const initialData = createInitialData(item, initialParentId, defaultStatus);
-      if (item?.sourceTask) {
-        initialData.status = item.sourceTask.isCompleted ? 'completed' : 'notStarted';
-      }
       setData({ ...initialData, predecessorIds });
       setError(null);
-    }, [defaultStatus, initialParentId, item, predecessorIds, t]);
+    }, [defaultStatus, initialParentId, item, predecessorIds]);
 
     useEffect(() => {
       taskInputRef.current?.focus({ preventScroll: true });
@@ -253,7 +241,6 @@ const GanttItemPanel = React.memo(
             parentId: data.itemType === 'task' ? data.parentId || null : null,
             assigneeUserIds: data.assigneeUserIds,
             status: data.status.trim() || null,
-            color: data.color,
             predecessorIds: data.itemType === 'task' ? data.predecessorIds : [],
             expectedDurationDays: Number(data.expectedDurationDays),
             startDate: data.itemType === 'task' ? data.startDate || null : null,
@@ -487,51 +474,32 @@ const GanttItemPanel = React.memo(
             </div>
           </div>
 
-          <div className={styles.twoColumns}>
-            <div className={styles.field}>
-              <span id="gantt-task-status-label">{t('common.ganttStatus')}</span>
-              <Dropdown
-                fluid
-                selection
-                id="gantt-task-status"
-                name="status"
-                value={data.status}
-                disabled={isLinked}
-                options={GANTT_STATUSES.map((status) => ({
-                  key: status,
-                  text: t(`common.ganttStatus_${status}`),
-                  value: status,
-                }))}
-                aria-labelledby="gantt-task-status-label"
-                onChange={handleDropdownChange}
-              />
-            </div>
-            <div className={styles.field}>
-              <span id="gantt-task-color-label">{t('common.ganttColor')}</span>
-              <Dropdown
-                fluid
-                selection
-                id="gantt-task-color"
-                name="color"
-                value={data.color}
-                options={COLORS.map((color) => ({
-                  key: color,
-                  text: (
-                    <span className={styles.colorOption}>
-                      <span
-                        className={styles.colorDot}
-                        style={{ backgroundColor: GANTT_COLORS[color] }}
-                        aria-hidden="true"
-                      />
-                      {t(`common.ganttColor_${color}`)}
-                    </span>
-                  ),
-                  value: color,
-                }))}
-                aria-labelledby="gantt-task-color-label"
-                onChange={handleDropdownChange}
-              />
-            </div>
+          <div className={styles.field}>
+            <span id="gantt-task-status-label">{t('common.ganttStatus')}</span>
+            <Dropdown
+              fluid
+              selection
+              id="gantt-task-status"
+              name="status"
+              value={data.status}
+              disabled={isLinked}
+              options={GANTT_STATUSES.map((status) => ({
+                key: status,
+                text: (
+                  <span className={styles.statusOption}>
+                    <span
+                      className={styles.statusDot}
+                      style={{ '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
+                      aria-hidden="true"
+                    />
+                    {t(`common.ganttStatus_${status}`)}
+                  </span>
+                ),
+                value: status,
+              }))}
+              aria-labelledby="gantt-task-status-label"
+              onChange={handleDropdownChange}
+            />
           </div>
 
           {!isSummary && (

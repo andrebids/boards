@@ -225,15 +225,18 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .colorOption {
+  .statusOption {
     align-items: center;
     display: inline-flex;
     gap: 8px;
   }
 
-  .colorDot {
-    border: 1px solid rgba(0, 0, 0, 0.16);
+  .statusDot {
+    background: var(--gantt-status-color);
+    border: 1px solid
+      color-mix(in oklab, var(--gantt-status-color) 78%, var(--app-dark-text) 22%);
     border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--app-dark-canvas);
     flex: 0 0 auto;
     height: 10px;
     width: 10px;

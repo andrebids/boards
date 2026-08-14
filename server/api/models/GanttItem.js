@@ -6,6 +6,7 @@
 const Statuses = {
   NOT_STARTED: 'notStarted',
   IN_PROGRESS: 'inProgress',
+  TESTING: 'testing',
   COMPLETED: 'completed',
 };
 
