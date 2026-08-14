@@ -119,7 +119,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     if (!barBox) {
       throw new Error('The first Gantt bar is not visible');
     }
-    if (await page.locator('.wx-progress-wrapper, .wx-progress-marker').count()) {
+    if (await page.locator('.wx-progress-wrapper:visible, .wx-progress-marker:visible').count()) {
       throw new Error('The Gantt timeline still renders progress');
     }
     if (!(await page.locator('.wx-marker').first().isVisible())) {

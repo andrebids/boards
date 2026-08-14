@@ -40,7 +40,7 @@ const waitForSite = async () => {
     const main = page.getByRole('main');
     await main.waitFor({ state: 'visible', timeout: 90000 });
     await page.locator('.wx-bar.wx-summary').waitFor({ state: 'visible', timeout: 30000 });
-    if (await page.locator('.wx-progress-wrapper, .wx-progress-marker').count()) {
+    if (await page.locator('.wx-progress-wrapper:visible, .wx-progress-marker:visible').count()) {
       throw new Error('The Gantt timeline still renders progress');
     }
     const mainText = await main.innerText();

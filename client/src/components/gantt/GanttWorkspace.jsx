@@ -335,6 +335,7 @@ const GanttWorkspace = React.memo(() => {
       <section className={styles.timelineArea}>
         {timelineItems.length > 0 ? (
           <GanttTimelineAdapter
+            key={isPanelOpen ? 'item-panel-open' : 'item-panel-closed'}
             items={timelineItems}
             links={timelineLinks}
             zoomLevel={zoomLevel}
