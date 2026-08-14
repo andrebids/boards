@@ -65,7 +65,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     if ('progress' in firstItemBody.item) {
       throw new Error('The Gantt API still exposes progress');
     }
-    await request(`/gantt-plans/${planId}/items`, {
+    const inProgressItemBody = await request(`/gantt-plans/${planId}/items`, {
       token,
       method: 'POST',
       body: {
@@ -75,6 +75,30 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
         startDate: '2026-08-15',
         endDate: '2026-08-17',
         expectedDurationDays: 3,
+        assigneeUserIds: [],
+      },
+    });
+    const testingItemBody = await request(`/gantt-plans/${planId}/items`, {
+      token,
+      method: 'POST',
+      body: {
+        task: 'Testar campanha',
+        status: 'testing',
+        startDate: '2026-08-18',
+        endDate: '2026-08-19',
+        expectedDurationDays: 2,
+        assigneeUserIds: [],
+      },
+    });
+    const completedItemBody = await request(`/gantt-plans/${planId}/items`, {
+      token,
+      method: 'POST',
+      body: {
+        task: 'Publicar campanha',
+        status: 'completed',
+        startDate: '2026-08-20',
+        endDate: '2026-08-21',
+        expectedDurationDays: 2,
         assigneeUserIds: [],
       },
     });
@@ -133,6 +157,36 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     if (!themeContract.hasDarkTheme || themeContract.hasLightTheme) {
       throw new Error(`Unexpected Gantt theme contract: ${JSON.stringify(themeContract)}`);
     }
+
+    const expectedStatusColors = {
+      [firstItemId]: 'oklch(0.72 0.025 260)',
+      [inProgressItemBody.item.id]: 'oklch(0.617 0.173 257.6)',
+      [testingItemBody.item.id]: 'oklch(0.686 0.144 60.43)',
+      [completedItemBody.item.id]: 'oklch(0.638 0.133 157.6)',
+    };
+    await Promise.all(
+      Object.entries(expectedStatusColors).map(async ([itemId, expectedColor]) => {
+        const appearance = await page
+          .locator(`.wx-bar[data-task-id="${itemId}"]`)
+          .evaluate((element) => {
+            const style = getComputedStyle(element);
+            return {
+              color: style.getPropertyValue('--wx-gantt-task-color').trim(),
+              foreground: style.getPropertyValue('--wx-gantt-task-font-color').trim(),
+              border: style.getPropertyValue('--wx-gantt-task-border').trim(),
+            };
+          });
+        if (
+          appearance.color !== expectedColor ||
+          appearance.foreground !== 'var(--app-dark-canvas)' ||
+          !appearance.border.startsWith('1px solid color-mix(')
+        ) {
+          throw new Error(
+            `Unexpected status appearance for ${itemId}: ${JSON.stringify(appearance)}`,
+          );
+        }
+      }),
+    );
 
     await page.mouse.move(barBox.x + barBox.width / 2, barBox.y + barBox.height / 2);
     await page.mouse.down();
@@ -235,6 +289,47 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       throw new Error(`Unexpected weekend highlight: ${JSON.stringify(weekendContract)}`);
     }
 
+    const currentTimeMarkerContract = await page
+      .locator('[data-zoom-level="day"]')
+      .evaluate((element) => {
+        const marker = element.querySelector('.wx-marker');
+        const dayRow = element.querySelector('.wx-scale .wx-row:last-child');
+        const markerLeft = Number.parseFloat(marker?.style.left || '');
+        const markerDay = [...(dayRow?.querySelectorAll('.wx-cell') || [])].reduce(
+          (result, cell) => {
+            if (result.dayWidth !== null) {
+              return result;
+            }
+
+            const cellWidth = Number.parseFloat(cell.style.width);
+            if (markerLeft >= result.dayLeft && markerLeft <= result.dayLeft + cellWidth) {
+              return { dayLeft: result.dayLeft, dayWidth: cellWidth };
+            }
+
+            return { dayLeft: result.dayLeft + cellWidth, dayWidth: null };
+          },
+          {
+            dayLeft: Number.parseFloat(dayRow?.style.paddingLeft || '0'),
+            dayWidth: null,
+          },
+        );
+
+        return {
+          actualDayProgress: markerDay.dayWidth
+            ? (markerLeft - markerDay.dayLeft) / markerDay.dayWidth
+            : null,
+          expectedDayProgress: new Date().getHours() / 24,
+        };
+      });
+    const currentTimeMarkerDelta = Math.abs(
+      currentTimeMarkerContract.actualDayProgress - currentTimeMarkerContract.expectedDayProgress,
+    );
+    if (currentTimeMarkerContract.actualDayProgress === null || currentTimeMarkerDelta > 0.06) {
+      throw new Error(
+        `The current time marker does not follow today's hour: ${JSON.stringify(currentTimeMarkerContract)}`,
+      );
+    }
+
     await zoomSelect.click();
     await zoomSelect.locator('.menu .item', { hasText: 'Semana', exact: true }).click();
 
@@ -258,6 +353,14 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     }
     if ((await itemDialog.locator('#gantt-task-status input').inputValue()) !== 'notStarted') {
       throw new Error('The compact panel does not use the default task status');
+    }
+    if (await itemDialog.locator('#gantt-task-color').count()) {
+      throw new Error('The compact panel still exposes an independent task color');
+    }
+    await itemDialog.locator('#gantt-task-status').click();
+    await itemDialog.locator('#gantt-task-status .menu .item', { hasText: 'Em testes' }).click();
+    if ((await itemDialog.locator('#gantt-task-status input').inputValue()) !== 'testing') {
+      throw new Error('The compact panel does not expose the testing status');
     }
     const durationUnits = await itemDialog
       .locator('#gantt-task-duration-unit button')
@@ -329,7 +432,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     await reenableToggle.check();
     await page.waitForTimeout(500);
     const reenabledPlan = await request(`/projects/${projectId}/gantt-plan`, { token });
-    if (!reenabledPlan.item.isEnabled || reenabledPlan.included.ganttItems.length !== 3) {
+    if (!reenabledPlan.item.isEnabled || reenabledPlan.included.ganttItems.length !== 5) {
       throw new Error('Gantt was not re-enabled with its existing tasks preserved');
     }
 

@@ -637,6 +637,7 @@ export default {
         'Dias úteis excluem sábados e domingos. 1 semana equivale a 7 dias e 1 mês a 30 dias de calendário.',
       ganttStatus_notStarted: 'Por iniciar',
       ganttStatus_inProgress: 'Em curso',
+      ganttStatus_testing: 'Em testes',
       ganttStatus_completed: 'Concluído',
       ganttUnscheduledHint: 'Sem datas, a tarefa ficará na área “Por agendar”.',
       ganttTaskNameRequired: 'Indique o nome da tarefa.',

@@ -35,6 +35,7 @@
 
     :global(.wx-willow-dark-theme) {
       --wx-border: 1px solid var(--app-dark-border);
+      --wx-font-family: inherit;
       --wx-gantt-border-color: var(--app-dark-border);
       --wx-gantt-holiday-background: transparent;
       --wx-gantt-holiday-color: var(--app-dark-text-muted);
@@ -68,6 +69,70 @@
 
   .wrapper :global(.wx-bar > .wx-link) {
     display: none;
+  }
+
+  .wrapper :global(.wx-bar:focus) {
+    outline: none;
+  }
+
+  .wrapper :global(.wx-bar:focus-visible) {
+    box-shadow: 0 4px 12px color-mix(in oklab, var(--app-dark-canvas) 72%, transparent);
+    filter: brightness(1.14);
+  }
+
+  .barContent {
+    height: 100%;
+    padding-inline: 6px;
+    width: 100%;
+  }
+
+  .marqueeViewport {
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .marqueeTrack {
+    display: flex;
+    justify-content: flex-start;
+    min-width: 100%;
+    white-space: nowrap;
+    width: max-content;
+  }
+
+  .marqueeCentered:not([data-overflowing]) .marqueeTrack {
+    justify-content: center;
+  }
+
+  .marqueeCopy {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .wrapper :global(.wx-bar:hover) .marqueeViewport[data-overflowing] .marqueeTrack,
+    .wrapper :global(.wx-bar:focus-visible)
+      .marqueeViewport[data-overflowing]
+      .marqueeTrack,
+    .marqueeViewport:hover[data-overflowing] .marqueeTrack,
+    .wrapper :global([data-col-id$='text']:focus) .marqueeViewport[data-overflowing] .marqueeTrack {
+      animation: ganttTitleMarquee var(--gantt-title-duration) linear infinite;
+      gap: var(--gantt-title-gap);
+    }
+
+    .wrapper :global(.wx-bar:hover) .marqueeViewport[data-overflowing] .marqueeCopy,
+    .wrapper :global(.wx-bar:focus-visible)
+      .marqueeViewport[data-overflowing]
+      .marqueeCopy,
+    .marqueeViewport:hover[data-overflowing] .marqueeCopy,
+    .wrapper :global([data-col-id$='text']:focus) .marqueeViewport[data-overflowing] .marqueeCopy {
+      display: block;
+    }
+  }
+
+  @keyframes ganttTitleMarquee {
+    to {
+      transform: translateX(calc(var(--gantt-title-distance) * -1));
+    }
   }
 
   .wrapper :global(.wx-progress-marker),

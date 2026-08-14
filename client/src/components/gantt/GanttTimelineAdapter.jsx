@@ -19,6 +19,9 @@ import {
   getGanttStatusTranslationKey,
 } from '../../constants/GanttStatuses';
 import { addGanttDays, formatGanttDate, parseGanttDate } from '../../utils/gantt-dates';
+import createGanttCurrentTimeMarker, {
+  getGanttTitleMarqueeMetrics,
+} from '../../utils/gantt-timeline';
 import CardMembers from '../cards/Card/CardMembers';
 
 import styles from './GanttTimelineAdapter.module.scss';
@@ -31,6 +34,7 @@ const getWeekNumber = (value) => {
 };
 
 const NATIVE_ZOOM_LEVELS = ['quarter', 'month', 'week', 'day'];
+const CURRENT_TIME_MARKER_REFRESH_INTERVAL = 60000;
 
 const formatDateLabel = (value) => {
   const [year, month, day] = value.split('-');
@@ -48,6 +52,88 @@ const AssigneesCell = React.memo(({ row }) => <CardMembers userIds={row.assignee
 AssigneesCell.propTypes = {
   row: PropTypes.shape({
     assigneeUserIds: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+};
+
+const OverflowMarquee = React.memo(({ text, centered }) => {
+  const viewportRef = useRef(null);
+  const labelRef = useRef(null);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const label = labelRef.current;
+    if (!viewport || !label) {
+      return undefined;
+    }
+
+    const updateMarquee = () => {
+      const labelWidth = Math.ceil(label.getBoundingClientRect().width);
+      const metrics = getGanttTitleMarqueeMetrics(labelWidth, viewport.clientWidth);
+      viewport.toggleAttribute('data-overflowing', Boolean(metrics));
+
+      if (metrics) {
+        viewport.style.setProperty('--gantt-title-distance', `${metrics.distance}px`);
+        viewport.style.setProperty('--gantt-title-duration', `${metrics.duration}s`);
+        viewport.style.setProperty('--gantt-title-gap', `${metrics.gap}px`);
+      }
+    };
+
+    updateMarquee();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const resizeObserver = new ResizeObserver(updateMarquee);
+    resizeObserver.observe(viewport);
+    resizeObserver.observe(label);
+
+    return () => resizeObserver.disconnect();
+  }, [text]);
+
+  return (
+    <div
+      ref={viewportRef}
+      className={
+        centered ? `${styles.marqueeViewport} ${styles.marqueeCentered}` : styles.marqueeViewport
+      }
+    >
+      <div className={styles.marqueeTrack}>
+        <span ref={labelRef}>{text}</span>
+        <span className={styles.marqueeCopy} aria-hidden="true">
+          {text}
+        </span>
+      </div>
+    </div>
+  );
+});
+
+OverflowMarquee.propTypes = {
+  text: PropTypes.string.isRequired,
+  centered: PropTypes.bool,
+};
+
+OverflowMarquee.defaultProps = {
+  centered: false,
+};
+
+const TaskBarContent = React.memo(({ data }) => (
+  <div className={styles.barContent}>
+    <OverflowMarquee text={data.text} centered />
+  </div>
+));
+
+const TaskTitleCell = React.memo(({ row }) => <OverflowMarquee text={row.text} />);
+
+TaskTitleCell.propTypes = {
+  row: PropTypes.shape({
+    text: PropTypes.string.isRequired,
+  }).isRequired,
+};
+
+TaskBarContent.propTypes = {
+  data: PropTypes.shape({
+    text: PropTypes.string.isRequired,
   }).isRequired,
 };
 
@@ -86,6 +172,9 @@ const GanttTimelineAdapter = React.memo(
     const onItemSelectRef = useRef(onItemSelect);
     const onItemChangeRef = useRef(onItemChange);
     const onZoomLevelChangeRef = useRef(onZoomLevelChange);
+    const ganttApiRef = useRef(null);
+    const todayLabelRef = useRef(todayLabel);
+    todayLabelRef.current = todayLabel;
     useEffect(() => {
       onItemSelectRef.current = onItemSelect;
       onItemChangeRef.current = onItemChange;
@@ -206,6 +295,7 @@ const GanttTimelineAdapter = React.memo(
           header: createHeader(t('common.ganttTask')),
           width: 190,
           resize: true,
+          cell: TaskTitleCell,
         },
         {
           id: 'startLabel',
@@ -238,33 +328,50 @@ const GanttTimelineAdapter = React.memo(
       [assigneesColumnWidth, t],
     );
 
+    const updateCurrentTimeMarker = useCallback(() => {
+      const ganttApi = ganttApiRef.current;
+      if (!ganttApi) {
+        return;
+      }
+
+      const state = ganttApi.getState();
+      const { _scales: scales, _start: scaleStart, cellWidth } = state;
+      if (!scales || !scaleStart || !cellWidth) {
+        return;
+      }
+
+      ganttApi.getStores().data.setState({
+        _markers: [
+          createGanttCurrentTimeMarker({
+            scales,
+            scaleStart,
+            cellWidth,
+            now: new Date(),
+            text: todayLabelRef.current,
+          }),
+        ],
+      });
+    }, []);
+
+    useEffect(() => {
+      const intervalId = window.setInterval(
+        updateCurrentTimeMarker,
+        CURRENT_TIME_MARKER_REFRESH_INTERVAL,
+      );
+
+      return () => {
+        window.clearInterval(intervalId);
+      };
+    }, [updateCurrentTimeMarker]);
+
     const handleInit = useCallback(
       (ganttApi) => {
-        const updateTodayMarker = () => {
-          const state = ganttApi.getState();
-          const { _scales: scales, _start: scaleStart, cellWidth } = state;
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
+        ganttApiRef.current = ganttApi;
 
-          if (!scales || !scaleStart || !cellWidth) {
-            return;
-          }
-
-          ganttApi.getStores().data.setState({
-            _markers: [
-              {
-                left: Math.round(scales.diff(today, scaleStart, 'hour') * cellWidth),
-                start: today,
-                text: todayLabel,
-              },
-            ],
-          });
-        };
-
-        updateTodayMarker();
-        ganttApi.on('resize-chart', updateTodayMarker);
+        updateCurrentTimeMarker();
+        ganttApi.on('resize-chart', updateCurrentTimeMarker);
         ganttApi.on('zoom-scale', () => {
-          updateTodayMarker();
+          updateCurrentTimeMarker();
           const nativeZoomLevel = NATIVE_ZOOM_LEVELS[ganttApi.getState().zoom.level];
           if (nativeZoomLevel) {
             onZoomLevelChangeRef.current(nativeZoomLevel);
@@ -292,7 +399,7 @@ const GanttTimelineAdapter = React.memo(
           });
         });
       },
-      [todayLabel],
+      [updateCurrentTimeMarker],
     );
 
     const taskColorStyles = useMemo(() => buildGanttTaskColorStyles(tasks), [tasks]);
@@ -324,6 +431,7 @@ const GanttTimelineAdapter = React.memo(
           <Gantt
             key={zoomLevel}
             tasks={tasks}
+            taskTemplate={TaskBarContent}
             links={links.map(({ id, sourceItemId, targetItemId, type }) => ({
               id,
               source: sourceItemId,

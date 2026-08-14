@@ -240,6 +240,7 @@ export default merge({}, enUSCore, {
       ganttDurationUnit_month: 'Mois',
       ganttDurationHelp:
         'Les jours ouvrés excluent le samedi et le dimanche. 1 semaine équivaut à 7 jours et 1 mois à 30 jours calendaires.',
+      ganttStatus_testing: 'En test',
       ganttUnscheduledHint: 'Sans dates, la tâche restera dans la section « Non planifié ».',
       ganttTaskNameRequired: 'Saisissez le nom de la tâche.',
       ganttInvalidDateRange: 'La date de fin doit être identique ou postérieure à la date de début.',

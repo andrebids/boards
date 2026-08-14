@@ -305,11 +305,25 @@
       white-space: nowrap;
     }
 
-    span {
+    .unscheduledMeta {
+      align-items: center;
       color: var(--app-dark-text-muted);
+      display: flex;
       font-size: 10px;
+      gap: 6px;
       margin-top: 3px;
     }
+  }
+
+  .statusDot {
+    background: var(--gantt-status-color);
+    border: 1px solid
+      color-mix(in oklab, var(--gantt-status-color) 78%, var(--app-dark-text) 22%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--app-dark-canvas);
+    flex: 0 0 auto;
+    height: 9px;
+    width: 9px;
   }
 
   @media only screen and (width < 900px) {

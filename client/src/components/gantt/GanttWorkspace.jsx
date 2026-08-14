@@ -13,6 +13,11 @@ import { Dropdown, Icon, Loader } from 'semantic-ui-react';
 import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import Paths from '../../constants/Paths';
+import { GANTT_STATUS_COLORS } from '../../constants/GanttColors';
+import {
+  getEffectiveGanttStatus,
+  getGanttStatusTranslationKey,
+} from '../../constants/GanttStatuses';
 import { useGantt } from './GanttContext';
 import GanttTimelineAdapter from './GanttTimelineAdapter';
 import GanttItemPanel from './GanttItemPanel';
@@ -381,22 +386,35 @@ const GanttWorkspace = React.memo(() => {
             <span>{unscheduledItems.length}</span>
           </div>
           <div className={styles.unscheduledList}>
-            {unscheduledItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={styles.unscheduledItem}
-                onClick={() => handleItemSelect(item.id)}
-              >
-                <strong>{item.task}</strong>
-                <span>
-                  {item.parentId && itemsById[item.parentId]
-                    ? `${itemsById[item.parentId].task} · `
-                    : ''}
-                  {t('common.ganttDayCount', { count: item.expectedDurationDays })}
-                </span>
-              </button>
-            ))}
+            {unscheduledItems.map((item) => {
+              const status = getEffectiveGanttStatus(item);
+              const metadata = [
+                t(getGanttStatusTranslationKey(status)),
+                item.parentId && itemsById[item.parentId]?.task,
+                t('common.ganttDayCount', { count: item.expectedDurationDays }),
+              ]
+                .filter(Boolean)
+                .join(' · ');
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={styles.unscheduledItem}
+                  onClick={() => handleItemSelect(item.id)}
+                >
+                  <strong>{item.task}</strong>
+                  <span className={styles.unscheduledMeta}>
+                    <span
+                      className={styles.statusDot}
+                      style={{ '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
+                      aria-hidden="true"
+                    />
+                    {metadata}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </section>
       )}

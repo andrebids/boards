@@ -3,11 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import {
-  buildGanttTaskColorStyles,
-  GANTT_STATUS_COLORS,
-  getGanttStatusColor,
-} from './GanttColors';
+import { buildGanttTaskColorStyles, GANTT_STATUS_COLORS, getGanttStatusColor } from './GanttColors';
 
 test('builds status-driven color rules for virtualized task bars', () => {
   const styles = buildGanttTaskColorStyles([
@@ -22,16 +18,17 @@ test('builds status-driven color rules for virtualized task bars', () => {
   ]);
 
   expect(styles).toContain(
-    `.wx-bar[data-task-id="task-1"] { --wx-gantt-task-color: ${GANTT_STATUS_COLORS.testing};`,
+    `.wx-bar[data-task-id=":task-1"] { --wx-gantt-task-color: ${GANTT_STATUS_COLORS.testing};`,
   );
   expect(styles).toContain(
-    `.wx-bar[data-task-id="summary-1"] { --wx-gantt-summary-color: ${GANTT_STATUS_COLORS.completed};`,
+    `.wx-bar[data-task-id=":summary-1"] { --wx-gantt-summary-color: ${GANTT_STATUS_COLORS.completed};`,
   );
   expect(styles).toContain(
-    `.wx-bar[data-task-id="linked-1"] { --wx-gantt-task-color: ${GANTT_STATUS_COLORS.notStarted};`,
+    `.wx-bar[data-task-id=":linked-1"] { --wx-gantt-task-color: ${GANTT_STATUS_COLORS.notStarted};`,
   );
-  expect(styles).toContain('--wx-gantt-task-font-color: var(--app-dark-canvas);');
-  expect(styles).toContain('--wx-gantt-task-border: 1px solid color-mix(');
+  expect(styles).toContain('--wx-gantt-task-font-color: var(--app-dark-text);');
+  expect(styles).toContain('--wx-gantt-task-border-color: transparent;');
+  expect(styles).toContain('--wx-gantt-task-border: none;');
 });
 
 test('falls back to the visible not-started color', () => {

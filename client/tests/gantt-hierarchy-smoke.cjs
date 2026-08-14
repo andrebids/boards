@@ -51,11 +51,14 @@ const waitForSite = async () => {
     await page.getByRole('button', { name: 'Nova tarefa' }).click();
     const dialog = page.getByRole('dialog', { name: 'Nova tarefa' });
     const dialogText = await dialog.innerText();
-    ['Tipo', 'Projeto', 'Cor', 'Estado', 'Duração esperada'].forEach((label) => {
+    ['Tipo', 'Projeto', 'Estado', 'Duração esperada'].forEach((label) => {
       if (!dialogText.includes(label)) {
         throw new Error(`Missing panel field: ${label}`);
       }
     });
+    if (await dialog.locator('#gantt-task-color').count()) {
+      throw new Error('The hierarchy panel still exposes an independent task color');
+    }
     if (await dialog.locator('#gantt-task-description').count()) {
       throw new Error('The compact panel still exposes a description field');
     }

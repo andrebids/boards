@@ -364,6 +364,7 @@ export default {
         'Business days exclude Saturdays and Sundays. 1 week equals 7 days and 1 month equals 30 calendar days.',
       ganttStatus_notStarted: 'Not started',
       ganttStatus_inProgress: 'In progress',
+      ganttStatus_testing: 'Testing',
       ganttStatus_completed: 'Completed',
       ganttUnscheduledHint: 'Without dates, the task will remain in “Unscheduled”.',
       ganttTaskNameRequired: 'Enter the task name.',
