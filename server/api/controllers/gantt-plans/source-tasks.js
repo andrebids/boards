@@ -15,10 +15,6 @@ module.exports = {
       defaultsTo: '',
     },
     boardId: idInput,
-    includeCompleted: {
-      type: 'boolean',
-      defaultsTo: false,
-    },
   },
 
   exits: {
@@ -53,9 +49,6 @@ module.exports = {
     const taskListsById = _.keyBy(taskLists, 'id');
     const cardsById = _.keyBy(cards, 'id');
     const boardsById = _.keyBy(boards, 'id');
-    if (!inputs.includeCompleted) {
-      tasks = tasks.filter(({ isCompleted }) => !isCompleted);
-    }
     if (search) {
       tasks = tasks.filter((task) => {
         const taskList = taskListsById[task.taskListId];
