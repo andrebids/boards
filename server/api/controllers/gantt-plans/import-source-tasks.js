@@ -14,7 +14,11 @@ module.exports = {
     },
     taskIds: {
       type: 'json',
-      required: true,
+      defaultsTo: [],
+    },
+    cardIds: {
+      type: 'json',
+      defaultsTo: [],
     },
   },
 
@@ -35,11 +39,16 @@ module.exports = {
     if (!access.canEdit) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
-    if (!Array.isArray(inputs.taskIds) || inputs.taskIds.length === 0) {
+    if (
+      !Array.isArray(inputs.taskIds) ||
+      !Array.isArray(inputs.cardIds) ||
+      (inputs.taskIds.length === 0 && inputs.cardIds.length === 0)
+    ) {
       throw Errors.INVALID_TASKS;
     }
 
     const taskIds = _.uniq(inputs.taskIds);
+    const cardIds = _.uniq(inputs.cardIds);
     const paths = [];
     // Validate the full batch before creating anything.
     // eslint-disable-next-line no-restricted-syntax
@@ -56,8 +65,26 @@ module.exports = {
       }
     }
 
+    const cardPaths = [];
+    // Validate the full batch before creating anything.
+    // eslint-disable-next-line no-restricted-syntax
+    for (const cardId of cardIds) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const path = await sails.helpers.cards.getPathToProjectById(cardId);
+        if (path.project.id !== project.id) {
+          throw new Error('wrong project');
+        }
+        cardPaths.push(path);
+      } catch (error) {
+        throw Errors.INVALID_TASKS;
+      }
+    }
+
     const existingItems = await GanttItem.qm.getBySourceTaskIds(taskIds);
     const itemsByTaskId = _.keyBy(existingItems, 'sourceTaskId');
+    const existingCardItems = await GanttItem.qm.getBySourceCardIds(cardIds);
+    const itemsByCardId = _.keyBy(existingCardItems, 'sourceCardId');
     const planItems = await GanttItem.qm.getByGanttPlanId(plan.id);
     let position = planItems.length ? planItems.at(-1).position : 0;
     const createdItems = [];
@@ -124,22 +151,95 @@ module.exports = {
       }
     }
 
+    // Cards are imported as normal schedulable Gantt tasks. Their checklist
+    // tasks remain independently importable and are not automatically duplicated.
+    // eslint-disable-next-line no-restricted-syntax
+    for (const path of cardPaths) {
+      if (!itemsByCardId[path.card.id]) {
+        position += 65535;
+        let item;
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          item = await GanttItem.qm.createOne({
+            ganttPlanId: plan.id,
+            sourceCardId: path.card.id,
+            task: path.card.name,
+            itemType: GanttItem.Types.TASK,
+            parentId: null,
+            description: null,
+            status: null,
+            startDate: null,
+            endDate: null,
+            expectedDurationDays: 1,
+            color: 'blue',
+            position,
+          });
+        } catch (error) {
+          // A concurrent import may have won the unique constraint.
+          // eslint-disable-next-line no-await-in-loop
+          item = await GanttItem.qm.getOneBySourceCardId(path.card.id);
+          if (!item) {
+            throw error;
+          }
+        }
+
+        itemsByCardId[path.card.id] = item;
+        if (!existingCardItems.some(({ id }) => id === item.id)) {
+          const cardItem = {
+            id: path.card.id,
+            name: path.card.name,
+            boardId: path.board.id,
+            boardName: path.board.name,
+            listId: path.list.id,
+            listName: path.list.name,
+          };
+          const presentedItem = sails.helpers.gantt.presentItem(item, [], null);
+          presentedItem.sourceCard = cardItem;
+          createdItems.push(presentedItem);
+          sails.sockets.broadcast(
+            `ganttPlan:${plan.id}`,
+            'ganttItemCreate',
+            { item: presentedItem },
+            this.req,
+          );
+        }
+      }
+    }
+
     const sourceTasksById = await sails.helpers.gantt.buildSourceTaskMap(
       Object.values(itemsByTaskId),
     );
-    const items = await Promise.all(
+    const taskItems = await Promise.all(
       taskIds.map(async (taskId) => {
         const item = itemsByTaskId[taskId];
         const assignees = await GanttItemAssignee.qm.getByGanttItemIds([item.id]);
         return sails.helpers.gantt.presentItem(item, assignees, sourceTasksById[taskId]);
       }),
     );
+    const cardItems = await Promise.all(
+      cardIds.map(async (cardId) => {
+        const item = itemsByCardId[cardId];
+        const presentedItem = sails.helpers.gantt.presentItem(item, []);
+        const path = cardPaths.find(({ card }) => card.id === cardId);
+        presentedItem.sourceCard = {
+          id: path.card.id,
+          name: path.card.name,
+          boardId: path.board.id,
+          boardName: path.board.name,
+          listId: path.list.id,
+          listName: path.list.name,
+        };
+        return presentedItem;
+      }),
+    );
 
     return {
-      items,
+      items: [...taskItems, ...cardItems],
       meta: {
         createdTaskIds: createdItems.map(({ sourceTaskId }) => sourceTaskId),
         alreadyLinkedTaskIds: existingItems.map(({ sourceTaskId }) => sourceTaskId),
+        createdCardIds: createdItems.map(({ sourceCardId }) => sourceCardId).filter(Boolean),
+        alreadyLinkedCardIds: existingCardItems.map(({ sourceCardId }) => sourceCardId),
       },
     };
   },

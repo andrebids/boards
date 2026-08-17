@@ -383,6 +383,8 @@ export default {
       ganttIncludeCompleted: 'Include completed',
       ganttSourceTasksLoadFailed: 'Board tasks could not be loaded.',
       ganttNoBoardTasksFound: 'No board tasks found.',
+      ganttImportCard: 'Import card',
+      ganttCardSource: 'Card',
       ganttOpenLinkedTask: 'Open in Gantt',
       ganttSelectedTaskCount_one: '{{count}} task selected',
       ganttSelectedTaskCount_other: '{{count}} tasks selected',

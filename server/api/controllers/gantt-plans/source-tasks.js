@@ -70,6 +70,33 @@ module.exports = {
       ? await GanttItem.qm.getBySourceTaskIds(tasks.map(({ id }) => id))
       : [];
     const linkedItemsByTaskId = _.keyBy(linkedItems, 'sourceTaskId');
+    const linkedCardItems = cards.length
+      ? await GanttItem.qm.getBySourceCardIds(cards.map(({ id }) => id))
+      : [];
+    const linkedItemsByCardId = _.keyBy(linkedCardItems, 'sourceCardId');
+
+    const availableCards = cards
+      .filter((card) => {
+        if (!search) {
+          return true;
+        }
+        const list = lists.find(({ id }) => id === card.listId);
+        return [card.name, list && list.name]
+          .filter(Boolean)
+          .some((value) => value.toLocaleLowerCase().includes(search));
+      })
+      .map((card) => {
+        const list = lists.find(({ id }) => id === card.listId);
+        const board = boardsById[card.boardId];
+        return {
+          id: card.id,
+          name: card.name,
+          listName: list && list.name,
+          boardId: board.id,
+          boardName: board.name,
+          ganttItemId: (linkedItemsByCardId[card.id] && linkedItemsByCardId[card.id].id) || null,
+        };
+      });
 
     return {
       items: tasks.map((task) => {
@@ -90,6 +117,7 @@ module.exports = {
           ganttItemId: (linkedItemsByTaskId[task.id] && linkedItemsByTaskId[task.id].id) || null,
         };
       }),
+      cards: availableCards,
       included: { boards },
       meta: { canImport: access.canEdit },
     };

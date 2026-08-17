@@ -79,6 +79,11 @@ module.exports = {
       unique: true,
       columnName: 'source_task_id',
     },
+    sourceCardId: {
+      model: 'Card',
+      unique: true,
+      columnName: 'source_card_id',
+    },
     assignees: {
       collection: 'User',
       via: 'ganttItemId',

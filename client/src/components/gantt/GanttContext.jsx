@@ -175,8 +175,11 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
   );
 
   const importSourceTasks = useCallback(
-    async (taskIds) => {
-      const body = await api.importGanttSourceTasks(plan.id, taskIds);
+    async (sources) => {
+      const { taskIds, cardIds = [] } = Array.isArray(sources)
+        ? { taskIds: sources }
+        : sources;
+      const body = await api.importGanttSourceTasks(plan.id, taskIds, cardIds);
       dispatch({ type: 'itemsImported', items: body.items });
       return body;
     },

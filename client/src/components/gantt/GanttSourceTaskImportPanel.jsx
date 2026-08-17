@@ -18,8 +18,9 @@ import styles from './GanttSourceTaskImportPanel.module.scss';
 const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose }) => {
   const { getSourceTasks, importSourceTasks } = useGantt();
   const [sourceTasks, setSourceTasks] = useState([]);
+  const [sourceCards, setSourceCards] = useState([]);
   const [boards, setBoards] = useState([]);
-  const [selectedTaskIds, setSelectedTaskIds] = useState([]);
+  const [selectedSources, setSelectedSources] = useState([]);
   const [search, setSearch] = useState('');
   const [boardId, setBoardId] = useState('');
   const [includeCompleted, setIncludeCompleted] = useState(false);
@@ -40,6 +41,7 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
         includeCompleted,
       });
       setSourceTasks(body.items || []);
+      setSourceCards(body.cards || []);
       setBoards(body.included?.boards || []);
     } catch (nextError) {
       setError(nextError);
@@ -86,8 +88,20 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isSubmitting, onClose]);
 
-  const groupedTasks = useMemo(() => {
+  const groupedSources = useMemo(() => {
     const result = [];
+    sourceCards.forEach((card) => {
+      let board = result.find(({ id }) => id === card.boardId);
+      if (!board) {
+        board = { id: card.boardId, name: card.boardName, cards: [] };
+        result.push(board);
+      }
+      let groupedCard = board.cards.find(({ id }) => id === card.id);
+      if (!groupedCard) {
+        groupedCard = { id: card.id, name: card.name, card, tasks: [] };
+        board.cards.push(groupedCard);
+      }
+    });
     sourceTasks.forEach((task) => {
       let board = result.find(({ id }) => id === task.boardId);
       if (!board) {
@@ -102,24 +116,32 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
       card.tasks.push(task);
     });
     return result;
-  }, [sourceTasks]);
+  }, [sourceCards, sourceTasks]);
 
-  const handleTaskToggle = useCallback((taskId) => {
-    setSelectedTaskIds((current) =>
-      current.includes(taskId) ? current.filter((id) => id !== taskId) : [...current, taskId],
+  const handleSourceToggle = useCallback((source) => {
+    setSelectedSources((current) =>
+      current.includes(source.key)
+        ? current.filter((key) => key !== source.key)
+        : [...current, source.key],
     );
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (selectedTaskIds.length === 0) {
+    if (selectedSources.length === 0) {
       return;
     }
     setIsSubmitting(true);
     try {
-      const body = await importSourceTasks(selectedTaskIds);
+      const taskIds = selectedSources
+        .filter((key) => key.startsWith('task:'))
+        .map((key) => key.slice(5));
+      const cardIds = selectedSources
+        .filter((key) => key.startsWith('card:'))
+        .map((key) => key.slice(5));
+      const body = await importSourceTasks({ taskIds, cardIds });
       toast.success(
         t('common.ganttSourceTasksImported', {
-          count: selectedTaskIds.length,
+          count: selectedSources.length,
         }),
       );
       onImported(body.items);
@@ -128,7 +150,7 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
     } finally {
       setIsSubmitting(false);
     }
-  }, [importSourceTasks, onImported, selectedTaskIds, t]);
+  }, [importSourceTasks, onImported, selectedSources, t]);
 
   const renderTaskAccessory = (task) => {
     if (task.ganttItemId) {
@@ -161,7 +183,7 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
         </Button>
       </div>
     );
-  } else if (groupedTasks.length === 0) {
+  } else if (groupedSources.length === 0) {
     resultsContent = (
       <div className={styles.state}>
         <Icon name="search" />
@@ -169,27 +191,59 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
       </div>
     );
   } else {
-    resultsContent = groupedTasks.map((board) => (
+    resultsContent = groupedSources.map((board) => (
       <section key={board.id} className={styles.boardGroup}>
         <h3>{board.name}</h3>
         {board.cards.map((card) => (
           <div key={card.id} className={styles.cardGroup}>
             <strong>{card.name}</strong>
+            {card.card && (
+              <div className={styles.taskRow}>
+                <input
+                  type="checkbox"
+                  className={styles.taskCheckbox}
+                  aria-label={card.name}
+                  checked={selectedSources.includes(`card:${card.id}`)}
+                  disabled={Boolean(card.card.ganttItemId)}
+                  onChange={() =>
+                    handleSourceToggle({ key: `card:${card.id}`, id: card.id })
+                  }
+                />
+                <button
+                  type="button"
+                  className={styles.taskMain}
+                  disabled={Boolean(card.card.ganttItemId)}
+                  onClick={() => handleSourceToggle({ key: `card:${card.id}`, id: card.id })}
+                >
+                  <span>{t('common.ganttImportCard')}</span>
+                  <small>{card.card.listName}</small>
+                </button>
+                {card.card.ganttItemId && (
+                  <Button
+                    size="sm"
+                    variant="tertiary"
+                    onClick={() => onOpenItem(card.card.ganttItemId)}
+                  >
+                    {t('common.ganttOpenLinkedTask')}
+                  </Button>
+                )}
+              </div>
+            )}
             {card.tasks.map((task) => (
               <div key={task.id} className={styles.taskRow}>
                 <input
                   type="checkbox"
                   className={styles.taskCheckbox}
                   aria-label={task.name}
-                  checked={selectedTaskIds.includes(task.id)}
+                  checked={selectedSources.includes(`task:${task.id}`)}
                   disabled={Boolean(task.ganttItemId)}
-                  onChange={() => handleTaskToggle(task.id)}
+                  onChange={() => handleSourceToggle({ key: `task:${task.id}`, id: task.id })}
                 />
                 <button
                   type="button"
                   className={styles.taskMain}
                   disabled={Boolean(task.ganttItemId)}
-                  onClick={() => handleTaskToggle(task.id)}
+                  onClick={() => handleSourceToggle({ key: `task:${task.id}`, id: task.id })}
                 >
                   <span>{task.name}</span>
                   <small>{task.taskListName}</small>
@@ -280,7 +334,7 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
         <footer className={styles.footer}>
           <span>
             {t('common.ganttSelectedTaskCount', {
-              count: selectedTaskIds.length,
+              count: selectedSources.length,
             })}
           </span>
           <Button size="sm" variant="secondary" disabled={isSubmitting} onClick={onClose}>
@@ -290,7 +344,7 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
             size="sm"
             variant="primary"
             loading={isSubmitting}
-            disabled={selectedTaskIds.length === 0}
+            disabled={selectedSources.length === 0}
             onClick={handleSubmit}
           >
             {t('common.ganttAddSelectedTasks')}

@@ -74,7 +74,8 @@ const GanttItemPanel = React.memo(
   }) => {
     const [t] = useTranslation();
     const navigate = useNavigate();
-    const isLinked = Boolean(item?.sourceTaskId && item?.sourceTask);
+    const source = item?.sourceTask || item?.sourceCard;
+    const isLinked = Boolean(source);
     const defaultStatus = 'notStarted';
     const [data, setData] = useState(() => ({
       ...createInitialData(item, initialParentId, defaultStatus),
@@ -324,17 +325,20 @@ const GanttItemPanel = React.memo(
                   {t('common.ganttFromBoard')}
                 </span>
                 <strong>
-                  {item.sourceTask.boardName} / {item.sourceTask.cardName}
+                  {source.boardName} / {source.cardName || source.name}
                 </strong>
                 <small>
-                  {item.sourceTask.taskListName} · {t('common.ganttEditSourceFieldsInCard')}
+                  {source.taskListName || source.listName || t('common.ganttCardSource')} ·{' '}
+                  {t('common.ganttEditSourceFieldsInCard')}
                 </small>
               </div>
               <Button
                 size="sm"
                 variant="secondary"
                 type="button"
-                onClick={() => navigate(Paths.CARDS.replace(':id', item.sourceTask.cardId))}
+                onClick={() =>
+                  navigate(Paths.CARDS.replace(':id', source.cardId || source.id))
+                }
               >
                 {t('common.ganttOpenCard')}
               </Button>

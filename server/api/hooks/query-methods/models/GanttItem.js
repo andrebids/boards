@@ -13,6 +13,10 @@ const getOneById = (id) => GanttItem.findOne(id);
 
 const getOneBySourceTaskId = (sourceTaskId) => GanttItem.findOne({ sourceTaskId });
 
+const getBySourceCardIds = (sourceCardIds) => GanttItem.find({ sourceCardId: sourceCardIds });
+
+const getOneBySourceCardId = (sourceCardId) => GanttItem.findOne({ sourceCardId });
+
 const updateOne = (criteria, values) => GanttItem.updateOne(criteria).set({ ...values });
 
 const deleteOne = (criteria) => GanttItem.destroyOne(criteria);
@@ -23,6 +27,8 @@ module.exports = {
   getBySourceTaskIds,
   getOneById,
   getOneBySourceTaskId,
+  getBySourceCardIds,
+  getOneBySourceCardId,
   updateOne,
   deleteOne,
 };

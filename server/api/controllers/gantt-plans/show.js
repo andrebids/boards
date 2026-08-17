@@ -49,6 +49,7 @@ module.exports = {
 
     const assigneesByItemId = _.groupBy(assignees, 'ganttItemId');
     const sourceTasksById = await sails.helpers.gantt.buildSourceTaskMap(items);
+    const sourceCardsById = await sails.helpers.gantt.buildSourceCardMap(items);
     const users = await User.qm.getByIds(access.memberUserIds);
 
     return {
@@ -59,6 +60,7 @@ module.exports = {
             item,
             assigneesByItemId[item.id] || [],
             sourceTasksById[item.sourceTaskId],
+            sourceCardsById[item.sourceCardId],
           ),
         ),
         ganttLinks: links,

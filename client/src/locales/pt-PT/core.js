@@ -656,6 +656,8 @@ export default {
       ganttIncludeCompleted: 'Incluir concluídas',
       ganttSourceTasksLoadFailed: 'Não foi possível carregar as tarefas dos quadros.',
       ganttNoBoardTasksFound: 'Nenhuma tarefa dos quadros encontrada.',
+      ganttImportCard: 'Importar cartão',
+      ganttCardSource: 'Cartão',
       ganttOpenLinkedTask: 'Abrir no Gantt',
       ganttSelectedTaskCount_one: '{{count}} tarefa selecionada',
       ganttSelectedTaskCount_other: '{{count}} tarefas selecionadas',

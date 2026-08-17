@@ -174,10 +174,12 @@ module.exports = {
     }
 
     const sourceTasksById = await sails.helpers.gantt.buildSourceTaskMap([item]);
+    const sourceCardsById = await sails.helpers.gantt.buildSourceCardMap([item]);
     const presentedItem = sails.helpers.gantt.presentItem(
       item,
       assignees,
       sourceTasksById[item.sourceTaskId],
+      sourceCardsById[item.sourceCardId],
     );
     const payload = { item: presentedItem };
     sails.sockets.broadcast(`ganttPlan:${plan.id}`, 'ganttItemUpdate', payload, this.req);

@@ -18,8 +18,8 @@ const disableGanttPlan = (id, headers) => socket.post(`/gantt-plans/${id}/disabl
 const getGanttSourceTasks = (id, data, headers) =>
   socket.get(`/gantt-plans/${id}/source-tasks`, data, headers);
 
-const importGanttSourceTasks = (id, taskIds, headers) =>
-  socket.post(`/gantt-plans/${id}/import-source-tasks`, { taskIds }, headers);
+const importGanttSourceTasks = (id, taskIds, cardIds, headers) =>
+  socket.post(`/gantt-plans/${id}/import-source-tasks`, { taskIds, cardIds }, headers);
 
 const createGanttItem = (ganttPlanId, data, headers) =>
   socket.post(`/gantt-plans/${ganttPlanId}/items`, data, headers);

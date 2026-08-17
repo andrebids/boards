@@ -20,6 +20,9 @@ module.exports = {
     sourceTask: {
       type: 'ref',
     },
+    sourceCard: {
+      type: 'ref',
+    },
   },
 
   fn(inputs) {
@@ -32,6 +35,9 @@ module.exports = {
 
     if (inputs.sourceTask) {
       presentedItem.sourceTask = inputs.sourceTask;
+    }
+    if (inputs.sourceCard) {
+      presentedItem.sourceCard = inputs.sourceCard;
     }
 
     return presentedItem;
