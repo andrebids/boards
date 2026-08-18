@@ -94,7 +94,7 @@ module.exports.custom = {
   chatEmailNotificationsEnabled: process.env.CHAT_EMAIL_NOTIFICATIONS_ENABLED === 'true',
   chatEmailNotificationDelaySeconds: envToPositiveNumber(
     process.env.CHAT_EMAIL_NOTIFICATION_DELAY_SECONDS,
-    60 * 60,
+    30 * 60,
   ),
   chatEmailNotificationPollIntervalSeconds: envToPositiveNumber(
     process.env.CHAT_EMAIL_NOTIFICATION_POLL_INTERVAL_SECONDS,

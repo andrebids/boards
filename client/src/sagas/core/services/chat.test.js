@@ -4,7 +4,13 @@ import actions from '../../../actions';
 import api from '../../../api';
 import selectors from '../../../selectors';
 import request from '../request';
-import { fetchChatInbox, handleChatConversationUpdate, markChatConversationAsRead } from './chat';
+import { playChatMessageSound } from '../../../utils/chat-message-sound';
+import {
+  fetchChatInbox,
+  handleChatConversationUpdate,
+  handleChatMessageCreate,
+  markChatConversationAsRead,
+} from './chat';
 
 jest.mock('../../../api', () => ({
   __esModule: true,
@@ -129,5 +135,35 @@ describe('chat inbox services', () => {
       }).value,
     ).toEqual(put(actions.markChatConversationAsRead.success(readState)));
     expect(generator.next().done).toBe(true);
+  });
+
+  test('plays a sound for a received message in an unopened conversation', () => {
+    const message = { id: 'message-1', conversationId: 'conversation-1', userId: 'other-user' };
+    const generator = handleChatMessageCreate(message, []);
+
+    expect(generator.next().value).toEqual(
+      select(selectors.selectChatConversationById, message.conversationId),
+    );
+    expect(generator.next({ id: message.conversationId }).value).toEqual(
+      select(selectors.selectCurrentUserId),
+    );
+    expect(generator.next('current-user').value).toEqual(
+      select(selectors.selectOpenChatConversationIds),
+    );
+    expect(generator.next([]).value).toEqual(select(selectors.selectMinimizedChatConversationIds));
+    expect(generator.next([]).value).toEqual(call(playChatMessageSound));
+    expect(generator.next().value).toEqual(put(actions.handleChatMessageCreate(message, [])));
+    expect(generator.next().done).toBe(true);
+  });
+
+  test('does not play a sound for a message sent by the current user', () => {
+    const message = { id: 'message-1', conversationId: 'conversation-1', userId: 'current-user' };
+    const generator = handleChatMessageCreate(message, []);
+
+    generator.next();
+    generator.next({ id: message.conversationId });
+    generator.next('current-user');
+    generator.next([]);
+    expect(generator.next([]).value).toEqual(put(actions.handleChatMessageCreate(message, [])));
   });
 });

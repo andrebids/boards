@@ -33,6 +33,9 @@ const Header = React.memo(() => {
   const project = useSelector(selectors.selectCurrentProject);
   const board = useSelector(selectors.selectCurrentBoard);
   const notificationIds = useSelector(selectors.selectNotificationIdsForCurrentUser);
+  const unreadChatConversationTotal =
+    useSelector(selectors.selectChatInboxUnreadConversationTotal) || 0;
+  const unreadNotificationTotal = notificationIds.length + unreadChatConversationTotal;
   const isFavoritesEnabled = useSelector(selectors.selectIsFavoritesEnabled);
   const isEditModeEnabled = useSelector(selectors.selectIsEditModeEnabled);
   const isSidebarExpanded = useSelector(selectIsSidebarExpanded);
@@ -219,12 +222,12 @@ const Header = React.memo(() => {
               type="button"
               aria-label={t('common.notifications', {
                 context: 'title',
-              })}
+              }) + (unreadNotificationTotal > 0 ? ` (${unreadNotificationTotal})` : '')}
               className={classNames(styles.item, styles.itemHoverable, styles.actionItem)}
             >
               <Icon fitted name="bell" />
-              {notificationIds.length > 0 && (
-                <span className={styles.notification}>{notificationIds.length}</span>
+              {unreadNotificationTotal > 0 && (
+                <span className={styles.notification}>{unreadNotificationTotal}</span>
               )}
             </Menu.Item>
           </NotificationsPopup>

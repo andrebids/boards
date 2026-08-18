@@ -11,6 +11,10 @@ import selectors from '../../../selectors';
 import actions from '../../../actions';
 import api from '../../../api';
 import { createLocalId } from '../../../utils/local-id';
+import {
+  playChatMessageSound,
+  shouldPlayChatMessageSound,
+} from '../../../utils/chat-message-sound';
 import { reportChatError } from '../../../sentry';
 
 const getFileSizeBucket = (file) => {
@@ -587,6 +591,21 @@ export function* handleChatMessageCreate(message, users) {
   if (!conversation) {
     return;
   }
+
+  const currentUserId = yield select(selectors.selectCurrentUserId);
+  const openConversationIds = yield select(selectors.selectOpenChatConversationIds);
+  const minimizedConversationIds = yield select(selectors.selectMinimizedChatConversationIds);
+  if (
+    shouldPlayChatMessageSound(
+      message,
+      currentUserId,
+      openConversationIds,
+      minimizedConversationIds,
+    )
+  ) {
+    yield call(playChatMessageSound);
+  }
+
   yield put(actions.handleChatMessageCreate(message, users));
 }
 
