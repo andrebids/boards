@@ -83,6 +83,7 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
 
   const renderTaskBar = (item) => {
     const status = getEffectiveGanttStatus(item);
+    const period = new Intl.DateTimeFormat(locale, { day: '2-digit', month: 'short' });
 
     return (
       <button
@@ -94,8 +95,17 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
         aria-label={getItemLabel(item)}
         data-gantt-item-id={item.id}
       >
-        <span className={styles.childTaskDot} aria-hidden="true" />
-        <span>{item.task}</span>
+        <span className={styles.childTaskLine} aria-hidden="true" />
+        <span className={styles.childTaskLabel}>
+          <span>
+            <i className={styles.childTaskDot} aria-hidden="true" />
+            {item.task}
+          </span>
+          <small>
+            {period.format(parseGanttDate(item.startDate))} —{' '}
+            {period.format(parseGanttDate(item.endDate))}
+          </small>
+        </span>
       </button>
     );
   };

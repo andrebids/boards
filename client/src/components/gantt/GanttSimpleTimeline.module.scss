@@ -193,64 +193,108 @@
   }
 
   .childLane {
-    background-image: linear-gradient(
-      90deg,
-      color-mix(in oklab, var(--app-dark-border) 78%, transparent) 1px,
-      transparent 1px
-    );
-    background-size: calc(88% / 8) 100%;
-    border-bottom: 1px solid color-mix(in oklab, var(--app-dark-border) 60%, transparent);
-    height: 32px;
+    height: 70px;
     position: relative;
   }
 
   .childTask {
-    align-items: center;
-    background: color-mix(in oklab, var(--gantt-status-color) 36%, var(--app-dark-surface));
-    border: 1px solid color-mix(in oklab, var(--gantt-status-color) 68%, var(--app-dark-text) 32%);
-    border-radius: 6px;
-    bottom: 4px;
-    box-sizing: border-box;
-    color: var(--app-dark-text);
+    background: transparent;
+    border: 0;
+    color: var(--app-dark-text-muted);
     cursor: pointer;
-    display: flex;
     font: inherit;
-    gap: 5px;
+    height: 62px;
     min-width: 10px;
-    overflow: hidden;
-    padding: 0 7px;
+    overflow: visible;
+    padding: 0;
     position: absolute;
     text-align: left;
-    top: 4px;
-    transition: background 120ms ease-out, box-shadow 120ms ease-out;
+    top: 2px;
+    transition: filter 120ms ease-out;
 
-    span:last-child {
-      font-size: 11px;
-      font-weight: 600;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    &::before,
+    &::after {
+      background: var(--gantt-status-color);
+      border: 2px solid var(--app-dark-canvas);
+      border-radius: 50%;
+      content: '';
+      height: 6px;
+      position: absolute;
+      top: -3px;
+      width: 6px;
+    }
+
+    &::before {
+      left: -1px;
+    }
+
+    &::after {
+      right: -1px;
     }
 
     &:hover {
-      background: color-mix(in oklab, var(--gantt-status-color) 54%, var(--app-dark-surface));
-      box-shadow: 0 3px 9px color-mix(in oklab, var(--app-dark-canvas) 62%, transparent);
+      filter: brightness(1.22);
       z-index: 2;
     }
 
     &:focus-visible {
-      box-shadow: 0 0 0 2px var(--app-focus), 0 0 0 4px var(--app-dark-canvas);
       outline: none;
       z-index: 3;
+
+      .childTaskLine {
+        box-shadow: 0 0 0 2px var(--app-focus), 0 0 0 4px var(--app-dark-canvas);
+      }
+    }
+  }
+
+  .childTaskLine {
+    background: var(--gantt-status-color);
+    border-radius: 99px;
+    height: 3px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 30px;
+
+    &::before {
+      border-left: 1px dashed color-mix(in oklab, var(--app-dark-text-muted) 60%, transparent);
+      content: '';
+      height: 22px;
+      left: 0;
+      position: absolute;
+      top: -22px;
+    }
+  }
+
+  .childTaskLabel {
+    left: 0;
+    position: absolute;
+    top: 40px;
+    white-space: nowrap;
+
+    > span {
+      align-items: center;
+      color: var(--app-dark-text);
+      display: flex;
+      font-size: 12px;
+      font-weight: 600;
+      gap: 6px;
+    }
+
+    small {
+      color: var(--app-dark-text-muted);
+      display: block;
+      font-size: 11px;
+      margin-left: 12px;
+      margin-top: 2px;
     }
   }
 
   .childTaskDot {
     background: var(--gantt-status-color);
     border-radius: 50%;
-    flex: 0 0 auto;
-    height: 6px;
-    width: 6px;
+    height: 9px;
+    width: 9px;
   }
 
   .legend {
