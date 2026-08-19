@@ -12,6 +12,7 @@ import styles from './DashboardWorkspace.module.scss';
 
 const DashboardWorkspace = React.memo(() => {
   const gridRef = useRef(null);
+  const saveTimerRef = useRef(null);
   const [searchParams] = useSearchParams();
   const user = useSelector(selectors.selectCurrentUser);
   const isTvMode = searchParams.get('tv') === '1';
@@ -24,16 +25,38 @@ const DashboardWorkspace = React.memo(() => {
 
     const grid = GridStack.init(
       {
+        acceptWidgets: true,
         cellHeight: 88,
         column: 12,
+        columnOpts: { breakpoints: [{ c: 1, w: 760 }] },
         disableDrag: isTvMode,
         disableResize: isTvMode,
         float: false,
         margin: 12,
         removable: '#dashboard-trash',
+        staticGrid: isTvMode,
       },
       gridRef.current,
     );
+
+    if (!isTvMode) {
+      const savedLayout = window.localStorage.getItem('planka-dashboard-layout');
+
+      if (savedLayout) {
+        try {
+          grid.load(JSON.parse(savedLayout));
+        } catch {
+          window.localStorage.removeItem('planka-dashboard-layout');
+        }
+      }
+
+      grid.on('change', () => {
+        window.clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = window.setTimeout(() => {
+          window.localStorage.setItem('planka-dashboard-layout', JSON.stringify(grid.save()));
+        }, 400);
+      });
+    }
 
     if (!isTvMode) {
       GridStack.setupDragIn(
@@ -43,7 +66,10 @@ const DashboardWorkspace = React.memo(() => {
       );
     }
 
-    return () => grid.destroy(false);
+    return () => {
+      window.clearTimeout(saveTimerRef.current);
+      grid.destroy(false);
+    };
   }, [isPreviewAllowed, isTvMode]);
 
   if (!isPreviewAllowed) {
@@ -82,6 +108,11 @@ const DashboardWorkspace = React.memo(() => {
             <article
               className="grid-stack-item"
               data-gs-h={widget.h}
+              data-gs-id={widget.id}
+              data-gs-max-h={widget.type === 'progress' ? 10 : undefined}
+              data-gs-max-w={widget.type === 'progress' ? 12 : undefined}
+              data-gs-min-h={widget.type === 'upcoming' ? 3 : undefined}
+              data-gs-min-w={widget.type === 'upcoming' ? 2 : undefined}
               data-gs-w={widget.w}
               data-gs-x={widget.x}
               data-gs-y={widget.y}
