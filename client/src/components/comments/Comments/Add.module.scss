@@ -97,6 +97,39 @@
     }
   }
 
+  .emojiControl {
+    flex: 0 0 38px;
+    position: relative;
+  }
+
+  .emojiButton {
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--card-modal-border, #dfe3e8);
+    border-radius: 8px;
+    color: var(--card-modal-muted, #94a3b8);
+    cursor: pointer;
+    display: inline-flex;
+    height: 38px;
+    justify-content: center;
+    padding: 0;
+    width: 38px;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--card-modal-surface-hover, #e5e7eb);
+      color: var(--card-modal-text, #fff);
+      outline: none;
+    }
+  }
+
+  .emojiMenu {
+    bottom: 44px;
+    position: absolute;
+    right: 0;
+    z-index: 3;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .sendButton {
       transition: none;

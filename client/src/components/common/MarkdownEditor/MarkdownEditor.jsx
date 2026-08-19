@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import {
@@ -43,15 +43,6 @@ removedActionNamesSet.forEach((actionName) => {
     });
   });
 });
-
-// Keep emoji immediately accessible instead of hiding it in the overflow menu.
-toolbarsPreset.orders.wysiwygHidden = toolbarsPreset.orders.wysiwygHidden.map((actions) =>
-  actions.filter((action) => action.id || action !== ActionName.emoji),
-);
-toolbarsPreset.orders.wysiwygMain = toolbarsPreset.orders.wysiwygMain.map((actions) =>
-  actions.filter((action) => action.id || action !== ActionName.emoji),
-);
-toolbarsPreset.orders.wysiwygMain.splice(1, 0, [ActionName.emoji]);
 
 const commandMenuActions = wysiwygToolbarConfigs.wCommandMenuConfig.filter(
   (action) => !removedActionNamesSet.has(action.id),
@@ -96,19 +87,6 @@ const MarkdownEditor = React.forwardRef(
       [mentionUsers],
     );
 
-    const handleWrapperRef = useCallback(
-      (element) => {
-        wrapperRef.current = element;
-
-        if (typeof ref === "function") {
-          ref(element);
-        } else if (ref) {
-          ref.current = element; // eslint-disable-line no-param-reassign
-        }
-      },
-      [ref],
-    );
-
     const editor = useMarkdownEditor({
       md: {
         breaks: true,
@@ -136,6 +114,26 @@ const MarkdownEditor = React.forwardRef(
         mode: defaultMode,
       },
     });
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        insertText: (text) => {
+          const currentEditor = editor.currentEditor;
+
+          if (editor.currentMode === EditorModes.WYSIWYG) {
+            const { view } = currentEditor;
+            view.dispatch(view.state.tr.insertText(text).scrollIntoView());
+          } else {
+            const { codemirror } = currentEditor;
+            codemirror.dispatch(codemirror.state.replaceSelection(text));
+          }
+
+          editor.focus();
+        },
+      }),
+      [editor],
+    );
 
     useEffect(() => {
       const handleChange = () => {
@@ -186,7 +184,7 @@ const MarkdownEditor = React.forwardRef(
     return (
       <div
         {...props} // eslint-disable-line react/jsx-props-no-spreading
-        ref={handleWrapperRef}
+        ref={wrapperRef}
         className={classNames(styles.wrapper, isError && styles.wrapperError)}
       >
         <ThemeProvider theme="dark" rootClassName={styles.theme}>
