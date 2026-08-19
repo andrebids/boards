@@ -6,7 +6,7 @@ Criar uma página de dashboard independente do Gantt, pensada para um ecrã de T
 
 ## Contexto verificado
 
-- O Gantt atual é servido em `GET /projects/:id/gantt`, com a rota cliente `Paths.GANTT`, e é renderizado por `GanttWorkspace` dentro de `ProjectGanttProvider`.
+- O Gantt atual é servido em `GET /projects/:id/gantt`, com a rota cliente `Paths.GANTT`, e é renderizado por `GanttWorkspace` dentro de `ProjectGanttProvider`. O dashboard não fica aninhado nesta rota.
 - `ProjectGanttProvider` já carrega o plano, itens, ligações e utilizadores, e recebe atualizações em tempo real por socket. O dashboard pode reutilizar estes dados como fonte de leitura.
 - O separador do Gantt vive em `client/src/components/boards/Boards/GanttTab.jsx`. A aplicação já resolve rotas de projeto em `client/src/selectors/router.js`, `client/src/sagas/core/services/router.js` e `client/src/components/common/Static/Static.jsx`.
 - O helper existente `server/api/helpers/gantt/get-project-access.js` autoriza membros do projeto e calcula edição do Gantt. Não contém o conceito de developer; este conceito tem de ser decidido e imposto no servidor antes de a rota ser exposta.
@@ -14,19 +14,19 @@ Criar uma página de dashboard independente do Gantt, pensada para um ecrã de T
 
 ## Decisões de arquitetura
 
-1. **Rota própria, não modo dentro do Gantt.** Criar `Paths.GANTT_DASHBOARD` com `/projects/:id/gantt/dashboard`. `Paths.GANTT` mantém-se sem mudança funcional ou visual.
-2. **Link próprio e condicional.** Junto do separador Gantt, apresentar o link `Dashboard TV` apenas a utilizadores com a permissão do dashboard. O link é uma conveniência; a autorização do servidor é obrigatória e definitiva.
+1. **Rota própria, não modo dentro do Gantt.** Criar `Paths.PROJECT_DASHBOARD` com `/projects/:id/dashboard`. `Paths.GANTT` mantém-se sem mudança funcional ou visual.
+2. **Link próprio e condicional.** Na navegação do projeto, separado do separador Gantt, apresentar o link `Dashboard` apenas a utilizadores com a permissão do dashboard e quando este estiver ativo. O link é uma conveniência; a autorização do servidor é obrigatória e definitiva.
 3. **Página isolada.** Criar `client/src/components/gantt-dashboard/`. Nenhum componente do módulo será montado em `GanttWorkspace`, `GanttTimelineAdapter` ou dentro de um Board.
 4. **GridStack encapsulado.** Apenas `DashboardGrid.jsx` importa `gridstack` e o respetivo CSS. Os widgets recebem props normalizadas e não acedem diretamente à instância GridStack.
 5. **Dados só de leitura.** A primeira versão usa `ProjectGanttProvider` e seletores puros para calcular métricas. Não cria, edita, move ou apaga `GanttItem`, `Task`, `Board` ou `Card`.
 6. **Configuração persistida por projeto.** Um layout canónico por projeto permite que a TV mostre a mesma composição para todos. O layout contém apenas tipo do widget, identificador, posição e dimensão. Preferências locais de cada developer ficam explicitamente fora da primeira versão.
-7. **Dois modos explícitos.** `/projects/:id/gantt/dashboard` é o modo de configuração; `/projects/:id/gantt/dashboard?tv=1` é o modo TV, sem ações de drag/resize, menus de edição ou navegação supérflua. Ambos exigem autorização.
+7. **Dois modos explícitos.** `/projects/:id/dashboard` é o modo de configuração; `/projects/:id/dashboard?tv=1` é o modo TV, sem ações de drag/resize, menus de edição ou navegação supérflua. Ambos exigem autorização.
 8. **Sem copiar Boards.** Widgets podem agregar tarefas ou cartões no futuro, mas usam serviços/selectores de dados existentes e não reutilizam nem alteram a UI Kanban.
 
 ## Wireframe
 
 ```text
-Projeto > Gantt > [Dashboard TV]       (link só para developers autorizados)
+Projeto > [Dashboard]                  (link só para developers autorizados; separado de Gantt)
 
 Modo configuração
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -51,7 +51,7 @@ Modo TV (`?tv=1`)
 
 O produto precisa de definir quem é um **developer**. Não usar `canEdit` do Gantt como substituto: essa permissão inclui gestores de projeto e tem outro significado.
 
-**Recomendação:** introduzir uma permissão explícita por projeto, `canManageGanttDashboard`, atribuída a uma lista de utilizadores developers do projeto. Esta escolha evita dar acesso global a todos os administradores e evita confundir o papel operacional de gestor com o acesso ao ecrã TV.
+**Decisão:** introduzir uma configuração explícita por projeto, com uma lista de utilizadores developers do dashboard. A configuração começa desativada; um gestor do projeto pode ativá-la/desativá-la e gerir a lista. Esta escolha evita dar acesso global a todos os administradores e evita confundir o papel operacional de gestor com o acesso ao ecrã TV.
 
 O helper servidor devolve, no mínimo:
 
@@ -62,7 +62,7 @@ O helper servidor devolve, no mínimo:
 }
 ```
 
-- `canViewDashboard` protege o carregamento da página e dos dados.
+- `canViewDashboard` protege o carregamento da página e dos dados, e é `false` se o dashboard estiver desativado.
 - `canManageDashboard` protege alterações ao layout.
 - Na primeira entrega, ambos são `true` apenas para developers autorizados. Se for necessário abrir a TV a utilizadores sem edição, a regra pode divergir numa fase posterior sem alterar a estrutura.
 - Uma chamada sem autorização responde `403`; o cliente encaminha para o projeto com uma mensagem de acesso negado. Nunca devolver o layout ou métricas antes desta validação.
@@ -83,8 +83,8 @@ Criar uma entidade dedicada, por exemplo `GanttDashboard`, associada unicamente 
 ```
 
 - O servidor valida `type`, unicidade de `id`, limites de grelha (12 colunas) e dimensões mínimas/máximas por tipo. Não aceitar conteúdo HTML, URLs arbitrários ou definições de widget enviadas pelo cliente.
-- `GET /projects/:projectId/gantt-dashboard`: devolve o layout autorizado e os dados mínimos necessários para os widgets iniciais.
-- `PATCH /projects/:projectId/gantt-dashboard`: persiste layout após `dragstop`, `resizestop`, adicionar/remover/repor; requer `canManageDashboard` e controlo de `version` para evitar sobrescrever a configuração de outro developer.
+- `GET /projects/:projectId/dashboard`: devolve o layout autorizado e os dados mínimos necessários para os widgets iniciais.
+- `PATCH /api/projects/:projectId/dashboard`: persiste layout após `dragstop`, `resizestop`, adicionar/remover/repor; requer `canManageDashboard` e controlo de `version` para evitar sobrescrever a configuração de outro developer.
 - O cliente pode continuar a usar atualizações socket já existentes para valores de Gantt. Uma atualização de layout é emitida num canal próprio para manter todos os editores sincronizados.
 
 ## Widgets iniciais
@@ -105,7 +105,7 @@ Cada widget declara o seu `minW`, `minH`, `maxW` e `maxH`. A biblioteca não con
 
 #### Tarefa 1: Definir e expor a permissão de dashboard
 
-**Descrição:** Criar a fonte de verdade de developers por projeto e um helper de acesso separado do Gantt atual.
+**Descrição:** Criar a fonte de verdade de developers por projeto, a ativação independente do dashboard e um helper de acesso separado do Gantt atual.
 
 **Critérios de aceitação:**
 
@@ -140,11 +140,11 @@ Cada widget declara o seu `minW`, `minH`, `maxW` e `maxH`. A biblioteca não con
 
 #### Tarefa 3: Adicionar rota, link e estado de acesso no cliente
 
-**Descrição:** Declarar `Paths.GANTT_DASHBOARD`, integrá-la nos seletores/router/Static e criar o link `Dashboard TV` condicionado pela permissão recebida.
+**Descrição:** Declarar `Paths.PROJECT_DASHBOARD`, integrá-la nos seletores/router/Static e criar o link `Dashboard` condicionado pela permissão recebida.
 
 **Critérios de aceitação:**
 
-- [ ] O link aponta para `/projects/:id/gantt/dashboard` e não aparece a não developers.
+- [ ] O link aponta para `/projects/:id/dashboard`, não aparece a não developers e é separado do link Gantt.
 - [ ] A rota direta de um não autorizado não mostra conteúdo do dashboard.
 - [ ] Abrir Gantt e Boards conserva a apresentação atual.
 
