@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import classNames from 'classnames';
 
 import selectors from '../../../selectors';
+import Paths from '../../../constants/Paths';
 import { selectIsSidebarExpanded } from '../../../selectors/sidebarSelectors';
 import Header from '../Header';
 import Favorites from '../Favorites';
@@ -25,7 +26,9 @@ import styles from './Fixed.module.scss';
 const Fixed = React.memo(() => {
   const { projectId } = useSelector(selectors.selectPath);
   const board = useSelector(selectors.selectCurrentBoard);
+  const pathsMatch = useSelector(selectors.selectPathsMatch);
   const isSidebarExpanded = useSelector(selectIsSidebarExpanded);
+  const isDashboard = pathsMatch?.pattern.path === Paths.DASHBOARD;
 
   return (
     <ChatProvider>
@@ -36,8 +39,8 @@ const Fixed = React.memo(() => {
       >
         <Sidebar />
         <Header />
-        <Favorites />
-        {projectId === undefined && <HomeActions />}
+        {!isDashboard && <Favorites />}
+        {projectId === undefined && !isDashboard && <HomeActions />}
         {projectId && <Project />}
         {board && !board.isFetching && <BoardActions />}
         <BoardActivitiesPanel />
