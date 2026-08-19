@@ -47,6 +47,18 @@ Modo TV (`?tv=1`)
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+### Barra superior partilhada
+
+O dashboard mantém uma barra superior compacta, com 40–44 px de altura, baseada no `Header` global já usado nos Boards. Não criar um segundo menu de sessão, login ou avatar.
+
+- **Esquerda:** botão `← Voltar aos Boards`, que navega para o último Board do projeto quando existir e, caso contrário, para a página do projeto.
+- **Centro:** nome do projeto e a identificação `Dashboard`.
+- **Direita:** os controlos de sessão atuais — notificações, nome do utilizador, avatar e popup de utilizador com definições/logout.
+- **Modo de configuração:** apresenta a barra completa para preservar navegação e gestão de sessão.
+- **Modo TV (`?tv=1`):** conserva a sessão autenticada e o botão de retorno, mas reduz a barra ao mínimo visual necessário; não mostra toolbox, resize handles ou ações de edição.
+
+O `Header` é reutilizado por composição/variante de rota. Não alterar o Header dos Boards para resolver necessidades específicas do dashboard; qualquer estilo adicional fica no módulo `project-dashboard` e só é aplicado na rota do dashboard.
+
 ## Contrato de acesso
 
 O produto precisa de definir quem é um **developer**. Não usar `canEdit` do Gantt como substituto: essa permissão inclui gestores de projeto e tem outro significado.
