@@ -3,11 +3,11 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Send } from 'lucide-react';
+import { Send, Smile } from 'lucide-react';
 import { Form } from 'semantic-ui-react';
 import { useClickAwayListener } from '../../../lib/hooks';
 
@@ -15,6 +15,12 @@ import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useForm } from '../../../hooks';
 import MarkdownEditor from '../../common/MarkdownEditor';
+import LazyEmojiPicker, {
+  EMOJI_CATEGORY_ICONS,
+  EMOJI_PICKER_CLASS_NAME,
+  EMOJI_PICKER_HEIGHT,
+  EMOJI_PICKER_WIDTH,
+} from '../../chat/LazyEmojiPicker';
 import { uploadCommentImage } from './image-upload';
 
 import styles from './Add.module.scss';
@@ -35,8 +41,11 @@ const Add = React.memo(({ onSubmit }) => {
   const [t] = useTranslation();
   const [data, , setData] = useForm(DEFAULT_DATA);
   const [isOpened, setIsOpened] = useState(false);
+  const [isEmojiMenuOpen, setIsEmojiMenuOpen] = useState(false);
 
+  const editorRef = useRef(null);
   const editorShellRef = useRef(null);
+  const emojiRef = useRef(null);
   const buttonRef = useRef(null);
 
   const isExceeded = data.text.length > MAX_LENGTH;
@@ -66,6 +75,7 @@ const Add = React.memo(({ onSubmit }) => {
     dispatch(entryActions.createCommentInCurrentCard(cleanData));
     setData(DEFAULT_DATA);
     setIsOpened(false);
+    setIsEmojiMenuOpen(false);
   }, [dispatch, data, isExceeded, onSubmit, setData]);
 
   const handleSubmit = useCallback(() => {
@@ -78,6 +88,12 @@ const Add = React.memo(({ onSubmit }) => {
 
   const handleClose = useCallback(() => {
     setIsOpened(false);
+    setIsEmojiMenuOpen(false);
+  }, []);
+
+  const handleEmojiClick = useCallback(({ emoji }) => {
+    editorRef.current?.insertText(emoji);
+    setIsEmojiMenuOpen(false);
   }, []);
 
   const handleEditorChange = useCallback(
@@ -118,7 +134,7 @@ const Add = React.memo(({ onSubmit }) => {
   const handleClickAwayCancel = useCallback(() => {}, []);
 
   const clickAwayProps = useClickAwayListener(
-    [editorShellRef, buttonRef],
+    [editorShellRef, emojiRef, buttonRef],
     handleClose,
     handleClickAwayCancel,
   );
@@ -133,6 +149,7 @@ const Add = React.memo(({ onSubmit }) => {
             className={styles.editorShell}
           >
             <MarkdownEditor
+              ref={editorRef}
               defaultValue={data.text}
               defaultMode={defaultMode}
               mentionUsers={mentionUsers}
@@ -149,6 +166,41 @@ const Add = React.memo(({ onSubmit }) => {
             {t('common.writeComment')}
           </button>
         )}
+        <div
+          {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
+          ref={emojiRef}
+          className={styles.emojiControl}
+        >
+          <button
+            type="button"
+            aria-label={t('chat.addEmoji')}
+            aria-expanded={isEmojiMenuOpen}
+            title={t('chat.addEmoji')}
+            className={styles.emojiButton}
+            onClick={() => {
+              setIsOpened(true);
+              setIsEmojiMenuOpen((isOpen) => !isOpen);
+            }}
+          >
+            <Smile aria-hidden="true" size={19} strokeWidth={1.9} />
+          </button>
+          {isEmojiMenuOpen && (
+            <div className={styles.emojiMenu} role="menu" aria-label={t('chat.chooseEmoji')}>
+              <Suspense fallback={null}>
+                <LazyEmojiPicker
+                  categoryIcons={EMOJI_CATEGORY_ICONS}
+                  className={EMOJI_PICKER_CLASS_NAME}
+                  theme="dark"
+                  width={EMOJI_PICKER_WIDTH}
+                  height={EMOJI_PICKER_HEIGHT}
+                  previewConfig={{ showPreview: false }}
+                  searchPlaceholder={t('chat.searchEmoji')}
+                  onEmojiClick={handleEmojiClick}
+                />
+              </Suspense>
+            </div>
+          )}
+        </div>
         <button
           {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
           ref={buttonRef}
