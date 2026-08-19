@@ -3,6 +3,24 @@ import { differenceInGanttDays, formatGanttDate, parseGanttDate } from '../../ut
 const compareByStartDate = (first, second) =>
   first.startDate.localeCompare(second.startDate) || first.task.localeCompare(second.task);
 
+const compareMilestones = (first, second) => {
+  const dateComparison = first.startDate.localeCompare(second.startDate);
+
+  if (dateComparison) {
+    return dateComparison;
+  }
+
+  if (first.itemType === 'summary' && second.itemType !== 'summary') {
+    return -1;
+  }
+
+  if (first.itemType !== 'summary' && second.itemType === 'summary') {
+    return 1;
+  }
+
+  return first.task.localeCompare(second.task);
+};
+
 export const getSimpleTimelineRange = (items) => {
   const scheduledItems = items.filter(({ startDate, endDate }) => startDate && endDate);
 
@@ -73,12 +91,9 @@ export const getSimpleTimelineMilestones = (items) => {
 
     return result;
   }, {});
-  const summaryIds = new Set(items.filter(({ itemType }) => itemType === 'summary').map(({ id }) => id));
-
   return items
-    .filter(({ itemType, parentId }) => itemType === 'summary' || !parentId || !summaryIds.has(parentId))
     .map((item) => ({ ...item, childCount: childCounts[item.id] || 0 }))
-    .sort(compareByStartDate);
+    .sort(compareMilestones);
 };
 
 export const getSimpleTimelineDays = (range) => {

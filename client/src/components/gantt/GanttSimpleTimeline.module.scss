@@ -4,17 +4,13 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
-    padding: 14px 26px 24px;
+    padding: 0;
   }
 
   .scrollArea {
-    background: linear-gradient(
-      140deg,
-      color-mix(in oklab, var(--app-dark-surface) 92%, var(--app-dark-canvas)),
-      var(--app-dark-canvas)
-    );
-    border: 1px solid var(--app-dark-border);
-    border-radius: 15px;
+    background: var(--app-dark-canvas);
+    border: 0;
+    border-radius: 0;
     height: 100%;
     min-height: 420px;
     overflow-x: auto;
@@ -49,39 +45,9 @@
     }
   }
 
-  .completion {
-    align-items: center;
-    background: color-mix(in oklab, var(--app-dark-surface-hover) 58%, transparent);
-    border: 1px solid var(--app-dark-border);
-    border-radius: 999px;
-    color: var(--app-dark-text);
-    display: inline-flex;
-    font-size: 12px;
-    font-weight: 650;
-    gap: 9px;
-    padding: 8px 10px 8px 13px;
-    white-space: nowrap;
-
-    > span {
-      background: conic-gradient(var(--app-accent) var(--completion), var(--app-dark-border) 0);
-      border-radius: 50%;
-      height: 22px;
-      position: relative;
-      width: 22px;
-
-      &::after {
-        background: var(--app-dark-surface);
-        border-radius: 50%;
-        content: '';
-        inset: 3px;
-        position: absolute;
-      }
-    }
-  }
-
   .journey {
     flex: 1 1 auto;
-    min-height: 270px;
+    min-height: 320px;
     position: relative;
   }
 
@@ -89,21 +55,11 @@
     background: color-mix(in oklab, var(--app-dark-text-muted) 42%, var(--app-dark-surface));
     border-radius: 99px;
     height: 6px;
-    left: 5%;
+    left: 6%;
     position: absolute;
-    right: 5%;
-    top: 126px;
-  }
-
-  .journeyLine::before {
-    background: linear-gradient(90deg, var(--app-accent), #9a4dff);
-    border-radius: inherit;
-    content: '';
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 34%;
+    right: 6%;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   .milestone {
@@ -120,7 +76,7 @@
     padding: 0 6px;
     position: absolute;
     text-align: center;
-    top: 61px;
+    top: calc(50% - 51px);
     transform: translateX(-50%);
 
     time {
@@ -194,10 +150,10 @@
 
   .todayMarker {
     border-left: 1px dashed color-mix(in oklab, var(--app-dark-text-muted) 74%, transparent);
-    bottom: 34px;
+    bottom: 0;
     pointer-events: none;
     position: absolute;
-    top: 154px;
+    top: calc(50% + 31px);
     z-index: 1;
 
     span {
@@ -242,7 +198,7 @@
     }
 
     .scrollArea {
-      border-radius: 12px;
+      border-radius: 0;
     }
 
     .timeline {
@@ -257,12 +213,6 @@
 
     .heading h2 {
       font-size: 17px;
-    }
-
-    .completion {
-      font-size: 11px;
-      gap: 6px;
-      padding-left: 9px;
     }
 
     .legend {

@@ -26,10 +26,6 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
   const locale = i18n.resolvedLanguage || i18n.language;
   const range = useMemo(() => getSimpleTimelineRange(items), [items]);
   const milestones = useMemo(() => getSimpleTimelineMilestones(items), [items]);
-  const completedCount = milestones.filter(
-    (item) => getEffectiveGanttStatus(item) === 'completed',
-  ).length;
-  const completion = milestones.length ? Math.round((completedCount / milestones.length) * 100) : 0;
   const rangeLabel = useMemo(() => {
     if (!range) {
       return '';
@@ -63,6 +59,13 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
     )} – ${interval.format(parseGanttDate(item.endDate))}`;
   };
 
+  const getJourneyPosition = (item) => {
+    const { left } = getSimpleTimelineBarStyle(range, item);
+    const timelinePosition = Number.parseFloat(left);
+
+    return { left: `${6 + timelinePosition * 0.88}%` };
+  };
+
   return (
     <section
       className={styles.root}
@@ -79,22 +82,21 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
               <h2>{t('common.ganttProjectTimeline')}</h2>
               <p>{rangeLabel}</p>
             </div>
-            <span className={styles.completion}>
-              {t('common.ganttCompletedPercent', { percent: completion })}
-              <span aria-hidden="true" style={{ '--completion': `${completion}%` }} />
-            </span>
           </header>
 
           <div className={styles.journey}>
             <span className={styles.journeyLine} aria-hidden="true" />
             {todayStyle && (
-              <span className={styles.todayMarker} style={{ left: todayStyle.left }} aria-hidden="true">
+              <span
+                className={styles.todayMarker}
+                style={{ left: `${6 + Number.parseFloat(todayStyle.left) * 0.88}%` }}
+                aria-hidden="true"
+              >
                 <span>{t('common.ganttToday')}</span>
               </span>
             )}
             {milestones.map((item) => {
               const status = getEffectiveGanttStatus(item);
-              const position = getSimpleTimelineBarStyle(range, item);
               const statusKey = getGanttStatusTranslationKey(status);
 
               return (
@@ -102,7 +104,7 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
                   className={`${styles.milestone} ${styles[status] || ''}`}
                   type="button"
                   key={item.id}
-                  style={{ ...position, '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
+                  style={{ ...getJourneyPosition(item), '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
                   onClick={() => onItemSelect(item.id)}
                   aria-label={getItemLabel(item)}
                   data-gantt-item-id={item.id}
