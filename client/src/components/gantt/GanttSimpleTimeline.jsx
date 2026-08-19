@@ -4,11 +4,14 @@ import { Icon } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 
 import { GANTT_STATUS_COLORS } from '../../constants/GanttColors';
-import { getEffectiveGanttStatus, getGanttStatusTranslationKey } from '../../constants/GanttStatuses';
+import {
+  getEffectiveGanttStatus,
+  getGanttStatusTranslationKey,
+} from '../../constants/GanttStatuses';
 import { formatGanttDate, parseGanttDate } from '../../utils/gantt-dates';
 import {
   getSimpleTimelineBarStyle,
-  getSimpleTimelineMilestones,
+  getSimpleTimelineHierarchy,
   getSimpleTimelineRange,
 } from './simpleTimelineScale';
 
@@ -25,17 +28,19 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
   const [t, i18n] = useTranslation();
   const locale = i18n.resolvedLanguage || i18n.language;
   const range = useMemo(() => getSimpleTimelineRange(items), [items]);
-  const milestones = useMemo(() => getSimpleTimelineMilestones(items), [items]);
+  const hierarchy = useMemo(() => getSimpleTimelineHierarchy(items), [items]);
+  const itemsById = useMemo(
+    () => Object.fromEntries(items.map((item) => [item.id, item])),
+    [items],
+  );
   const rangeLabel = useMemo(() => {
     if (!range) {
       return '';
     }
 
     const formatter = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' });
-    const start = parseGanttDate(range.startDate);
-    const end = parseGanttDate(range.endDate);
-    const startLabel = formatter.format(start);
-    const endLabel = formatter.format(end);
+    const startLabel = formatter.format(parseGanttDate(range.startDate));
+    const endLabel = formatter.format(parseGanttDate(range.endDate));
 
     return startLabel === endLabel ? startLabel : `${startLabel} — ${endLabel}`;
   }, [locale, range]);
@@ -59,11 +64,40 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
     )} – ${interval.format(parseGanttDate(item.endDate))}`;
   };
 
-  const getJourneyPosition = (item) => {
-    const { left } = getSimpleTimelineBarStyle(range, item);
-    const timelinePosition = Number.parseFloat(left);
+  const getTimelineStyle = (item) => {
+    const { left, width } = getSimpleTimelineBarStyle(range, item);
+    const timelineLeft = Number.parseFloat(left);
+    const timelineWidth = Number.parseFloat(width);
 
-    return { left: `${6 + timelinePosition * 0.88}%` };
+    return {
+      left: `${6 + timelineLeft * 0.88}%`,
+      width: `${timelineWidth * 0.88}%`,
+    };
+  };
+
+  const getMarkerStyle = (item) => {
+    const { left } = getTimelineStyle(item);
+
+    return { left };
+  };
+
+  const renderTaskBar = (item) => {
+    const status = getEffectiveGanttStatus(item);
+
+    return (
+      <button
+        className={styles.childTask}
+        type="button"
+        key={item.id}
+        style={{ ...getTimelineStyle(item), '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
+        onClick={() => onItemSelect(item.id)}
+        aria-label={getItemLabel(item)}
+        data-gantt-item-id={item.id}
+      >
+        <span className={styles.childTaskDot} aria-hidden="true" />
+        <span>{item.task}</span>
+      </button>
+    );
   };
 
   return (
@@ -75,7 +109,7 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
       <div className={styles.scrollArea}>
         <div
           className={styles.timeline}
-          style={{ minWidth: `${Math.max(740, milestones.length * 145)}px` }}
+          style={{ minWidth: `${Math.max(740, items.length * 130)}px` }}
         >
           <header className={styles.heading}>
             <div>
@@ -84,18 +118,18 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
             </div>
           </header>
 
-          <div className={styles.journey}>
+          <div className={styles.primaryJourney}>
             <span className={styles.journeyLine} aria-hidden="true" />
             {todayStyle && (
               <span
                 className={styles.todayMarker}
-                style={{ left: `${6 + Number.parseFloat(todayStyle.left) * 0.88}%` }}
+                style={getMarkerStyle({ startDate: today, endDate: today })}
                 aria-hidden="true"
               >
                 <span>{t('common.ganttToday')}</span>
               </span>
             )}
-            {milestones.map((item) => {
+            {hierarchy.primaryItems.map((item) => {
               const status = getEffectiveGanttStatus(item);
               const statusKey = getGanttStatusTranslationKey(status);
 
@@ -104,7 +138,10 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
                   className={`${styles.milestone} ${styles[status] || ''}`}
                   type="button"
                   key={item.id}
-                  style={{ ...getJourneyPosition(item), '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
+                  style={{
+                    ...getMarkerStyle(item),
+                    '--gantt-status-color': GANTT_STATUS_COLORS[status],
+                  }}
                   onClick={() => onItemSelect(item.id)}
                   aria-label={getItemLabel(item)}
                   data-gantt-item-id={item.id}
@@ -118,20 +155,34 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect }) => {
                     <Icon name={ICONS_BY_STATUS[status] || ICONS_BY_STATUS.notStarted} />
                   </span>
                   <strong>{item.task}</strong>
-                  <small>
-                    {item.childCount > 0
-                      ? t('common.ganttTaskCount', { count: item.childCount })
-                      : t(statusKey || 'common.ganttStatus')}
-                  </small>
+                  <small>{statusKey ? t(statusKey) : t('common.ganttStatus')}</small>
                 </button>
               );
             })}
           </div>
 
+          {hierarchy.childGroups.length > 0 && (
+            <section className={styles.childTracks} aria-label={t('common.ganttTask')}>
+              {hierarchy.childGroups.map(({ parentId, lanes }) => (
+                <section className={styles.childGroup} key={parentId}>
+                  <h3>{itemsById[parentId].task}</h3>
+                  {lanes.map((lane) => (
+                    <div className={styles.childLane} key={`${parentId}-${lane.join('-')}`}>
+                      {lane.map((itemId) => renderTaskBar(itemsById[itemId]))}
+                    </div>
+                  ))}
+                </section>
+              ))}
+            </section>
+          )}
+
           <footer className={styles.legend} aria-label={t('common.ganttStatus')}>
             {['completed', 'inProgress', 'notStarted'].map((status) => (
               <span key={status}>
-                <i style={{ '--gantt-status-color': GANTT_STATUS_COLORS[status] }} aria-hidden="true" />
+                <i
+                  style={{ '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
+                  aria-hidden="true"
+                />
                 {t(getGanttStatusTranslationKey(status))}
               </span>
             ))}

@@ -14,7 +14,7 @@
     height: 100%;
     min-height: 420px;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: auto;
   }
 
   .timeline {
@@ -45,9 +45,8 @@
     }
   }
 
-  .journey {
-    flex: 1 1 auto;
-    min-height: 320px;
+  .primaryJourney {
+    min-height: 250px;
     position: relative;
   }
 
@@ -168,6 +167,90 @@
       top: 16px;
       transform: translateX(-50%);
     }
+  }
+
+  .childTracks {
+    border-top: 1px solid var(--app-dark-border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 16px;
+  }
+
+  .childGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    h3 {
+      color: var(--app-dark-text-muted);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      margin: 0 0 2px 6%;
+      text-transform: uppercase;
+    }
+  }
+
+  .childLane {
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--app-dark-border) 78%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: calc(88% / 8) 100%;
+    border-bottom: 1px solid color-mix(in oklab, var(--app-dark-border) 60%, transparent);
+    height: 32px;
+    position: relative;
+  }
+
+  .childTask {
+    align-items: center;
+    background: color-mix(in oklab, var(--gantt-status-color) 36%, var(--app-dark-surface));
+    border: 1px solid color-mix(in oklab, var(--gantt-status-color) 68%, var(--app-dark-text) 32%);
+    border-radius: 6px;
+    bottom: 4px;
+    box-sizing: border-box;
+    color: var(--app-dark-text);
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    gap: 5px;
+    min-width: 10px;
+    overflow: hidden;
+    padding: 0 7px;
+    position: absolute;
+    text-align: left;
+    top: 4px;
+    transition: background 120ms ease-out, box-shadow 120ms ease-out;
+
+    span:last-child {
+      font-size: 11px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      background: color-mix(in oklab, var(--gantt-status-color) 54%, var(--app-dark-surface));
+      box-shadow: 0 3px 9px color-mix(in oklab, var(--app-dark-canvas) 62%, transparent);
+      z-index: 2;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--app-focus), 0 0 0 4px var(--app-dark-canvas);
+      outline: none;
+      z-index: 3;
+    }
+  }
+
+  .childTaskDot {
+    background: var(--gantt-status-color);
+    border-radius: 50%;
+    flex: 0 0 auto;
+    height: 6px;
+    width: 6px;
   }
 
   .legend {

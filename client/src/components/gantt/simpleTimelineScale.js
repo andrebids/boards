@@ -30,7 +30,10 @@ export const getSimpleTimelineRange = (items) => {
 
   return {
     startDate: scheduledItems.map(({ startDate }) => startDate).sort()[0],
-    endDate: scheduledItems.map(({ endDate }) => endDate).sort().at(-1),
+    endDate: scheduledItems
+      .map(({ endDate }) => endDate)
+      .sort()
+      .at(-1),
   };
 };
 
@@ -56,7 +59,10 @@ export const getSimpleTimelineBarStyle = (range, item) => {
 export const groupSimpleTimelineItems = (items) => {
   const itemsByParentId = items.reduce((result, item) => {
     if (item.itemType === 'task' && item.parentId) {
-      (result[item.parentId] ||= []).push(item);
+      return {
+        ...result,
+        [item.parentId]: [...(result[item.parentId] || []), item],
+      };
     }
 
     return result;
@@ -86,7 +92,7 @@ export const groupSimpleTimelineItems = (items) => {
 export const getSimpleTimelineMilestones = (items) => {
   const childCounts = items.reduce((result, { itemType, parentId }) => {
     if (itemType === 'task' && parentId) {
-      result[parentId] = (result[parentId] || 0) + 1;
+      return { ...result, [parentId]: (result[parentId] || 0) + 1 };
     }
 
     return result;
@@ -94,6 +100,44 @@ export const getSimpleTimelineMilestones = (items) => {
   return items
     .map((item) => ({ ...item, childCount: childCounts[item.id] || 0 }))
     .sort(compareMilestones);
+};
+
+const distributeTimelineLanes = (items) =>
+  items.sort(compareByStartDate).reduce((lanes, item) => {
+    const availableLane = lanes.find((lane) => lane.at(-1).endDate < item.startDate);
+
+    if (availableLane) {
+      availableLane.push(item);
+    } else {
+      lanes.push([item]);
+    }
+
+    return lanes;
+  }, []);
+
+export const getSimpleTimelineHierarchy = (items) => {
+  const parents = items.filter(({ itemType }) => itemType === 'summary').sort(compareByStartDate);
+  const parentIds = new Set(parents.map(({ id }) => id));
+  const childGroups = parents
+    .map(({ id }) => {
+      const lanes = distributeTimelineLanes(
+        items.filter(({ itemType, parentId }) => itemType === 'task' && parentId === id),
+      );
+
+      return lanes.length > 0
+        ? { parentId: id, lanes: lanes.map((lane) => lane.map(({ id: itemId }) => itemId)) }
+        : null;
+    })
+    .filter(Boolean);
+
+  return {
+    primaryItems: items
+      .filter(
+        ({ itemType, parentId }) => itemType === 'summary' || !parentId || !parentIds.has(parentId),
+      )
+      .sort(compareMilestones),
+    childGroups,
+  };
 };
 
 export const getSimpleTimelineDays = (range) => {
