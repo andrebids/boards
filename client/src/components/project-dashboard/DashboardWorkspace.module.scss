@@ -1,0 +1,79 @@
+:global(#app) {
+  .workspace,
+  .accessDenied {
+    background: var(--app-dark-canvas);
+    color: var(--app-dark-text);
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .workspace {
+    overflow: auto;
+    padding: 12px;
+  }
+
+  .toolbar {
+    align-items: center;
+    display: flex;
+    min-height: 42px;
+    padding: 0 8px 8px;
+
+    h1 {
+      font-size: 15px;
+      margin: 0;
+    }
+
+    p {
+      color: var(--app-dark-text-muted);
+      font-size: 12px;
+      margin: 2px 0 0;
+    }
+  }
+
+  .grid {
+    min-height: 620px;
+  }
+
+  .widget {
+    align-items: center;
+    background: var(--app-dark-surface);
+    border: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+
+    span {
+      color: var(--app-dark-text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+  }
+
+  .tvMode {
+    padding: 0;
+
+    .grid {
+      min-height: 100%;
+    }
+  }
+
+  .accessDenied {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+
+    h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    p {
+      color: var(--app-dark-text-muted);
+      margin: 8px 0 0;
+    }
+  }
+}

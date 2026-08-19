@@ -4,6 +4,7 @@
  */
 
 const ROOT = '/';
+const DASHBOARD = '/dashboard';
 const LOGIN = '/login';
 const FORGOT_PASSWORD = '/forgot-password';
 const RESET_PASSWORD = '/reset-password';
@@ -15,6 +16,7 @@ const CARDS = '/cards/:id';
 
 export default {
   ROOT,
+  DASHBOARD,
   LOGIN,
   FORGOT_PASSWORD,
   RESET_PASSWORD,
