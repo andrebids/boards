@@ -1,27 +1,40 @@
 :global(#app) {
   .root {
     background: var(--app-dark-canvas);
+    display: flex;
     flex: 1 1 auto;
+    height: 100%;
     min-height: 0;
     overflow: hidden;
+    width: 100%;
   }
 
   .scrollArea {
     background: var(--app-dark-canvas);
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
     height: 100%;
-    min-height: 420px;
-    overflow: auto;
-    scrollbar-color: color-mix(in oklab, var(--app-dark-text-muted) 40%, transparent) transparent;
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
   }
 
   .timeline {
     box-sizing: border-box;
-    min-height: 100%;
-    padding: 28px 0 32px;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: 16px 0 12px;
+    width: 100%;
   }
 
   .heading {
-    padding: 0 34px 20px;
+    flex: 0 0 auto;
+    padding: 0 40px 10px;
 
     h2 {
       color: var(--app-dark-text);
@@ -35,12 +48,14 @@
     p {
       color: var(--app-dark-text-muted);
       font-size: 13px;
-      margin: 5px 0 0;
+      margin: 4px 0 0;
     }
   }
 
   .canvas {
     background: var(--app-dark-canvas);
+    flex: 1 1 auto;
+    min-height: 0;
     min-width: 100%;
     position: relative;
   }
@@ -51,162 +66,315 @@
     overflow: visible;
     pointer-events: none;
     position: absolute;
+    z-index: 2; /* connectors */
+  }
+  
+  .weekGrid {
+    z-index: 0;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    overflow: visible;
   }
 
   .tick {
     line {
-      stroke: color-mix(in oklab, var(--app-dark-text) 4%, transparent);
+      stroke: color-mix(in oklab, var(--app-dark-text) 5%, transparent);
       stroke-width: 1;
     }
   }
 
-  .todayGuide {
-    line {
-      stroke: color-mix(in oklab, var(--app-accent) 45%, transparent);
-      stroke-dasharray: 3 4;
-      stroke-width: 1;
-    }
+  .todayLine {
+    position: absolute;
+    width: 1px;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 111, 238, 0.45) 0 4px,
+      transparent 4px 8px
+    );
+    z-index: 1;
+    transform: translateX(-50%);
+    pointer-events: none;
   }
 
-  .axis {
-    stroke: color-mix(in oklab, var(--app-dark-text-muted) 56%, var(--app-dark-surface));
-    stroke-linecap: round;
-    stroke-width: 5;
+  .timelineTrack {
+    position: absolute;
+    height: 7px;
+    border-radius: 999px;
+    background: #343842;
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.25);
+    z-index: 3;
+    transform: translateY(-50%);
   }
 
-  .axisProgress {
-    filter: drop-shadow(0 0 6px color-mix(in oklab, var(--app-accent) 35%, transparent));
-    stroke-linecap: round;
-    stroke-width: 5;
+  .timelineProgress {
+    position: absolute;
+    height: 7px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      #9353d3,
+      #006fee
+    );
+    box-shadow: 0 0 14px rgba(0, 111, 238, 0.25);
+    z-index: 4;
+    transform: translateY(-50%);
   }
 
   .axisTick {
-    circle {
-      fill: color-mix(in oklab, var(--app-dark-text-muted) 70%, var(--app-dark-surface));
-      stroke: var(--app-dark-canvas);
-      stroke-width: 2;
-    }
-
-    text {
-      fill: var(--app-dark-text-muted);
-      font-size: 10px;
-      font-weight: 600;
-      text-anchor: middle;
-    }
+    position: absolute;
+    z-index: 4;
+    transform: translate(-50%, -50%);
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--app-dark-text-muted) 70%, var(--app-dark-surface));
+    border: 2px solid var(--app-dark-canvas);
   }
 
-  .startNode,
-  .endNode,
-  .milestoneNode,
-  .todayNode {
-    circle {
-      fill: var(--app-dark-surface);
-      stroke: var(--app-dark-canvas);
-      stroke-width: 2;
-    }
-
-    text {
-      fill: var(--app-dark-text-muted);
-      font-size: 10px;
-      font-weight: 650;
-      text-anchor: middle;
-    }
+  .axisTickLabel {
+    position: absolute;
+    z-index: 4;
+    transform: translate(-50%, -28px);
+    color: var(--app-dark-text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
   }
 
-  .startNode circle {
-    fill: var(--app-dark-text-muted);
+  .startNode {
+    position: absolute;
+    z-index: 4;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--app-dark-text-muted);
+    border: 2px solid var(--app-dark-canvas);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .startNodeLabel {
+    position: absolute;
+    top: 24px;
+    color: var(--app-dark-text-muted);
+    font-size: 11px;
+    font-weight: 650;
+    white-space: nowrap;
   }
 
   .endNode {
-    circle {
-      fill: color-mix(in oklab, var(--app-dark-surface) 66%, var(--app-dark-text-muted));
-      stroke: color-mix(in oklab, var(--app-dark-text-muted) 75%, var(--app-dark-canvas));
-    }
-
-    path {
-      fill: none;
-      stroke: var(--app-dark-text);
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-width: 1.8;
-    }
+    position: absolute;
+    z-index: 4;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--app-dark-surface) 66%, var(--app-dark-text-muted));
+    border: 2px solid color-mix(in oklab, var(--app-dark-text-muted) 75%, var(--app-dark-canvas));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .endNodeLabel {
+    position: absolute;
+    top: 24px;
+    color: var(--app-dark-text-muted);
+    font-size: 11px;
+    font-weight: 650;
+    white-space: nowrap;
   }
 
   .milestoneNode {
-    circle {
-      fill: color-mix(in oklab, var(--app-dark-surface) 72%, var(--app-accent));
-      stroke: color-mix(in oklab, var(--app-accent) 72%, var(--app-dark-text));
-      stroke-width: 2;
-    }
-
-    .milestoneNodeInner {
-      fill: var(--app-dark-text);
-      stroke: none;
-    }
+    position: absolute;
+    z-index: 5;
+    transform: translate(-50%, -50%);
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--app-dark-surface) 72%, var(--app-accent));
+    border: 2px solid color-mix(in oklab, var(--app-accent) 72%, var(--app-dark-text));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .milestoneNodeInner {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--app-dark-text);
   }
 
-  .todayNode {
-    circle {
-      fill: color-mix(in oklab, var(--app-dark-surface) 70%, var(--app-accent));
-      stroke: var(--app-accent);
-      stroke-width: 2.5;
-    }
+  .todayDot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #006fee;
+    border: 2px solid #18181b;
+    z-index: 5;
+    transform: translate(-50%, -50%);
+  }
 
-    .todayNodeInner {
-      fill: var(--app-dark-text);
-      stroke: none;
-    }
+  .todayLabel {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    margin-top: -14px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    color: #60a5fa;
+    background: rgba(0, 111, 238, 0.16);
+    border: 1px solid rgba(0, 111, 238, 0.3);
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 5;
+  }
 
-    text {
-      fill: var(--app-accent);
-      font-weight: 750;
-    }
+  .deliveryMarkerWrapper {
+    position: absolute;
+    z-index: 8;
+  }
+
+  .deliveryMarker {
+    width: 36px;
+    height: 36px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    border-radius: 9px;
+    background: #9353d3;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 20px rgba(147, 83, 211, 0.4);
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .deliveryMarker.completed {
+    background: #17c964;
+    box-shadow: 0 0 20px rgba(23, 201, 100, 0.4);
+  }
+  .deliveryMarker.inProgress {
+    background: #006fee;
+    box-shadow: 0 0 20px rgba(0, 111, 238, 0.4);
+  }
+  .deliveryMarker.overdue {
+    background: #f31260;
+    box-shadow: 0 0 20px rgba(243, 18, 96, 0.4);
+  }
+
+  .deliveryMarkerIcon {
+    transform: rotate(-45deg);
+    color: #fff;
+    font-size: 16px;
+    display: flex;
+  }
+
+  .deliveryLabelWrapper {
+    position: absolute;
+    left: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .deliveryLine {
+    width: 1px;
+    background: color-mix(in oklab, var(--app-dark-text-muted) 35%, transparent);
+  }
+
+  .deliveryLabel {
+    background: var(--app-dark-surface);
+    border: 1px solid color-mix(in oklab, var(--app-dark-text-muted) 35%, transparent);
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    margin: 4px 0;
+  }
+
+  .deliveryLabelBadge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+  .deliveryLabelBadge.completed { color: #17c964; }
+  .deliveryLabelBadge.inProgress { color: #006fee; }
+  .deliveryLabelBadge.overdue { color: #f31260; }
+  .deliveryLabelBadge.planned { color: #9353d3; }
+
+  .deliveryLabelTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--app-dark-text);
+    white-space: nowrap;
+    margin-bottom: 2px;
+    letter-spacing: -0.01em;
+  }
+
+  .deliveryLabelDate {
+    font-size: 11px;
+    color: var(--app-dark-text-muted);
   }
 
   .connector {
-    stroke: color-mix(in oklab, var(--gantt-status-color) 30%, transparent);
+    stroke: color-mix(in oklab, var(--gantt-status-color) 15%, transparent);
     stroke-width: 1;
+    stroke-dasharray: 2 3;
   }
 
   .duration {
     stroke: var(--gantt-status-color);
     stroke-linecap: round;
-    stroke-width: 2;
-  }
-
-  .taskStart {
-    fill: var(--app-dark-canvas);
-    stroke: var(--gantt-status-color);
-    stroke-width: 2;
-  }
-
-  .taskEnd {
-    fill: var(--gantt-status-color);
-    stroke: var(--app-dark-canvas);
-    stroke-width: 1.5;
+    stroke-width: 8;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
   }
 
   .groupLabel {
-    color: var(--app-dark-text-muted);
-    font-size: 10px;
+    color: var(--app-dark-text);
+    font-size: 12px;
     font-weight: 750;
     letter-spacing: 0.08em;
-    max-width: 200px;
+    max-width: 280px;
     overflow: hidden;
     pointer-events: none;
     position: absolute;
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
+    z-index: 6;
+    padding: 4px 10px;
+    background: color-mix(in oklab, var(--app-dark-surface) 85%, transparent);
+    border: 1px solid color-mix(in oklab, var(--app-dark-text-muted) 25%, transparent);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 
     &::before {
       background: var(--app-accent);
       border-radius: 999px;
       content: '';
       display: inline-block;
-      height: 5px;
-      margin: 0 7px 1px 0;
-      width: 5px;
+      height: 6px;
+      margin-right: 7px;
+      width: 6px;
+      flex-shrink: 0;
     }
 
     &.bottom::before {
@@ -221,11 +389,13 @@
     cursor: pointer;
     font: inherit;
     overflow: hidden;
-    padding: 0 5px;
+    padding: 0 4px;
     position: absolute;
     text-align: left;
     text-overflow: ellipsis;
+    transform: translateX(-50%);
     white-space: nowrap;
+    z-index: 6;
 
     strong,
     small {
@@ -235,22 +405,23 @@
     }
 
     strong {
-      font-size: 12px;
-      font-weight: 650;
-      line-height: 1.25;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: var(--app-dark-text);
     }
 
     small {
-      color: var(--app-dark-text-muted);
-      font-size: 10px;
-      line-height: 1.3;
-      margin-top: 2px;
+      color: color-mix(in oklab, var(--app-dark-text-muted) 85%, var(--app-dark-text));
+      font-size: 11px;
+      line-height: 1.35;
+      margin-top: 1px;
     }
 
     &:hover {
-      color: var(--gantt-status-color);
-
       strong {
+        color: var(--gantt-status-color);
         text-decoration: underline;
         text-decoration-thickness: 1px;
         text-underline-offset: 3px;

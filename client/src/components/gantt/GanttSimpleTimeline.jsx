@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { Icon } from 'semantic-ui-react';
 
 import { GANTT_STATUS_COLORS } from '../../constants/GanttColors';
 import {
@@ -38,7 +39,7 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect, zoomLevel }) => {
   const [t, i18n] = useTranslation();
   const scrollAreaRef = useRef(null);
   const hasCenteredRef = useRef(false);
-  const [viewportWidth, setViewportWidth] = useState(0);
+  const [viewportDimensions, setViewportDimensions] = useState({ width: 0, height: 0 });
   const locale = i18n.resolvedLanguage || i18n.language;
   const range = useMemo(() => getSimpleTimelineRange(items), [items]);
   const today = formatGanttDate(new Date());
@@ -46,10 +47,11 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect, zoomLevel }) => {
     () =>
       getSimpleTimelineLayout(items, {
         pixelsPerDay: PIXELS_PER_DAY_BY_ZOOM[zoomLevel],
-        viewportWidth,
+        viewportWidth: viewportDimensions.width,
+        viewportHeight: viewportDimensions.height,
         today,
       }),
-    [items, today, viewportWidth, zoomLevel],
+    [items, today, viewportDimensions, zoomLevel],
   );
 
   useLayoutEffect(() => {
@@ -58,9 +60,14 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect, zoomLevel }) => {
       return undefined;
     }
 
-    const updateViewportWidth = () => setViewportWidth(element.clientWidth);
-    updateViewportWidth();
-    const observer = new ResizeObserver(updateViewportWidth);
+    const updateDimensions = () => {
+      setViewportDimensions({
+        width: element.clientWidth,
+        height: element.clientHeight,
+      });
+    };
+    updateDimensions();
+    const observer = new ResizeObserver(updateDimensions);
     observer.observe(element);
 
     return () => observer.disconnect();
@@ -92,18 +99,25 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect, zoomLevel }) => {
     day: 'numeric',
     month: 'short',
   });
+  
+  const deliveryItems = items.filter(
+    ({ itemType, startDate }) =>
+      itemType === 'delivery' && startDate >= layout.timelineStart && startDate <= layout.timelineEnd,
+  );
+  
   const milestoneItems = items.filter(
-    ({ isMilestone, startDate }) =>
-      isMilestone && startDate >= layout.timelineStart && startDate <= layout.timelineEnd,
+    ({ isMilestone, itemType, startDate }) =>
+      isMilestone && itemType !== 'delivery' && startDate >= layout.timelineStart && startDate <= layout.timelineEnd,
   );
   const progressEndX = layout.todayX || layout.dateToX(layout.timelineStart);
+  
   const getItemLabel = (item) => {
     const status = getEffectiveGanttStatus(item);
     const statusKey = getGanttStatusTranslationKey(status);
 
     return `${item.task}. ${statusKey ? t(statusKey) : t('common.ganttStatus')}. ${dateFormatter.format(
-      parseGanttDate(item.startDate),
-    )} – ${dateFormatter.format(parseGanttDate(item.endDate))}`;
+      parseGanttDate(item.endDate),
+    )}`;
   };
 
   return (
@@ -122,133 +136,146 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect, zoomLevel }) => {
           </header>
 
           <div className={styles.canvas} style={{ height: `${layout.canvasHeight}px` }}>
+            {/* SVG Elements at the bottom: Week grid and connections */}
             <svg
               className={styles.diagram}
               width={layout.contentWidth}
               height={layout.canvasHeight}
               aria-hidden="true"
             >
-              <defs>
-                <linearGradient id="gantt-timeline-progress" x1="0" x2="1" y1="0" y2="0">
-                  <stop offset="0%" stopColor="oklch(0.63 0.18 305)" />
-                  <stop offset="100%" stopColor="var(--app-accent)" />
-                </linearGradient>
-              </defs>
               {layout.ticks.map((tick) => (
                 <g className={styles.tick} key={tick.date} transform={`translate(${tick.x} 0)`}>
                   <line y1="0" y2={layout.canvasHeight} />
                 </g>
               ))}
-              {layout.todayX && (
-                <g className={styles.todayGuide} transform={`translate(${layout.todayX} 0)`}>
-                  <line y1="0" y2={layout.canvasHeight} />
-                </g>
-              )}
+              
               {layout.groups.flatMap((group) =>
                 group.lanes.flatMap((lane) =>
                   lane.map((task) => {
                     const status = getEffectiveGanttStatus(task);
                     const color = GANTT_STATUS_COLORS[status];
+                    const deliveryX = layout.dateToX(task.endDate);
+                    const showsDeliveryConnector = task.itemType === 'task';
 
                     return (
                       <g key={task.id} style={{ '--gantt-status-color': color }}>
-                        <line
-                          className={styles.connector}
-                          x1={task.startX}
-                          x2={task.startX}
-                          y1={layout.axisY}
-                          y2={task.y}
-                        />
-                        <line
-                          className={styles.duration}
-                          x1={task.startX}
-                          x2={task.endX}
-                          y1={task.y}
-                          y2={task.y}
-                        />
-                        <circle className={styles.taskStart} cx={task.startX} cy={task.y} r="3" />
-                        <circle className={styles.taskEnd} cx={task.endX} cy={task.y} r="4" />
+                        {showsDeliveryConnector && (
+                          <line
+                            className={styles.connector}
+                            x1={deliveryX}
+                            x2={deliveryX}
+                            y1={layout.axisY}
+                            y2={task.y}
+                          />
+                        )}
                       </g>
                     );
                   }),
                 ),
               )}
-              <line
-                className={styles.axis}
-                x1={layout.horizontalPadding}
-                x2={layout.contentWidth - layout.horizontalPadding}
-                y1={layout.axisY}
-                y2={layout.axisY}
-              />
-              <line
-                className={styles.axisProgress}
-                x1={layout.horizontalPadding}
-                x2={progressEndX}
-                y1={layout.axisY}
-                y2={layout.axisY}
-                stroke="url(#gantt-timeline-progress)"
-              />
-              {layout.ticks.map((tick) => (
-                <g
-                  className={styles.axisTick}
-                  key={`axis-${tick.date}`}
-                  transform={`translate(${tick.x} ${layout.axisY})`}
-                >
-                  <circle r="3" />
-                  <text x="0" y="-14">
-                    {tickFormatter.format(parseGanttDate(tick.date))}
-                  </text>
-                </g>
-              ))}
-              <g
-                className={styles.startNode}
-                transform={`translate(${layout.dateToX(layout.timelineStart)} ${layout.axisY})`}
-              >
-                <circle r="9" />
-                <text x="0" y="27">
-                  {t('common.ganttStart')}
-                </text>
-              </g>
-              {milestoneItems.map((item) => (
-                <g
-                  className={styles.milestoneNode}
-                  key={`milestone-${item.id}`}
-                  transform={`translate(${layout.dateToX(item.startDate)} ${layout.axisY})`}
-                >
-                  <circle r="19" />
-                  <circle className={styles.milestoneNodeInner} r="4" />
-                </g>
-              ))}
-              {layout.todayX && (
-                <g
-                  className={styles.todayNode}
-                  transform={`translate(${layout.todayX} ${layout.axisY})`}
-                >
-                  <circle r="25" />
-                  <circle className={styles.todayNodeInner} r="8" />
-                  <text x="0" y="43">
-                    {t('common.ganttToday')}
-                  </text>
-                </g>
-              )}
-              <g
-                className={styles.endNode}
-                transform={`translate(${layout.dateToX(layout.timelineEnd)} ${layout.axisY})`}
-              >
-                <circle r="20" />
-                <path d="M-5 -9v18M-4 -8h10l-3 5 3 5H-4" />
-                <text x="0" y="38">
-                  {t('common.ganttEnd')}
-                </text>
-              </g>
             </svg>
 
+            {/* HTML Timeline Track */}
+            <div 
+              className={styles.timelineTrack} 
+              style={{ left: layout.horizontalPadding, width: layout.contentWidth - layout.horizontalPadding * 2, top: layout.axisY }}
+            />
+            
+            <div 
+              className={styles.timelineProgress} 
+              style={{ left: layout.horizontalPadding, width: progressEndX - layout.horizontalPadding, top: layout.axisY }}
+            />
+
+            {/* Axis Ticks and Labels on top of track */}
+            {layout.ticks.map((tick) => (
+              <React.Fragment key={`axis-${tick.date}`}>
+                <div className={styles.axisTick} style={{ left: tick.x, top: layout.axisY }} />
+                <div className={styles.axisTickLabel} style={{ left: tick.x, top: layout.axisY }}>
+                  {tickFormatter.format(parseGanttDate(tick.date))}
+                </div>
+              </React.Fragment>
+            ))}
+
+            {/* Start Node */}
+            <div className={styles.startNode} style={{ left: layout.dateToX(layout.timelineStart), top: layout.axisY }}>
+              <div className={styles.startNodeLabel}>{t('common.ganttStart')}</div>
+            </div>
+            
+            {/* End Node */}
+            <div className={styles.endNode} style={{ left: layout.dateToX(layout.timelineEnd), top: layout.axisY }}>
+              <div className={styles.endNodeLabel}>{t('common.ganttEnd') || 'Fim do projeto'}</div>
+            </div>
+
+            {/* Today Line and Dot */}
+            {layout.todayX && (
+              <>
+                <div className={styles.todayLine} style={{ left: layout.todayX, top: 0, height: layout.canvasHeight }} />
+                <div className={styles.todayDot} style={{ left: layout.todayX, top: layout.axisY }} />
+                <div className={styles.todayLabel} style={{ left: layout.todayX, top: layout.axisY }}>
+                  {t('common.ganttToday')}
+                </div>
+              </>
+            )}
+
+            {/* Milestones */}
+            {milestoneItems.map((item) => (
+              <div 
+                className={styles.milestoneNode} 
+                key={`milestone-${item.id}`}
+                style={{ left: layout.dateToX(item.startDate), top: layout.axisY }}
+              >
+                <div className={styles.milestoneNodeInner} />
+              </div>
+            ))}
+
+            {/* Deliveries */}
+            {deliveryItems.map((item, idx) => {
+              const x = layout.dateToX(item.startDate);
+              const status = getEffectiveGanttStatus(item);
+              const isTop = idx % 2 === 0;
+              
+              let iconName = 'box';
+              if (status === 'completed') iconName = 'check';
+              else if (status === 'overdue') iconName = 'warning sign';
+              else if (status === 'inProgress') iconName = 'clock outline';
+
+              return (
+                <div 
+                  className={styles.deliveryMarkerWrapper} 
+                  key={`delivery-${item.id}`}
+                  style={{ left: x, top: layout.axisY }}
+                  onClick={() => onItemSelect(item.id)}
+                >
+                  <div className={styles.deliveryLabelWrapper} style={{ [isTop ? 'bottom' : 'top']: 24 }}>
+                    {!isTop && <div className={styles.deliveryLine} style={{ height: 16 }} />}
+                    <div className={styles.deliveryLabel}>
+                      <span className={`${styles.deliveryLabelBadge} ${styles[status] || ''}`.trim()}>
+                        ENTREGA
+                      </span>
+                      <span className={styles.deliveryLabelTitle}>{item.task}</span>
+                      <span className={styles.deliveryLabelDate}>
+                        {dateFormatter.format(parseGanttDate(item.startDate))}
+                      </span>
+                    </div>
+                    {isTop && <div className={styles.deliveryLine} style={{ height: 16 }} />}
+                  </div>
+                  
+                  <div className={`${styles.deliveryMarker} ${styles[status] || ''}`.trim()}>
+                    <div className={styles.deliveryMarkerIcon}>
+                      <Icon fitted name={iconName} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Task Labels and Groups */}
             {layout.groups.map((group) => {
               const firstTask = group.lanes[0]?.[0];
               const groupY =
                 group.side === 'top'
-                  ? Math.max(28, layout.axisY - 80 - (group.lanes.length - 1) * 72 - 34)
-                  : layout.axisY + 80 + (group.lanes.length - 1) * 72 + 18;
+                  ? Math.max(10, layout.axisY - layout.axisClearance - (group.lanes.length - 1) * layout.laneSpacing - 44)
+                  : Math.min(layout.canvasHeight - 32, layout.axisY + layout.axisClearance + (group.lanes.length - 1) * layout.laneSpacing + 36);
 
               return (
                 <React.Fragment key={group.id}>
@@ -275,7 +302,7 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect, zoomLevel }) => {
                           key={task.id}
                           style={{
                             '--gantt-status-color': GANTT_STATUS_COLORS[status],
-                            left: `${task.startX}px`,
+                            left: `${layout.dateToX(task.endDate)}px`,
                             maxWidth: `${task.labelWidth}px`,
                             top: `${labelTop}px`,
                           }}
@@ -285,10 +312,7 @@ const GanttSimpleTimeline = React.memo(({ items, onItemSelect, zoomLevel }) => {
                           title={task.task}
                         >
                           <strong>{task.task}</strong>
-                          <small>
-                            {dateFormatter.format(parseGanttDate(task.startDate))} —{' '}
-                            {dateFormatter.format(parseGanttDate(task.endDate))}
-                          </small>
+                          <small>{dateFormatter.format(parseGanttDate(task.endDate))}</small>
                         </button>
                       );
                     }),

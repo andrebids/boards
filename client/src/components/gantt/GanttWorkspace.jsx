@@ -402,9 +402,6 @@ const GanttWorkspace = React.memo(() => {
             item={selectedItem}
             users={users}
             generalItems={generalItems}
-            dependencyItems={items.filter(
-              ({ id, itemType }) => itemType === 'task' && id !== selectedItem?.id,
-            )}
             predecessorIds={links
               .filter(({ targetItemId }) => targetItemId === selectedItem?.id)
               .map(({ sourceItemId }) => sourceItemId)}

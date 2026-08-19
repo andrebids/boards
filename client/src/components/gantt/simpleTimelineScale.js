@@ -84,7 +84,7 @@ export const groupSimpleTimelineItems = (items) => {
     };
   });
   const independentItems = items
-    .filter(({ itemType, id }) => itemType !== 'summary' && !groupedItemIds.has(id))
+    .filter(({ itemType, id }) => itemType !== 'summary' && itemType !== 'delivery' && !groupedItemIds.has(id))
     .sort(compareByStartDate);
 
   if (independentItems.length > 0) {
@@ -171,9 +171,9 @@ export const getSimpleTimelineDays = (range) => {
 const DEFAULT_HORIZONTAL_PADDING = 80;
 const DEFAULT_PIXELS_PER_DAY = 40;
 const LANE_GAP = 24;
-const LANE_SPACING = 72;
-const AXIS_CLEARANCE = 80;
-const CANVAS_PADDING = 56;
+const LANE_SPACING = 76;
+const AXIS_CLEARANCE = 84;
+const CANVAS_PADDING = 84;
 
 const getEstimatedLabelWidth = ({ task = '' }) =>
   Math.min(220, Math.max(112, task.length * 7.4 + 26));
@@ -230,7 +230,7 @@ const getTimelineGroups = (items) => {
   const groupsById = new Map();
 
   scheduledItems
-    .filter(({ itemType }) => itemType !== 'summary')
+    .filter(({ itemType }) => itemType !== 'summary' && itemType !== 'delivery')
     .forEach((item) => {
       const parent = summariesById.get(item.parentId);
       const id = parent ? `summary-${parent.id}` : `loose-${item.project || 'tasks'}`;
@@ -251,6 +251,7 @@ export const getSimpleTimelineLayout = (
     pixelsPerDay = DEFAULT_PIXELS_PER_DAY,
     horizontalPadding = DEFAULT_HORIZONTAL_PADDING,
     viewportWidth = 0,
+    viewportHeight = 0,
     today = formatGanttDate(new Date()),
   } = {},
 ) => {
@@ -261,14 +262,21 @@ export const getSimpleTimelineLayout = (
 
   const timelineStart = addGanttDays(range.startDate, -2);
   const timelineEnd = addGanttDays(range.endDate, 2);
-  const totalDays = differenceInGanttDays(timelineStart, timelineEnd);
+  const totalDays = Math.max(1, differenceInGanttDays(timelineStart, timelineEnd));
+  const availableWidth = viewportWidth > horizontalPadding * 2 ? viewportWidth - horizontalPadding * 2 : 0;
+  const effectivePixelsPerDay =
+    availableWidth > 0 ? Math.max(14, availableWidth / totalDays) : pixelsPerDay;
+
   const dateToX = (date) =>
-    horizontalPadding + differenceInGanttDays(timelineStart, date) * pixelsPerDay;
-  const contentWidth = Math.max(viewportWidth, totalDays * pixelsPerDay + horizontalPadding * 2);
+    horizontalPadding + differenceInGanttDays(timelineStart, date) * effectivePixelsPerDay;
+  const contentWidth = Math.max(
+    viewportWidth,
+    totalDays * effectivePixelsPerDay + horizontalPadding * 2,
+  );
   const groups = getTimelineGroups(items).map((group, groupIndex) => ({
     ...group,
     side: groupIndex % 2 === 0 ? 'top' : 'bottom',
-    lanes: distributePixelLanes(group.items, dateToX, pixelsPerDay),
+    lanes: distributePixelLanes(group.items, dateToX, effectivePixelsPerDay),
   }));
   const topLaneCount = Math.max(
     0,
@@ -278,12 +286,29 @@ export const getSimpleTimelineLayout = (
     0,
     ...groups.filter(({ side }) => side === 'bottom').map(({ lanes }) => lanes.length),
   );
-  // Keep the project axis physically central even when one side has more task lanes.
-  const sideLaneCount = Math.max(topLaneCount, bottomLaneCount);
-  const axisY = CANVAS_PADDING + sideLaneCount * LANE_SPACING + AXIS_CLEARANCE;
-  const canvasHeight = axisY * 2;
+  const sideLaneCount = Math.max(1, topLaneCount, bottomLaneCount);
+
+  const headerOffset = 64;
+  const availableCanvasHeight = viewportHeight > headerOffset + 60 ? viewportHeight - headerOffset - 24 : 0;
+
+  let laneSpacing = LANE_SPACING;
+  let axisClearance = AXIS_CLEARANCE;
+  let canvasHeight;
+  let axisY;
+
+  if (availableCanvasHeight > 220) {
+    canvasHeight = availableCanvasHeight;
+    axisY = canvasHeight / 2;
+    const halfHeight = axisY;
+    laneSpacing = Math.max(46, Math.min(76, (halfHeight - 70) / Math.max(1, sideLaneCount)));
+    axisClearance = Math.max(50, Math.min(76, halfHeight - (sideLaneCount - 1) * laneSpacing - 44));
+  } else {
+    axisY = CANVAS_PADDING + sideLaneCount * LANE_SPACING + AXIS_CLEARANCE;
+    canvasHeight = axisY * 2;
+  }
 
   return {
+    axisClearance,
     axisY,
     canvasHeight,
     contentWidth,
@@ -295,13 +320,14 @@ export const getSimpleTimelineLayout = (
           ...task,
           y:
             group.side === 'top'
-              ? axisY - AXIS_CLEARANCE - laneIndex * LANE_SPACING
-              : axisY + AXIS_CLEARANCE + laneIndex * LANE_SPACING,
+              ? axisY - axisClearance - laneIndex * laneSpacing
+              : axisY + axisClearance + laneIndex * laneSpacing,
         })),
       ),
     })),
     horizontalPadding,
-    pixelsPerDay,
+    laneSpacing,
+    pixelsPerDay: effectivePixelsPerDay,
     ticks: getWeekTicks(timelineStart, timelineEnd, dateToX),
     timelineEnd,
     timelineStart,

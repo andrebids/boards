@@ -34,6 +34,6 @@ export const selectTimelineData = (items, links = []) => {
       ({ sourceItemId, targetItemId }) =>
         timelineItemIds.has(sourceItemId) && timelineItemIds.has(targetItemId),
     ),
-    unscheduledItems: items.filter(({ itemType, startDate }) => itemType === 'task' && !startDate),
+    unscheduledItems: items.filter(({ itemType, startDate }) => (itemType === 'task' || itemType === 'delivery') && !startDate),
   };
 };

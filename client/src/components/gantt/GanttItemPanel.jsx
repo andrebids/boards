@@ -40,7 +40,6 @@ const GanttItemPanel = React.memo(
     item,
     users,
     generalItems,
-    dependencyItems,
     predecessorIds,
     initialParentId,
     childCount,
@@ -100,10 +99,6 @@ const GanttItemPanel = React.memo(
       () => generalItems.map(({ id, task }) => ({ key: id, value: id, text: task })),
       [generalItems],
     );
-    const dependencyOptions = useMemo(
-      () => dependencyItems.map(({ id, task }) => ({ key: id, value: id, text: task })),
-      [dependencyItems],
-    );
     const handleFieldChange = useCallback((event) => {
       const { name, value } = event.currentTarget;
       setData((current) => ({ ...current, [name]: value }));
@@ -135,10 +130,6 @@ const GanttItemPanel = React.memo(
 
     const handleParentChange = useCallback((_, { value }) => {
       setData((current) => ({ ...current, parentId: value || '' }));
-    }, []);
-
-    const handleDependenciesChange = useCallback((_, { value }) => {
-      setData((current) => ({ ...current, predecessorIds: value }));
     }, []);
 
     const handleStartChange = useCallback((event) => {
@@ -223,15 +214,15 @@ const GanttItemPanel = React.memo(
           const payload = {
             task: data.task.trim(),
             itemType: data.itemType,
-            parentId: data.itemType === 'task' ? data.parentId || null : null,
+            parentId: data.itemType !== 'summary' ? data.parentId || null : null,
             assigneeUserIds: data.assigneeUserIds,
             status: data.status.trim() || null,
-            predecessorIds: data.itemType === 'task' ? data.predecessorIds : [],
+            predecessorIds: data.itemType !== 'summary' ? data.predecessorIds : [],
             expectedDurationDays: Number(data.expectedDurationDays),
             startDate:
-              data.itemType === 'task' && timeMode === 'schedule' ? data.startDate || null : null,
+              data.itemType !== 'summary' && timeMode === 'schedule' ? data.startDate || null : null,
             endDate:
-              data.itemType === 'task' && timeMode === 'schedule' ? data.endDate || null : null,
+              data.itemType !== 'summary' && timeMode === 'schedule' ? data.endDate || null : null,
             ...(item && { version: item.version }),
           };
           if (isLinked) {
@@ -621,25 +612,6 @@ const GanttItemPanel = React.memo(
             </button>
           )}
 
-          {!isSummary && item && (
-            <div className={styles.field}>
-              <span id="gantt-task-dependencies-label">{t('common.ganttDependsOn')}</span>
-              <Dropdown
-                fluid
-                multiple
-                search
-                selection
-                placeholder={t('common.ganttSelectDependencies')}
-                value={data.predecessorIds}
-                options={dependencyOptions}
-                noResultsMessage={t('common.ganttNoDependenciesFound')}
-                aria-labelledby="gantt-task-dependencies-label"
-                onChange={handleDependenciesChange}
-              />
-              <small>{t('common.ganttDependenciesHint')}</small>
-            </div>
-          )}
-
           {error && (
             <p id="gantt-item-error" className={styles.error} role="alert">
               {error}
@@ -698,7 +670,6 @@ GanttItemPanel.propTypes = {
   item: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   users: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
   generalItems: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
-  dependencyItems: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
   predecessorIds: PropTypes.arrayOf(PropTypes.string).isRequired,
   initialParentId: PropTypes.string,
   childCount: PropTypes.number.isRequired,

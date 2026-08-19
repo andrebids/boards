@@ -17,7 +17,7 @@ export const mapGanttItemsToTimelineTasks = (items, t) =>
       start: parseGanttDate(item.startDate),
       end: parseGanttDate(addGanttDays(item.endDate, 1)),
       duration: item.expectedDurationDays,
-      type: item.itemType || 'task',
+      type: item.itemType === 'summary' ? 'summary' : 'task',
       parent: item.parentId || 0,
       ...(item.itemType === 'summary' && { open: true }),
       details: item.description || '',

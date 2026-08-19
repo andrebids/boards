@@ -16,6 +16,7 @@ module.exports = {
   Types: {
     TASK: 'task',
     SUMMARY: 'summary',
+    DELIVERY: 'delivery',
   },
 
   tableName: 'gantt_item',
@@ -27,7 +28,7 @@ module.exports = {
     },
     itemType: {
       type: 'string',
-      isIn: ['task', 'summary'],
+      isIn: ['task', 'summary', 'delivery'],
       defaultsTo: 'task',
       columnName: 'item_type',
     },
