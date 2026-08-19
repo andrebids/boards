@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Dropdown, Icon, Loader } from 'semantic-ui-react';
+import { Icon, Loader } from 'semantic-ui-react';
 
 import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
@@ -179,16 +179,6 @@ const GanttWorkspace = React.memo(() => {
     [items, t, updateItem],
   );
 
-  const handleZoomOut = useCallback(() => {
-    setZoomLevel(
-      (current) => ZOOM_LEVELS[Math.min(ZOOM_LEVELS.indexOf(current) + 1, ZOOM_LEVELS.length - 1)],
-    );
-  }, []);
-
-  const handleZoomIn = useCallback(() => {
-    setZoomLevel((current) => ZOOM_LEVELS[Math.max(ZOOM_LEVELS.indexOf(current) - 1, 0)]);
-  }, []);
-
   const handleViewModeChange = useCallback((nextMode) => {
     setViewMode(nextMode);
   }, []);
@@ -267,54 +257,36 @@ const GanttWorkspace = React.memo(() => {
           role="group"
           aria-label={t('common.ganttTimelineScale')}
         >
-          <div className={styles.zoomStepper}>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              isIconOnly
-              className={styles.zoomButton}
-              onClick={handleZoomOut}
-              disabled={zoomLevel === 'quarter'}
-              aria-label={t('common.ganttZoomOut')}
-            >
-              <Icon fitted name="minus" />
-            </Button>
-            <Dropdown
-              compact
-              selection
-              value={zoomLevel}
-              options={ZOOM_LEVELS.map((level) => ({
-                key: level,
-                text: t(`common.ganttZoom_${level}`),
-                value: level,
-              }))}
-              aria-label={t('common.ganttZoomLevel')}
-              data-testid="gantt-zoom-select"
-              className={styles.zoomSelect}
-              onChange={(event, { value }) => setZoomLevel(value)}
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              isIconOnly
-              className={styles.zoomButton}
-              onClick={handleZoomIn}
-              disabled={zoomLevel === 'day'}
-              aria-label={t('common.ganttZoomIn')}
-            >
-              <Icon fitted name="plus" />
-            </Button>
+          <div className={styles.zoomSwitch} role="group" aria-label={t('common.ganttZoomLevel')}>
+            {ZOOM_LEVELS.map((level) => (
+              <Button
+                key={level}
+                type="button"
+                size="sm"
+                variant="secondary"
+                className={`${styles.zoomSwitchButton} ${
+                  zoomLevel === level ? styles.zoomSwitchButtonActive : ''
+                }`}
+                onClick={() => setZoomLevel(level)}
+                aria-pressed={zoomLevel === level}
+                data-selected={zoomLevel === level}
+                data-testid={`gantt-zoom-${level}`}
+              >
+                {t(`common.ganttZoom_${level}`)}
+              </Button>
+            ))}
           </div>
           <div className={styles.viewSwitch} role="group" aria-label={t('common.ganttTimelineScale')}>
             <Button
               type="button"
               size="sm"
               variant="secondary"
-              className={styles.viewSwitchButton}
+              className={`${styles.viewSwitchButton} ${
+                viewMode === 'timeline' ? styles.viewSwitchButtonActive : ''
+              }`}
               onClick={() => handleViewModeChange('timeline')}
               aria-pressed={viewMode === 'timeline'}
+              data-selected={viewMode === 'timeline'}
               data-testid="gantt-timeline-toggle"
             >
               {t('common.ganttSimpleTimeline')}
@@ -323,9 +295,12 @@ const GanttWorkspace = React.memo(() => {
               type="button"
               size="sm"
               variant="secondary"
-              className={styles.viewSwitchButton}
+              className={`${styles.viewSwitchButton} ${
+                viewMode === 'gantt' ? styles.viewSwitchButtonActive : ''
+              }`}
               onClick={() => handleViewModeChange('gantt')}
               aria-pressed={viewMode === 'gantt'}
+              data-selected={viewMode === 'gantt'}
               data-testid="gantt-view-toggle"
             >
               {t('common.ganttFullTimeline')}

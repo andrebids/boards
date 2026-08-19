@@ -225,6 +225,64 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
+  .timeSection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .timeHeader {
+    align-items: center;
+    color: var(--app-dark-text);
+    display: flex;
+    font-size: 12px;
+    font-weight: 700;
+    gap: 5px;
+  }
+
+  .timeTabs {
+    background: var(--app-default);
+    border: 1px solid var(--app-dark-border);
+    border-radius: var(--app-radius);
+    display: grid;
+    gap: 3px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 3px;
+  }
+
+  .timeTab,
+  .timeTabActive {
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: var(--app-dark-text-muted);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    min-height: 30px;
+    padding: 5px 8px;
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--app-focus);
+      outline: none;
+    }
+  }
+
+  .timeTab:hover {
+    color: var(--app-dark-text);
+  }
+
+  .timeTabActive {
+    background: var(--app-accent-soft);
+    color: var(--app-accent);
+  }
+
+  .durationRow {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  }
+
   .statusOption {
     align-items: center;
     display: inline-flex;
@@ -294,100 +352,48 @@
     margin-left: 4px;
   }
 
-  .durationInput {
-    align-items: stretch;
-    background: var(--app-default);
-    border: 1px solid var(--app-dark-border);
-    border-radius: var(--app-radius);
-    display: grid;
-    gap: 4px;
-    grid-template-columns: minmax(72px, 0.45fr) minmax(0, 1.55fr);
-    height: var(--gantt-control-height);
-    min-height: var(--gantt-control-height);
-    padding: 3px;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
-
-    &:focus-within {
-      border-color: var(--app-focus);
-      box-shadow: 0 0 0 3px var(--app-accent-soft);
-    }
-
-    input {
-      background: transparent;
-      border: 0;
-      border-radius: 6px;
-      color: var(--app-dark-text);
-      font-size: 14px;
-      font-variant-numeric: tabular-nums;
-      font-weight: 700;
-      line-height: 1.2;
-      min-height: 0;
-      min-width: 0;
-      padding: 0 8px;
-      text-align: center;
-    }
-
-    input:focus {
-      box-shadow: none;
-    }
-  }
-
-  .durationUnits {
-    background: transparent;
-    border-left: 1px solid var(--app-dark-border);
-    border-radius: 0;
-    display: grid;
-    gap: 2px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 0 0 0 4px;
-  }
-
-  .durationUnit {
+  .dateMeta {
     align-items: center;
+    color: var(--app-dark-text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 11px;
+    gap: 8px;
+    line-height: 1.45;
+    margin: -5px 0 0;
+  }
+
+  .dateHint {
+    align-items: center;
+    display: inline-flex;
+    gap: 4px;
+  }
+
+  .info {
+    color: var(--app-accent);
+    cursor: help;
+    display: inline-flex;
+    font-size: 13px;
+  }
+
+  .advancedToggle {
+    align-self: flex-start;
     background: transparent;
     border: 0;
-    border-radius: 5px;
-    color: var(--app-dark-text-muted);
+    color: var(--app-accent);
     cursor: pointer;
-    display: flex;
-    font-size: 11px;
-    font-weight: 700;
-    justify-content: center;
-    line-height: 1.15;
-    min-height: 28px;
-    padding: 4px 7px;
-    transition: background-color 120ms ease, color 120ms ease, transform 100ms ease;
+    font-size: 12px;
+    padding: 0;
 
     &:hover {
-      background: var(--app-dark-surface-hover);
       color: var(--app-dark-text);
+      text-decoration: underline;
     }
 
     &:focus-visible {
       box-shadow: 0 0 0 2px var(--app-focus);
       outline: none;
     }
-
-    &:active {
-      transform: scale(0.96);
-    }
-  }
-
-  .durationUnitActive {
-    background: var(--app-accent-soft);
-    box-shadow: none;
-    color: var(--app-accent);
-  }
-
-  .unscheduledHint {
-    background: var(--app-accent-soft);
-    border: 1px solid color-mix(in oklab, var(--app-accent) 30%, transparent);
-    border-radius: 8px;
-    color: var(--app-dark-text);
-    font-size: 12px;
-    line-height: 1.5;
-    margin: -3px 0 0;
-    padding: 10px 12px;
   }
 
   .error {
@@ -416,6 +422,10 @@
     }
 
     .twoColumns {
+      grid-template-columns: 1fr;
+    }
+
+    .durationRow {
       grid-template-columns: 1fr;
     }
 

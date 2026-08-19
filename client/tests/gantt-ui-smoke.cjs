@@ -243,11 +243,11 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       );
     }
 
-    const zoomSelect = page.getByTestId('gantt-zoom-select');
+    const dayZoom = page.getByTestId('gantt-zoom-day');
     /* eslint-disable no-await-in-loop */
     for (
       let attempt = 0;
-      attempt < 10 && !(await zoomSelect.innerText()).includes('Dia');
+      attempt < 10 && (await dayZoom.getAttribute('aria-pressed')) !== 'true';
       attempt += 1
     ) {
       await page.keyboard.down('Control');
@@ -256,22 +256,19 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       await page.waitForTimeout(40);
     }
     /* eslint-enable no-await-in-loop */
-    if (!(await zoomSelect.innerText()).includes('Dia')) {
-      throw new Error('The zoom dropdown did not follow Ctrl+wheel zoom');
+    if ((await dayZoom.getAttribute('aria-pressed')) !== 'true') {
+      throw new Error('The zoom selector did not follow Ctrl+wheel zoom');
     }
 
-    await zoomSelect.click();
-    const quarterOption = zoomSelect.locator('.menu .item', { hasText: 'Trimestre' });
-    await quarterOption.waitFor({ state: 'visible' });
+    const quarterZoom = page.getByTestId('gantt-zoom-quarter');
+    await quarterZoom.click();
     await page.screenshot({ path: '/tmp/gantt-zoom-dropdown.png', fullPage: true });
-    await quarterOption.click();
     await page.waitForTimeout(200);
     if (!(await page.getByRole('main').innerText()).includes('Q3')) {
       throw new Error('Quarter zoom did not render the quarterly timeline scale');
     }
 
-    await zoomSelect.click();
-    await zoomSelect.locator('.menu .item', { hasText: 'Dia', exact: true }).click();
+    await dayZoom.click();
     await page.waitForTimeout(200);
     const weekendContract = await page.locator('[data-zoom-level="day"]').evaluate((element) => {
       const cells = [...element.querySelectorAll('.wx-scale .wx-row:last-child .wx-cell')];
@@ -330,8 +327,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
       );
     }
 
-    await zoomSelect.click();
-    await zoomSelect.locator('.menu .item', { hasText: 'Semana', exact: true }).click();
+    await page.getByTestId('gantt-zoom-week').click();
 
     const timelineToggle = page.getByTestId('gantt-timeline-toggle');
     await page.getByTestId('gantt-view-toggle').click();
@@ -371,22 +367,23 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     if (await itemDialog.locator('#gantt-task-progress').count()) {
       throw new Error('The compact panel still exposes editable progress');
     }
-    if ((await itemDialog.locator('#gantt-task-status input').inputValue()) !== 'notStarted') {
-      throw new Error('The compact panel does not use the default task status');
+    if (await itemDialog.locator('#gantt-task-status').count()) {
+      throw new Error('The default task status should be hidden during creation');
     }
     if (await itemDialog.locator('#gantt-task-color').count()) {
       throw new Error('The compact panel still exposes an independent task color');
+    }
+    await itemDialog.getByRole('button', { name: 'Mostrar mais opções' }).click();
+    if ((await itemDialog.locator('#gantt-task-status input').inputValue()) !== 'notStarted') {
+      throw new Error('The compact panel does not use the default task status');
     }
     await itemDialog.locator('#gantt-task-status').click();
     await itemDialog.locator('#gantt-task-status .menu .item', { hasText: 'Em testes' }).click();
     if ((await itemDialog.locator('#gantt-task-status input').inputValue()) !== 'testing') {
       throw new Error('The compact panel does not expose the testing status');
     }
-    const durationUnits = await itemDialog
-      .locator('#gantt-task-duration-unit button')
-      .allTextContents();
-    if (durationUnits.join('|') !== 'Dias úteis|Semanas|Meses') {
-      throw new Error(`Unexpected duration units: ${durationUnits.join('|')}`);
+    if (!(await itemDialog.locator('#gantt-task-duration').count())) {
+      throw new Error('The duration estimate controls should be visible by default');
     }
     const panelLayout = await itemDialog.evaluate((element) => {
       const footer = element.querySelector('footer');

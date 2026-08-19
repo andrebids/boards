@@ -51,9 +51,9 @@ const waitForSite = async () => {
     await page.getByRole('button', { name: 'Nova tarefa' }).click();
     const dialog = page.getByRole('dialog', { name: 'Nova tarefa' });
     const dialogText = await dialog.innerText();
-    ['Tipo', 'Projeto', 'Estado', 'Duração esperada'].forEach((label) => {
-      if (!dialogText.includes(label)) {
-        throw new Error(`Missing panel field: ${label}`);
+    ['Tipo', 'Estado', 'Duração esperada'].forEach((label) => {
+      if (dialogText.includes(label)) {
+        throw new Error(`Non-essential field is visible by default: ${label}`);
       }
     });
     if (await dialog.locator('#gantt-task-color').count()) {
@@ -68,13 +68,15 @@ const waitForSite = async () => {
     if (await dialog.locator('#gantt-task-progress').count()) {
       throw new Error('The compact panel still exposes editable progress');
     }
+    await dialog.getByRole('tab', { name: 'Agendar datas' }).click();
+    await dialog.locator('#gantt-task-start').fill('2026-08-14');
+    await dialog.locator('#gantt-task-end').fill('2026-08-17');
+    if (!(await dialog.innerText()).includes('2 dias úteis')) {
+      throw new Error('The date range did not calculate business-day duration');
+    }
+    await dialog.getByRole('button', { name: 'Mostrar mais opções' }).click();
     if ((await dialog.locator('#gantt-task-status input').inputValue()) !== 'notStarted') {
       throw new Error('A new task does not use the default status');
-    }
-    await dialog.locator('#gantt-task-duration').fill('2');
-    await dialog.locator('#gantt-task-start').fill('2026-08-14');
-    if ((await dialog.locator('#gantt-task-end').inputValue()) !== '2026-08-17') {
-      throw new Error('Two business days starting on Friday did not end on Monday');
     }
     await dialog.locator('#gantt-task-type').click();
     await dialog.locator('#gantt-task-type .menu .item', { hasText: 'Projeto' }).click();

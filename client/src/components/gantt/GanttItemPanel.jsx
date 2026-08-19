@@ -13,38 +13,15 @@ import { Button } from '../../lib/custom-ui';
 import { usePopup } from '../../lib/popup';
 import { GANTT_STATUS_COLORS } from '../../constants/GanttColors';
 import GANTT_STATUSES, { getEffectiveGanttStatus } from '../../constants/GanttStatuses';
-import {
-  addGanttBusinessDays,
-  addGanttDays,
-  countGanttBusinessDays,
-  differenceInGanttDays,
-} from '../../utils/gantt-dates';
+import { countGanttBusinessDays, differenceInGanttDays } from '../../utils/gantt-dates';
 import PureBoardMembershipsStep from '../board-memberships/PureBoardMembershipsStep';
 import UserAvatar from '../users/UserAvatar';
 import Paths from '../../constants/Paths';
 
 import styles from './GanttItemPanel.module.scss';
 
-const DURATION_UNIT_DAYS = { day: 1, week: 7, month: 30 };
-const DURATION_UNITS = Object.keys(DURATION_UNIT_DAYS);
+const DURATION_UNIT_DAYS = { day: 1, week: 7 };
 const MAX_VISIBLE_ASSIGNEES = 5;
-
-const getDurationValue = ({ durationUnit, endDate, expectedDurationDays, startDate }) =>
-  durationUnit === 'day' && startDate && endDate
-    ? countGanttBusinessDays(startDate, endDate)
-    : Math.max(1, Math.ceil(expectedDurationDays / DURATION_UNIT_DAYS[durationUnit]));
-
-const calculateDuration = (startDate, durationValue, durationUnit) => {
-  const endDate =
-    durationUnit === 'day'
-      ? addGanttBusinessDays(startDate, durationValue - 1)
-      : addGanttDays(startDate, durationValue * DURATION_UNIT_DAYS[durationUnit] - 1);
-
-  return {
-    endDate,
-    expectedDurationDays: differenceInGanttDays(startDate, endDate) + 1,
-  };
-};
 
 const createInitialData = (item, initialParentId, defaultStatus) => ({
   task: item?.task || '',
@@ -53,7 +30,7 @@ const createInitialData = (item, initialParentId, defaultStatus) => ({
   assigneeUserIds: item?.assigneeUserIds || [],
   status: getEffectiveGanttStatus(item, defaultStatus),
   expectedDurationDays: item?.expectedDurationDays || 1,
-  durationUnit: 'day',
+  durationUnit: item?.durationUnit || 'day',
   startDate: item?.startDate || '',
   endDate: item?.endDate || '',
 });
@@ -83,12 +60,18 @@ const GanttItemPanel = React.memo(
     }));
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
+    const [showAdvancedOptions, setShowAdvancedOptions] = useState(Boolean(item));
+    const [timeMode, setTimeMode] = useState(
+      item?.startDate && item?.endDate ? 'schedule' : 'estimate',
+    );
     const taskInputRef = useRef(null);
     const PeoplePopup = usePopup(PureBoardMembershipsStep, { position: 'bottom right' });
 
     useEffect(() => {
       const initialData = createInitialData(item, initialParentId, defaultStatus);
       setData({ ...initialData, predecessorIds });
+      setShowAdvancedOptions(Boolean(item));
+      setTimeMode(item?.startDate && item?.endDate ? 'schedule' : 'estimate');
       setError(null);
     }, [defaultStatus, initialParentId, item, predecessorIds]);
 
@@ -161,48 +144,18 @@ const GanttItemPanel = React.memo(
     const handleStartChange = useCallback((event) => {
       const { value } = event.currentTarget;
       setData((current) => {
-        const duration = value
-          ? calculateDuration(value, getDurationValue(current), current.durationUnit)
-          : { endDate: '' };
+        if (!value) {
+          return { ...current, startDate: '', endDate: '', expectedDurationDays: 1 };
+        }
 
-        return { ...current, startDate: value, ...duration };
-      });
-    }, []);
-
-    const handleDurationChange = useCallback((event) => {
-      const durationValue = Math.max(1, Number(event.currentTarget.value) || 1);
-      setData((current) => {
-        const duration = current.startDate
-          ? calculateDuration(current.startDate, durationValue, current.durationUnit)
-          : {
-              expectedDurationDays: durationValue * DURATION_UNIT_DAYS[current.durationUnit],
-              endDate: '',
-            };
-
-        return { ...current, ...duration };
-      });
-    }, []);
-
-    const handleDurationUnitChange = useCallback((_, { value: durationUnit }) => {
-      setData((current) => {
-        const durationValue =
-          durationUnit === 'day' && current.startDate && current.endDate
-            ? countGanttBusinessDays(current.startDate, current.endDate)
-            : Math.max(
-                1,
-                Math.ceil(current.expectedDurationDays / DURATION_UNIT_DAYS[durationUnit]),
-              );
-        const duration = current.startDate
-          ? calculateDuration(current.startDate, durationValue, durationUnit)
-          : {
-              expectedDurationDays: durationValue * DURATION_UNIT_DAYS[durationUnit],
-              endDate: '',
-            };
+        if (!current.endDate || current.endDate < value) {
+          return { ...current, startDate: value, endDate: '', expectedDurationDays: 1 };
+        }
 
         return {
           ...current,
-          durationUnit,
-          ...duration,
+          startDate: value,
+          expectedDurationDays: differenceInGanttDays(value, current.endDate) + 1,
         };
       });
     }, []);
@@ -216,9 +169,36 @@ const GanttItemPanel = React.memo(
 
         const expectedDurationDays = differenceInGanttDays(current.startDate, value) + 1;
         return expectedDurationDays > 0
-          ? { ...current, endDate: value, expectedDurationDays, durationUnit: 'day' }
+          ? { ...current, endDate: value, expectedDurationDays }
           : { ...current, endDate: value };
       });
+    }, []);
+
+    const handleDurationChange = useCallback((event) => {
+      const durationValue = Math.max(1, Number(event.currentTarget.value) || 1);
+      setData((current) => ({
+        ...current,
+        expectedDurationDays: durationValue * DURATION_UNIT_DAYS[current.durationUnit],
+      }));
+    }, []);
+
+    const handleDurationUnitChange = useCallback((_, { value: durationUnit }) => {
+      setData((current) => ({
+        ...current,
+        durationUnit,
+        expectedDurationDays:
+          Math.max(1, Math.ceil(current.expectedDurationDays / DURATION_UNIT_DAYS[durationUnit])) *
+          DURATION_UNIT_DAYS[durationUnit],
+      }));
+    }, []);
+
+    const handleTimeModeChange = useCallback((nextMode) => {
+      setTimeMode(nextMode);
+      setData((current) => ({
+        ...current,
+        startDate: '',
+        endDate: '',
+      }));
     }, []);
 
     const handleSubmit = useCallback(
@@ -228,7 +208,11 @@ const GanttItemPanel = React.memo(
           setError(t('common.ganttTaskNameRequired'));
           return;
         }
-        if (data.startDate && (!data.endDate || data.endDate < data.startDate)) {
+        if (
+          timeMode === 'schedule' &&
+          data.startDate &&
+          (!data.endDate || data.endDate < data.startDate)
+        ) {
           setError(t('common.ganttInvalidDateRange'));
           return;
         }
@@ -244,8 +228,10 @@ const GanttItemPanel = React.memo(
             status: data.status.trim() || null,
             predecessorIds: data.itemType === 'task' ? data.predecessorIds : [],
             expectedDurationDays: Number(data.expectedDurationDays),
-            startDate: data.itemType === 'task' ? data.startDate || null : null,
-            endDate: data.itemType === 'task' ? data.endDate || null : null,
+            startDate:
+              data.itemType === 'task' && timeMode === 'schedule' ? data.startDate || null : null,
+            endDate:
+              data.itemType === 'task' && timeMode === 'schedule' ? data.endDate || null : null,
             ...(item && { version: item.version }),
           };
           if (isLinked) {
@@ -265,7 +251,7 @@ const GanttItemPanel = React.memo(
           setIsSubmitting(false);
         }
       },
-      [data, isLinked, item, onClose, onSave, t],
+      [data, isLinked, item, onClose, onSave, t, timeMode],
     );
 
     const handleDelete = useCallback(async () => {
@@ -292,6 +278,12 @@ const GanttItemPanel = React.memo(
     }, [childCount, isLinked, item, onClose, onDelete, t]);
 
     const isSummary = data.itemType === 'summary';
+    const calculatedDuration =
+      data.startDate && data.endDate ? countGanttBusinessDays(data.startDate, data.endDate) : null;
+    const durationValue = Math.max(
+      1,
+      Math.ceil(data.expectedDurationDays / DURATION_UNIT_DAYS[data.durationUnit]),
+    );
 
     return (
       <aside className={styles.panel} role="dialog" aria-labelledby="gantt-item-panel-title">
@@ -336,9 +328,7 @@ const GanttItemPanel = React.memo(
                 size="sm"
                 variant="secondary"
                 type="button"
-                onClick={() =>
-                  navigate(Paths.CARDS.replace(':id', source.cardId || source.id))
-                }
+                onClick={() => navigate(Paths.CARDS.replace(':id', source.cardId || source.id))}
               >
                 {t('common.ganttOpenCard')}
               </Button>
@@ -359,7 +349,7 @@ const GanttItemPanel = React.memo(
             />
           </label>
 
-          {!item && (
+          {(item || showAdvancedOptions) && (
             <div className={styles.field}>
               <span id="gantt-task-type-label">{t('common.ganttTaskType')}</span>
               <Dropdown
@@ -387,190 +377,248 @@ const GanttItemPanel = React.memo(
           )}
 
           {!isSummary && (
+            <div className={styles.twoColumns}>
+              <div className={styles.field}>
+                <span id="gantt-task-people-label">{t('common.ganttPerson')}</span>
+                <div
+                  className={styles.people}
+                  role="group"
+                  aria-labelledby="gantt-task-people-label"
+                >
+                  {selectedUsers.slice(0, MAX_VISIBLE_ASSIGNEES).map((user) =>
+                    isLinked ? (
+                      <UserAvatar key={user.id} id={user.id} size="medium" variant="board" />
+                    ) : (
+                      <PeoplePopup
+                        key={user.id}
+                        items={peopleItems}
+                        currentUserIds={data.assigneeUserIds}
+                        onUserSelect={handlePeopleSelect}
+                        onUserDeselect={handlePeopleDeselect}
+                        onClear={handlePeopleClear}
+                      >
+                        <button
+                          type="button"
+                          className={styles.personButton}
+                          aria-label={user.name || user.username || user.email}
+                          title={user.name || user.username || user.email}
+                        >
+                          <UserAvatar
+                            id={user.id}
+                            size="medium"
+                            variant="board"
+                            withTitle={false}
+                          />
+                        </button>
+                      </PeoplePopup>
+                    ),
+                  )}
+                  {!isLinked && hiddenAssignees > 0 && (
+                    <PeoplePopup
+                      items={peopleItems}
+                      currentUserIds={data.assigneeUserIds}
+                      onUserSelect={handlePeopleSelect}
+                      onUserDeselect={handlePeopleDeselect}
+                      onClear={handlePeopleClear}
+                    >
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="secondary"
+                        type="button"
+                        className={styles.peopleButton}
+                        aria-label={`+${hiddenAssignees} ${t('common.members')}`}
+                        title={`+${hiddenAssignees} ${t('common.members')}`}
+                      >
+                        +{hiddenAssignees}
+                      </Button>
+                    </PeoplePopup>
+                  )}
+                  {!isLinked && (
+                    <PeoplePopup
+                      items={peopleItems}
+                      currentUserIds={data.assigneeUserIds}
+                      onUserSelect={handlePeopleSelect}
+                      onUserDeselect={handlePeopleDeselect}
+                      onClear={handlePeopleClear}
+                    >
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="secondary"
+                        type="button"
+                        className={styles.peopleButton}
+                        aria-label={t('action.addMember')}
+                        title={t('action.addMember')}
+                      >
+                        <Icon fitted name="add user" aria-hidden="true" />
+                      </Button>
+                    </PeoplePopup>
+                  )}
+                  {isLinked && selectedUsers.length === 0 && (
+                    <span className={styles.sourceEmpty}>{t('common.ganttNoAssignee')}</span>
+                  )}
+                </div>
+              </div>
+              <div className={styles.field}>
+                <span id="gantt-task-parent-label">{t('common.ganttGeneralTask')}</span>
+                <Dropdown
+                  fluid
+                  search
+                  selection
+                  clearable
+                  placeholder={t('common.ganttIndependentTask')}
+                  value={data.parentId}
+                  options={generalOptions}
+                  noResultsMessage={t('common.ganttNoGeneralTasksFound')}
+                  aria-labelledby="gantt-task-parent-label"
+                  onChange={handleParentChange}
+                />
+              </div>
+            </div>
+          )}
+
+          {(item || showAdvancedOptions) && (
             <div className={styles.field}>
-              <span id="gantt-task-parent-label">{t('common.ganttGeneralTask')}</span>
+              <span id="gantt-task-status-label">{t('common.ganttStatus')}</span>
               <Dropdown
                 fluid
-                search
                 selection
-                clearable
-                placeholder={t('common.ganttIndependentTask')}
-                value={data.parentId}
-                options={generalOptions}
-                noResultsMessage={t('common.ganttNoGeneralTasksFound')}
-                aria-labelledby="gantt-task-parent-label"
-                onChange={handleParentChange}
+                id="gantt-task-status"
+                name="status"
+                value={data.status}
+                disabled={isLinked}
+                options={GANTT_STATUSES.map((status) => ({
+                  key: status,
+                  text: (
+                    <span className={styles.statusOption}>
+                      <span
+                        className={styles.statusDot}
+                        style={{ '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
+                        aria-hidden="true"
+                      />
+                      {t(`common.ganttStatus_${status}`)}
+                    </span>
+                  ),
+                  value: status,
+                }))}
+                aria-labelledby="gantt-task-status-label"
+                onChange={handleDropdownChange}
               />
             </div>
           )}
 
-          <div className={styles.field}>
-            <span id="gantt-task-people-label">{t('common.ganttPerson')}</span>
-            <div className={styles.people} role="group" aria-labelledby="gantt-task-people-label">
-              {selectedUsers.slice(0, MAX_VISIBLE_ASSIGNEES).map((user) =>
-                isLinked ? (
-                  <UserAvatar key={user.id} id={user.id} size="medium" variant="board" />
-                ) : (
-                  <PeoplePopup
-                    key={user.id}
-                    items={peopleItems}
-                    currentUserIds={data.assigneeUserIds}
-                    onUserSelect={handlePeopleSelect}
-                    onUserDeselect={handlePeopleDeselect}
-                    onClear={handlePeopleClear}
-                  >
-                    <button
-                      type="button"
-                      className={styles.personButton}
-                      aria-label={user.name || user.username || user.email}
-                      title={user.name || user.username || user.email}
-                    >
-                      <UserAvatar id={user.id} size="medium" variant="board" withTitle={false} />
-                    </button>
-                  </PeoplePopup>
-                ),
-              )}
-              {!isLinked && hiddenAssignees > 0 && (
-                <PeoplePopup
-                  items={peopleItems}
-                  currentUserIds={data.assigneeUserIds}
-                  onUserSelect={handlePeopleSelect}
-                  onUserDeselect={handlePeopleDeselect}
-                  onClear={handlePeopleClear}
-                >
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="secondary"
-                    type="button"
-                    className={styles.peopleButton}
-                    aria-label={`+${hiddenAssignees} ${t('common.members')}`}
-                    title={`+${hiddenAssignees} ${t('common.members')}`}
-                  >
-                    +{hiddenAssignees}
-                  </Button>
-                </PeoplePopup>
-              )}
-              {!isLinked && (
-                <PeoplePopup
-                  items={peopleItems}
-                  currentUserIds={data.assigneeUserIds}
-                  onUserSelect={handlePeopleSelect}
-                  onUserDeselect={handlePeopleDeselect}
-                  onClear={handlePeopleClear}
-                >
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="secondary"
-                    type="button"
-                    className={styles.peopleButton}
-                    aria-label={t('action.addMember')}
-                    title={t('action.addMember')}
-                  >
-                    <Icon fitted name="add user" aria-hidden="true" />
-                  </Button>
-                </PeoplePopup>
-              )}
-              {isLinked && selectedUsers.length === 0 && (
-                <span className={styles.sourceEmpty}>{t('common.ganttNoAssignee')}</span>
-              )}
-            </div>
-          </div>
-
-          <div className={styles.field}>
-            <span id="gantt-task-status-label">{t('common.ganttStatus')}</span>
-            <Dropdown
-              fluid
-              selection
-              id="gantt-task-status"
-              name="status"
-              value={data.status}
-              disabled={isLinked}
-              options={GANTT_STATUSES.map((status) => ({
-                key: status,
-                text: (
-                  <span className={styles.statusOption}>
-                    <span
-                      className={styles.statusDot}
-                      style={{ '--gantt-status-color': GANTT_STATUS_COLORS[status] }}
-                      aria-hidden="true"
-                    />
-                    {t(`common.ganttStatus_${status}`)}
-                  </span>
-                ),
-                value: status,
-              }))}
-              aria-labelledby="gantt-task-status-label"
-              onChange={handleDropdownChange}
-            />
-          </div>
-
           {!isSummary && (
-            <div className={styles.field}>
-              <label htmlFor="gantt-task-duration">{t('common.ganttExpectedDuration')}</label>
-              <div className={styles.durationInput}>
-                <input
-                  id="gantt-task-duration"
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={getDurationValue(data)}
-                  aria-describedby="gantt-task-duration-help"
-                  onChange={handleDurationChange}
-                />
-                <div
-                  id="gantt-task-duration-unit"
-                  className={styles.durationUnits}
-                  role="group"
-                  aria-label={t('common.ganttDurationUnit')}
-                >
-                  {DURATION_UNITS.map((unit) => (
-                    <button
-                      key={unit}
-                      type="button"
-                      className={`${styles.durationUnit} ${
-                        data.durationUnit === unit ? styles.durationUnitActive : ''
-                      }`}
-                      aria-pressed={data.durationUnit === unit}
-                      onClick={(event) => handleDurationUnitChange(event, { value: unit })}
-                    >
-                      {t(`common.ganttDurationUnit_${unit}`)}
-                    </button>
-                  ))}
-                </div>
+            <section className={styles.timeSection} aria-labelledby="gantt-time-title">
+              <div className={styles.timeHeader}>
+                <span id="gantt-time-title">{t('common.ganttTimeScheduling')}</span>
+                <span className={styles.info} title={t('common.ganttDurationHelp')}>
+                  <Icon name="info circle" aria-hidden="true" />
+                </span>
               </div>
-              <small id="gantt-task-duration-help">{t('common.ganttDurationHelp')}</small>
-            </div>
+              <div
+                className={styles.timeTabs}
+                role="tablist"
+                aria-label={t('common.ganttTimeScheduling')}
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={timeMode === 'estimate'}
+                  className={timeMode === 'estimate' ? styles.timeTabActive : styles.timeTab}
+                  onClick={() => handleTimeModeChange('estimate')}
+                >
+                  {t('common.ganttEstimateDuration')}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={timeMode === 'schedule'}
+                  className={timeMode === 'schedule' ? styles.timeTabActive : styles.timeTab}
+                  onClick={() => handleTimeModeChange('schedule')}
+                >
+                  {t('common.ganttScheduleDates')}
+                </button>
+              </div>
+
+              {timeMode === 'estimate' ? (
+                <div className={styles.durationRow}>
+                  <label className={styles.field} htmlFor="gantt-task-duration">
+                    <span>{t('common.ganttDuration')}</span>
+                    <input
+                      id="gantt-task-duration"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={durationValue}
+                      onChange={handleDurationChange}
+                    />
+                  </label>
+                  <div className={styles.field}>
+                    <span id="gantt-task-duration-unit-label">{t('common.ganttDurationUnit')}</span>
+                    <Dropdown
+                      fluid
+                      selection
+                      name="durationUnit"
+                      value={data.durationUnit}
+                      options={[
+                        { key: 'day', value: 'day', text: t('common.ganttDurationUnit_day') },
+                        { key: 'week', value: 'week', text: t('common.ganttDurationUnit_week') },
+                      ]}
+                      aria-labelledby="gantt-task-duration-unit-label"
+                      onChange={handleDurationUnitChange}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.twoColumns}>
+                    <label className={styles.field} htmlFor="gantt-task-start">
+                      <span>{t('common.ganttStart')}</span>
+                      <input
+                        id="gantt-task-start"
+                        type="date"
+                        value={data.startDate}
+                        onChange={handleStartChange}
+                      />
+                    </label>
+                    <label className={styles.field} htmlFor="gantt-task-end">
+                      <span>{t('common.ganttEnd')}</span>
+                      <input
+                        id="gantt-task-end"
+                        type="date"
+                        value={data.endDate}
+                        min={data.startDate || undefined}
+                        disabled={!data.startDate}
+                        onChange={handleEndChange}
+                      />
+                    </label>
+                  </div>
+                  <div className={styles.dateMeta}>
+                    {calculatedDuration ? (
+                      <span>
+                        {t('common.ganttCalculatedDuration', { count: calculatedDuration })}
+                      </span>
+                    ) : (
+                      <span className={styles.dateHint}>{t('common.ganttUnscheduledHint')}</span>
+                    )}
+                  </div>
+                </>
+              )}
+            </section>
           )}
 
-          {!isSummary && (
-            <div className={styles.twoColumns}>
-              <label className={styles.field} htmlFor="gantt-task-start">
-                <span>{t('common.ganttStart')}</span>
-                <input
-                  id="gantt-task-start"
-                  type="date"
-                  value={data.startDate}
-                  onChange={handleStartChange}
-                />
-              </label>
-              <label className={styles.field} htmlFor="gantt-task-end">
-                <span>{t('common.ganttEnd')}</span>
-                <input
-                  id="gantt-task-end"
-                  type="date"
-                  value={data.endDate}
-                  min={data.startDate || undefined}
-                  disabled={!data.startDate}
-                  onChange={handleEndChange}
-                />
-              </label>
-            </div>
-          )}
-
-          {!isSummary && !data.startDate && (
-            <p className={styles.unscheduledHint}>{t('common.ganttUnscheduledHint')}</p>
+          {!item && (
+            <button
+              type="button"
+              className={styles.advancedToggle}
+              aria-expanded={showAdvancedOptions}
+              onClick={() => setShowAdvancedOptions((visible) => !visible)}
+            >
+              {showAdvancedOptions
+                ? t('common.ganttHideAdvancedOptions')
+                : t('common.ganttShowAdvancedOptions')}
+            </button>
           )}
 
           {!isSummary && item && (
