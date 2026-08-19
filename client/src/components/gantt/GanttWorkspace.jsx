@@ -230,31 +230,6 @@ const GanttWorkspace = React.memo(() => {
           </div>
         </div>
 
-        <div className={styles.viewSwitch} role="group" aria-label={t('common.ganttTimelineScale')}>
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            className={styles.viewSwitchButton}
-            onClick={() => handleViewModeChange('timeline')}
-            aria-pressed={viewMode === 'timeline'}
-            data-testid="gantt-timeline-toggle"
-          >
-            {t('common.ganttSimpleTimeline')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            className={styles.viewSwitchButton}
-            onClick={() => handleViewModeChange('gantt')}
-            aria-pressed={viewMode === 'gantt'}
-            data-testid="gantt-view-toggle"
-          >
-            {t('common.ganttFullTimeline')}
-          </Button>
-        </div>
-
         {canMutate && (
           <>
             <Button
@@ -330,6 +305,30 @@ const GanttWorkspace = React.memo(() => {
               aria-label={t('common.ganttZoomIn')}
             >
               <Icon fitted name="plus" />
+            </Button>
+          </div>
+          <div className={styles.viewSwitch} role="group" aria-label={t('common.ganttTimelineScale')}>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className={styles.viewSwitchButton}
+              onClick={() => handleViewModeChange('timeline')}
+              aria-pressed={viewMode === 'timeline'}
+              data-testid="gantt-timeline-toggle"
+            >
+              {t('common.ganttSimpleTimeline')}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className={styles.viewSwitchButton}
+              onClick={() => handleViewModeChange('gantt')}
+              aria-pressed={viewMode === 'gantt'}
+              data-testid="gantt-view-toggle"
+            >
+              {t('common.ganttFullTimeline')}
             </Button>
           </div>
         </div>
