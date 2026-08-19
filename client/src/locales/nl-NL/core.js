@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kaarten',
+      autoAddBoardMembersToCards: 'Voeg bordleden toe aan alle kaarten',
+      autoAddBoardMembersToCardsHint:
+        'Geldt voor huidige en toekomstige kaarten op elk bord in dit project. Uitschakelen verwijdert reeds toegevoegde leden niet.',
       aboutPlanka: 'Over PLANKA',
       account: 'Account',
       actions: 'Acties',

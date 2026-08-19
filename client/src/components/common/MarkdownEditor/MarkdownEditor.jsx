@@ -44,6 +44,15 @@ removedActionNamesSet.forEach((actionName) => {
   });
 });
 
+// Keep emoji immediately accessible instead of hiding it in the overflow menu.
+toolbarsPreset.orders.wysiwygHidden = toolbarsPreset.orders.wysiwygHidden.map((actions) =>
+  actions.filter((action) => action.id || action !== ActionName.emoji),
+);
+toolbarsPreset.orders.wysiwygMain = toolbarsPreset.orders.wysiwygMain.map((actions) =>
+  actions.filter((action) => action.id || action !== ActionName.emoji),
+);
+toolbarsPreset.orders.wysiwygMain.splice(1, 0, [ActionName.emoji]);
+
 const commandMenuActions = wysiwygToolbarConfigs.wCommandMenuConfig.filter(
   (action) => !removedActionNamesSet.has(action.id),
 );

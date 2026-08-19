@@ -17,6 +17,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kartalar',
+      autoAddBoardMembersToCards: 'Doska a’zolarini barcha kartalarga qo‘shish',
+      autoAddBoardMembersToCardsHint:
+        'Ushbu loyihadagi barcha doskalarning joriy va kelajakdagi kartalariga qo‘llanadi. O‘chirish avval qo‘shilgan a’zolarni olib tashlamaydi.',
       account: 'Profil',
       actions: 'Amallar',
       addAttachment_title: "Ilova Qo'shish",

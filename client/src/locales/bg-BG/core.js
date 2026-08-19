@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Карти',
+      autoAddBoardMembersToCards: 'Добавяне на членовете на таблото към всички карти',
+      autoAddBoardMembersToCardsHint:
+        'Важи за текущите и бъдещите карти във всяко табло в този проект. Изключването не премахва вече добавените членове.',
       aboutPlanka: 'За PLANKA',
       account: 'Акаунт',
       actions: 'Действия',

@@ -26,7 +26,7 @@
     max-height: min(500px, 50dvh);
     overflow-x: hidden;
     overflow-y: auto;
-    padding-top: 14px;
+    padding: 14px 0 42px;
     scrollbar-color: var(--chat-scrollbar, #465263) transparent;
     scrollbar-width: thin;
 
@@ -56,7 +56,7 @@
 
     .timeline {
       max-height: min(500px, 52dvh);
-      padding-top: 12px;
+      padding: 12px 0 42px;
     }
   }
 }

@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Schede',
+      autoAddBoardMembersToCards: 'Aggiungi i membri della bacheca a tutte le schede',
+      autoAddBoardMembersToCardsHint:
+        'Si applica alle schede attuali e future di tutte le bacheche del progetto. La disattivazione non rimuove i membri già aggiunti.',
       aboutPlanka: 'Informazioni su Bids',
       account: 'Account',
       actions: 'Azioni',

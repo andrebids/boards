@@ -224,3 +224,10 @@
 ) {
   z-index: 10004 !important;
 }
+
+:global(
+  .g-root_theme_dark.g-portal__theme-wrapper
+    > div:has(.g-md-emoji-suggest)
+) {
+  z-index: 10004 !important;
+}

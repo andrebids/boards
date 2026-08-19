@@ -61,6 +61,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (project.autoAddBoardMembersToCards) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     let cardMembership = await CardMembership.qm.getOneByCardIdAndUserId(
       inputs.cardId,
       inputs.userId,

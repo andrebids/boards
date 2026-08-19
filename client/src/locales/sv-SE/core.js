@@ -17,6 +17,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kort',
+      autoAddBoardMembersToCards: 'Lägg till tavlans medlemmar på alla kort',
+      autoAddBoardMembersToCardsHint:
+        'Gäller nuvarande och framtida kort på alla tavlor i projektet. Avstängning tar inte bort redan tillagda medlemmar.',
       account: 'Konto',
       actions: 'Åtgärder',
       addAttachment_title: 'Bifoga',

@@ -74,6 +74,9 @@ module.exports = {
       type: 'string',
       isIn: Object.values(Project.ChatModes),
     },
+    autoAddBoardMembersToCards: {
+      type: 'boolean',
+    },
     isFavorite: {
       type: 'boolean',
     },
@@ -143,6 +146,7 @@ module.exports = {
         'backgroundType',
         'backgroundGradient',
         'chatMode',
+        'autoAddBoardMembersToCards',
       );
     } else if (currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId) {
       availableInputKeys.push('chatMode');
@@ -203,6 +207,7 @@ module.exports = {
       'backgroundGradient',
       'isHidden',
       'chatMode',
+      'autoAddBoardMembersToCards',
       'isFavorite',
     ]);
 

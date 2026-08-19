@@ -43,14 +43,16 @@ import LazyEmojiPicker, {
   EMOJI_PICKER_HEIGHT,
   EMOJI_PICKER_WIDTH,
 } from '../LazyEmojiPicker';
+import { getReactionEmojiPickerPosition, QUICK_REACTION_EMOJIS } from '../reaction-utils';
 import { getConversationTitle, getParticipantUserIds, isDirectConversation } from '../utils';
 
 import styles from './MessageList.module.scss';
 
 const formatTime = (value) =>
-  new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
-    new Date(value),
-  );
+  new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
 
 const formatDay = (value) =>
   new Intl.DateTimeFormat(undefined, {
@@ -95,28 +97,6 @@ const compareNumericIds = (left, right) => {
     return normalizedLeft.length - normalizedRight.length;
   }
   return normalizedLeft.localeCompare(normalizedRight);
-};
-
-const FLOATING_PICKER_MARGIN = 12;
-
-const getReactionEmojiPickerPosition = (element) => {
-  const rect = element.getBoundingClientRect();
-  const maximumLeft = Math.max(
-    FLOATING_PICKER_MARGIN,
-    window.innerWidth - EMOJI_PICKER_WIDTH - FLOATING_PICKER_MARGIN,
-  );
-  const preferredTop = rect.top - EMOJI_PICKER_HEIGHT - 8;
-  const top =
-    preferredTop >= FLOATING_PICKER_MARGIN
-      ? preferredTop
-      : Math.min(
-          window.innerHeight - EMOJI_PICKER_HEIGHT - FLOATING_PICKER_MARGIN,
-          rect.bottom + 8,
-        );
-  return {
-    left: Math.min(Math.max(FLOATING_PICKER_MARGIN, rect.left), maximumLeft),
-    top: Math.max(FLOATING_PICKER_MARGIN, top),
-  };
 };
 
 const emojiSegmenter =
@@ -424,7 +404,10 @@ const MessageList = React.memo(
           }
         }
         if (list.scrollTop <= 12 && hasMore && !isFetching) {
-          prependScrollStateRef.current = { height: list.scrollHeight, top: list.scrollTop };
+          prependScrollStateRef.current = {
+            height: list.scrollHeight,
+            top: list.scrollTop,
+          };
           dispatch(entryActions.fetchChatMessages(conversationId));
         }
       },
@@ -513,7 +496,13 @@ const MessageList = React.memo(
         }
 
         setActiveReactionMenuMessageId(messageId);
-        setReactionEmojiPickerPosition(getReactionEmojiPickerPosition(event.currentTarget));
+        setReactionEmojiPickerPosition(
+          getReactionEmojiPickerPosition(
+            event.currentTarget,
+            EMOJI_PICKER_WIDTH,
+            EMOJI_PICKER_HEIGHT,
+          ),
+        );
         setIsReactionEmojiPickerOpen(true);
       },
       [activeReactionMenuMessageId],
@@ -732,7 +721,7 @@ const MessageList = React.memo(
                         role="group"
                         aria-label={t('chat.messageActions')}
                       >
-                        {['👍', '❤️', '😂', '😮'].map((emoji) => (
+                        {QUICK_REACTION_EMOJIS.map((emoji) => (
                           <button
                             type="button"
                             key={emoji}
@@ -1096,7 +1085,10 @@ MessageList.propTypes = {
   isDirect: PropTypes.bool,
   isFetching: PropTypes.bool,
   members: PropTypes.arrayOf(
-    PropTypes.shape({ id: PropTypes.string.isRequired, name: PropTypes.string.isRequired }),
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
   ).isRequired,
   messages: PropTypes.arrayOf(
     PropTypes.shape({

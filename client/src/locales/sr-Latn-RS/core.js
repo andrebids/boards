@@ -17,6 +17,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kartice',
+      autoAddBoardMembersToCards: 'Dodaj članove table na sve kartice',
+      autoAddBoardMembersToCardsHint:
+        'Primenjuje se na trenutne i buduće kartice na svim tablama u ovom projektu. Isključivanje ne uklanja već dodate članove.',
       aboutPlanka: 'O PLANKA',
       account: 'Nalog',
       actions: 'Radnje',

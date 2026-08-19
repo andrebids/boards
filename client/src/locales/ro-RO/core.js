@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Carduri',
+      autoAddBoardMembersToCards: 'Adaugă membrii panoului la toate cardurile',
+      autoAddBoardMembersToCardsHint:
+        'Se aplică tuturor cardurilor actuale și viitoare de pe fiecare panou din acest proiect. Dezactivarea nu elimină membrii deja adăugați.',
       aboutPlanka: 'Despre PLANKA',
       account: 'Cont',
       actions: 'Acțiuni',

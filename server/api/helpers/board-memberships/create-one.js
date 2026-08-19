@@ -124,6 +124,15 @@ module.exports = {
       }
     }
 
+    if (inputs.project.autoAddBoardMembersToCards) {
+      await sails.helpers.boards.syncMembersToCards.with({
+        project: inputs.project,
+        board: values.board,
+        user: values.user,
+        actorUser: inputs.actorUser,
+      });
+    }
+
     return boardMembership;
   },
 };

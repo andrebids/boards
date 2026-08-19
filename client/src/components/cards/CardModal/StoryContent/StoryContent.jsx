@@ -96,6 +96,7 @@ const StoryContent = React.memo(({ onClose }) => {
   } = useSelector(state => {
     const boardMembership =
       selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    const project = selectors.selectCurrentProject(state);
 
     let isMember = false;
     let isEditor = false;
@@ -130,14 +131,14 @@ const StoryContent = React.memo(({ onClose }) => {
       canEditName: isEditor,
       canEditDescription: isEditor,
       canSubscribe: isMember,
-      canJoin: isEditor,
+      canJoin: isEditor && !project.autoAddBoardMembersToCards,
       canDuplicate: isEditor,
       canMove: isEditor,
       canRestore: null,
       canArchive: isEditor,
       canDelete: isEditor,
       canUseLists: isEditor,
-      canUseMembers: isEditor,
+      canUseMembers: isEditor && !project.autoAddBoardMembersToCards,
       canUseLabels: isEditor,
       canAddAttachment: isEditor,
       canAddCustomFieldGroup: isEditor,

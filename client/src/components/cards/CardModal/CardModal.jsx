@@ -56,7 +56,7 @@ const CardModal = React.memo(() => {
         return;
       }
 
-      if (isActiveTextElement(event.target)) {
+      if (event.defaultPrevented || isActiveTextElement(event.target)) {
         return;
       }
 

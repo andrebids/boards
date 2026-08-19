@@ -50,7 +50,7 @@ export function* createComment(cardId, data) {
       cardId,
       id: localId,
       userId: currentUser.id,
-    })
+    }),
   );
 
   let comment;
@@ -92,6 +92,17 @@ export function* handleCommentUpdate(comment) {
   yield put(actions.handleCommentUpdate(comment));
 }
 
+export function* toggleCommentReaction(id, emoji) {
+  let comment;
+  try {
+    ({ item: comment } = yield call(request, api.toggleCommentReaction, id, emoji));
+  } catch (error) {
+    return;
+  }
+
+  yield put(actions.updateComment.success(comment));
+}
+
 export function* deleteComment(id) {
   yield put(actions.deleteComment(id));
 
@@ -118,6 +129,7 @@ export default {
   handleCommentCreate,
   updateComment,
   handleCommentUpdate,
+  toggleCommentReaction,
   deleteComment,
   handleCommentDelete,
 };

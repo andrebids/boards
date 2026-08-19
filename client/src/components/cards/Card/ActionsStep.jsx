@@ -80,6 +80,7 @@ const ActionsStep = React.memo(({ cardId, onNameEdit, onClose }) => {
   } = useSelector(state => {
     const boardMembership =
       selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    const project = selectors.selectCurrentProject(state);
     const isEditor =
       !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
 
@@ -109,7 +110,7 @@ const ActionsStep = React.memo(({ cardId, onNameEdit, onClose }) => {
       canRestore: null,
       canArchive: isEditor,
       canDelete: isEditor,
-      canUseMembers: isEditor,
+      canUseMembers: isEditor && !project.autoAddBoardMembersToCards,
       canUseLabels: isEditor,
     };
   }, shallowEqual);

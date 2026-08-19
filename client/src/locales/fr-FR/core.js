@@ -22,6 +22,10 @@ export default merge({}, enUSCore, {
 
   translation: {
     common: {
+      cards: 'Cartes',
+      autoAddBoardMembersToCards: 'Ajouter les membres du tableau à toutes les cartes',
+      autoAddBoardMembersToCardsHint:
+        'S’applique aux cartes actuelles et futures de tous les tableaux de ce projet. La désactivation ne retire pas les membres déjà ajoutés.',
       aboutPlanka: 'À propos de Bids',
       account: 'Compte',
       actions: 'Actions',
@@ -217,7 +221,6 @@ export default merge({}, enUSCore, {
       ganttDayUnit_other: 'jours',
       ganttDayShort: '{{count}} j',
       ganttReadonlyHint: 'Activez le mode édition pour modifier le Gantt',
-      ganttTimelineScale: 'Échelle chronologique',
       ganttZoomOut: 'Dézoomer',
       ganttZoomLevel: 'Niveau de zoom de la chronologie',
       ganttZoomIn: 'Zoomer',
@@ -225,11 +228,8 @@ export default merge({}, enUSCore, {
       ganttZoom_week: 'Semaine',
       ganttZoom_month: 'Mois',
       ganttZoom_quarter: 'Trimestre',
-      ganttSimpleTimeline: 'Chronologie',
-      ganttFullTimeline: 'Gantt',
       ganttUnphased: 'Sans phase',
       ganttToday: "Aujourd’hui",
-      ganttProjectTimeline: 'Chronologie du projet',
       ganttCompletedPercent: '{{percent}} % terminé',
       ganttAvailability: 'Disponibilité du Gantt',
       ganttAvailabilityHint:
