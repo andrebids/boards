@@ -6,6 +6,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import classNames from 'classnames';
+import { useSearchParams } from 'react-router-dom';
 
 import selectors from '../../../selectors';
 import Paths from '../../../constants/Paths';
@@ -29,6 +30,8 @@ const Fixed = React.memo(() => {
   const pathsMatch = useSelector(selectors.selectPathsMatch);
   const isSidebarExpanded = useSelector(selectIsSidebarExpanded);
   const isDashboard = pathsMatch?.pattern.path === Paths.DASHBOARD;
+  const [searchParams] = useSearchParams();
+  const isDashboardTv = isDashboard && searchParams.get('tv') === '1';
 
   return (
     <ChatProvider>
@@ -38,7 +41,7 @@ const Fixed = React.memo(() => {
         })}
       >
         <Sidebar />
-        <Header />
+        {!isDashboardTv && <Header />}
         {!isDashboard && <Favorites />}
         {projectId === undefined && !isDashboard && <HomeActions />}
         {projectId && <Project />}
