@@ -351,6 +351,8 @@ export default {
       ganttFullTimeline: 'Full Gantt',
       ganttUnphased: 'No phase',
       ganttToday: 'Today',
+      ganttProjectTimeline: 'Project timeline',
+      ganttCompletedPercent: '{{percent}}% complete',
       ganttAvailability: 'Gantt availability',
       ganttAvailabilityHint:
         'When enabled, Gantt appears in this project. The timeline scale is selected inside Gantt itself.',

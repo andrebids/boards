@@ -189,8 +189,8 @@ const GanttWorkspace = React.memo(() => {
     setZoomLevel((current) => ZOOM_LEVELS[Math.max(ZOOM_LEVELS.indexOf(current) - 1, 0)]);
   }, []);
 
-  const handleViewModeToggle = useCallback(() => {
-    setViewMode((current) => (current === 'gantt' ? 'timeline' : 'gantt'));
+  const handleViewModeChange = useCallback((nextMode) => {
+    setViewMode(nextMode);
   }, []);
 
   if (isLoading) {
@@ -228,6 +228,31 @@ const GanttWorkspace = React.memo(() => {
             <h1>{t('common.gantt')}</h1>
             <span>{t('common.ganttTaskCount', { count: items.length })}</span>
           </div>
+        </div>
+
+        <div className={styles.viewSwitch} role="group" aria-label={t('common.ganttTimelineScale')}>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            className={styles.viewSwitchButton}
+            onClick={() => handleViewModeChange('timeline')}
+            aria-pressed={viewMode === 'timeline'}
+            data-testid="gantt-timeline-toggle"
+          >
+            {t('common.ganttSimpleTimeline')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            className={styles.viewSwitchButton}
+            onClick={() => handleViewModeChange('gantt')}
+            aria-pressed={viewMode === 'gantt'}
+            data-testid="gantt-view-toggle"
+          >
+            {t('common.ganttFullTimeline')}
+          </Button>
         </div>
 
         {canMutate && (
@@ -307,24 +332,6 @@ const GanttWorkspace = React.memo(() => {
               <Icon fitted name="plus" />
             </Button>
           </div>
-          <span className={styles.zoomDivider} aria-hidden="true" />
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            className={styles.timelineToggle}
-            onClick={handleViewModeToggle}
-            aria-pressed={viewMode === 'timeline'}
-            aria-label={t(
-              viewMode === 'timeline' ? 'common.ganttFullTimeline' : 'common.ganttSimpleTimeline',
-            )}
-            data-testid="gantt-timeline-toggle"
-          >
-            <Icon name="align justify" />
-            <span>
-              {t(viewMode === 'timeline' ? 'common.ganttFullTimeline' : 'common.ganttSimpleTimeline')}
-            </span>
-          </Button>
         </div>
       </header>
 
@@ -333,7 +340,6 @@ const GanttWorkspace = React.memo(() => {
           viewMode === 'timeline' ? (
             <GanttSimpleTimeline
               items={timelineItems}
-              zoomLevel={zoomLevel}
               onItemSelect={handleItemSelect}
             />
           ) : (

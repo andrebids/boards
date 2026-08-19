@@ -624,6 +624,8 @@ export default {
       ganttFullTimeline: 'Gantt completo',
       ganttUnphased: 'Sem fase',
       ganttToday: 'Hoje',
+      ganttProjectTimeline: 'Timeline do projeto',
+      ganttCompletedPercent: '{{percent}}% concluído',
       ganttAvailability: 'Disponibilidade do Gantt',
       ganttAvailabilityHint:
         'Quando ativo, o Gantt aparece neste projeto. A escala temporal é escolhida dentro do próprio Gantt.',

@@ -229,6 +229,8 @@ export default merge({}, enUSCore, {
       ganttFullTimeline: 'Gantt complet',
       ganttUnphased: 'Sans phase',
       ganttToday: "Aujourd’hui",
+      ganttProjectTimeline: 'Chronologie du projet',
+      ganttCompletedPercent: '{{percent}} % terminé',
       ganttAvailability: 'Disponibilité du Gantt',
       ganttAvailabilityHint:
         'Lorsqu’il est activé, le Gantt apparaît dans ce projet. L’échelle chronologique est sélectionnée dans le Gantt lui-même.',

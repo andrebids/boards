@@ -1,6 +1,7 @@
 import {
   getSimpleTimelineBarStyle,
   getSimpleTimelineRange,
+  getSimpleTimelineMilestones,
   groupSimpleTimelineItems,
 } from './simpleTimelineScale';
 
@@ -26,5 +27,16 @@ describe('simple Gantt timeline scale', () => {
       { summaryId: 'summary', itemIds: ['earlier', 'later'] },
       { summaryId: null, itemIds: ['independent'] },
     ]);
+  });
+
+  test('uses phases as the high-level milestones and keeps independent work visible', () => {
+    const milestones = getSimpleTimelineMilestones([
+      { id: 'phase', itemType: 'summary', task: 'Preparação', startDate: '2026-08-10', endDate: '2026-08-15' },
+      { id: 'child', itemType: 'task', parentId: 'phase', task: 'Brief', startDate: '2026-08-10', endDate: '2026-08-12' },
+      { id: 'independent', itemType: 'task', task: 'Entrega', startDate: '2026-08-20', endDate: '2026-08-22' },
+    ]);
+
+    expect(milestones.map(({ id }) => id)).toEqual(['phase', 'independent']);
+    expect(milestones[0].childCount).toBe(1);
   });
 });

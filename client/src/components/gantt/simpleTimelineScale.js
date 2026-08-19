@@ -65,6 +65,22 @@ export const groupSimpleTimelineItems = (items) => {
   return groups;
 };
 
+export const getSimpleTimelineMilestones = (items) => {
+  const childCounts = items.reduce((result, { itemType, parentId }) => {
+    if (itemType === 'task' && parentId) {
+      result[parentId] = (result[parentId] || 0) + 1;
+    }
+
+    return result;
+  }, {});
+  const summaryIds = new Set(items.filter(({ itemType }) => itemType === 'summary').map(({ id }) => id));
+
+  return items
+    .filter(({ itemType, parentId }) => itemType === 'summary' || !parentId || !summaryIds.has(parentId))
+    .map((item) => ({ ...item, childCount: childCounts[item.id] || 0 }))
+    .sort(compareByStartDate);
+};
+
 export const getSimpleTimelineDays = (range) => {
   if (!range) {
     return [];

@@ -4,202 +4,274 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
+    padding: 14px 26px 24px;
   }
 
   .scrollArea {
+    background: linear-gradient(
+      140deg,
+      color-mix(in oklab, var(--app-dark-surface) 92%, var(--app-dark-canvas)),
+      var(--app-dark-canvas)
+    );
+    border: 1px solid var(--app-dark-border);
+    border-radius: 15px;
     height: 100%;
-    overflow: auto;
-    scrollbar-color: var(--app-dark-surface-hover) transparent;
+    min-height: 420px;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .timeline {
-    min-height: 100%;
-    position: relative;
-  }
-
-  .scaleHeader {
-    background: var(--app-dark-surface);
-    border-bottom: 1px solid var(--app-dark-border);
-    color: var(--app-dark-text-muted);
-    position: sticky;
-    top: 0;
-    z-index: 5;
-  }
-
-  .monthRow,
-  .scaleRow {
-    display: grid;
-    grid-template-columns: repeat(var(--simple-timeline-columns), minmax(0, 1fr));
-  }
-
-  .monthRow {
-    border-bottom: 1px solid var(--app-dark-border);
-    font-size: 11px;
-    font-weight: 600;
-    height: 26px;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-
-    span {
-      align-items: center;
-      border-right: 1px solid var(--app-dark-border);
-      display: flex;
-      min-width: 0;
-      padding: 0 8px;
-      white-space: nowrap;
-    }
-  }
-
-  .scaleRow {
-    font-size: 11px;
-    height: 30px;
-
-    span {
-      align-items: center;
-      border-right: 1px solid color-mix(in oklab, var(--app-dark-border) 70%, transparent);
-      display: flex;
-      justify-content: center;
-      min-width: 0;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-  }
-
-  .weekendCell {
-    background: color-mix(in oklab, var(--app-dark-surface-hover) 42%, transparent);
-  }
-
-  .phase {
-    position: relative;
-  }
-
-  .phaseHeader {
-    align-items: center;
-    background: color-mix(in oklab, var(--app-dark-surface) 90%, var(--app-dark-canvas));
-    border-bottom: 1px solid var(--app-dark-border);
-    color: var(--app-dark-text);
     display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 28px 34px 24px;
+  }
+
+  .heading {
+    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+
+    h2 {
+      color: var(--app-dark-text);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    p {
+      color: var(--app-dark-text-muted);
+      font-size: 13px;
+      margin: 5px 0 0;
+    }
+  }
+
+  .completion {
+    align-items: center;
+    background: color-mix(in oklab, var(--app-dark-surface-hover) 58%, transparent);
+    border: 1px solid var(--app-dark-border);
+    border-radius: 999px;
+    color: var(--app-dark-text);
+    display: inline-flex;
     font-size: 12px;
     font-weight: 650;
-    gap: 7px;
-    height: 30px;
-    padding: 0 10px;
-    position: sticky;
-    top: 56px;
-    z-index: 3;
+    gap: 9px;
+    padding: 8px 10px 8px 13px;
+    white-space: nowrap;
+
+    > span {
+      background: conic-gradient(var(--app-accent) var(--completion), var(--app-dark-border) 0);
+      border-radius: 50%;
+      height: 22px;
+      position: relative;
+      width: 22px;
+
+      &::after {
+        background: var(--app-dark-surface);
+        border-radius: 50%;
+        content: '';
+        inset: 3px;
+        position: absolute;
+      }
+    }
+  }
+
+  .journey {
+    flex: 1 1 auto;
+    min-height: 270px;
+    position: relative;
+  }
+
+  .journeyLine {
+    background: color-mix(in oklab, var(--app-dark-text-muted) 42%, var(--app-dark-surface));
+    border-radius: 99px;
+    height: 6px;
+    left: 5%;
+    position: absolute;
+    right: 5%;
+    top: 126px;
+  }
+
+  .journeyLine::before {
+    background: linear-gradient(90deg, var(--app-accent), #9a4dff);
+    border-radius: inherit;
+    content: '';
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 34%;
+  }
+
+  .milestone {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--app-dark-text);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    font: inherit;
+    gap: 8px;
+    min-width: 132px;
+    padding: 0 6px;
+    position: absolute;
+    text-align: center;
+    top: 61px;
+    transform: translateX(-50%);
+
+    time {
+      color: var(--app-dark-text);
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    strong {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    small {
+      color: var(--app-dark-text-muted);
+      font-size: 12px;
+      line-height: 1.25;
+      max-width: 170px;
+    }
+
+    &:hover .marker {
+      box-shadow: 0 0 0 7px color-mix(in oklab, var(--gantt-status-color) 20%, transparent),
+        0 8px 20px color-mix(in oklab, var(--app-dark-canvas) 35%, transparent);
+      transform: translateY(-2px);
+    }
+
+    &:focus-visible {
+      outline: none;
+
+      .marker {
+        box-shadow: 0 0 0 3px var(--app-focus), 0 0 0 6px var(--app-dark-canvas);
+      }
+    }
+  }
+
+  .marker {
+    align-items: center;
+    background: color-mix(in oklab, var(--app-dark-surface) 88%, var(--gantt-status-color));
+    border: 3px solid color-mix(in oklab, var(--gantt-status-color) 78%, var(--app-dark-text) 22%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px var(--app-dark-canvas);
+    color: var(--app-dark-text);
+    display: flex;
+    height: 56px;
+    justify-content: center;
+    transition: box-shadow 160ms ease-out, transform 160ms ease-out;
+    width: 56px;
 
     :global(i.icon) {
-      color: var(--app-accent);
-      font-size: 12px;
+      font-size: 21px;
       margin: 0;
     }
   }
 
-  .phaseRange {
-    color: var(--app-dark-text-muted);
-    font-size: 10px;
-    font-weight: 500;
-    margin-left: auto;
-  }
-
-  .taskRow {
-    background-color: var(--app-dark-canvas);
-    background-image: linear-gradient(90deg, var(--app-dark-border) 1px, transparent 1px);
-    background-size: calc(100% / var(--simple-timeline-columns)) 100%;
-    border-bottom: 1px solid color-mix(in oklab, var(--app-dark-border) 72%, transparent);
-    height: 40px;
-    position: relative;
-  }
-
-  .taskBar {
-    align-items: center;
-    background: color-mix(in oklab, var(--gantt-status-color) 74%, var(--app-dark-surface));
-    border: 1px solid color-mix(in oklab, var(--gantt-status-color) 72%, var(--app-dark-text) 28%);
-    border-radius: 9px;
-    bottom: 5px;
-    box-sizing: border-box;
-    color: var(--app-dark-text);
-    cursor: pointer;
-    display: flex;
-    font: inherit;
-    gap: 6px;
-    min-width: 8px;
-    overflow: hidden;
-    padding: 0 8px;
-    position: absolute;
-    text-align: left;
-    top: 5px;
-    transition: background 120ms ease-out, box-shadow 120ms ease-out, transform 120ms ease-out;
-
-    &:hover {
-      background: color-mix(in oklab, var(--gantt-status-color) 88%, var(--app-dark-surface));
-      box-shadow: 0 5px 12px color-mix(in oklab, var(--app-dark-canvas) 65%, transparent);
-    }
-
-    &:active {
-      transform: scale(0.985);
-    }
-
-    &:focus-visible {
-      box-shadow: 0 0 0 2px var(--app-focus), 0 0 0 4px var(--app-dark-canvas);
-      outline: none;
-      z-index: 2;
-    }
-  }
-
-  .statusDot {
+  .completed .marker {
     background: var(--gantt-status-color);
-    border: 1px solid color-mix(in oklab, var(--gantt-status-color) 72%, var(--app-dark-text) 28%);
-    border-radius: 50%;
-    flex: 0 0 auto;
-    height: 7px;
-    width: 7px;
+    color: var(--app-dark-canvas);
   }
 
-  .taskTitle {
-    font-size: 12px;
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .inProgress .marker {
+    box-shadow: 0 0 0 5px var(--app-dark-canvas),
+      0 0 23px color-mix(in oklab, var(--gantt-status-color) 64%, transparent);
   }
 
   .todayMarker {
-    background: var(--app-accent);
-    bottom: 0;
+    border-left: 1px dashed color-mix(in oklab, var(--app-dark-text-muted) 74%, transparent);
+    bottom: 34px;
     pointer-events: none;
     position: absolute;
-    top: 0;
-    width: 2px;
-    z-index: 4;
+    top: 154px;
+    z-index: 1;
 
     span {
-      background: var(--app-accent);
-      border-radius: 0 0 6px 0;
-      color: var(--app-accent-foreground, var(--app-dark-text));
-      font-size: 10px;
-      font-weight: 700;
+      background: color-mix(in oklab, var(--app-accent) 25%, var(--app-dark-surface));
+      border-radius: 999px;
+      color: color-mix(in oklab, var(--app-accent) 72%, var(--app-dark-text));
+      font-size: 11px;
+      font-weight: 650;
       left: 0;
-      padding: 3px 6px;
+      padding: 4px 9px;
       position: absolute;
-      top: 56px;
+      top: 16px;
+      transform: translateX(-50%);
     }
   }
 
-  @media (pointer: coarse) {
-    .taskRow {
-      height: 44px;
+  .legend {
+    align-items: center;
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+
+    span {
+      align-items: center;
+      color: var(--app-dark-text-muted);
+      display: inline-flex;
+      font-size: 12px;
+      gap: 8px;
+    }
+
+    i {
+      background: var(--gantt-status-color);
+      border-radius: 50%;
+      height: 10px;
+      width: 10px;
     }
   }
 
-  @media only screen and (width < 680px) {
-    .phaseRange {
-      display: none;
+  @media only screen and (width < 900px) {
+    .root {
+      padding: 10px 14px 18px;
+    }
+
+    .scrollArea {
+      border-radius: 12px;
+    }
+
+    .timeline {
+      padding: 22px 24px 20px;
+    }
+  }
+
+  @media only screen and (width < 560px) {
+    .root {
+      padding-inline: 8px;
+    }
+
+    .heading h2 {
+      font-size: 17px;
+    }
+
+    .completion {
+      font-size: 11px;
+      gap: 6px;
+      padding-left: 9px;
+    }
+
+    .legend {
+      gap: 14px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .taskBar {
+    .marker {
       transition: none;
     }
   }

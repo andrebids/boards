@@ -334,7 +334,7 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     await zoomSelect.locator('.menu .item', { hasText: 'Semana', exact: true }).click();
 
     const timelineToggle = page.getByTestId('gantt-timeline-toggle');
-    await timelineToggle.click();
+    await page.getByTestId('gantt-view-toggle').click();
     if ((await timelineToggle.getAttribute('aria-pressed')) !== 'true') {
       throw new Error('The simple timeline toggle did not expose its pressed state');
     }

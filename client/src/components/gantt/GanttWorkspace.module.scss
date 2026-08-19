@@ -69,6 +69,35 @@
     flex: 1 1 auto;
   }
 
+  .viewSwitch {
+    align-items: center;
+    background: color-mix(in oklab, var(--app-dark-canvas) 56%, transparent);
+    border: 1px solid var(--app-dark-border);
+    border-radius: 999px;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .viewSwitchButton:global(.ui.button) {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    color: var(--app-dark-text-muted) !important;
+    min-height: 30px;
+    padding: 6px 14px !important;
+
+    &[aria-pressed='true'] {
+      background: linear-gradient(
+        135deg,
+        color-mix(in oklab, var(--app-accent) 72%, #a54dff),
+        var(--app-accent)
+      ) !important;
+      color: var(--app-dark-text) !important;
+    }
+  }
+
   .readonlyHint {
     color: var(--app-dark-text-muted);
     font-size: 12px;
@@ -87,22 +116,6 @@
     gap: 6px;
   }
 
-  .zoomDivider {
-    background: var(--app-dark-border);
-    height: 22px;
-    margin: 0 2px;
-    width: 1px;
-  }
-
-  .timelineToggle:global(.ui.button) {
-    white-space: nowrap;
-
-    :global(i.icon) {
-      font-size: 12px;
-      height: 16px;
-      width: 16px;
-    }
-  }
 
   .zoomButton:global(.ui.button) {
     border: 1px solid var(--app-dark-border);
@@ -369,13 +382,8 @@
       min-width: 92px;
     }
 
-    .timelineToggle:global(.ui.button) {
-      min-width: 36px;
+    .viewSwitchButton:global(.ui.button) {
       padding-inline: 10px !important;
-
-      span {
-        display: none;
-      }
     }
 
     .unscheduled {
