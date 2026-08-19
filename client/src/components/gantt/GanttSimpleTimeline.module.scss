@@ -55,8 +55,36 @@
 
   .tick {
     line {
-      stroke: color-mix(in oklab, var(--app-dark-border) 64%, transparent);
+      stroke: color-mix(in oklab, var(--app-dark-text) 4%, transparent);
       stroke-width: 1;
+    }
+  }
+
+  .todayGuide {
+    line {
+      stroke: color-mix(in oklab, var(--app-accent) 45%, transparent);
+      stroke-dasharray: 3 4;
+      stroke-width: 1;
+    }
+  }
+
+  .axis {
+    stroke: color-mix(in oklab, var(--app-dark-text-muted) 56%, var(--app-dark-surface));
+    stroke-linecap: round;
+    stroke-width: 5;
+  }
+
+  .axisProgress {
+    filter: drop-shadow(0 0 6px color-mix(in oklab, var(--app-accent) 35%, transparent));
+    stroke-linecap: round;
+    stroke-width: 5;
+  }
+
+  .axisTick {
+    circle {
+      fill: color-mix(in oklab, var(--app-dark-text-muted) 70%, var(--app-dark-surface));
+      stroke: var(--app-dark-canvas);
+      stroke-width: 2;
     }
 
     text {
@@ -67,30 +95,12 @@
     }
   }
 
-  .today {
-    line {
-      stroke: color-mix(in oklab, var(--app-accent) 78%, transparent);
-      stroke-dasharray: 3 4;
-      stroke-width: 1;
-    }
-
-    text {
-      fill: var(--app-accent);
-      font-size: 10px;
-      font-weight: 700;
-      text-anchor: middle;
-    }
-  }
-
-  .axis {
-    stroke: color-mix(in oklab, var(--app-dark-text-muted) 50%, var(--app-dark-surface));
-    stroke-linecap: round;
-    stroke-width: 2;
-  }
-
-  .boundaryMarker {
+  .startNode,
+  .endNode,
+  .milestoneNode,
+  .todayNode {
     circle {
-      fill: var(--app-dark-text-muted);
+      fill: var(--app-dark-surface);
       stroke: var(--app-dark-canvas);
       stroke-width: 2;
     }
@@ -103,8 +113,58 @@
     }
   }
 
+  .startNode circle {
+    fill: var(--app-dark-text-muted);
+  }
+
+  .endNode {
+    circle {
+      fill: color-mix(in oklab, var(--app-dark-surface) 66%, var(--app-dark-text-muted));
+      stroke: color-mix(in oklab, var(--app-dark-text-muted) 75%, var(--app-dark-canvas));
+    }
+
+    path {
+      fill: none;
+      stroke: var(--app-dark-text);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
+    }
+  }
+
+  .milestoneNode {
+    circle {
+      fill: color-mix(in oklab, var(--app-dark-surface) 72%, var(--app-accent));
+      stroke: color-mix(in oklab, var(--app-accent) 72%, var(--app-dark-text));
+      stroke-width: 2;
+    }
+
+    .milestoneNodeInner {
+      fill: var(--app-dark-text);
+      stroke: none;
+    }
+  }
+
+  .todayNode {
+    circle {
+      fill: color-mix(in oklab, var(--app-dark-surface) 70%, var(--app-accent));
+      stroke: var(--app-accent);
+      stroke-width: 2.5;
+    }
+
+    .todayNodeInner {
+      fill: var(--app-dark-text);
+      stroke: none;
+    }
+
+    text {
+      fill: var(--app-accent);
+      font-weight: 750;
+    }
+  }
+
   .connector {
-    stroke: color-mix(in oklab, var(--gantt-status-color) 42%, transparent);
+    stroke: color-mix(in oklab, var(--gantt-status-color) 30%, transparent);
     stroke-width: 1;
   }
 

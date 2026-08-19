@@ -14,7 +14,10 @@ describe('simple Gantt timeline scale', () => {
     ]);
 
     expect(
-      getSimpleTimelineBarStyle(range, { startDate: '2026-08-12', endDate: '2026-08-18' }),
+      getSimpleTimelineBarStyle(range, {
+        startDate: '2026-08-12',
+        endDate: '2026-08-18',
+      }),
     ).toEqual({ left: '0%', width: '100%' });
   });
 
@@ -180,14 +183,41 @@ describe('simple Gantt timeline scale', () => {
 
   test('alternates parent groups above and below the centered axis', () => {
     const layout = getSimpleTimelineLayout([
-      { id: 'one', itemType: 'summary', task: 'Primeiro', startDate: '2026-08-10', endDate: '2026-08-12' },
-      { id: 'one-task', itemType: 'task', parentId: 'one', task: 'Tarefa 1', startDate: '2026-08-10', endDate: '2026-08-11' },
-      { id: 'two', itemType: 'summary', task: 'Segundo', startDate: '2026-08-13', endDate: '2026-08-15' },
-      { id: 'two-task', itemType: 'task', parentId: 'two', task: 'Tarefa 2', startDate: '2026-08-13', endDate: '2026-08-14' },
+      {
+        id: 'one',
+        itemType: 'summary',
+        task: 'Primeiro',
+        startDate: '2026-08-10',
+        endDate: '2026-08-12',
+      },
+      {
+        id: 'one-task',
+        itemType: 'task',
+        parentId: 'one',
+        task: 'Tarefa 1',
+        startDate: '2026-08-10',
+        endDate: '2026-08-11',
+      },
+      {
+        id: 'two',
+        itemType: 'summary',
+        task: 'Segundo',
+        startDate: '2026-08-13',
+        endDate: '2026-08-15',
+      },
+      {
+        id: 'two-task',
+        itemType: 'task',
+        parentId: 'two',
+        task: 'Tarefa 2',
+        startDate: '2026-08-13',
+        endDate: '2026-08-14',
+      },
     ]);
 
     expect(layout.groups.map(({ side }) => side)).toEqual(['top', 'bottom']);
     expect(layout.groups[0].lanes[0][0].y).toBeLessThan(layout.axisY);
     expect(layout.groups[1].lanes[0][0].y).toBeGreaterThan(layout.axisY);
+    expect(layout.axisY).toBe(layout.canvasHeight / 2);
   });
 });

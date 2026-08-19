@@ -88,7 +88,10 @@ export const groupSimpleTimelineItems = (items) => {
     .sort(compareByStartDate);
 
   if (independentItems.length > 0) {
-    groups.push({ summaryId: null, itemIds: independentItems.map(({ id }) => id) });
+    groups.push({
+      summaryId: null,
+      itemIds: independentItems.map(({ id }) => id),
+    });
   }
 
   return groups;
@@ -130,7 +133,10 @@ export const getSimpleTimelineHierarchy = (items) => {
       );
 
       return lanes.length > 0
-        ? { parentId: id, lanes: lanes.map((lane) => lane.map(({ id: itemId }) => itemId)) }
+        ? {
+            parentId: id,
+            lanes: lanes.map((lane) => lane.map(({ id: itemId }) => itemId)),
+          }
         : null;
     })
     .filter(Boolean);
@@ -258,22 +264,24 @@ export const getSimpleTimelineLayout = (
   const totalDays = differenceInGanttDays(timelineStart, timelineEnd);
   const dateToX = (date) =>
     horizontalPadding + differenceInGanttDays(timelineStart, date) * pixelsPerDay;
-  const contentWidth = Math.max(
-    viewportWidth,
-    totalDays * pixelsPerDay + horizontalPadding * 2,
-  );
+  const contentWidth = Math.max(viewportWidth, totalDays * pixelsPerDay + horizontalPadding * 2);
   const groups = getTimelineGroups(items).map((group, groupIndex) => ({
     ...group,
     side: groupIndex % 2 === 0 ? 'top' : 'bottom',
     lanes: distributePixelLanes(group.items, dateToX, pixelsPerDay),
   }));
-  const topLaneCount = Math.max(0, ...groups.filter(({ side }) => side === 'top').map(({ lanes }) => lanes.length));
+  const topLaneCount = Math.max(
+    0,
+    ...groups.filter(({ side }) => side === 'top').map(({ lanes }) => lanes.length),
+  );
   const bottomLaneCount = Math.max(
     0,
     ...groups.filter(({ side }) => side === 'bottom').map(({ lanes }) => lanes.length),
   );
-  const axisY = CANVAS_PADDING + topLaneCount * LANE_SPACING + AXIS_CLEARANCE;
-  const canvasHeight = axisY + bottomLaneCount * LANE_SPACING + AXIS_CLEARANCE + CANVAS_PADDING;
+  // Keep the project axis physically central even when one side has more task lanes.
+  const sideLaneCount = Math.max(topLaneCount, bottomLaneCount);
+  const axisY = CANVAS_PADDING + sideLaneCount * LANE_SPACING + AXIS_CLEARANCE;
+  const canvasHeight = axisY * 2;
 
   return {
     axisY,
