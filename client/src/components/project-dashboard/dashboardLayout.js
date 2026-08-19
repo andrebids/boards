@@ -1,17 +1,20 @@
 const GRID_COLUMNS = 12;
 
 export const DASHBOARD_WIDGETS = {
-  progress: { minW: 3, minH: 3, maxW: 6, maxH: 5 },
+  progress: { minW: 3, minH: 3, maxW: 12, maxH: 10 },
   status: { minW: 4, minH: 3, maxW: 12, maxH: 5 },
-  upcoming: { minW: 4, minH: 4, maxW: 12, maxH: 10 },
+  upcoming: { minW: 2, minH: 3, maxW: 12, maxH: 10 },
   attention: { minW: 4, minH: 4, maxW: 12, maxH: 10 },
 };
 
 export const createDefaultDashboardLayout = () => [
-  { id: 'progress', type: 'progress', x: 0, y: 0, w: 4, h: 3 },
-  { id: 'status', type: 'status', x: 4, y: 0, w: 8, h: 3 },
-  { id: 'upcoming', type: 'upcoming', x: 0, y: 3, w: 6, h: 5 },
-  { id: 'attention', type: 'attention', x: 6, y: 3, w: 6, h: 5 },
+  { id: 'overview', type: 'progress', x: 0, y: 0, w: 7, h: 6 },
+  { id: 'status-overview', type: 'status', x: 7, y: 0, w: 3, h: 3 },
+  { id: 'upcoming-top', type: 'upcoming', x: 10, y: 0, w: 2, h: 3 },
+  { id: 'attention-overview', type: 'attention', x: 7, y: 3, w: 5, h: 3 },
+  { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
+  { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
+  { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
 ];
 
 export const normalizeDashboardLayout = (layout) => {

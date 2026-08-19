@@ -24,7 +24,7 @@ const DashboardWorkspace = React.memo(() => {
 
     const grid = GridStack.init(
       {
-        cellHeight: 76,
+        cellHeight: 88,
         column: 12,
         disableDrag: isTvMode,
         disableResize: isTvMode,
@@ -88,8 +88,8 @@ const DashboardWorkspace = React.memo(() => {
               key={widget.id}
             >
               <div className={`grid-stack-item-content ${styles.widget}`}>
-                <span>{widget.type}</span>
-                <strong>Em breve</strong>
+                <span>{widget.type === 'progress' ? 'Visão geral' : widget.type}</span>
+                <strong>{widget.id === 'overview' ? 'Dashboard TV' : 'Exemplo'}</strong>
               </div>
             </article>
           ))}
