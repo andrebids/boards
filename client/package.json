@@ -110,6 +110,7 @@
     "date-fns": "^2.30.0",
     "dequal": "^2.0.3",
     "emoji-picker-react": "^4.19.1",
+    "gridstack": "13.1.2",
     "highlight.js": "^11.11.1",
     "highlightjs-4d": "^1.0.6",
     "highlightjs-alan": "^0.0.2",
