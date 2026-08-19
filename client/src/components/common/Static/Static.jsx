@@ -16,6 +16,7 @@ import { BoardViews } from '../../../constants/Enums';
 import Home from '../Home';
 import Board from '../../boards/Board';
 import GanttWorkspace from '../../gantt';
+import DashboardWorkspace from '../../project-dashboard/DashboardWorkspace';
 import Paths from '../../../constants/Paths';
 
 import styles from './Static.module.scss';
@@ -103,6 +104,9 @@ const Static = React.memo(() => {
       styles.wrapperFlex,
     ];
     contentNode = <GanttWorkspace />;
+  } else if (pathsMatch?.pattern.path === Paths.DASHBOARD) {
+    wrapperClassNames = [styles.wrapperGantt, styles.wrapperFlex];
+    contentNode = <DashboardWorkspace />;
   } else if (board === undefined) {
     wrapperClassNames = [
       isFavoritesActive

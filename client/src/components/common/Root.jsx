@@ -91,6 +91,7 @@ function Root({ store, history }) {
                 <Route path={Paths.RESET_PASSWORD} element={<Login />} />
                 <Route path={Paths.OIDC_CALLBACK} element={<Login />} />
                 <Route path={Paths.ROOT} element={<Core />} />
+                <Route path={Paths.DASHBOARD} element={<Core />} />
                 <Route path={Paths.PROJECTS} element={<Core />} />
                 <Route path={Paths.GANTT} element={<Core />} />
                 <Route path={Paths.BOARDS} element={<Core />} />
