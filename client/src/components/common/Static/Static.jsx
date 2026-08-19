@@ -47,6 +47,9 @@ const Static = React.memo(() => {
   if (isFetching) {
     wrapperClassNames = [styles.wrapperLoader];
     contentNode = <Loader active size="huge" />;
+  } else if (pathsMatch?.pattern.path === Paths.DASHBOARD) {
+    wrapperClassNames = [styles.wrapperGantt, styles.wrapperFlex];
+    contentNode = <DashboardWorkspace />;
   } else if (projectId === undefined) {
     wrapperClassNames = [
       isFavoritesActive && styles.wrapperWithFavorites,
@@ -104,9 +107,6 @@ const Static = React.memo(() => {
       styles.wrapperFlex,
     ];
     contentNode = <GanttWorkspace />;
-  } else if (pathsMatch?.pattern.path === Paths.DASHBOARD) {
-    wrapperClassNames = [styles.wrapperGantt, styles.wrapperFlex];
-    contentNode = <DashboardWorkspace />;
   } else if (board === undefined) {
     wrapperClassNames = [
       isFavoritesActive
