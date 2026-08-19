@@ -636,7 +636,6 @@ module.exports = {
       Notification.Types.SET_DUE_DATE,
       Notification.Types.ADD_MEMBER_TO_BOARD,
       Notification.Types.ADD_MEMBER_TO_CARD,
-      Notification.Types.COMMENT_CARD,
       Notification.Types.MENTION_IN_COMMENT,
     ];
 

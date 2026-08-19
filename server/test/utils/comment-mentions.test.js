@@ -270,6 +270,10 @@ describe('Comment mentions', () => {
       },
     };
     global.User = {
+      NotificationLevels: {
+        NONE: 'none',
+        ESSENTIAL: 'essential',
+      },
       qm: {
         getOneById: async () => mentionedUser,
       },
@@ -357,5 +361,118 @@ describe('Comment mentions', () => {
       to: mentionedUser.email,
     });
     expect(sentEmails[0].subject).to.include('You Were Mentioned in Comment');
+  });
+
+  it('does not send email for an unmentioned subscriber comment notification', async () => {
+    const sentEmails = [];
+    const subscriber = {
+      id: 'subscriber',
+      email: 'subscriber@example.com',
+      language: 'en',
+      name: 'Subscriber',
+    };
+
+    global.Notification = {
+      ...global.Notification,
+      qm: {
+        createOne: async (values) => ({
+          id: 'notification-1',
+          ...values,
+        }),
+      },
+    };
+    global.NotificationService = {
+      qm: {
+        getByUserId: async () => [],
+      },
+    };
+    global.User = {
+      NotificationLevels: {
+        NONE: 'none',
+        ESSENTIAL: 'essential',
+      },
+      qm: {
+        getOneById: async () => subscriber,
+      },
+    };
+    global.sails = {
+      config: {
+        custom: {
+          baseUrl: 'http://localhost:3008',
+          globalNotifications: {
+            enabled: true,
+          },
+        },
+      },
+      hooks: {
+        smtp: {
+          isEnabled: () => false,
+        },
+      },
+      log: {
+        error: () => {},
+        info: () => {},
+        warn: () => {},
+      },
+      sockets: {
+        broadcast: () => {},
+      },
+      helpers: {
+        lists: {
+          makeName: (list) => list.name,
+        },
+        users: {
+          presentOne: (user) => user,
+        },
+        utils: {
+          compileEmailTemplate: {
+            with: async () => '<p>Comment</p>',
+          },
+          makeTranslator: () => (key) => key,
+          sendGlobalNotification: {
+            with: async (inputs) => {
+              sentEmails.push(inputs);
+            },
+          },
+          sendWebhooks: {
+            with: () => {},
+          },
+        },
+      },
+    };
+
+    await createNotification.fn({
+      values: {
+        userId: subscriber.id,
+        comment: { id: 'comment-1' },
+        type: 'commentCard',
+        data: {
+          text: 'A comment without a mention',
+        },
+        creatorUser: {
+          id: 'author',
+          name: 'Author',
+        },
+        card: {
+          id: 'card-1',
+          boardId: 'board-1',
+          name: 'Card',
+        },
+      },
+      project: {
+        id: 'project-1',
+        name: 'Project',
+      },
+      board: {
+        id: 'board-1',
+        name: 'Board',
+      },
+      list: {
+        id: 'list-1',
+        name: 'List',
+      },
+    });
+
+    expect(sentEmails).to.have.lengthOf(0);
   });
 });
