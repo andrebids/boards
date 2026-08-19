@@ -14,6 +14,9 @@ export default class extends BaseModel {
   static fields = {
     id: attr(),
     text: attr(),
+    reactions: attr({
+      getDefault: () => [],
+    }),
     createdAt: attr({
       getDefault: () => new Date(),
     }),
@@ -36,7 +39,7 @@ export default class extends BaseModel {
 
         break;
       case ActionTypes.COMMENTS_FETCH__SUCCESS:
-        payload.comments.forEach(comment => {
+        payload.comments.forEach((comment) => {
           Comment.upsert(comment);
         });
 

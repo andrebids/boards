@@ -119,6 +119,26 @@ const GeneralPane = React.memo(() => {
           />
         </div>
       </section>
+      {canEdit && (
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle}>
+            {t('common.cards', {
+              context: 'title',
+            })}
+          </h3>
+          <div className={styles.settingRow}>
+            <Radio
+              toggle
+              name="autoAddBoardMembersToCards"
+              checked={project.autoAddBoardMembersToCards}
+              label={t('common.autoAddBoardMembersToCards')}
+              className={styles.radio}
+              onChange={handleToggleChange}
+            />
+          </div>
+          <p className={styles.hint}>{t('common.autoAddBoardMembersToCardsHint')}</p>
+        </section>
+      )}
       {canManageGantt && (
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>{t('common.projectChat')}</h3>

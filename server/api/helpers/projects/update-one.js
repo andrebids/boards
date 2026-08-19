@@ -109,6 +109,20 @@ module.exports = {
         return project;
       }
 
+      if (values.autoAddBoardMembersToCards === true && !inputs.record.autoAddBoardMembersToCards) {
+        const boards = await Board.qm.getByProjectId(project.id);
+
+        await Promise.all(
+          boards.map((board) =>
+            sails.helpers.boards.syncMembersToCards.with({
+              project,
+              board,
+              actorUser: inputs.actorUser,
+            }),
+          ),
+        );
+      }
+
       const {
         scoper = sails.helpers.projects.makeScoper.with({
           record: project,

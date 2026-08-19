@@ -55,11 +55,19 @@ module.exports = {
       beforeId: inputs.beforeId,
     });
 
+    const reactionsByCommentId = await sails.helpers.comments.getReactions.with({
+      commentIds: sails.helpers.utils.mapRecords(comments),
+    });
+    const presentedComments = comments.map((comment) => ({
+      ...comment,
+      reactions: reactionsByCommentId[comment.id],
+    }));
+
     const userIds = sails.helpers.utils.mapRecords(comments, 'userId', true, true);
     const users = await User.qm.getByIds(userIds);
 
     return {
-      items: comments,
+      items: presentedComments,
       included: {
         users: sails.helpers.users.presentMany(users, currentUser),
       },

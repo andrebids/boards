@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Karty',
+      autoAddBoardMembersToCards: 'Přidat členy nástěnky ke všem kartám',
+      autoAddBoardMembersToCardsHint:
+        'Platí pro současné i budoucí karty na všech nástěnkách v tomto projektu. Vypnutí již přidané členy neodebere.',
       aboutPlanka: 'O aplikaci PLANKA',
       account: 'Účet',
       actions: 'Akce',

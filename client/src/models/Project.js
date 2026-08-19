@@ -20,6 +20,9 @@ export default class extends BaseModel {
     backgroundGradient: attr(),
     isHidden: attr(),
     chatMode: attr(),
+    autoAddBoardMembersToCards: attr({
+      getDefault: () => false,
+    }),
     isFavorite: attr({
       getDefault: () => false,
     }),

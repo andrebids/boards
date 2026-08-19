@@ -17,6 +17,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kartlar',
+      autoAddBoardMembersToCards: 'Pano üyelerini tüm kartlara ekle',
+      autoAddBoardMembersToCardsHint:
+        'Bu projedeki tüm panolarda mevcut ve gelecekteki kartlara uygulanır. Kapatmak, daha önce eklenen üyeleri kaldırmaz.',
       account: 'Hesap',
       actions: 'Eylemler',
       addAttachment_title: 'Dosya ekle',

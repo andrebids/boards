@@ -3,13 +3,22 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, {
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { createPortal } from 'react-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Comment } from 'semantic-ui-react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, SmilePlus, Trash2 } from 'lucide-react';
 import { useDidUpdate } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
@@ -23,6 +32,13 @@ import Edit from './Edit';
 import Markdown from '../../common/Markdown';
 import ConfirmationStep from '../../common/ConfirmationStep';
 import UserAvatar from '../../users/UserAvatar';
+import LazyEmojiPicker, {
+  EMOJI_CATEGORY_ICONS,
+  EMOJI_PICKER_CLASS_NAME,
+  EMOJI_PICKER_HEIGHT,
+  EMOJI_PICKER_WIDTH,
+} from '../../chat/LazyEmojiPicker';
+import { getReactionEmojiPickerPosition, QUICK_REACTION_EMOJIS } from '../../chat/reaction-utils';
 
 import styles from './Item.module.scss';
 
@@ -74,11 +90,10 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
   );
   const user = useSelector((state) => selectUserById(state, comment.userId));
 
-  const isCurrentUser = useSelector(
-    (state) => comment.userId === selectors.selectCurrentUserId(state),
-  );
+  const currentUserId = useSelector(selectors.selectCurrentUserId);
+  const isCurrentUser = comment.userId === currentUserId;
 
-  const { canEdit, canDelete } = useSelector((state) => {
+  const { canEdit, canDelete, canReact } = useSelector((state) => {
     const { listId } = selectors.selectCurrentCard(state);
     const list = selectListById(state, listId);
 
@@ -86,6 +101,7 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
       return {
         canEdit: false,
         canDelete: false,
+        canReact: false,
       };
     }
 
@@ -109,12 +125,15 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
         isManager ||
         isEditor ||
         (isMember && comment.userId === boardMembership.userId && boardMembership.canComment),
+      canReact: isMember && (isEditor || boardMembership.canComment),
     };
   }, shallowEqual);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [isEditOpened, setIsEditOpened] = useState(false);
+  const [reactionPickerPosition, setReactionPickerPosition] = useState(null);
+  const reactionPickerRef = useRef(null);
   const [, , setIsClosableActive] = useContext(ClosableContext);
 
   const handleDeleteConfirm = useCallback(() => {
@@ -128,6 +147,54 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
   const handleEditClose = useCallback(() => {
     setIsEditOpened(false);
   }, []);
+
+  const handleReactionClick = useCallback(
+    (emoji) => {
+      dispatch(entryActions.toggleCommentReaction(id, emoji));
+      setReactionPickerPosition(null);
+    },
+    [dispatch, id],
+  );
+
+  const handleReactionPickerToggle = useCallback((event) => {
+    setReactionPickerPosition((position) =>
+      position
+        ? null
+        : getReactionEmojiPickerPosition(
+            event.currentTarget,
+            EMOJI_PICKER_WIDTH,
+            EMOJI_PICKER_HEIGHT,
+          ),
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!reactionPickerPosition) {
+      return undefined;
+    }
+
+    const closePicker = (event) => {
+      if (event?.target instanceof Node && reactionPickerRef.current?.contains(event.target)) {
+        return;
+      }
+      setReactionPickerPosition(null);
+    };
+    const closeOnOutsidePointerDown = (event) => {
+      if (event.target instanceof Node && !reactionPickerRef.current?.contains(event.target)) {
+        closePicker();
+      }
+    };
+
+    window.addEventListener('resize', closePicker);
+    window.addEventListener('scroll', closePicker, true);
+    document.addEventListener('pointerdown', closeOnOutsidePointerDown, true);
+
+    return () => {
+      window.removeEventListener('resize', closePicker);
+      window.removeEventListener('scroll', closePicker, true);
+      document.removeEventListener('pointerdown', closeOnOutsidePointerDown, true);
+    };
+  }, [reactionPickerPosition]);
 
   useDidUpdate(() => {
     setIsClosableActive(isEditOpened);
@@ -148,6 +215,7 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
     value: commentDate,
     postProcess: 'formatDate',
   });
+  const reactions = comment.reactions || [];
 
   return (
     <Comment
@@ -192,8 +260,64 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
             <div className={styles.bubble}>
               <Markdown>{comment.text}</Markdown>
             </div>
-            {(canEdit || canDelete) && (
-              <span className={styles.actions}>
+            {(canReact || canEdit || canDelete) && (
+              <span
+                className={classNames(styles.actions, reactionPickerPosition && styles.actionsOpen)}
+                role="group"
+                aria-label={t('chat.messageActions')}
+              >
+                {canReact &&
+                  QUICK_REACTION_EMOJIS.map((emoji) => (
+                    <button
+                      type="button"
+                      key={emoji}
+                      className={styles.quickReactionButton}
+                      aria-label={`${t('chat.addEmoji')}: ${emoji}`}
+                      disabled={!comment.isPersisted}
+                      onClick={() => handleReactionClick(emoji)}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                {canReact && (
+                  <span className={styles.reactionControl}>
+                    <button
+                      type="button"
+                      aria-label={t('chat.addEmoji')}
+                      title={t('chat.addEmoji')}
+                      disabled={!comment.isPersisted}
+                      onClick={handleReactionPickerToggle}
+                    >
+                      <SmilePlus aria-hidden="true" size={15} />
+                    </button>
+                    {reactionPickerPosition &&
+                      document.getElementById('app') &&
+                      createPortal(
+                        <div
+                          ref={reactionPickerRef}
+                          className={styles.floatingReactionEmojiMenu}
+                          style={reactionPickerPosition}
+                        >
+                          <Suspense fallback={null}>
+                            <LazyEmojiPicker
+                              categoryIcons={EMOJI_CATEGORY_ICONS}
+                              className={EMOJI_PICKER_CLASS_NAME}
+                              theme="dark"
+                              width={EMOJI_PICKER_WIDTH}
+                              height={EMOJI_PICKER_HEIGHT}
+                              previewConfig={{ showPreview: false }}
+                              searchPlaceholder={t('chat.searchEmoji')}
+                              onEmojiClick={(emojiData) => handleReactionClick(emojiData.emoji)}
+                            />
+                          </Suspense>
+                        </div>,
+                        document.getElementById('app'),
+                      )}
+                  </span>
+                )}
+                {canReact && (canEdit || canDelete) && (
+                  <span className={styles.actionDivider} aria-hidden="true" />
+                )}
                 {canEdit && (
                   <button
                     type="button"
@@ -224,6 +348,41 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
                   </ConfirmationPopup>
                 )}
               </span>
+            )}
+            {(reactions.length > 0 || canReact) && (
+              <div
+                className={classNames(
+                  styles.reactions,
+                  reactions.length === 0 && styles.mobileOnlyReactions,
+                )}
+              >
+                {reactions.map((reaction) => (
+                  <button
+                    type="button"
+                    key={reaction.emoji}
+                    className={classNames(
+                      reaction.userIds.includes(currentUserId) && styles.reacted,
+                    )}
+                    disabled={!canReact || !comment.isPersisted}
+                    aria-label={`${t('chat.addEmoji')}: ${reaction.emoji}`}
+                    onClick={() => handleReactionClick(reaction.emoji)}
+                  >
+                    {reaction.emoji} {reaction.userIds.length}
+                  </button>
+                ))}
+                {canReact && (
+                  <button
+                    type="button"
+                    className={styles.mobileReactionButton}
+                    disabled={!comment.isPersisted}
+                    aria-label={t('chat.addEmoji')}
+                    title={t('chat.addEmoji')}
+                    onClick={handleReactionPickerToggle}
+                  >
+                    <SmilePlus aria-hidden="true" size={14} />
+                  </button>
+                )}
+              </div>
             )}
           </>
         )}

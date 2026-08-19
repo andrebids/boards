@@ -17,6 +17,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'البطاقات',
+      autoAddBoardMembersToCards: 'إضافة أعضاء اللوحة إلى كل بطاقة',
+      autoAddBoardMembersToCardsHint:
+        'ينطبق على البطاقات الحالية والمستقبلية في كل لوحة ضمن هذا المشروع. إيقافه لا يزيل الأعضاء الذين تمت إضافتهم.',
       aboutPlanka: 'حول PLANKA',
       account: 'الحساب',
       actions: 'إجراءات',

@@ -25,7 +25,6 @@ import {
   selectTimelineData,
 } from './ganttSelectors';
 import GanttTimelineAdapter from './GanttTimelineAdapter';
-import GanttSimpleTimeline from './GanttSimpleTimeline';
 import GanttItemPanel from './GanttItemPanel';
 import GanttSourceTaskImportPanel from './GanttSourceTaskImportPanel';
 
@@ -50,7 +49,6 @@ const GanttWorkspace = React.memo(() => {
     reload,
   } = useGantt();
   const [zoomLevel, setZoomLevel] = useState('week');
-  const [viewMode, setViewMode] = useState('gantt');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isImportPanelOpen, setIsImportPanelOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -179,10 +177,6 @@ const GanttWorkspace = React.memo(() => {
     [items, t, updateItem],
   );
 
-  const handleViewModeChange = useCallback((nextMode) => {
-    setViewMode(nextMode);
-  }, []);
-
   if (isLoading) {
     return (
       <div className={styles.centerState}>
@@ -252,82 +246,38 @@ const GanttWorkspace = React.memo(() => {
           </span>
         )}
 
-        <div
-          className={styles.zoomControls}
-          role="group"
-          aria-label={t('common.ganttTimelineScale')}
-        >
-          <div className={styles.zoomSwitch} role="group" aria-label={t('common.ganttZoomLevel')}>
-            {ZOOM_LEVELS.map((level) => (
-              <Button
-                key={level}
-                type="button"
-                size="sm"
-                variant="secondary"
-                className={`${styles.zoomSwitchButton} ${
-                  zoomLevel === level ? styles.zoomSwitchButtonActive : ''
-                }`}
-                onClick={() => setZoomLevel(level)}
-                aria-pressed={zoomLevel === level}
-                data-selected={zoomLevel === level}
-                data-testid={`gantt-zoom-${level}`}
-              >
-                {t(`common.ganttZoom_${level}`)}
-              </Button>
-            ))}
-          </div>
-          <div className={styles.viewSwitch} role="group" aria-label={t('common.ganttTimelineScale')}>
+        <div className={styles.zoomSwitch} role="group" aria-label={t('common.ganttZoomLevel')}>
+          {ZOOM_LEVELS.map((level) => (
             <Button
+              key={level}
               type="button"
               size="sm"
               variant="secondary"
-              className={`${styles.viewSwitchButton} ${
-                viewMode === 'timeline' ? styles.viewSwitchButtonActive : ''
+              className={`${styles.zoomSwitchButton} ${
+                zoomLevel === level ? styles.zoomSwitchButtonActive : ''
               }`}
-              onClick={() => handleViewModeChange('timeline')}
-              aria-pressed={viewMode === 'timeline'}
-              data-selected={viewMode === 'timeline'}
-              data-testid="gantt-timeline-toggle"
+              onClick={() => setZoomLevel(level)}
+              aria-pressed={zoomLevel === level}
+              data-selected={zoomLevel === level}
+              data-testid={`gantt-zoom-${level}`}
             >
-              {t('common.ganttSimpleTimeline')}
+              {t(`common.ganttZoom_${level}`)}
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className={`${styles.viewSwitchButton} ${
-                viewMode === 'gantt' ? styles.viewSwitchButtonActive : ''
-              }`}
-              onClick={() => handleViewModeChange('gantt')}
-              aria-pressed={viewMode === 'gantt'}
-              data-selected={viewMode === 'gantt'}
-              data-testid="gantt-view-toggle"
-            >
-              {t('common.ganttFullTimeline')}
-            </Button>
-          </div>
+          ))}
         </div>
       </header>
 
       <section className={styles.timelineArea}>
         {timelineItems.length > 0 ? (
-          viewMode === 'timeline' ? (
-            <GanttSimpleTimeline
-              items={timelineItems}
-              onItemSelect={handleItemSelect}
-              zoomLevel={zoomLevel}
-            />
-          ) : (
-            <GanttTimelineAdapter
-              items={timelineItems}
-              links={timelineLinks}
-              zoomLevel={zoomLevel}
-              readonly={!canMutate}
-              onZoomLevelChange={setZoomLevel}
-              onItemSelect={handleItemSelect}
-              onItemChange={handleItemChange}
-            />
-          )
+          <GanttTimelineAdapter
+            items={timelineItems}
+            links={timelineLinks}
+            zoomLevel={zoomLevel}
+            readonly={!canMutate}
+            onZoomLevelChange={setZoomLevel}
+            onItemSelect={handleItemSelect}
+            onItemChange={handleItemChange}
+          />
         ) : (
           <div className={styles.emptyState}>
             <span className={styles.emptyGlyph} aria-hidden="true">

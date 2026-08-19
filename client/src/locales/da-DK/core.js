@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kort',
+      autoAddBoardMembersToCards: 'Føj tavlemedlemmer til alle kort',
+      autoAddBoardMembersToCardsHint:
+        'Gælder nuværende og fremtidige kort på alle tavler i projektet. Når indstillingen slås fra, fjernes allerede tilføjede medlemmer ikke.',
       aboutPlanka: 'Om PLANKA',
       account: 'Konto',
       actions: 'Handlinger',

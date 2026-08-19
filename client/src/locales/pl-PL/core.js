@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Karty',
+      autoAddBoardMembersToCards: 'Dodaj członków tablicy do wszystkich kart',
+      autoAddBoardMembersToCardsHint:
+        'Dotyczy obecnych i przyszłych kart na wszystkich tablicach w tym projekcie. Wyłączenie nie usuwa już dodanych członków.',
       aboutPlanka: 'O PLANKA',
       account: 'Konto',
       actions: 'Akcje',

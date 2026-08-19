@@ -69,7 +69,6 @@
     flex: 1 1 auto;
   }
 
-  .viewSwitch,
   .zoomSwitch {
     align-items: center;
     background: var(--app-dark-canvas);
@@ -80,7 +79,6 @@
     padding: 3px;
   }
 
-  .viewSwitchButton:global(.ui.button),
   .zoomSwitchButton:global(.ui.button) {
     background: transparent !important;
     border: 0;
@@ -101,7 +99,6 @@
     }
   }
 
-  .viewSwitchButtonActive:global(.ui.button),
   .zoomSwitchButtonActive:global(.ui.button) {
     background: var(--app-accent) !important;
     box-shadow: 0 1px 2px rgba(3, 5, 10, 0.38) !important;
@@ -113,12 +110,6 @@
     color: var(--app-dark-text-muted);
     font-size: 12px;
     white-space: nowrap;
-  }
-
-  .zoomControls {
-    align-items: center;
-    display: flex;
-    gap: 6px;
   }
 
   .timelineArea {
@@ -303,7 +294,6 @@
       min-width: 92px;
     }
 
-    .viewSwitchButton:global(.ui.button),
     .zoomSwitchButton:global(.ui.button) {
       padding-inline: 10px !important;
     }

@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Κάρτες',
+      autoAddBoardMembersToCards: 'Προσθήκη των μελών του πίνακα σε όλες τις κάρτες',
+      autoAddBoardMembersToCardsHint:
+        'Ισχύει για τις τρέχουσες και μελλοντικές κάρτες σε όλους τους πίνακες αυτού του έργου. Η απενεργοποίηση δεν αφαιρεί τα μέλη που έχουν ήδη προστεθεί.',
       aboutPlanka: 'Σχετικά με το PLANKA',
       account: 'Λογαριασμός',
       actions: 'Ενέργειες',

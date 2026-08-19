@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Карточки',
+      autoAddBoardMembersToCards: 'Добавить участников доски ко всем карточкам',
+      autoAddBoardMembersToCardsHint:
+        'Применяется к текущим и будущим карточкам на всех досках проекта. Отключение не удаляет уже добавленных участников.',
       aboutPlanka: 'О проекте PLANKA',
       account: 'Учетная запись',
       actions: 'Действия',

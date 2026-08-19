@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kartu',
+      autoAddBoardMembersToCards: 'Tambahkan anggota papan ke semua kartu',
+      autoAddBoardMembersToCardsHint:
+        'Berlaku untuk kartu saat ini dan mendatang di setiap papan dalam proyek ini. Menonaktifkannya tidak menghapus anggota yang sudah ditambahkan.',
       aboutPlanka: 'Tentang PLANKA',
       account: 'Akun',
       actions: 'Tindakan',

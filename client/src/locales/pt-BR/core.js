@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Cartões',
+      autoAddBoardMembersToCards: 'Adicionar membros do quadro a todos os cartões',
+      autoAddBoardMembersToCardsHint:
+        'Aplica-se aos cartões atuais e futuros de todos os quadros deste projeto. Desativar não remove membros já adicionados.',
       aboutPlanka: 'Sobre o Bids',
       account: 'Conta',
       actions: 'Ações',

@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kártyák',
+      autoAddBoardMembersToCards: 'A tábla tagjainak hozzáadása minden kártyához',
+      autoAddBoardMembersToCardsHint:
+        'A projekt minden táblájának jelenlegi és jövőbeli kártyáira vonatkozik. A kikapcsolás nem távolítja el a már hozzáadott tagokat.',
       aboutPlanka: 'PLANKA-ról',
       account: 'Fiók',
       actions: 'Műveletek',

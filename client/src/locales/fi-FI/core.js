@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Kortit',
+      autoAddBoardMembersToCards: 'Lisää taulun jäsenet kaikkiin kortteihin',
+      autoAddBoardMembersToCardsHint:
+        'Koskee tämän projektin kaikkien taulujen nykyisiä ja tulevia kortteja. Poistaminen käytöstä ei poista jo lisättyjä jäseniä.',
       aboutPlanka: 'Tietoa PLANKAsta',
       account: 'Tili',
       actions: 'Toiminnot',

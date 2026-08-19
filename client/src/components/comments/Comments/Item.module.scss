@@ -6,42 +6,60 @@
 :global(#app) {
   .actions {
     align-items: center;
+    background: var(--chat-popup, var(--card-modal-surface, #fff));
+    border: 1px solid var(--chat-border, rgba(9, 30, 66, 0.13));
+    border-radius: var(--chat-radius-control, 8px);
+    box-shadow: var(--chat-panel-shadow, 0 6px 16px rgba(9, 30, 66, 0.16));
     display: flex;
-    gap: 2px;
-    left: calc(100% + 6px);
+    gap: 1px;
+    left: 0;
     opacity: 0;
+    padding: 3px;
     pointer-events: none;
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%) scale(0.96);
+    top: calc(100% + 4px);
+    transform: translateY(-6px) scale(0.965);
+    transform-origin: top left;
     transition:
-      opacity 140ms ease,
-      transform 140ms ease,
-      visibility 0s linear 140ms;
+      opacity 120ms ease,
+      transform 150ms ease,
+      visibility 0s linear 150ms;
     visibility: hidden;
-    z-index: 2;
+    z-index: 12;
+
+    &::after {
+      content: "";
+      height: 10px;
+      left: -6px;
+      position: absolute;
+      right: -6px;
+      top: -10px;
+    }
 
     button {
       align-items: center;
       background: transparent;
       border: 0;
-      border-radius: 8px;
-      color: var(--card-modal-muted, #6b808c);
+      border-radius: var(--chat-radius-control, 8px);
+      color: var(--chat-muted, var(--card-modal-muted, #6b808c));
       cursor: pointer;
       display: inline-flex;
-      height: 28px;
+      height: 27px;
       justify-content: center;
       padding: 0;
       transition:
         background-color 120ms ease,
         color 120ms ease,
         transform 120ms ease;
-      width: 28px;
+      width: 26px;
 
       &:hover:not(:disabled),
       &:focus-visible {
-        background: var(--card-modal-surface-hover, rgba(9, 30, 66, 0.08));
-        color: var(--card-modal-text, #17394d);
+        background: var(
+          --chat-default,
+          var(--card-modal-surface-hover, rgba(9, 30, 66, 0.08))
+        );
+        color: var(--chat-foreground, var(--card-modal-text, #17394d));
         outline: none;
       }
 
@@ -55,6 +73,10 @@
       }
     }
 
+    .quickReactionButton {
+      font-size: 16px;
+    }
+
     .deleteButton {
       color: var(--card-modal-danger, #dc2626);
 
@@ -64,6 +86,24 @@
         color: var(--card-modal-danger, #dc2626);
       }
     }
+  }
+
+  .actionDivider {
+    background: var(--chat-separator, rgba(9, 30, 66, 0.12));
+    height: 18px;
+    margin: 0 3px;
+    width: 1px;
+  }
+
+  .actionsOpen {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    transition:
+      opacity 170ms ease,
+      transform 210ms ease,
+      visibility 0s linear;
+    visibility: visible;
   }
 
   .author {
@@ -100,7 +140,10 @@
     padding: 8px 12px;
 
     :global(.yfm) {
-      --yfm-color-text-private: var(--chat-foreground, var(--card-modal-text, #17394d)) !important;
+      --yfm-color-text-private: var(
+        --chat-foreground,
+        var(--card-modal-text, #17394d)
+      ) !important;
 
       color: var(--chat-foreground, var(--card-modal-text, #17394d)) !important;
       font-size: var(--chat-font-body, 13px) !important;
@@ -146,6 +189,11 @@
     width: min(74%, 420px);
   }
 
+  .floatingReactionEmojiMenu {
+    position: fixed;
+    z-index: 1100;
+  }
+
   .date {
     color: var(--card-modal-muted, #6b808c);
     font-size: 10px;
@@ -168,7 +216,7 @@
       .actions {
         opacity: 1;
         pointer-events: auto;
-        transform: translateY(-50%) scale(1);
+        transform: translateY(0) scale(1);
         transition:
           opacity 140ms ease,
           transform 140ms ease,
@@ -195,7 +243,8 @@
 
     .actions {
       left: auto;
-      right: calc(100% + 6px);
+      right: 0;
+      transform-origin: top right;
     }
 
     .bubble {
@@ -203,7 +252,10 @@
       color: var(--chat-accent-foreground, #f7faff);
 
       :global(.yfm) {
-        --yfm-color-text-private: var(--chat-accent-foreground, #f7faff) !important;
+        --yfm-color-text-private: var(
+          --chat-accent-foreground,
+          #f7faff
+        ) !important;
 
         color: var(--chat-accent-foreground, #f7faff) !important;
       }
@@ -251,19 +303,86 @@
     color: var(--card-modal-muted, #6b808c);
   }
 
+  .reactionControl {
+    display: inline-flex;
+    position: relative;
+  }
+
+  .reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 5px;
+
+    button {
+      background: transparent;
+      border: 0;
+      color: var(--chat-muted, var(--card-modal-muted, #6b808c));
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 18px;
+      opacity: 0.82;
+      padding: 2px 1px;
+      transition:
+        color 120ms ease,
+        opacity 120ms ease,
+        transform 120ms ease;
+
+      &:hover:not(:disabled),
+      &:focus-visible {
+        color: var(--chat-accent, #0485f7);
+        opacity: 1;
+        outline: none;
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.96);
+      }
+
+      &:disabled {
+        cursor: default;
+      }
+    }
+
+    .reacted {
+      color: var(--chat-accent, #0485f7);
+      opacity: 1;
+    }
+
+    .mobileReactionButton {
+      align-items: center;
+      display: none;
+      justify-content: center;
+      min-width: 24px;
+    }
+  }
+
+  .mobileOnlyReactions {
+    margin-top: 0;
+  }
+
   @media (hover: none), (pointer: coarse) {
     .actions {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(-50%) scale(1);
+      opacity: 0;
+      pointer-events: none;
       transition: none;
-      visibility: visible;
+      visibility: hidden;
+    }
+
+    .reactions .mobileReactionButton {
+      display: inline-flex;
+    }
+
+    .mobileOnlyReactions {
+      margin-top: 5px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .actions,
-    .actions button {
+    .actions button,
+    .reactions button {
       transition: none;
     }
   }

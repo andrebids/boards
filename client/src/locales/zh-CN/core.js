@@ -17,6 +17,10 @@ export default {
 
   translation: {
     common: {
+      cards: '卡片',
+      autoAddBoardMembersToCards: '将面板成员添加到所有卡片',
+      autoAddBoardMembersToCardsHint:
+        '适用于此项目中所有面板的当前和未来卡片。关闭后不会移除已添加的成员。',
       aboutPlanka: '关于 PLANKA',
       account: '账号',
       actions: '操作',

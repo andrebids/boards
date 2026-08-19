@@ -10,7 +10,7 @@ const fetchCommentsInCurrentCard = () => ({
   payload: {},
 });
 
-const createCommentInCurrentCard = data => ({
+const createCommentInCurrentCard = (data) => ({
   type: EntryActionTypes.COMMENT_IN_CURRENT_CARD_CREATE,
   payload: {
     data,
@@ -33,21 +33,29 @@ const updateComment = (id, data) => ({
   },
 });
 
-const handleCommentUpdate = comment => ({
+const toggleCommentReaction = (id, emoji) => ({
+  type: EntryActionTypes.COMMENT_REACTION_TOGGLE,
+  payload: {
+    id,
+    emoji,
+  },
+});
+
+const handleCommentUpdate = (comment) => ({
   type: EntryActionTypes.COMMENT_UPDATE_HANDLE,
   payload: {
     comment,
   },
 });
 
-const deleteComment = id => ({
+const deleteComment = (id) => ({
   type: EntryActionTypes.COMMENT_DELETE,
   payload: {
     id,
   },
 });
 
-const handleCommentDelete = comment => ({
+const handleCommentDelete = (comment) => ({
   type: EntryActionTypes.COMMENT_DELETE_HANDLE,
   payload: {
     comment,
@@ -59,6 +67,7 @@ export default {
   createCommentInCurrentCard,
   handleCommentCreate,
   updateComment,
+  toggleCommentReaction,
   handleCommentUpdate,
   deleteComment,
   handleCommentDelete,

@@ -97,6 +97,11 @@ module.exports = {
       defaultsTo: ChatModes.ALL_PROJECT_MEMBERS,
       columnName: 'chat_mode',
     },
+    autoAddBoardMembersToCards: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'auto_add_board_members_to_cards',
+    },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗

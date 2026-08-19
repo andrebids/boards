@@ -17,6 +17,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'کارت‌ها',
+      autoAddBoardMembersToCards: 'افزودن اعضای برد به همه کارت‌ها',
+      autoAddBoardMembersToCardsHint:
+        'برای کارت‌های فعلی و آینده در همه بردهای این پروژه اعمال می‌شود. غیرفعال کردن، اعضای افزوده‌شده را حذف نمی‌کند.',
       aboutPlanka: 'درباره PLANKA',
       account: 'حساب کاربری',
       actions: 'اقدامات',

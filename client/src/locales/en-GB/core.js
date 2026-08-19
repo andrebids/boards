@@ -41,6 +41,10 @@ export default {
         'All changes will be automatically saved<br />after connection restored.',
       alphabetically: 'Alphabetically',
       alwaysDisplayCardCreator: 'Always display card creator',
+      cards: 'Cards',
+      autoAddBoardMembersToCards: 'Add board members to every card',
+      autoAddBoardMembersToCardsHint:
+        'Applies to current and future cards on every board in this project. Turning it off does not remove members already added.',
       archive: 'Archive',
       archiveCard_title: 'Archive Card',
       archiveCards_title: 'Archive Cards',

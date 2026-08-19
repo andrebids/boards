@@ -134,6 +134,16 @@ module.exports = {
       list: values.list,
     });
 
+    if (inputs.project.autoAddBoardMembersToCards) {
+      await sails.helpers.boards.syncMembersToCards.with({
+        project: inputs.project,
+        board: values.board,
+        card,
+        list: values.list,
+        actorUser: values.creatorUser,
+      });
+    }
+
     return card;
   },
 };

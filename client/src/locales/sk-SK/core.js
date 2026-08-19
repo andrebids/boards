@@ -20,6 +20,10 @@ export default {
 
   translation: {
     common: {
+      cards: 'Karty',
+      autoAddBoardMembersToCards: 'Pridať členov nástenky ku všetkým kartám',
+      autoAddBoardMembersToCardsHint:
+        'Platí pre súčasné aj budúce karty na všetkých nástenkách v tomto projekte. Vypnutie už pridaných členov neodstráni.',
       account: 'Účet',
       actions: 'Akcia',
       addAttachment_title: 'Pridať prílohu',
