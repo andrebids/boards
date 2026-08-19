@@ -85,6 +85,11 @@ export default class extends BaseModel {
         }
         payload.messages.forEach((message) => ChatMessage.upsert(message));
         break;
+      case ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE:
+        if (payload.conversation.lastMessage) {
+          ChatMessage.upsert(payload.conversation.lastMessage);
+        }
+        break;
       case ActionTypes.CHAT_MESSAGE_CREATE:
         ChatMessage.upsert(payload.message);
         break;

@@ -2,6 +2,33 @@ import ChatMessage from './ChatMessage';
 import ActionTypes from '../constants/ActionTypes';
 
 describe('ChatMessage optimistic reconciliation', () => {
+  test('adds the latest message received through a conversation summary update', () => {
+    const lastMessage = {
+      id: 'message-1',
+      conversationId: 'conversation-1',
+      userId: 'user-2',
+      text: 'New message',
+    };
+    const model = {
+      upsert: jest.fn(),
+    };
+
+    ChatMessage.reducer(
+      {
+        type: ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE,
+        payload: {
+          conversation: {
+            id: 'conversation-1',
+            lastMessage,
+          },
+        },
+      },
+      model,
+    );
+
+    expect(model.upsert).toHaveBeenCalledWith(lastMessage);
+  });
+
   test.each([ActionTypes.CHAT_MESSAGE_CREATE_HANDLE, ActionTypes.CHAT_MESSAGE_UPDATE_HANDLE])(
     'replaces the optimistic message when receiving %s',
     (type) => {
