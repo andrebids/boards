@@ -28,11 +28,20 @@ const DashboardWorkspace = React.memo(() => {
         column: 12,
         disableDrag: isTvMode,
         disableResize: isTvMode,
-        float: true,
+        float: false,
         margin: 12,
+        removable: '#dashboard-trash',
       },
       gridRef.current,
     );
+
+    if (!isTvMode) {
+      GridStack.setupDragIn(
+        '.dashboard-widget-template',
+        { appendTo: 'body', helper: 'clone' },
+        { h: 3, w: 4 },
+      );
+    }
 
     return () => grid.destroy(false);
   }, [isPreviewAllowed, isTvMode]);
@@ -52,27 +61,45 @@ const DashboardWorkspace = React.memo(() => {
         <header className={styles.toolbar}>
           <div>
             <h1>Dashboard TV</h1>
-            <p>Arraste e redimensione os widgets para compor o ecrã.</p>
+            <p>Arraste widgets para o canvas e ajuste o espaço livremente.</p>
           </div>
         </header>
       )}
-      <section className={`grid-stack ${styles.grid}`} ref={gridRef} aria-label="Dashboard TV">
-        {createDefaultDashboardLayout().map((widget) => (
-          <article
-            className="grid-stack-item"
-            data-gs-h={widget.h}
-            data-gs-w={widget.w}
-            data-gs-x={widget.x}
-            data-gs-y={widget.y}
-            key={widget.id}
-          >
-            <div className={`grid-stack-item-content ${styles.widget}`}>
-              <span>{widget.type}</span>
-              <strong>Em breve</strong>
+      <div className={styles.editorLayout}>
+        {!isTvMode && (
+          <aside className={styles.widgetLibrary} aria-label="Widgets disponíveis">
+            <span className={styles.libraryLabel}>Adicionar widget</span>
+            <div className={`${styles.widgetTemplate} dashboard-widget-template`}>Progresso</div>
+            <div className={`${styles.widgetTemplate} dashboard-widget-template`}>Estado</div>
+            <div className={`${styles.widgetTemplate} dashboard-widget-template`}>
+              Próximas tarefas
             </div>
-          </article>
-        ))}
-      </section>
+            <div className={`${styles.widgetTemplate} dashboard-widget-template`}>Atenção</div>
+          </aside>
+        )}
+        <section className={`grid-stack ${styles.grid}`} ref={gridRef} aria-label="Dashboard TV">
+          {createDefaultDashboardLayout().map((widget) => (
+            <article
+              className="grid-stack-item"
+              data-gs-h={widget.h}
+              data-gs-w={widget.w}
+              data-gs-x={widget.x}
+              data-gs-y={widget.y}
+              key={widget.id}
+            >
+              <div className={`grid-stack-item-content ${styles.widget}`}>
+                <span>{widget.type}</span>
+                <strong>Em breve</strong>
+              </div>
+            </article>
+          ))}
+        </section>
+      </div>
+      {!isTvMode && (
+        <div className={styles.trash} id="dashboard-trash">
+          Largar aqui para remover
+        </div>
+      )}
     </main>
   );
 });
