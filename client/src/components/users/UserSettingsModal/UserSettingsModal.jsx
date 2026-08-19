@@ -4,18 +4,22 @@
  */
 
 import React, { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Tab } from 'semantic-ui-react';
 
 import entryActions from '../../../entry-actions';
+import selectors from '../../../selectors';
+import { UserRoles } from '../../../constants/Enums';
 import { useClosableModal } from '../../../hooks';
 import AccountPane from './AccountPane';
 import PreferencesPane from './PreferencesPane';
 import NotificationsPane from './NotificationsPane';
+import DashboardPane from './DashboardPane';
 
 const UserSettingsModal = React.memo(() => {
   const dispatch = useDispatch();
+  const user = useSelector(selectors.selectCurrentUser);
   const [t] = useTranslation();
 
   const handleClose = useCallback(() => {
@@ -44,6 +48,13 @@ const UserSettingsModal = React.memo(() => {
       render: () => <AccountPane />,
     },
   ];
+
+  if (user.role === UserRoles.ADMIN) {
+    panes.push({
+      menuItem: 'Dashboard TV',
+      render: () => <DashboardPane onNavigate={handleClose} />,
+    });
+  }
 
   return (
     <ClosableModal
