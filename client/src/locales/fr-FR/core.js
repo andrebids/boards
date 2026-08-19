@@ -225,6 +225,10 @@ export default merge({}, enUSCore, {
       ganttZoom_week: 'Semaine',
       ganttZoom_month: 'Mois',
       ganttZoom_quarter: 'Trimestre',
+      ganttSimpleTimeline: 'Chronologie simplifiée',
+      ganttFullTimeline: 'Gantt complet',
+      ganttUnphased: 'Sans phase',
+      ganttToday: "Aujourd’hui",
       ganttAvailability: 'Disponibilité du Gantt',
       ganttAvailabilityHint:
         'Lorsqu’il est activé, le Gantt apparaît dans ce projet. L’échelle chronologique est sélectionnée dans le Gantt lui-même.',

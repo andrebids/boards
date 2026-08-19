@@ -333,6 +333,26 @@ const request = async (path, { token, method = 'GET', body } = {}) => {
     await zoomSelect.click();
     await zoomSelect.locator('.menu .item', { hasText: 'Semana', exact: true }).click();
 
+    const timelineToggle = page.getByTestId('gantt-timeline-toggle');
+    await timelineToggle.click();
+    if ((await timelineToggle.getAttribute('aria-pressed')) !== 'true') {
+      throw new Error('The simple timeline toggle did not expose its pressed state');
+    }
+    const simpleTimeline = page.getByTestId('gantt-simple-timeline');
+    await simpleTimeline.waitFor({ state: 'visible' });
+    if (await page.locator('.wx-willow-dark-theme').count()) {
+      throw new Error('The SVAR Gantt should not remain mounted in simple timeline mode');
+    }
+    const simpleTask = simpleTimeline.locator(`[data-gantt-item-id="${firstItemId}"]`);
+    await simpleTask.waitFor({ state: 'visible' });
+    await simpleTask.click();
+    const selectedItemDialog = page.getByRole('dialog', { name: 'Editar tarefa' });
+    await selectedItemDialog.waitFor({ state: 'visible' });
+    await page.keyboard.press('Escape');
+    await selectedItemDialog.waitFor({ state: 'hidden' });
+    await timelineToggle.click();
+    await page.locator('.wx-willow-dark-theme').waitFor({ state: 'visible' });
+
     const newTaskButton = page.getByRole('button', { name: 'Nova tarefa' });
     await newTaskButton.click();
     const itemDialog = page.getByRole('dialog', { name: 'Nova tarefa' });

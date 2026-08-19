@@ -620,6 +620,10 @@ export default {
       ganttZoom_week: 'Semana',
       ganttZoom_month: 'Mês',
       ganttZoom_quarter: 'Trimestre',
+      ganttSimpleTimeline: 'Timeline simples',
+      ganttFullTimeline: 'Gantt completo',
+      ganttUnphased: 'Sem fase',
+      ganttToday: 'Hoje',
       ganttAvailability: 'Disponibilidade do Gantt',
       ganttAvailabilityHint:
         'Quando ativo, o Gantt aparece neste projeto. A escala temporal é escolhida dentro do próprio Gantt.',

@@ -1,0 +1,206 @@
+:global(#app) {
+  .root {
+    background: var(--app-dark-canvas);
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .scrollArea {
+    height: 100%;
+    overflow: auto;
+    scrollbar-color: var(--app-dark-surface-hover) transparent;
+  }
+
+  .timeline {
+    min-height: 100%;
+    position: relative;
+  }
+
+  .scaleHeader {
+    background: var(--app-dark-surface);
+    border-bottom: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text-muted);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .monthRow,
+  .scaleRow {
+    display: grid;
+    grid-template-columns: repeat(var(--simple-timeline-columns), minmax(0, 1fr));
+  }
+
+  .monthRow {
+    border-bottom: 1px solid var(--app-dark-border);
+    font-size: 11px;
+    font-weight: 600;
+    height: 26px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+
+    span {
+      align-items: center;
+      border-right: 1px solid var(--app-dark-border);
+      display: flex;
+      min-width: 0;
+      padding: 0 8px;
+      white-space: nowrap;
+    }
+  }
+
+  .scaleRow {
+    font-size: 11px;
+    height: 30px;
+
+    span {
+      align-items: center;
+      border-right: 1px solid color-mix(in oklab, var(--app-dark-border) 70%, transparent);
+      display: flex;
+      justify-content: center;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+
+  .weekendCell {
+    background: color-mix(in oklab, var(--app-dark-surface-hover) 42%, transparent);
+  }
+
+  .phase {
+    position: relative;
+  }
+
+  .phaseHeader {
+    align-items: center;
+    background: color-mix(in oklab, var(--app-dark-surface) 90%, var(--app-dark-canvas));
+    border-bottom: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text);
+    display: flex;
+    font-size: 12px;
+    font-weight: 650;
+    gap: 7px;
+    height: 30px;
+    padding: 0 10px;
+    position: sticky;
+    top: 56px;
+    z-index: 3;
+
+    :global(i.icon) {
+      color: var(--app-accent);
+      font-size: 12px;
+      margin: 0;
+    }
+  }
+
+  .phaseRange {
+    color: var(--app-dark-text-muted);
+    font-size: 10px;
+    font-weight: 500;
+    margin-left: auto;
+  }
+
+  .taskRow {
+    background-color: var(--app-dark-canvas);
+    background-image: linear-gradient(90deg, var(--app-dark-border) 1px, transparent 1px);
+    background-size: calc(100% / var(--simple-timeline-columns)) 100%;
+    border-bottom: 1px solid color-mix(in oklab, var(--app-dark-border) 72%, transparent);
+    height: 40px;
+    position: relative;
+  }
+
+  .taskBar {
+    align-items: center;
+    background: color-mix(in oklab, var(--gantt-status-color) 74%, var(--app-dark-surface));
+    border: 1px solid color-mix(in oklab, var(--gantt-status-color) 72%, var(--app-dark-text) 28%);
+    border-radius: 9px;
+    bottom: 5px;
+    box-sizing: border-box;
+    color: var(--app-dark-text);
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    gap: 6px;
+    min-width: 8px;
+    overflow: hidden;
+    padding: 0 8px;
+    position: absolute;
+    text-align: left;
+    top: 5px;
+    transition: background 120ms ease-out, box-shadow 120ms ease-out, transform 120ms ease-out;
+
+    &:hover {
+      background: color-mix(in oklab, var(--gantt-status-color) 88%, var(--app-dark-surface));
+      box-shadow: 0 5px 12px color-mix(in oklab, var(--app-dark-canvas) 65%, transparent);
+    }
+
+    &:active {
+      transform: scale(0.985);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--app-focus), 0 0 0 4px var(--app-dark-canvas);
+      outline: none;
+      z-index: 2;
+    }
+  }
+
+  .statusDot {
+    background: var(--gantt-status-color);
+    border: 1px solid color-mix(in oklab, var(--gantt-status-color) 72%, var(--app-dark-text) 28%);
+    border-radius: 50%;
+    flex: 0 0 auto;
+    height: 7px;
+    width: 7px;
+  }
+
+  .taskTitle {
+    font-size: 12px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .todayMarker {
+    background: var(--app-accent);
+    bottom: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    width: 2px;
+    z-index: 4;
+
+    span {
+      background: var(--app-accent);
+      border-radius: 0 0 6px 0;
+      color: var(--app-accent-foreground, var(--app-dark-text));
+      font-size: 10px;
+      font-weight: 700;
+      left: 0;
+      padding: 3px 6px;
+      position: absolute;
+      top: 56px;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .taskRow {
+      height: 44px;
+    }
+  }
+
+  @media only screen and (width < 680px) {
+    .phaseRange {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .taskBar {
+      transition: none;
+    }
+  }
+}

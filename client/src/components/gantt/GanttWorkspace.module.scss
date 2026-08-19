@@ -81,6 +81,29 @@
     gap: 6px;
   }
 
+  .zoomStepper {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+  }
+
+  .zoomDivider {
+    background: var(--app-dark-border);
+    height: 22px;
+    margin: 0 2px;
+    width: 1px;
+  }
+
+  .timelineToggle:global(.ui.button) {
+    white-space: nowrap;
+
+    :global(i.icon) {
+      font-size: 12px;
+      height: 16px;
+      width: 16px;
+    }
+  }
+
   .zoomButton:global(.ui.button) {
     border: 1px solid var(--app-dark-border);
 
@@ -344,6 +367,15 @@
 
     .titleGroup {
       min-width: 92px;
+    }
+
+    .timelineToggle:global(.ui.button) {
+      min-width: 36px;
+      padding-inline: 10px !important;
+
+      span {
+        display: none;
+      }
     }
 
     .unscheduled {

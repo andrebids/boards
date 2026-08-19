@@ -25,6 +25,7 @@ import {
   selectTimelineData,
 } from './ganttSelectors';
 import GanttTimelineAdapter from './GanttTimelineAdapter';
+import GanttSimpleTimeline from './GanttSimpleTimeline';
 import GanttItemPanel from './GanttItemPanel';
 import GanttSourceTaskImportPanel from './GanttSourceTaskImportPanel';
 
@@ -49,6 +50,7 @@ const GanttWorkspace = React.memo(() => {
     reload,
   } = useGantt();
   const [zoomLevel, setZoomLevel] = useState('week');
+  const [viewMode, setViewMode] = useState('gantt');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isImportPanelOpen, setIsImportPanelOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -187,6 +189,10 @@ const GanttWorkspace = React.memo(() => {
     setZoomLevel((current) => ZOOM_LEVELS[Math.max(ZOOM_LEVELS.indexOf(current) - 1, 0)]);
   }, []);
 
+  const handleViewModeToggle = useCallback(() => {
+    setViewMode((current) => (current === 'gantt' ? 'timeline' : 'gantt'));
+  }, []);
+
   if (isLoading) {
     return (
       <div className={styles.centerState}>
@@ -261,58 +267,86 @@ const GanttWorkspace = React.memo(() => {
           role="group"
           aria-label={t('common.ganttTimelineScale')}
         >
+          <div className={styles.zoomStepper}>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              isIconOnly
+              className={styles.zoomButton}
+              onClick={handleZoomOut}
+              disabled={zoomLevel === 'quarter'}
+              aria-label={t('common.ganttZoomOut')}
+            >
+              <Icon fitted name="minus" />
+            </Button>
+            <Dropdown
+              compact
+              selection
+              value={zoomLevel}
+              options={ZOOM_LEVELS.map((level) => ({
+                key: level,
+                text: t(`common.ganttZoom_${level}`),
+                value: level,
+              }))}
+              aria-label={t('common.ganttZoomLevel')}
+              data-testid="gantt-zoom-select"
+              className={styles.zoomSelect}
+              onChange={(event, { value }) => setZoomLevel(value)}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              isIconOnly
+              className={styles.zoomButton}
+              onClick={handleZoomIn}
+              disabled={zoomLevel === 'day'}
+              aria-label={t('common.ganttZoomIn')}
+            >
+              <Icon fitted name="plus" />
+            </Button>
+          </div>
+          <span className={styles.zoomDivider} aria-hidden="true" />
           <Button
             type="button"
             size="sm"
             variant="secondary"
-            isIconOnly
-            className={styles.zoomButton}
-            onClick={handleZoomOut}
-            disabled={zoomLevel === 'quarter'}
-            aria-label={t('common.ganttZoomOut')}
+            className={styles.timelineToggle}
+            onClick={handleViewModeToggle}
+            aria-pressed={viewMode === 'timeline'}
+            aria-label={t(
+              viewMode === 'timeline' ? 'common.ganttFullTimeline' : 'common.ganttSimpleTimeline',
+            )}
+            data-testid="gantt-timeline-toggle"
           >
-            <Icon fitted name="minus" />
-          </Button>
-          <Dropdown
-            compact
-            selection
-            value={zoomLevel}
-            options={ZOOM_LEVELS.map((level) => ({
-              key: level,
-              text: t(`common.ganttZoom_${level}`),
-              value: level,
-            }))}
-            aria-label={t('common.ganttZoomLevel')}
-            data-testid="gantt-zoom-select"
-            className={styles.zoomSelect}
-            onChange={(event, { value }) => setZoomLevel(value)}
-          />
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            isIconOnly
-            className={styles.zoomButton}
-            onClick={handleZoomIn}
-            disabled={zoomLevel === 'day'}
-            aria-label={t('common.ganttZoomIn')}
-          >
-            <Icon fitted name="plus" />
+            <Icon name="align justify" />
+            <span>
+              {t(viewMode === 'timeline' ? 'common.ganttFullTimeline' : 'common.ganttSimpleTimeline')}
+            </span>
           </Button>
         </div>
       </header>
 
       <section className={styles.timelineArea}>
         {timelineItems.length > 0 ? (
-          <GanttTimelineAdapter
-            items={timelineItems}
-            links={timelineLinks}
-            zoomLevel={zoomLevel}
-            readonly={!canMutate}
-            onZoomLevelChange={setZoomLevel}
-            onItemSelect={handleItemSelect}
-            onItemChange={handleItemChange}
-          />
+          viewMode === 'timeline' ? (
+            <GanttSimpleTimeline
+              items={timelineItems}
+              zoomLevel={zoomLevel}
+              onItemSelect={handleItemSelect}
+            />
+          ) : (
+            <GanttTimelineAdapter
+              items={timelineItems}
+              links={timelineLinks}
+              zoomLevel={zoomLevel}
+              readonly={!canMutate}
+              onZoomLevelChange={setZoomLevel}
+              onItemSelect={handleItemSelect}
+              onItemChange={handleItemChange}
+            />
+          )
         ) : (
           <div className={styles.emptyState}>
             <span className={styles.emptyGlyph} aria-hidden="true">

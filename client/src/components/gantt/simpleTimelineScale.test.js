@@ -1,0 +1,30 @@
+import {
+  getSimpleTimelineBarStyle,
+  getSimpleTimelineRange,
+  groupSimpleTimelineItems,
+} from './simpleTimelineScale';
+
+describe('simple Gantt timeline scale', () => {
+  test('keeps stored end dates inclusive when sizing a task bar', () => {
+    const range = getSimpleTimelineRange([
+      { id: 'task', startDate: '2026-08-12', endDate: '2026-08-18' },
+    ]);
+
+    expect(getSimpleTimelineBarStyle(range, { startDate: '2026-08-12', endDate: '2026-08-18' }))
+      .toEqual({ left: '0%', width: '100%' });
+  });
+
+  test('groups scheduled tasks below their summary and keeps independent tasks separate', () => {
+    const groups = groupSimpleTimelineItems([
+      { id: 'summary', itemType: 'summary', task: 'Fase', startDate: '2026-08-10', endDate: '2026-08-20' },
+      { id: 'later', itemType: 'task', parentId: 'summary', task: 'Depois', startDate: '2026-08-16', endDate: '2026-08-16' },
+      { id: 'earlier', itemType: 'task', parentId: 'summary', task: 'Antes', startDate: '2026-08-12', endDate: '2026-08-13' },
+      { id: 'independent', itemType: 'task', task: 'Sem fase', startDate: '2026-08-14', endDate: '2026-08-15' },
+    ]);
+
+    expect(groups).toEqual([
+      { summaryId: 'summary', itemIds: ['earlier', 'later'] },
+      { summaryId: null, itemIds: ['independent'] },
+    ]);
+  });
+});
