@@ -6,6 +6,7 @@
 import React, { useRef } from 'react';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Loader } from 'semantic-ui-react';
 import { useTransitioning } from '../../../lib/hooks';
@@ -30,6 +31,9 @@ const Static = React.memo(() => {
     selectors.selectIsFavoritesActiveForCurrentUser
   );
   const isSidebarExpanded = useSelector(selectIsSidebarExpanded);
+  const [searchParams] = useSearchParams();
+  const isDashboardTv =
+    pathsMatch?.pattern.path === Paths.DASHBOARD && searchParams.get('tv') === '1';
 
   const [t] = useTranslation();
 
@@ -48,7 +52,10 @@ const Static = React.memo(() => {
     wrapperClassNames = [styles.wrapperLoader];
     contentNode = <Loader active size="huge" />;
   } else if (pathsMatch?.pattern.path === Paths.DASHBOARD) {
-    wrapperClassNames = [styles.wrapperGantt, styles.wrapperFlex];
+    wrapperClassNames = [
+      isDashboardTv ? styles.wrapperDashboardTv : styles.wrapperGantt,
+      styles.wrapperFlex,
+    ];
     contentNode = <DashboardWorkspace />;
   } else if (projectId === undefined) {
     wrapperClassNames = [
@@ -159,7 +166,7 @@ const Static = React.memo(() => {
     <div
       ref={wrapperRef}
       className={classNames(styles.wrapper, ...wrapperClassNames, {
-        [styles.sidebarExpanded]: isSidebarExpanded,
+        [styles.sidebarExpanded]: isSidebarExpanded && !isDashboardTv,
       })}
       onTransitionEnd={handleTransitionEnd}
     >
