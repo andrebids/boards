@@ -31,7 +31,53 @@
   }
 
   .grid {
+    flex: 1 1 auto;
     min-height: 620px;
+  }
+
+  .editorLayout {
+    display: flex;
+    gap: 16px;
+    min-height: 0;
+  }
+
+  .widgetLibrary {
+    align-self: flex-start;
+    background: var(--app-dark-surface);
+    border: 1px solid var(--app-dark-border);
+    display: flex;
+    flex: 0 0 180px;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .libraryLabel {
+    color: var(--app-dark-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 3px 6px;
+    text-transform: uppercase;
+  }
+
+  .widgetTemplate {
+    background: var(--app-dark-surface-hover);
+    border: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text);
+    cursor: grab;
+    font-size: 12px;
+    font-weight: 650;
+    padding: 12px;
+    user-select: none;
+  }
+
+  .trash {
+    border: 1px dashed color-mix(in oklab, var(--app-danger) 60%, var(--app-dark-border));
+    color: var(--app-dark-text-muted);
+    font-size: 12px;
+    margin: 12px 0 0 196px;
+    padding: 10px 12px;
+    text-align: center;
   }
 
   .widget {
@@ -56,6 +102,31 @@
 
     .grid {
       min-height: 100%;
+    }
+  }
+
+  @media only screen and (width < 760px) {
+    .editorLayout {
+      flex-direction: column;
+    }
+
+    .widgetLibrary {
+      flex-basis: auto;
+      flex-direction: row;
+      flex-wrap: wrap;
+      width: auto;
+    }
+
+    .libraryLabel {
+      flex-basis: 100%;
+    }
+
+    .widgetTemplate {
+      flex: 1 1 130px;
+    }
+
+    .trash {
+      margin-left: 0;
     }
   }
 
