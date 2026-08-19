@@ -4,30 +4,24 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
-    padding: 0;
   }
 
   .scrollArea {
     background: var(--app-dark-canvas);
-    border: 0;
-    border-radius: 0;
     height: 100%;
     min-height: 420px;
-    overflow-x: auto;
-    overflow-y: auto;
+    overflow: auto;
+    scrollbar-color: color-mix(in oklab, var(--app-dark-text-muted) 40%, transparent) transparent;
   }
 
   .timeline {
-    display: flex;
-    flex-direction: column;
+    box-sizing: border-box;
     min-height: 100%;
-    padding: 28px 34px 24px;
+    padding: 28px 0 32px;
   }
 
   .heading {
-    align-items: flex-start;
-    display: flex;
-    justify-content: space-between;
+    padding: 0 34px 20px;
 
     h2 {
       color: var(--app-dark-text);
@@ -45,311 +39,182 @@
     }
   }
 
-  .primaryJourney {
-    min-height: 250px;
+  .canvas {
+    background: var(--app-dark-canvas);
+    min-width: 100%;
     position: relative;
   }
 
-  .journeyLine {
-    background: color-mix(in oklab, var(--app-dark-text-muted) 42%, var(--app-dark-surface));
-    border-radius: 99px;
-    height: 6px;
-    left: 6%;
+  .diagram {
+    display: block;
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
     position: absolute;
-    right: 6%;
-    top: 50%;
-    transform: translateY(-50%);
   }
 
-  .milestone {
-    align-items: center;
+  .tick {
+    line {
+      stroke: color-mix(in oklab, var(--app-dark-border) 64%, transparent);
+      stroke-width: 1;
+    }
+
+    text {
+      fill: var(--app-dark-text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      text-anchor: middle;
+    }
+  }
+
+  .today {
+    line {
+      stroke: color-mix(in oklab, var(--app-accent) 78%, transparent);
+      stroke-dasharray: 3 4;
+      stroke-width: 1;
+    }
+
+    text {
+      fill: var(--app-accent);
+      font-size: 10px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+  }
+
+  .axis {
+    stroke: color-mix(in oklab, var(--app-dark-text-muted) 50%, var(--app-dark-surface));
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
+
+  .boundaryMarker {
+    circle {
+      fill: var(--app-dark-text-muted);
+      stroke: var(--app-dark-canvas);
+      stroke-width: 2;
+    }
+
+    text {
+      fill: var(--app-dark-text-muted);
+      font-size: 10px;
+      font-weight: 650;
+      text-anchor: middle;
+    }
+  }
+
+  .connector {
+    stroke: color-mix(in oklab, var(--gantt-status-color) 42%, transparent);
+    stroke-width: 1;
+  }
+
+  .duration {
+    stroke: var(--gantt-status-color);
+    stroke-linecap: round;
+    stroke-width: 2;
+  }
+
+  .taskStart {
+    fill: var(--app-dark-canvas);
+    stroke: var(--gantt-status-color);
+    stroke-width: 2;
+  }
+
+  .taskEnd {
+    fill: var(--gantt-status-color);
+    stroke: var(--app-dark-canvas);
+    stroke-width: 1.5;
+  }
+
+  .groupLabel {
+    color: var(--app-dark-text-muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    max-width: 200px;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    &::before {
+      background: var(--app-accent);
+      border-radius: 999px;
+      content: '';
+      display: inline-block;
+      height: 5px;
+      margin: 0 7px 1px 0;
+      width: 5px;
+    }
+
+    &.bottom::before {
+      background: color-mix(in oklab, var(--app-dark-text-muted) 65%, var(--app-accent));
+    }
+  }
+
+  .taskLabel {
     background: transparent;
     border: 0;
     color: var(--app-dark-text);
     cursor: pointer;
-    display: flex;
-    flex-direction: column;
     font: inherit;
-    gap: 8px;
-    min-width: 132px;
-    padding: 0 6px;
+    overflow: hidden;
+    padding: 0 5px;
     position: absolute;
-    text-align: center;
-    top: calc(50% - 51px);
-    transform: translateX(-50%);
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
-    time {
-      color: var(--app-dark-text);
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
+    strong,
+    small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     strong {
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-      max-width: 160px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.25;
     }
 
     small {
       color: var(--app-dark-text-muted);
-      font-size: 12px;
-      line-height: 1.25;
-      max-width: 170px;
-    }
-
-    &:hover .marker {
-      box-shadow: 0 0 0 7px color-mix(in oklab, var(--gantt-status-color) 20%, transparent),
-        0 8px 20px color-mix(in oklab, var(--app-dark-canvas) 35%, transparent);
-      transform: translateY(-2px);
-    }
-
-    &:focus-visible {
-      outline: none;
-
-      .marker {
-        box-shadow: 0 0 0 3px var(--app-focus), 0 0 0 6px var(--app-dark-canvas);
-      }
-    }
-  }
-
-  .marker {
-    align-items: center;
-    background: color-mix(in oklab, var(--app-dark-surface) 88%, var(--gantt-status-color));
-    border: 3px solid color-mix(in oklab, var(--gantt-status-color) 78%, var(--app-dark-text) 22%);
-    border-radius: 50%;
-    box-shadow: 0 0 0 5px var(--app-dark-canvas);
-    color: var(--app-dark-text);
-    display: flex;
-    height: 56px;
-    justify-content: center;
-    transition: box-shadow 160ms ease-out, transform 160ms ease-out;
-    width: 56px;
-
-    :global(i.icon) {
-      font-size: 21px;
-      margin: 0;
-    }
-  }
-
-  .completed .marker {
-    background: var(--gantt-status-color);
-    color: var(--app-dark-canvas);
-  }
-
-  .inProgress .marker {
-    box-shadow: 0 0 0 5px var(--app-dark-canvas),
-      0 0 23px color-mix(in oklab, var(--gantt-status-color) 64%, transparent);
-  }
-
-  .todayMarker {
-    border-left: 1px dashed color-mix(in oklab, var(--app-dark-text-muted) 74%, transparent);
-    bottom: 0;
-    pointer-events: none;
-    position: absolute;
-    top: calc(50% + 31px);
-    z-index: 1;
-
-    span {
-      background: color-mix(in oklab, var(--app-accent) 25%, var(--app-dark-surface));
-      border-radius: 999px;
-      color: color-mix(in oklab, var(--app-accent) 72%, var(--app-dark-text));
-      font-size: 11px;
-      font-weight: 650;
-      left: 0;
-      padding: 4px 9px;
-      position: absolute;
-      top: 16px;
-      transform: translateX(-50%);
-    }
-  }
-
-  .childTracks {
-    border-top: 1px solid var(--app-dark-border);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding-top: 16px;
-  }
-
-  .childGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    h3 {
-      color: var(--app-dark-text-muted);
-      font-size: 11px;
-      font-weight: 650;
-      letter-spacing: 0.04em;
-      margin: 0 0 2px 6%;
-      text-transform: uppercase;
-    }
-  }
-
-  .childLane {
-    height: 70px;
-    position: relative;
-  }
-
-  .childTask {
-    background: transparent;
-    border: 0;
-    color: var(--app-dark-text-muted);
-    cursor: pointer;
-    font: inherit;
-    height: 62px;
-    min-width: 10px;
-    overflow: visible;
-    padding: 0;
-    position: absolute;
-    text-align: left;
-    top: 2px;
-    transition: filter 120ms ease-out;
-
-    &::before,
-    &::after {
-      background: var(--gantt-status-color);
-      border: 2px solid var(--app-dark-canvas);
-      border-radius: 50%;
-      content: '';
-      height: 6px;
-      position: absolute;
-      top: -3px;
-      width: 6px;
-    }
-
-    &::before {
-      left: -1px;
-    }
-
-    &::after {
-      right: -1px;
+      font-size: 10px;
+      line-height: 1.3;
+      margin-top: 2px;
     }
 
     &:hover {
-      filter: brightness(1.22);
-      z-index: 2;
+      color: var(--gantt-status-color);
+
+      strong {
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
     }
 
     &:focus-visible {
-      outline: none;
-      z-index: 3;
-
-      .childTaskLine {
-        box-shadow: 0 0 0 2px var(--app-focus), 0 0 0 4px var(--app-dark-canvas);
-      }
+      border-radius: 4px;
+      outline: 2px solid var(--app-focus);
+      outline-offset: 2px;
     }
   }
 
-  .childTaskLine {
-    background: var(--gantt-status-color);
-    border-radius: 99px;
-    height: 3px;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 30px;
-
-    &::before {
-      border-left: 1px dashed color-mix(in oklab, var(--app-dark-text-muted) 60%, transparent);
-      content: '';
-      height: 22px;
-      left: 0;
-      position: absolute;
-      top: -22px;
-    }
-  }
-
-  .childTaskLabel {
-    left: 0;
-    position: absolute;
-    top: 40px;
-    white-space: nowrap;
-
-    > span {
-      align-items: center;
-      color: var(--app-dark-text);
-      display: flex;
-      font-size: 12px;
-      font-weight: 600;
-      gap: 6px;
-    }
-
-    small {
-      color: var(--app-dark-text-muted);
-      display: block;
-      font-size: 11px;
-      margin-left: 12px;
-      margin-top: 2px;
-    }
-  }
-
-  .childTaskDot {
-    background: var(--gantt-status-color);
-    border-radius: 50%;
-    height: 9px;
-    width: 9px;
-  }
-
-  .legend {
-    align-items: center;
-    display: flex;
-    gap: 25px;
-    justify-content: center;
-
-    span {
-      align-items: center;
-      color: var(--app-dark-text-muted);
-      display: inline-flex;
-      font-size: 12px;
-      gap: 8px;
-    }
-
-    i {
-      background: var(--gantt-status-color);
-      border-radius: 50%;
-      height: 10px;
-      width: 10px;
-    }
-  }
-
-  @media only screen and (width < 900px) {
-    .root {
-      padding: 10px 14px 18px;
-    }
-
-    .scrollArea {
-      border-radius: 0;
-    }
-
+  @media only screen and (width < 700px) {
     .timeline {
-      padding: 22px 24px 20px;
-    }
-  }
-
-  @media only screen and (width < 560px) {
-    .root {
-      padding-inline: 8px;
+      padding-top: 22px;
     }
 
-    .heading h2 {
-      font-size: 17px;
-    }
+    .heading {
+      padding: 0 20px 16px;
 
-    .legend {
-      gap: 14px;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .marker {
-      transition: none;
+      h2 {
+        font-size: 18px;
+      }
     }
   }
 }

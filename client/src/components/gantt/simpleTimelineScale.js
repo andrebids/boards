@@ -1,4 +1,9 @@
-import { differenceInGanttDays, formatGanttDate, parseGanttDate } from '../../utils/gantt-dates';
+import {
+  addGanttDays,
+  differenceInGanttDays,
+  formatGanttDate,
+  parseGanttDate,
+} from '../../utils/gantt-dates';
 
 const compareByStartDate = (first, second) =>
   first.startDate.localeCompare(second.startDate) || first.task.localeCompare(second.task);
@@ -155,4 +160,143 @@ export const getSimpleTimelineDays = (range) => {
   }
 
   return days;
+};
+
+const DEFAULT_HORIZONTAL_PADDING = 80;
+const DEFAULT_PIXELS_PER_DAY = 40;
+const LANE_GAP = 24;
+const LANE_SPACING = 72;
+const AXIS_CLEARANCE = 80;
+const CANVAS_PADDING = 56;
+
+const getEstimatedLabelWidth = ({ task = '' }) =>
+  Math.min(220, Math.max(112, task.length * 7.4 + 26));
+
+const getWeekTicks = (startDate, endDate, dateToX) => {
+  const cursor = parseGanttDate(startDate);
+  const end = parseGanttDate(endDate);
+
+  while (cursor.getDay() !== 1) {
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  const ticks = [];
+  while (cursor <= end) {
+    const date = formatGanttDate(cursor);
+    ticks.push({ date, x: dateToX(date) });
+    cursor.setDate(cursor.getDate() + 7);
+  }
+
+  return ticks;
+};
+
+const distributePixelLanes = (items, dateToX, pixelsPerDay) => {
+  const lanes = [];
+
+  items.sort(compareByStartDate).forEach((item) => {
+    const startX = dateToX(item.startDate);
+    const endX = dateToX(addGanttDays(item.endDate, 1));
+    const labelWidth = getEstimatedLabelWidth(item);
+    const occupiedEndX = Math.max(endX, startX + labelWidth) + LANE_GAP;
+    const laneIndex = lanes.findIndex((lane) => lane.occupiedEndX <= startX);
+    const lane = laneIndex === -1 ? { occupiedEndX: 0, tasks: [] } : lanes[laneIndex];
+
+    if (laneIndex === -1) {
+      lanes.push(lane);
+    }
+
+    lane.occupiedEndX = occupiedEndX;
+    lane.tasks.push({
+      ...item,
+      startX,
+      endX: Math.max(startX + Math.max(2, pixelsPerDay * 0.35), endX),
+      labelWidth,
+    });
+  });
+
+  return lanes.map(({ tasks }) => tasks);
+};
+
+const getTimelineGroups = (items) => {
+  const scheduledItems = items.filter(({ startDate, endDate }) => startDate && endDate);
+  const summaries = scheduledItems.filter(({ itemType }) => itemType === 'summary');
+  const summariesById = new Map(summaries.map((item) => [item.id, item]));
+  const groupsById = new Map();
+
+  scheduledItems
+    .filter(({ itemType }) => itemType !== 'summary')
+    .forEach((item) => {
+      const parent = summariesById.get(item.parentId);
+      const id = parent ? `summary-${parent.id}` : `loose-${item.project || 'tasks'}`;
+      const label = parent?.task || item.project || '';
+      const group = groupsById.get(id) || { id, label, items: [] };
+      group.items.push(item);
+      groupsById.set(id, group);
+    });
+
+  return [...groupsById.values()]
+    .filter(({ items: groupItems }) => groupItems.length > 0)
+    .sort((first, second) => compareByStartDate(first.items[0], second.items[0]));
+};
+
+export const getSimpleTimelineLayout = (
+  items,
+  {
+    pixelsPerDay = DEFAULT_PIXELS_PER_DAY,
+    horizontalPadding = DEFAULT_HORIZONTAL_PADDING,
+    viewportWidth = 0,
+    today = formatGanttDate(new Date()),
+  } = {},
+) => {
+  const range = getSimpleTimelineRange(items);
+  if (!range) {
+    return null;
+  }
+
+  const timelineStart = addGanttDays(range.startDate, -2);
+  const timelineEnd = addGanttDays(range.endDate, 2);
+  const totalDays = differenceInGanttDays(timelineStart, timelineEnd);
+  const dateToX = (date) =>
+    horizontalPadding + differenceInGanttDays(timelineStart, date) * pixelsPerDay;
+  const contentWidth = Math.max(
+    viewportWidth,
+    totalDays * pixelsPerDay + horizontalPadding * 2,
+  );
+  const groups = getTimelineGroups(items).map((group, groupIndex) => ({
+    ...group,
+    side: groupIndex % 2 === 0 ? 'top' : 'bottom',
+    lanes: distributePixelLanes(group.items, dateToX, pixelsPerDay),
+  }));
+  const topLaneCount = Math.max(0, ...groups.filter(({ side }) => side === 'top').map(({ lanes }) => lanes.length));
+  const bottomLaneCount = Math.max(
+    0,
+    ...groups.filter(({ side }) => side === 'bottom').map(({ lanes }) => lanes.length),
+  );
+  const axisY = CANVAS_PADDING + topLaneCount * LANE_SPACING + AXIS_CLEARANCE;
+  const canvasHeight = axisY + bottomLaneCount * LANE_SPACING + AXIS_CLEARANCE + CANVAS_PADDING;
+
+  return {
+    axisY,
+    canvasHeight,
+    contentWidth,
+    dateToX,
+    groups: groups.map((group) => ({
+      ...group,
+      lanes: group.lanes.map((lane, laneIndex) =>
+        lane.map((task) => ({
+          ...task,
+          y:
+            group.side === 'top'
+              ? axisY - AXIS_CLEARANCE - laneIndex * LANE_SPACING
+              : axisY + AXIS_CLEARANCE + laneIndex * LANE_SPACING,
+        })),
+      ),
+    })),
+    horizontalPadding,
+    pixelsPerDay,
+    ticks: getWeekTicks(timelineStart, timelineEnd, dateToX),
+    timelineEnd,
+    timelineStart,
+    todayX: today >= timelineStart && today <= timelineEnd ? dateToX(today) : null,
+  };
 };

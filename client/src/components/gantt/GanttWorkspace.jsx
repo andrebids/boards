@@ -340,6 +340,7 @@ const GanttWorkspace = React.memo(() => {
             <GanttSimpleTimeline
               items={timelineItems}
               onItemSelect={handleItemSelect}
+              zoomLevel={zoomLevel}
             />
           ) : (
             <GanttTimelineAdapter
