@@ -3,10 +3,13 @@ import { createDefaultDashboardLayout, normalizeDashboardLayout } from './dashbo
 describe('project dashboard layout', () => {
   it('creates a non-overlapping default layout for the initial widgets', () => {
     expect(createDefaultDashboardLayout()).toEqual([
-      { id: 'progress', type: 'progress', x: 0, y: 0, w: 4, h: 3 },
-      { id: 'status', type: 'status', x: 4, y: 0, w: 8, h: 3 },
-      { id: 'upcoming', type: 'upcoming', x: 0, y: 3, w: 6, h: 5 },
-      { id: 'attention', type: 'attention', x: 6, y: 3, w: 6, h: 5 },
+      { id: 'overview', type: 'progress', x: 0, y: 0, w: 7, h: 6 },
+      { id: 'status-overview', type: 'status', x: 7, y: 0, w: 3, h: 3 },
+      { id: 'upcoming-top', type: 'upcoming', x: 10, y: 0, w: 2, h: 3 },
+      { id: 'attention-overview', type: 'attention', x: 7, y: 3, w: 5, h: 3 },
+      { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
+      { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
+      { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
     ]);
   });
 
