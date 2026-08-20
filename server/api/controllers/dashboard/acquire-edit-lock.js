@@ -27,9 +27,9 @@ module.exports = {
       throw Errors.LOCKED;
     }
 
-    const item = await Dashboard.updateOne({ id: dashboard.id })
-      .set(createEditLockValues(currentUser.id))
-      .fetch();
+    const item = await Dashboard.updateOne({ id: dashboard.id }).set(
+      createEditLockValues(currentUser.id),
+    );
 
     sails.sockets.broadcast('dashboard', 'dashboardEditLockUpdate', { item });
     return { item };

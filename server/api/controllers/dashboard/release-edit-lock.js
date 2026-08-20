@@ -19,9 +19,7 @@ module.exports = {
     const item = await Dashboard.updateOne({
       id: dashboard.id,
       editLockUserId: currentUser.id,
-    })
-      .set({ editLockUserId: null, editLockExpiresAt: null })
-      .fetch();
+    }).set({ editLockUserId: null, editLockExpiresAt: null });
 
     if (item) {
       sails.sockets.broadcast('dashboard', 'dashboardEditLockUpdate', { item });

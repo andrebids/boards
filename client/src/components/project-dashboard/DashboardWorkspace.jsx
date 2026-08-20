@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
 
+import api, { socket } from '../../api';
 import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import { UserRoles } from '../../constants/Enums';
@@ -20,6 +21,7 @@ const DashboardWorkspace = React.memo(() => {
   const gridRef = useRef(null);
   const gridInstanceRef = useRef(null);
   const saveTimerRef = useRef(null);
+  const layoutVersionRef = useRef(null);
   const [searchParams] = useSearchParams();
   const user = useSelector(selectors.selectCurrentUser);
   const projects = useSelector((state) => {
@@ -31,32 +33,129 @@ const DashboardWorkspace = React.memo(() => {
   const isTvMode = searchParams.get('tv') === '1';
   const isPreviewAllowed = user?.role === UserRoles.ADMIN;
   const [ganttProjectId, setGanttProjectId] = useState('');
-  const [dashboardLayout, setDashboardLayout] = useState(() => {
-    const savedLayout = window.localStorage.getItem('planka-dashboard-layout');
+  const [dashboardLayout, setDashboardLayout] = useState(createDefaultDashboardLayout);
+  const [isDashboardLoading, setIsDashboardLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState(false);
+  const [canEditDashboard, setCanEditDashboard] = useState(false);
 
-    if (!savedLayout) {
-      return createDefaultDashboardLayout();
-    }
-
-    try {
-      return normalizeDashboardLayout(JSON.parse(savedLayout));
-    } catch {
-      window.localStorage.removeItem('planka-dashboard-layout');
-      return createDefaultDashboardLayout();
-    }
-  });
-
-  const updateLayoutFromGrid = useCallback((nodes) => {
-    const nodesById = new Map(nodes.map((node) => [node.id, node]));
-
-    setDashboardLayout((previousLayout) =>
-      previousLayout.map((widget) => {
-        const node = nodesById.get(widget.id);
-
-        return node ? { ...widget, x: node.x, y: node.y, w: node.w, h: node.h } : widget;
-      }),
-    );
+  const applyDashboard = useCallback((dashboard) => {
+    const layout = normalizeDashboardLayout(dashboard.layout || []);
+    layoutVersionRef.current = dashboard.version;
+    setDashboardLayout(layout.length > 0 ? layout : createDefaultDashboardLayout());
   }, []);
+
+  const loadDashboard = useCallback(async () => {
+    const body = await api.getDashboard();
+    applyDashboard(body.item);
+    return body;
+  }, [applyDashboard]);
+
+  useEffect(() => {
+    if (!isPreviewAllowed) {
+      return undefined;
+    }
+
+    let isCancelled = false;
+    setIsDashboardLoading(true);
+    setDashboardError(false);
+
+    loadDashboard()
+      .catch(() => {
+        if (!isCancelled) {
+          setDashboardError(true);
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsDashboardLoading(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isPreviewAllowed, loadDashboard]);
+
+  useEffect(() => {
+    if (!isPreviewAllowed || isTvMode || isDashboardLoading) {
+      return undefined;
+    }
+
+    let isCancelled = false;
+    const acquireLock = async () => {
+      try {
+        const body = await api.acquireDashboardEditLock();
+        if (!isCancelled) {
+          layoutVersionRef.current = body.item.version;
+          setCanEditDashboard(true);
+        }
+      } catch {
+        if (!isCancelled) {
+          setCanEditDashboard(false);
+        }
+      }
+    };
+
+    acquireLock();
+    const intervalId = window.setInterval(acquireLock, 30000);
+
+    return () => {
+      isCancelled = true;
+      window.clearInterval(intervalId);
+      api.releaseDashboardEditLock().catch(() => {});
+    };
+  }, [isDashboardLoading, isPreviewAllowed, isTvMode]);
+
+  useEffect(() => {
+    const handleDashboardUpdate = ({ item }) => {
+      if (!item || item.version === layoutVersionRef.current) {
+        return;
+      }
+
+      applyDashboard(item);
+      window.requestAnimationFrame(() => gridInstanceRef.current?.load(item.layout));
+    };
+
+    socket.on('dashboardUpdate', handleDashboardUpdate);
+    return () => socket.off('dashboardUpdate', handleDashboardUpdate);
+  }, [applyDashboard]);
+
+  const scheduleLayoutSave = useCallback(
+    (nextLayout) => {
+      if (!canEditDashboard) {
+        return;
+      }
+
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = window.setTimeout(async () => {
+        try {
+          const body = await api.updateDashboard(nextLayout, layoutVersionRef.current);
+          applyDashboard(body.item);
+        } catch {
+          setCanEditDashboard(false);
+          setDashboardError(true);
+        }
+      }, 400);
+    },
+    [applyDashboard, canEditDashboard],
+  );
+
+  const updateLayoutFromGrid = useCallback(
+    (nodes) => {
+      const nodesById = new Map(nodes.map((node) => [node.id, node]));
+
+      setDashboardLayout((previousLayout) => {
+        const nextLayout = previousLayout.map((widget) => {
+          const node = nodesById.get(widget.id);
+
+          return node ? { ...widget, x: node.x, y: node.y, w: node.w, h: node.h } : widget;
+        });
+        scheduleLayoutSave(nextLayout);
+        return nextLayout;
+      });
+    },
+    [scheduleLayoutSave],
+  );
 
   const handleAddGantt = useCallback(() => {
     if (!ganttProjectId) {
@@ -70,7 +169,7 @@ const DashboardWorkspace = React.memo(() => {
         0,
       );
 
-      return [
+      const nextLayout = [
         ...previousLayout,
         {
           id,
@@ -82,6 +181,8 @@ const DashboardWorkspace = React.memo(() => {
           config: { projectId: ganttProjectId, zoomLevel: 'week' },
         },
       ];
+      scheduleLayoutSave(nextLayout);
+      return nextLayout;
     });
 
     window.requestAnimationFrame(() => {
@@ -90,20 +191,7 @@ const DashboardWorkspace = React.memo(() => {
         gridInstanceRef.current?.makeWidget(item);
       }
     });
-  }, [ganttProjectId]);
-
-  useEffect(() => {
-    if (isTvMode) {
-      return undefined;
-    }
-
-    window.clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = window.setTimeout(() => {
-      window.localStorage.setItem('planka-dashboard-layout', JSON.stringify(dashboardLayout));
-    }, 400);
-
-    return () => window.clearTimeout(saveTimerRef.current);
-  }, [dashboardLayout, isTvMode]);
+  }, [ganttProjectId, scheduleLayoutSave]);
 
   useEffect(() => {
     if (!isPreviewAllowed || !gridRef.current) {
@@ -116,8 +204,8 @@ const DashboardWorkspace = React.memo(() => {
         cellHeight: 88,
         column: 12,
         columnOpts: { breakpoints: [{ c: 1, w: 760 }] },
-        disableDrag: isTvMode,
-        disableResize: isTvMode,
+        disableDrag: isTvMode || !canEditDashboard,
+        disableResize: isTvMode || !canEditDashboard,
         float: false,
         margin: 12,
         removable: '#dashboard-trash',
@@ -126,22 +214,24 @@ const DashboardWorkspace = React.memo(() => {
       gridRef.current,
     );
 
-    if (!isTvMode) {
+    if (!isTvMode && canEditDashboard) {
       grid.on('change', (_, nodes) => {
         updateLayoutFromGrid(nodes);
       });
 
       grid.on('removed', (_, nodes) => {
         const removedIds = new Set(nodes.map((node) => node.id));
-        setDashboardLayout((previousLayout) =>
-          previousLayout.filter((widget) => !removedIds.has(widget.id)),
-        );
+        setDashboardLayout((previousLayout) => {
+          const nextLayout = previousLayout.filter((widget) => !removedIds.has(widget.id));
+          scheduleLayoutSave(nextLayout);
+          return nextLayout;
+        });
       });
     }
 
     gridInstanceRef.current = grid;
 
-    if (!isTvMode) {
+    if (!isTvMode && canEditDashboard) {
       GridStack.setupDragIn(
         '.dashboard-widget-template',
         { appendTo: 'body', helper: 'clone' },
@@ -154,7 +244,7 @@ const DashboardWorkspace = React.memo(() => {
       gridInstanceRef.current = null;
       grid.destroy(false);
     };
-  }, [isPreviewAllowed, isTvMode, updateLayoutFromGrid]);
+  }, [canEditDashboard, isPreviewAllowed, isTvMode, scheduleLayoutSave, updateLayoutFromGrid]);
 
   if (!isPreviewAllowed) {
     return (
@@ -165,6 +255,10 @@ const DashboardWorkspace = React.memo(() => {
     );
   }
 
+  if (isDashboardLoading) {
+    return <main className={styles.accessDenied}>A carregar dashboard…</main>;
+  }
+
   return (
     <main className={`${styles.workspace} ${isTvMode ? styles.tvMode : ''}`}>
       {!isTvMode && (
@@ -172,6 +266,12 @@ const DashboardWorkspace = React.memo(() => {
           <div>
             <h1>Dashboard TV</h1>
             <p>Arraste widgets para o canvas e ajuste o espaço livremente.</p>
+            {!canEditDashboard && (
+              <p className={styles.lockHint}>Outro administrador está a editar o dashboard.</p>
+            )}
+            {dashboardError && (
+              <p className={styles.lockHint}>Não foi possível gravar a alteração mais recente.</p>
+            )}
           </div>
         </header>
       )}
@@ -185,29 +285,31 @@ const DashboardWorkspace = React.memo(() => {
               Próximas tarefas
             </div>
             <div className={`${styles.widgetTemplate} dashboard-widget-template`}>Atenção</div>
-            <div className={styles.ganttAdder}>
-              <span>Gantt por projeto</span>
-              <select
-                aria-label="Gantt por projeto"
-                value={ganttProjectId}
-                onChange={(event) => setGanttProjectId(event.target.value)}
-              >
-                <option value="">Selecionar projeto</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={!ganttProjectId}
-                onClick={handleAddGantt}
-              >
-                Adicionar Gantt
-              </Button>
-            </div>
+            {canEditDashboard && (
+              <div className={styles.ganttAdder}>
+                <span>Gantt por projeto</span>
+                <select
+                  aria-label="Gantt por projeto"
+                  value={ganttProjectId}
+                  onChange={(event) => setGanttProjectId(event.target.value)}
+                >
+                  <option value="">Selecionar projeto</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={!ganttProjectId}
+                  onClick={handleAddGantt}
+                >
+                  Adicionar Gantt
+                </Button>
+              </div>
+            )}
           </aside>
         )}
         <section className={`grid-stack ${styles.grid}`} ref={gridRef} aria-label="Dashboard TV">
@@ -236,7 +338,7 @@ const DashboardWorkspace = React.memo(() => {
           })}
         </section>
       </div>
-      {!isTvMode && (
+      {!isTvMode && canEditDashboard && (
         <div className={styles.trash} id="dashboard-trash">
           Largar aqui para remover
         </div>
