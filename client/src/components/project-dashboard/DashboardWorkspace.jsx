@@ -9,15 +9,7 @@ import api, { socket } from '../../api';
 import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import { UserRoles } from '../../constants/Enums';
-import {
-  createDefaultDashboardLayout,
-  DASHBOARD_WIDGETS,
-  fromGridStackDashboardWidgets,
-  normalizeDashboardLayout,
-  placeDashboardWidget,
-  removeDashboardWidget,
-  toGridStackDashboardWidget,
-} from './dashboardLayout';
+import * as dashboardLayoutHelpers from './dashboardLayout';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
 
 import styles from './DashboardWorkspace.module.scss';
@@ -79,15 +71,19 @@ const DashboardWorkspace = React.memo(() => {
   const isTvMode = searchParams.get('tv') === '1';
   const isPreviewAllowed = user?.role === UserRoles.ADMIN;
   const [ganttProjectId, setGanttProjectId] = useState('');
-  const [dashboardLayout, setDashboardLayout] = useState(createDefaultDashboardLayout);
+  const [dashboardLayout, setDashboardLayout] = useState(
+    dashboardLayoutHelpers.createDefaultDashboardLayout,
+  );
   const [isDashboardLoading, setIsDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState(false);
   const [canEditDashboard, setCanEditDashboard] = useState(false);
 
   const applyDashboard = useCallback((dashboard) => {
-    const layout = normalizeDashboardLayout(dashboard.layout || []);
+    const layout = dashboardLayoutHelpers.normalizeDashboardLayout(dashboard.layout || []);
     const nextLayout =
-      layout.length > 0 || dashboard.version > 1 ? layout : createDefaultDashboardLayout();
+      layout.length > 0 || dashboard.version > 1
+        ? layout
+        : dashboardLayoutHelpers.createDefaultDashboardLayout();
 
     layoutVersionRef.current = dashboard.version;
     setDashboardLayout(nextLayout);
@@ -184,7 +180,7 @@ const DashboardWorkspace = React.memo(() => {
       return;
     }
 
-    const nextLayout = fromGridStackDashboardWidgets(grid.save(false));
+    const nextLayout = dashboardLayoutHelpers.fromGridStackDashboardWidgets(grid.save(false));
     scheduleLayoutSave(nextLayout);
   }, [canEditDashboard, scheduleLayoutSave]);
 
@@ -199,7 +195,7 @@ const DashboardWorkspace = React.memo(() => {
     const frameId = window.requestAnimationFrame(() => {
       gridComponentRef.current
         ?.getGrid()
-        ?.load(dashboardLayout.map(toGridStackDashboardWidget));
+        ?.load(dashboardLayout.map(dashboardLayoutHelpers.toGridStackDashboardWidget));
     });
 
     return () => window.cancelAnimationFrame(frameId);
@@ -226,7 +222,9 @@ const DashboardWorkspace = React.memo(() => {
 
       const layout = applyDashboard(item);
       window.requestAnimationFrame(() => {
-        gridComponentRef.current?.getGrid()?.load(layout.map(toGridStackDashboardWidget));
+        gridComponentRef.current
+          ?.getGrid()
+          ?.load(layout.map(dashboardLayoutHelpers.toGridStackDashboardWidget));
       });
     };
 
@@ -247,7 +245,7 @@ const DashboardWorkspace = React.memo(() => {
         return;
       }
 
-      const constraints = DASHBOARD_WIDGETS[type];
+      const constraints = dashboardLayoutHelpers.DASHBOARD_WIDGETS[type];
       const widget = {
         h: type === 'gantt' ? 7 : constraints.minH,
         id: `${type}-${Date.now()}`,
@@ -256,7 +254,10 @@ const DashboardWorkspace = React.memo(() => {
         ...(config && { config }),
       };
 
-      const nextLayout = [...dashboardLayout, placeDashboardWidget(dashboardLayout, widget)];
+      const nextLayout = [
+        ...dashboardLayout,
+        dashboardLayoutHelpers.placeDashboardWidget(dashboardLayout, widget),
+      ];
       setDashboardLayout(nextLayout);
       scheduleLayoutSave(nextLayout);
     },
@@ -275,7 +276,7 @@ const DashboardWorkspace = React.memo(() => {
         return;
       }
 
-      const nextLayout = removeDashboardWidget(dashboardLayout, widgetId);
+      const nextLayout = dashboardLayoutHelpers.removeDashboardWidget(dashboardLayout, widgetId);
       setDashboardLayout(nextLayout);
       scheduleLayoutSave(nextLayout);
     },
@@ -294,7 +295,7 @@ const DashboardWorkspace = React.memo(() => {
     () => ({
       acceptWidgets: false,
       cellHeight: 88,
-      children: dashboardLayout.map(toGridStackDashboardWidget),
+      children: dashboardLayout.map(dashboardLayoutHelpers.toGridStackDashboardWidget),
       column: 12,
       columnOpts: { breakpoints: [{ c: 1, w: 760 }] },
       disableDrag: isTvMode || !canEditDashboard,
