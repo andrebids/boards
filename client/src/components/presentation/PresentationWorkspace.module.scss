@@ -11,16 +11,8 @@
     align-items: center;
     border-bottom: 1px solid var(--app-border-color);
     display: flex;
-    justify-content: space-between;
-    padding: 20px 24px;
-
-    h1 {
-      margin: 0;
-    }
-
-    span {
-      color: var(--app-secondary-text-color);
-    }
+    justify-content: flex-end;
+    padding: 10px 24px;
   }
 
   .emptyState,

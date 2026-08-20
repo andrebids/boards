@@ -99,10 +99,6 @@ const PresentationWorkspace = React.memo(() => {
   return (
     <main className={styles.workspace}>
       <header className={styles.toolbar}>
-        <div>
-          <h1>{presentation.title}</h1>
-          <span>{project?.name}</span>
-        </div>
         <Button
           variant="secondary"
           onClick={() => navigate(Paths.PROJECTS.replace(':id', project.id))}
