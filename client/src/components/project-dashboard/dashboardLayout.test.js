@@ -141,6 +141,23 @@ describe('project dashboard layout', () => {
     ]);
   });
 
+  it('restores dimensions omitted by GridStack when they equal minimum constraints', () => {
+    expect(
+      fromGridStackDashboardWidgets([
+        {
+          id: 'status-minimum',
+          x: 0,
+          y: 0,
+          minW: 3,
+          minH: 3,
+          props: {
+            widget: { id: 'status-minimum', type: 'status', x: 0, y: 0, w: 4, h: 4 },
+          },
+        },
+      ]),
+    ).toEqual([{ id: 'status-minimum', type: 'status', x: 0, y: 0, w: 3, h: 3 }]);
+  });
+
   it('places a widget in the first available grid area without overlap', () => {
     const layout = [{ id: 'top', type: 'progress', x: 0, y: 0, w: 12, h: 3 }];
 
