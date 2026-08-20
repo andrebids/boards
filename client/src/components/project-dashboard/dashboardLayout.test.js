@@ -22,4 +22,44 @@ describe('project dashboard layout', () => {
       normalizeDashboardLayout([{ id: 'progress', type: 'progress', x: 10, y: 0, w: 4, h: 3 }]),
     ).toThrow('outside the dashboard grid');
   });
+
+  it('accepts a configured Gantt widget and rejects an unsafe configuration', () => {
+    expect(
+      normalizeDashboardLayout([
+        {
+          id: 'gantt-alpha',
+          type: 'gantt',
+          x: 0,
+          y: 0,
+          w: 12,
+          h: 7,
+          config: { projectId: 'project-alpha', zoomLevel: 'week', ignored: 'value' },
+        },
+      ]),
+    ).toEqual([
+      {
+        id: 'gantt-alpha',
+        type: 'gantt',
+        x: 0,
+        y: 0,
+        w: 12,
+        h: 7,
+        config: { projectId: 'project-alpha', zoomLevel: 'week' },
+      },
+    ]);
+
+    expect(() =>
+      normalizeDashboardLayout([
+        {
+          id: 'gantt-alpha',
+          type: 'gantt',
+          x: 0,
+          y: 0,
+          w: 12,
+          h: 7,
+          config: { projectId: 'project-alpha', zoomLevel: 'year' },
+        },
+      ]),
+    ).toThrow('invalid zoom level');
+  });
 });
