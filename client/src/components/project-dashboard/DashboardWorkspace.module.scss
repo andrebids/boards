@@ -71,6 +71,32 @@
     user-select: none;
   }
 
+  .ganttAdder {
+    border-top: 1px solid var(--app-dark-border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+    padding-top: 12px;
+
+    span {
+      color: var(--app-dark-text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    select {
+      background: var(--app-dark-canvas);
+      border: 1px solid var(--app-dark-border);
+      color: var(--app-dark-text);
+      font: inherit;
+      font-size: 12px;
+      min-height: 32px;
+      padding: 0 8px;
+    }
+  }
+
   .trash {
     border: 1px dashed color-mix(in oklab, var(--app-danger) 60%, var(--app-dark-border));
     color: var(--app-dark-text-muted);
@@ -131,6 +157,10 @@
 
     .widgetTemplate {
       flex: 1 1 130px;
+    }
+
+    .ganttAdder {
+      flex: 1 1 180px;
     }
 
     .trash {
