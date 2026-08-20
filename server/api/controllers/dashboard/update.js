@@ -38,9 +38,10 @@ module.exports = {
       throw Errors.CONFLICT;
     }
 
-    const item = await Dashboard.updateOne({ id: dashboard.id, version: inputs.version })
-      .set({ layout: normalizeDashboardLayout(inputs.layout), version: dashboard.version + 1 })
-      .fetch();
+    const item = await Dashboard.updateOne({ id: dashboard.id, version: inputs.version }).set({
+      layout: normalizeDashboardLayout(inputs.layout),
+      version: dashboard.version + 1,
+    });
 
     if (!item) {
       throw Errors.CONFLICT;
