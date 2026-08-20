@@ -7,6 +7,7 @@ import 'gridstack/dist/gridstack.min.css';
 import selectors from '../../selectors';
 import { UserRoles } from '../../constants/Enums';
 import { createDefaultDashboardLayout } from './dashboardLayout';
+import DashboardWidgetContent from './widgets/DashboardWidgetContent';
 
 import styles from './DashboardWorkspace.module.scss';
 
@@ -118,9 +119,8 @@ const DashboardWorkspace = React.memo(() => {
               data-gs-y={widget.y}
               key={widget.id}
             >
-              <div className={`grid-stack-item-content ${styles.widget}`}>
-                <span>{widget.type === 'progress' ? 'Visão geral' : widget.type}</span>
-                <strong>{widget.id === 'overview' ? 'Dashboard TV' : 'Exemplo'}</strong>
+              <div className="grid-stack-item-content">
+                <DashboardWidgetContent widget={widget} />
               </div>
             </article>
           ))}
