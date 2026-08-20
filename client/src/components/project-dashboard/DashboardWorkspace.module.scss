@@ -132,18 +132,27 @@
   }
 
   .tvMode {
-    padding: 0;
+    padding: 16px;
 
     .grid {
-      min-height: 100vh;
+      min-height: calc(100vh - 32px);
     }
 
     .editorLayout {
-      min-height: 100vh;
+      min-height: calc(100vh - 32px);
     }
   }
 
   @media only screen and (width < 760px) {
+    .tvMode {
+      padding: 10px;
+
+      .grid,
+      .editorLayout {
+        min-height: calc(100vh - 20px);
+      }
+    }
+
     .editorLayout {
       flex-direction: column;
     }
