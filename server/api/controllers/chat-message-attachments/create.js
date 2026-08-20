@@ -258,49 +258,49 @@ module.exports = {
     }
 
     if (!isCreated) {
-      await sails.helpers.chatMessageAttachments.discardFile(data.fileReferenceId);
-    }
-
-    const extras = await sails.helpers.chat.getMessageExtras([message.id]);
-    const item = sails.helpers.chat.presentMessage({
-      ...message,
-      ...extras[message.id],
-    });
-
-    sails.sockets.broadcast(
-      `chatConversation:${message.conversationId}`,
-      'chatMessageUpdate',
-      { item },
-      this.req,
-    );
-
-    const lastMessage = await ChatMessage.qm.getLastByConversationId(conversation.id);
-    if (lastMessage && lastMessage.id === message.id) {
-      const uniqueRecipientUserIds =
-        await sails.helpers.chat.getConversationRecipientUserIds(conversation);
-      const unreadCounts = await sails.helpers.chat.getUnreadCountsForUsers(
-        conversation.id,
-        uniqueRecipientUserIds,
-      );
-
-      uniqueRecipientUserIds.forEach((userId) => {
-        sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', {
-          item: {
-            id: conversation.id,
-            projectId: conversation.projectId,
-            lastMessage: item,
-            unreadCount: unreadCounts[userId] || 0,
-          },
+      try {
+        await sails.helpers.chatMessageAttachments.discardFile(data.fileReferenceId);
+      } catch (error) {
+        sails.log.error('[CHAT_UPLOAD][DUPLICATE_CLEANUP_ERROR]', {
+          ...logContext,
+          fileReferenceId: data.fileReferenceId,
+          errorType: error.name,
+          errorCode: error.code || 'DUPLICATE_CLEANUP_ERROR',
+          durationMs: Date.now() - startedAt,
         });
-      });
+      }
     }
+
+    const item = sails.helpers.chatMessageAttachments.presentOne(attachment);
+    const payload = { item, messageId: message.id };
+
+    setImmediate(() => {
+      try {
+        sails.sockets.broadcast(
+          `chatConversation:${message.conversationId}`,
+          'chatMessageAttachmentCreate',
+          payload,
+          this.req,
+        );
+      } catch (error) {
+        sails.log.error('[CHAT_UPLOAD][PUBLISH_ERROR]', {
+          ...logContext,
+          attachmentId: attachment.id,
+          errorType: error.name,
+          errorCode: error.code || 'PUBLISH_ERROR',
+        });
+      }
+    });
 
     sails.log.info('[CHAT_UPLOAD][REQUEST_DONE]', {
       ...logContext,
       attachmentId: attachment.id,
+      isCreated,
       durationMs: Date.now() - startedAt,
     });
 
-    return { item, attachment };
+    this.res.status(isCreated ? 201 : 200);
+
+    return isCreated ? payload : { ...payload, reused: true };
   },
 };
