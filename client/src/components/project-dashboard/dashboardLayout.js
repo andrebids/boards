@@ -157,14 +157,18 @@ export const toGridStackDashboardWidget = (widget) => {
 
 export const fromGridStackDashboardWidgets = (widgets) =>
   normalizeDashboardLayout(
-    widgets.map((widget) => ({
-      ...widget.props.widget,
-      h: Number(widget.h),
-      id: String(widget.id),
-      w: Number(widget.w),
-      x: Number(widget.x),
-      y: Number(widget.y),
-    })),
+    widgets.map((widget) => {
+      const originalWidget = widget.props.widget;
+
+      return {
+        ...originalWidget,
+        h: Number(widget.h ?? widget.minH ?? originalWidget.h),
+        id: String(widget.id),
+        w: Number(widget.w ?? widget.minW ?? originalWidget.w),
+        x: Number(widget.x),
+        y: Number(widget.y),
+      };
+    }),
   );
 
 export { GRID_COLUMNS };
