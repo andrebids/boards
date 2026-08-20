@@ -12,18 +12,7 @@ import ErrorCodes from '../../constants/ErrorCodes';
 let lastRequestTask;
 const PREVIOUS_REQUEST_WAIT_TIMEOUT = 30000;
 
-function* queueRequest(previousRequestTask, method, ...args) {
-  if (previousRequestTask) {
-    try {
-      yield race({
-        completed: join(previousRequestTask),
-        timeout: delay(PREVIOUS_REQUEST_WAIT_TIMEOUT),
-      });
-    } catch {
-      /* empty */
-    }
-  }
-
+function* authenticatedRequest(method, ...args) {
   const accessToken = yield select(selectors.selectAccessToken);
 
   try {
@@ -38,6 +27,25 @@ function* queueRequest(previousRequestTask, method, ...args) {
 
     throw error;
   }
+}
+
+function* queueRequest(previousRequestTask, method, ...args) {
+  if (previousRequestTask) {
+    try {
+      yield race({
+        completed: join(previousRequestTask),
+        timeout: delay(PREVIOUS_REQUEST_WAIT_TIMEOUT),
+      });
+    } catch {
+      /* empty */
+    }
+  }
+
+  return yield* authenticatedRequest(method, ...args);
+}
+
+export function* requestConcurrent(method, ...args) {
+  return yield* authenticatedRequest(method, ...args);
 }
 
 export default function* request(method, ...args) {
