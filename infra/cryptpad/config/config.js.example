@@ -1,0 +1,14 @@
+/*
+ * Copiar para config.js antes de iniciar o CryptPad:
+ *   Copy-Item config/config.js.example config/config.js
+ *
+ * A configuração real não é versionada porque contém a chave pública dos
+ * administradores da instância.
+ */
+module.exports = {
+  httpUnsafeOrigin: 'http://localhost:3010',
+  httpSafeOrigin: 'http://localhost:3013',
+  httpAddress: '0.0.0.0',
+  enableEmbedding: true,
+  adminKeys: [],
+};

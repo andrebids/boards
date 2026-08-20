@@ -41,3 +41,5 @@ screenshots/
 move-screenshots.bat
 scripts/popular-atividades.js
 .gstack/
+infra/cryptpad/config/*
+!infra/cryptpad/config/config.js.example
