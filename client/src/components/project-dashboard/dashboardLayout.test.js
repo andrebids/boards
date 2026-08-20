@@ -4,6 +4,7 @@ import {
   mergeDashboardLayoutGeometry,
   normalizeDashboardLayout,
   placeDashboardWidget,
+  removeDashboardWidget,
   toGridStackDashboardWidget,
 } from './dashboardLayout';
 
@@ -169,5 +170,11 @@ describe('project dashboard layout', () => {
       x: 0,
       y: 3,
     });
+  });
+
+  it('removes only the selected widget and allows an empty dashboard', () => {
+    const layout = [{ id: 'only-widget', type: 'status', x: 0, y: 0, w: 3, h: 3 }];
+
+    expect(removeDashboardWidget(layout, 'only-widget')).toEqual([]);
   });
 });

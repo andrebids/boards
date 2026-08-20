@@ -15,6 +15,7 @@ import {
   fromGridStackDashboardWidgets,
   normalizeDashboardLayout,
   placeDashboardWidget,
+  removeDashboardWidget,
   toGridStackDashboardWidget,
 } from './dashboardLayout';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
@@ -28,7 +29,34 @@ const WIDGET_LABELS = {
   upcoming: 'Próximas tarefas',
 };
 
-const DashboardWidget = React.memo(({ widget }) => <DashboardWidgetContent widget={widget} />);
+const DashboardWidgetActionsContext = React.createContext({
+  canRemove: false,
+  onRemove: () => {},
+});
+
+const DashboardWidget = React.memo(({ widget }) => {
+  const { canRemove, onRemove } = React.useContext(DashboardWidgetActionsContext);
+
+  return (
+    <>
+      <DashboardWidgetContent widget={widget} />
+      {canRemove && (
+        <button
+          aria-label={`Remover widget ${WIDGET_LABELS[widget.type] || 'Gantt'}`}
+          className={styles.removeWidget}
+          title="Remover widget"
+          type="button"
+          onClick={() => onRemove(widget.id)}
+          onMouseDown={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+        >
+          ×
+        </button>
+      )}
+    </>
+  );
+});
 
 DashboardWidget.propTypes = {
   widget: PropTypes.object.isRequired,
@@ -58,7 +86,8 @@ const DashboardWorkspace = React.memo(() => {
 
   const applyDashboard = useCallback((dashboard) => {
     const layout = normalizeDashboardLayout(dashboard.layout || []);
-    const nextLayout = layout.length > 0 ? layout : createDefaultDashboardLayout();
+    const nextLayout =
+      layout.length > 0 || dashboard.version > 1 ? layout : createDefaultDashboardLayout();
 
     layoutVersionRef.current = dashboard.version;
     setDashboardLayout(nextLayout);
@@ -240,6 +269,27 @@ const DashboardWorkspace = React.memo(() => {
     }
   }, [ganttProjectId, handleAddWidget]);
 
+  const handleRemoveWidget = useCallback(
+    (widgetId) => {
+      if (!canEditDashboard) {
+        return;
+      }
+
+      const nextLayout = removeDashboardWidget(dashboardLayout, widgetId);
+      setDashboardLayout(nextLayout);
+      scheduleLayoutSave(nextLayout);
+    },
+    [canEditDashboard, dashboardLayout, scheduleLayoutSave],
+  );
+
+  const widgetActions = useMemo(
+    () => ({
+      canRemove: !isTvMode && canEditDashboard,
+      onRemove: handleRemoveWidget,
+    }),
+    [canEditDashboard, handleRemoveWidget, isTvMode],
+  );
+
   const gridOptions = useMemo(
     () => ({
       acceptWidgets: false,
@@ -251,7 +301,6 @@ const DashboardWorkspace = React.memo(() => {
       disableResize: isTvMode || !canEditDashboard,
       float: false,
       margin: 12,
-      removable: '#dashboard-trash',
       resizable: { handles: 'se' },
       staticGrid: isTvMode,
     }),
@@ -330,22 +379,19 @@ const DashboardWorkspace = React.memo(() => {
           </aside>
         )}
         <section aria-label="Dashboard TV">
-          <GridStackReact
-            className={styles.grid}
-            components={dashboardWidgetComponents}
-            options={gridOptions}
-            ref={gridComponentRef}
-            onAdded={persistGridLayout}
-            onChange={persistGridLayout}
-            onRemoved={persistGridLayout}
-          />
+          <DashboardWidgetActionsContext.Provider value={widgetActions}>
+            <GridStackReact
+              className={styles.grid}
+              components={dashboardWidgetComponents}
+              options={gridOptions}
+              ref={gridComponentRef}
+              onAdded={persistGridLayout}
+              onChange={persistGridLayout}
+              onRemoved={persistGridLayout}
+            />
+          </DashboardWidgetActionsContext.Provider>
         </section>
       </div>
-      {!isTvMode && canEditDashboard && (
-        <div className={styles.trash} id="dashboard-trash">
-          Largar aqui para remover
-        </div>
-      )}
     </main>
   );
 });

@@ -141,6 +141,9 @@ export const placeDashboardWidget = (layout, widget) => {
   }
 };
 
+export const removeDashboardWidget = (layout, widgetId) =>
+  normalizeDashboardLayout(layout).filter((widget) => widget.id !== widgetId);
+
 export const toGridStackDashboardWidget = (widget) => {
   const constraints = DASHBOARD_WIDGETS[widget.type];
 
