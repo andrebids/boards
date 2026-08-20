@@ -8,6 +8,7 @@ const controller = require('../../api/controllers/chat-message-attachments/creat
 describe('Chat message attachment controller', () => {
   let previousGlobals;
   let broadcasts;
+  let broadcastError;
   let responseStatus;
   let temporaryDirectory;
   let temporaryFile;
@@ -20,6 +21,7 @@ describe('Chat message attachment controller', () => {
       ChatMessageAttachment: global.ChatMessageAttachment,
     };
     broadcasts = [];
+    broadcastError = null;
     responseStatus = null;
     temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'planka-chat-controller-'));
     temporaryFile = path.join(temporaryDirectory, 'image.png');
@@ -75,7 +77,12 @@ describe('Chat message attachment controller', () => {
         warn: () => {},
       },
       sockets: {
-        broadcast: (...args) => broadcasts.push(args),
+        broadcast: (...args) => {
+          if (broadcastError) {
+            throw broadcastError;
+          }
+          broadcasts.push(args);
+        },
       },
     };
     global.ChatMessage = {
@@ -161,5 +168,36 @@ describe('Chat message attachment controller', () => {
         messageId: 'message-1',
       },
     ]);
+  });
+
+  it('keeps the successful response when publishing fails', async () => {
+    broadcastError = new Error('socket unavailable');
+    const response = {
+      once: () => {},
+      status: (status) => {
+        responseStatus = status;
+      },
+      writableEnded: false,
+    };
+
+    const result = await controller.fn.call(
+      {
+        req: {
+          currentUser: { id: 'user-1' },
+          headers: { 'content-length': '8', 'content-type': 'multipart/form-data' },
+          once: () => {},
+        },
+        res: response,
+      },
+      { messageId: 'message-1', clientAttachmentId: 'client-attachment-1' },
+      {},
+    );
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+
+    expect(responseStatus).to.equal(201);
+    expect(result.item.id).to.equal('attachment-1');
+    expect(broadcasts).to.have.length(0);
   });
 });
