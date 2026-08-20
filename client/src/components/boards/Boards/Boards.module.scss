@@ -26,17 +26,13 @@
   .tabsWrapper {
     display: flex;
     flex: 0 0 auto;
-    height: 58px;
+    height: 50px;
     overflow-x: auto;
     overflow-y: hidden;
 
     @supports (-moz-appearance: none) {
       scrollbar-color: rgba(0, 0, 0, 0.32) transparent;
       scrollbar-width: thin;
-    }
-
-    &:hover {
-      height: 50px;
     }
 
     &::-webkit-scrollbar {

@@ -138,7 +138,9 @@ const Static = React.memo(() => {
     contentNode = <GanttWorkspace />;
   } else if (pathsMatch?.pattern.path === Paths.PRESENTATION) {
     wrapperClassNames = [
-      isFavoritesActive ? styles.wrapperGanttWithFavorites : styles.wrapperGantt,
+      isFavoritesActive
+        ? styles.wrapperPresentationWithFavorites
+        : styles.wrapperPresentation,
       styles.wrapperFlex,
     ];
     contentNode = <PresentationWorkspace />;
