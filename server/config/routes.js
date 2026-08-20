@@ -68,6 +68,11 @@ module.exports.routes = {
   'POST /api/access-tokens/exchange-with-oidc': 'access-tokens/exchange-with-oidc',
   'DELETE /api/access-tokens/me': 'access-tokens/delete',
 
+  'GET /api/dashboard': 'dashboard/show',
+  'PATCH /api/dashboard': 'dashboard/update',
+  'POST /api/dashboard/edit-lock': 'dashboard/acquire-edit-lock',
+  'DELETE /api/dashboard/edit-lock': 'dashboard/release-edit-lock',
+
   'POST /api/password-reset-requests': 'password-reset-requests/create',
   'POST /api/password-resets': 'password-resets/create',
 
