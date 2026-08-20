@@ -1,0 +1,23 @@
+:global(#app) {
+  .placeholder {
+    align-items: center;
+    background: var(--app-dark-surface);
+    border: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    justify-content: center;
+
+    span {
+      color: var(--app-dark-text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    strong {
+      font-size: 18px;
+    }
+  }
+}

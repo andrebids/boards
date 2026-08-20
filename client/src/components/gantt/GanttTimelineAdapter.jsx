@@ -149,7 +149,16 @@ ColumnHeader.propTypes = {
 const createHeader = (text, icon) => ({ text, icon, cell: ColumnHeader });
 
 const GanttTimelineAdapter = React.memo(
-  ({ items, links, zoomLevel, readonly, onZoomLevelChange, onItemSelect, onItemChange }) => {
+  ({
+    items,
+    links,
+    zoomLevel,
+    readonly,
+    variant,
+    onZoomLevelChange,
+    onItemSelect,
+    onItemChange,
+  }) => {
     const [t, i18n] = useTranslation();
     const [readyZoomLevel, setReadyZoomLevel] = useState(null);
     const locale = i18n.resolvedLanguage || i18n.language;
@@ -164,6 +173,7 @@ const GanttTimelineAdapter = React.memo(
     const onZoomLevelChangeRef = useRef(onZoomLevelChange);
     const ganttApiRef = useRef(null);
     const todayLabelRef = useRef(todayLabel);
+    const isDashboardWidget = variant === 'dashboard';
     todayLabelRef.current = todayLabel;
     useEffect(() => {
       onItemSelectRef.current = onItemSelect;
@@ -346,30 +356,32 @@ const GanttTimelineAdapter = React.memo(
           }
         });
 
-        ganttApi.on('select-task', ({ id }) => {
-          onItemSelectRef.current(String(id));
-        });
-
-        ganttApi.on('update-task', ({ id, inProgress }) => {
-          if (inProgress) {
-            return;
-          }
-
-          const task = ganttApi.getTask(id);
-          if (!task?.start || !task?.end) {
-            return;
-          }
-
-          onItemChangeRef.current(String(id), {
-            startDate: formatGanttDate(task.start),
-            endDate: formatGanttDate(new Date(task.end.getTime() - 86400000)),
-            expectedDurationDays: Math.max(1, Math.round(task.duration || 1)),
+        if (!isDashboardWidget) {
+          ganttApi.on('select-task', ({ id }) => {
+            onItemSelectRef.current(String(id));
           });
-        });
+
+          ganttApi.on('update-task', ({ id, inProgress }) => {
+            if (inProgress) {
+              return;
+            }
+
+            const task = ganttApi.getTask(id);
+            if (!task?.start || !task?.end) {
+              return;
+            }
+
+            onItemChangeRef.current(String(id), {
+              startDate: formatGanttDate(task.start),
+              endDate: formatGanttDate(new Date(task.end.getTime() - 86400000)),
+              expectedDurationDays: Math.max(1, Math.round(task.duration || 1)),
+            });
+          });
+        }
 
         window.requestAnimationFrame(() => setReadyZoomLevel(zoomLevel));
       },
-      [updateCurrentTimeMarker, zoomLevel],
+      [isDashboardWidget, updateCurrentTimeMarker, zoomLevel],
     );
 
     const taskColorStyles = useMemo(() => buildGanttTaskColorStyles(tasks), [tasks]);
@@ -434,9 +446,17 @@ GanttTimelineAdapter.propTypes = {
   links: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
   zoomLevel: PropTypes.oneOf(['day', 'week', 'month', 'quarter']).isRequired,
   readonly: PropTypes.bool.isRequired,
-  onZoomLevelChange: PropTypes.func.isRequired,
-  onItemSelect: PropTypes.func.isRequired,
-  onItemChange: PropTypes.func.isRequired,
+  variant: PropTypes.oneOf(['default', 'dashboard']),
+  onZoomLevelChange: PropTypes.func,
+  onItemSelect: PropTypes.func,
+  onItemChange: PropTypes.func,
+};
+
+GanttTimelineAdapter.defaultProps = {
+  variant: 'default',
+  onZoomLevelChange: () => {},
+  onItemSelect: () => {},
+  onItemChange: () => {},
 };
 
 export default GanttTimelineAdapter;
