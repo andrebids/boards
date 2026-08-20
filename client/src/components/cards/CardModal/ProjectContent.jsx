@@ -355,34 +355,37 @@ const ProjectContent = React.memo(({ onClose }) => {
                 context: 'title',
             })}
           >
-            {userIds.map((userId) => (
-              <span key={userId}>
-                {canUseMembers ? (
-                  <BoardMembershipsPopup
-                    currentUserIds={userIds}
-                    onUserSelect={handleUserSelect}
-                    onUserDeselect={handleUserDeselect}
-                  >
+            <div className={styles.members}>
+              {userIds.map((userId) => (
+                <span key={userId} className={styles.member}>
+                  {canUseMembers ? (
+                    <BoardMembershipsPopup
+                      currentUserIds={userIds}
+                      onUserSelect={handleUserSelect}
+                      onUserDeselect={handleUserDeselect}
+                    >
+                      <UserAvatar id={userId} />
+                    </BoardMembershipsPopup>
+                  ) : (
                     <UserAvatar id={userId} />
-                  </BoardMembershipsPopup>
-                ) : (
-                  <UserAvatar id={userId} />
-                )}
-              </span>
-            ))}
-            {canUseMembers && (
-              <BoardMembershipsPopup
-                currentUserIds={userIds}
-                onUserSelect={handleUserSelect}
-                onUserDeselect={handleUserDeselect}
-              >
-                <CardModalMetadataAddButton
-                  circular
-                  ariaLabel={t('action.addMember')}
-                  icon="add user"
-                />
-              </BoardMembershipsPopup>
-            )}
+                  )}
+                </span>
+              ))}
+              {canUseMembers && (
+                <BoardMembershipsPopup
+                  currentUserIds={userIds}
+                  onUserSelect={handleUserSelect}
+                  onUserDeselect={handleUserDeselect}
+                >
+                  <CardModalMetadataAddButton
+                    circular
+                    ariaLabel={t('action.addMember')}
+                    className={styles.memberAddButton}
+                    icon="add user"
+                  />
+                </BoardMembershipsPopup>
+              )}
+            </div>
           </CardModalMetadataItem>
         )}
         {labelIds.length > 0 && (

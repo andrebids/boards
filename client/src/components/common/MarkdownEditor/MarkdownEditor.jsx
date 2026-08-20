@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import {
@@ -15,15 +15,18 @@ import { ThemeProvider } from "@gravity-ui/uikit";
 /* eslint-disable import/no-unresolved */
 import { full as toolbarsPreset } from "@gravity-ui/markdown-editor/_/modules/toolbars/presets";
 import { ActionName } from "@gravity-ui/markdown-editor/_/bundle/config/action-names";
+import { ToolbarDataType } from "@gravity-ui/markdown-editor/_/toolbar/types";
 /* eslint-enable import/no-unresolved */
 
 import { EditorModes } from "../../../constants/Enums";
 import { createMentionMarkupLanguageData } from "./mention-utils";
 import createUserMentionExtension from "./mentions";
+import EmojiToolbarButton from "./EmojiToolbarButton";
 
 import styles from "./MarkdownEditor.module.scss";
 
 const EMPTY_MENTION_USERS = [];
+const CUSTOM_EMOJI_ACTION = "commentEmoji";
 
 const removedActionNamesSet = new Set([
   ActionName.checkbox,
@@ -48,6 +51,49 @@ const commandMenuActions = wysiwygToolbarConfigs.wCommandMenuConfig.filter(
   (action) => !removedActionNamesSet.has(action.id),
 );
 
+const cloneToolbarOrderItem = (item) =>
+  typeof item === "string"
+    ? item
+    : {
+        ...item,
+        ...(item.items && { items: [...item.items] }),
+      };
+
+const createToolbarsPreset = (withEmoji, onEmojiSelect) => {
+  if (!withEmoji) {
+    return toolbarsPreset;
+  }
+
+  const orders = Object.fromEntries(
+    Object.entries(toolbarsPreset.orders).map(([name, order]) => [
+      name,
+      order.map((group) => group.map(cloneToolbarOrderItem)),
+    ]),
+  );
+
+  orders.wysiwygHidden = orders.wysiwygHidden.map((group) =>
+    group.filter((item) => item !== ActionName.emoji),
+  );
+  orders.wysiwygMain[1].unshift(CUSTOM_EMOJI_ACTION);
+
+  return {
+    ...toolbarsPreset,
+    items: {
+      ...toolbarsPreset.items,
+      [CUSTOM_EMOJI_ACTION]: {
+        view: {
+          type: ToolbarDataType.ReactComponent,
+        },
+        wysiwyg: {
+          width: 28,
+          component: () => <EmojiToolbarButton onEmojiSelect={onEmojiSelect} />,
+        },
+      },
+    },
+    orders,
+  };
+};
+
 export const fileToBase64Data = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -67,6 +113,7 @@ const MarkdownEditor = React.forwardRef(
       defaultValue,
       defaultMode,
       mentionUsers,
+      withEmoji,
       fileUploadHandler: customFileUploadHandler,
       isError,
       onChange,
@@ -86,7 +133,6 @@ const MarkdownEditor = React.forwardRef(
       () => createMentionMarkupLanguageData(mentionUsers),
       [mentionUsers],
     );
-
     const editor = useMarkdownEditor({
       md: {
         breaks: true,
@@ -115,11 +161,24 @@ const MarkdownEditor = React.forwardRef(
       },
     });
 
+    const handleEmojiSelect = useCallback(
+      (emoji) => {
+        const { view } = editor.currentEditor;
+        view.dispatch(view.state.tr.insertText(emoji).scrollIntoView());
+        editor.focus();
+      },
+      [editor],
+    );
+    const configuredToolbarsPreset = useMemo(
+      () => createToolbarsPreset(withEmoji, handleEmojiSelect),
+      [handleEmojiSelect, withEmoji],
+    );
+
     useImperativeHandle(
       ref,
       () => ({
         insertText: (text) => {
-          const currentEditor = editor.currentEditor;
+          const { currentEditor } = editor;
 
           if (editor.currentMode === EditorModes.WYSIWYG) {
             const { view } = currentEditor;
@@ -192,7 +251,7 @@ const MarkdownEditor = React.forwardRef(
             autofocus
             stickyToolbar
             editor={editor}
-            toolbarsPreset={toolbarsPreset}
+            toolbarsPreset={configuredToolbarsPreset}
             className={styles.editor}
           />
         </ThemeProvider>
@@ -211,6 +270,7 @@ MarkdownEditor.propTypes = {
       name: PropTypes.string,
     }),
   ),
+  withEmoji: PropTypes.bool,
   fileUploadHandler: PropTypes.func,
   isError: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
@@ -222,6 +282,7 @@ MarkdownEditor.propTypes = {
 MarkdownEditor.defaultProps = {
   defaultMode: EditorModes.WYSIWYG,
   mentionUsers: EMPTY_MENTION_USERS,
+  withEmoji: false,
   fileUploadHandler,
   isError: false,
   onModeChange: undefined,

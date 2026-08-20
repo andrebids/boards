@@ -3,8 +3,6 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-const escapeHtml = require('escape-html');
-
 const { extractMentionIds, formatTextWithMentions } = require('./mentions');
 
 const DIRECT_CONVERSATION_TYPE = 'projectDirect';
@@ -22,6 +20,7 @@ const COPY_BY_LANGUAGE = {
     greeting: (name) => `Hello ${name},`,
     mentionIntroduction: 'A chat mention has remained unread for at least one hour.',
     openConversation: 'OPEN CONVERSATION',
+    conversation: 'Conversation',
     project: 'Project',
     subjectDirect: 'Unread direct message',
     subjectDigest: (count) => `${count} unread chat messages`,
@@ -37,6 +36,7 @@ const COPY_BY_LANGUAGE = {
     greeting: (name) => `Bonjour ${name},`,
     mentionIntroduction: 'Une mention dans le chat est restée non lue pendant au moins une heure.',
     openConversation: 'OUVRIR LA CONVERSATION',
+    conversation: 'Conversation',
     project: 'Projet',
     subjectDirect: 'Message direct non lu',
     subjectDigest: (count) => `${count} messages du chat non lus`,
@@ -53,6 +53,7 @@ const COPY_BY_LANGUAGE = {
     greeting: (name) => `Olá ${name},`,
     mentionIntroduction: 'Uma menção no chat permaneceu por ler durante pelo menos uma hora.',
     openConversation: 'ABRIR CONVERSA',
+    conversation: 'Conversa',
     project: 'Projeto',
     subjectDirect: 'Mensagem direta por ler',
     subjectDigest: (count) => `${count} mensagens do chat por ler`,
@@ -134,15 +135,8 @@ const buildEmail = ({ baseUrl, conversation, messages, project, recipient }) => 
   const textMessages = presentedMessages
     .map(({ preview, sender }) => `${sender.name}:\n${preview}`)
     .join('\n\n');
-  const htmlMessages = presentedMessages
-    .map(
-      ({ preview, sender }) => `
-        <div style="margin:0 0 14px;padding:14px;background:#f4f4f5;border-left:4px solid #2563eb;border-radius:6px;">
-          <div style="margin-bottom:6px;font-weight:700;color:#18181b;">${escapeHtml(sender.name)}</div>
-          <div style="white-space:pre-wrap;color:#3f3f46;">${escapeHtml(preview)}</div>
-        </div>`,
-    )
-    .join('');
+  const language = recipient.language || 'en-US';
+  const currentYear = new Date().getFullYear();
 
   return {
     subject: `Blachere Boards: ${subjectLabel} — ${conversationName}`,
@@ -158,26 +152,28 @@ ${textMessages}
 ${deepLink.toString()}
 
 ${copy.footer}`,
-    html: `
-      <div style="max-width:640px;margin:0 auto;padding:24px;font-family:Arial,sans-serif;color:#18181b;">
-        <div style="margin-bottom:24px;">
-          <img src="{{logo_url}}" alt="Blachere Boards" width="48" height="48" style="display:block;border:0;">
-        </div>
-        <h2 style="margin:0 0 16px;">${escapeHtml(subjectLabel)}</h2>
-        <p>${escapeHtml(copy.greeting(recipient.name))}</p>
-        <p>${escapeHtml(introduction)}</p>
-        <p>
-          <strong>${escapeHtml(copy.project)}:</strong> ${escapeHtml(project.name)}<br>
-          <strong>${escapeHtml(conversationName)}</strong>
-        </p>
-        ${htmlMessages}
-        <p style="margin:24px 0;">
-          <a href="${escapeHtml(deepLink.toString())}" style="display:inline-block;padding:11px 18px;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:700;">
-            ${escapeHtml(copy.openConversation)}
-          </a>
-        </p>
-        <p style="font-size:12px;color:#71717a;">${escapeHtml(copy.footer)}</p>
-      </div>`,
+    templateData: {
+      card_url: deepLink.toString(),
+      chat_conversation_label: copy.conversation,
+      chat_conversation_name: conversationName,
+      chat_footer: copy.footer,
+      chat_greeting: copy.greeting(recipient.name),
+      chat_introduction: introduction,
+      chat_messages: presentedMessages.map(({ preview, sender }) => ({
+        preview,
+        sender_name: sender.name,
+      })),
+      cta_button_text: copy.openConversation,
+      email_copyright: `© ${currentYear} Planka.`,
+      email_language: language,
+      is_chat_notification: true,
+      notification_title: subjectLabel,
+      notification_type_label: 'Chat',
+      planka_base_url: baseUrl,
+      project_label: copy.project,
+      project_name: project.name,
+      send_date: new Date().toLocaleDateString(language),
+    },
     url: deepLink.toString(),
   };
 };

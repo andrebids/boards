@@ -19,6 +19,7 @@ const NOTIFICATION_TYPE_TO_PARTIAL = {
 };
 
 const COMPACT_NOTIFICATION_TYPES = new Set(['mentionInComment']);
+const CHAT_NOTIFICATION_TYPE = 'chat-notification';
 
 const getTemplatesSignature = (templatesDir) => {
   const getTemplateFiles = (directory) => {
@@ -70,6 +71,7 @@ module.exports = {
 
       const templateData = {
         ...inputs.data,
+        is_chat_notification: inputs.templateName === CHAT_NOTIFICATION_TYPE,
         is_compact_notification: COMPACT_NOTIFICATION_TYPES.has(inputs.templateName),
         notification_partial_name:
           NOTIFICATION_TYPE_TO_PARTIAL[inputs.templateName] || inputs.templateName,

@@ -278,12 +278,16 @@ module.exports = {
           project: context.project,
           recipient: context.recipient,
         });
+        const html = await sails.helpers.utils.compileEmailTemplate.with({
+          templateName: 'chat-notification',
+          data: email.templateData,
+        });
         const deterministicMessageId = `<boards-chat-${context.recipient.id}-${context.conversation.id}-${context.eligibleRows[0].id}@boards.dsproject.pt>`;
         const info = await sails.helpers.utils.sendEmail.with({
           to: context.recipient.email,
           subject: email.subject,
           text: email.text,
-          html: email.html,
+          html,
           messageId: deterministicMessageId,
         });
 

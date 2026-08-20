@@ -33,6 +33,10 @@ export default {
       tryAnotherSearch: 'Essayez un autre nom de conversation ou de projet.',
       unreadConversations_one: '{{count}} conversation non lue',
       unreadConversations_other: '{{count}} conversations non lues',
+      unreadChatNotification_one: 'Vous avez des messages non lus dans une conversation du chat.',
+      unreadChatNotification_other:
+        'Vous avez des messages non lus dans {{count}} conversations du chat.',
+      unreadChatMessagesTitle: 'Messages non lus',
       unreadMention: 'Mention non lue',
       viewAllConversations: 'Voir toutes les conversations',
       attachFiles: 'Joindre des fichiers',
