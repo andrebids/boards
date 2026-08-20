@@ -119,6 +119,28 @@ export const mergeDashboardLayoutGeometry = (layout, gridWidgets) => {
   });
 };
 
+const widgetsOverlap = (first, second) =>
+  !(
+    first.x + first.w <= second.x ||
+    first.x >= second.x + second.w ||
+    first.y + first.h <= second.y ||
+    first.y >= second.y + second.h
+  );
+
+export const placeDashboardWidget = (layout, widget) => {
+  const normalizedLayout = normalizeDashboardLayout(layout);
+
+  for (let y = 0; ; y += 1) {
+    for (let x = 0; x <= GRID_COLUMNS - widget.w; x += 1) {
+      const candidate = { ...widget, x, y };
+
+      if (!normalizedLayout.some((existingWidget) => widgetsOverlap(candidate, existingWidget))) {
+        return candidate;
+      }
+    }
+  }
+};
+
 export const toGridStackDashboardWidget = (widget) => {
   const constraints = DASHBOARD_WIDGETS[widget.type];
 
