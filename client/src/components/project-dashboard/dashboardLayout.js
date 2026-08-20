@@ -1,11 +1,11 @@
 const GRID_COLUMNS = 12;
 
 export const DASHBOARD_WIDGETS = {
-  progress: { minW: 3, minH: 3, maxW: 12, maxH: 10 },
-  status: { minW: 3, minH: 3, maxW: 12, maxH: 5 },
-  upcoming: { minW: 2, minH: 3, maxW: 12, maxH: 10 },
-  attention: { minW: 4, minH: 3, maxW: 12, maxH: 10 },
-  gantt: { minW: 6, minH: 5, maxW: 12, maxH: 12 },
+  progress: { minW: 3, editorMinW: 4, minH: 3, maxW: 12, maxH: 10 },
+  status: { minW: 3, editorMinW: 3, minH: 3, maxW: 12, maxH: 5 },
+  upcoming: { minW: 2, editorMinW: 3, minH: 3, maxW: 12, maxH: 10 },
+  attention: { minW: 4, editorMinW: 4, minH: 3, maxW: 12, maxH: 10 },
+  gantt: { minW: 6, editorMinW: 6, minH: 5, maxW: 12, maxH: 12 },
 };
 
 export const GANTT_ZOOM_LEVELS = ['day', 'week', 'month', 'quarter'];

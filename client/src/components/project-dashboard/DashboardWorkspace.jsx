@@ -193,6 +193,7 @@ const DashboardWorkspace = React.memo(() => {
         float: false,
         margin: 12,
         removable: '#dashboard-trash',
+        resizable: { handles: 'se' },
         staticGrid: isTvMode,
       },
       gridRef.current,
@@ -313,7 +314,7 @@ const DashboardWorkspace = React.memo(() => {
                 data-gs-max-h={constraints.maxH}
                 data-gs-max-w={constraints.maxW}
                 data-gs-min-h={constraints.minH}
-                data-gs-min-w={constraints.minW}
+                data-gs-min-w={constraints.editorMinW || constraints.minW}
                 data-gs-w={widget.w}
                 data-gs-x={widget.x}
                 data-gs-y={widget.y}

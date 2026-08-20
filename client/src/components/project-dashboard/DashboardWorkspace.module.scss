@@ -37,6 +37,15 @@
   .grid {
     flex: 1 1 auto;
     min-height: 620px;
+
+    :global(.grid-stack-item > .ui-resizable-se) {
+      background-color: var(--app-dark-canvas);
+      border: 1px solid var(--app-dark-border);
+      border-radius: 3px;
+      bottom: 5px;
+      opacity: 0.82;
+      right: 5px;
+    }
   }
 
   .editorLayout {
