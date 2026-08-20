@@ -14,6 +14,7 @@ import {
   DASHBOARD_WIDGETS,
   fromGridStackDashboardWidgets,
   normalizeDashboardLayout,
+  placeDashboardWidget,
   toGridStackDashboardWidget,
 } from './dashboardLayout';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
@@ -213,9 +214,7 @@ const DashboardWorkspace = React.memo(() => {
 
   const handleAddWidget = useCallback(
     (type, config) => {
-      const grid = gridComponentRef.current?.getGrid();
-
-      if (!canEditDashboard || !grid) {
+      if (!canEditDashboard) {
         return;
       }
 
@@ -228,9 +227,11 @@ const DashboardWorkspace = React.memo(() => {
         ...(config && { config }),
       };
 
-      grid.addWidget(toGridStackDashboardWidget(widget));
+      const nextLayout = [...dashboardLayout, placeDashboardWidget(dashboardLayout, widget)];
+      setDashboardLayout(nextLayout);
+      scheduleLayoutSave(nextLayout);
     },
-    [canEditDashboard],
+    [canEditDashboard, dashboardLayout, scheduleLayoutSave],
   );
 
   const handleAddGantt = useCallback(() => {

@@ -3,6 +3,7 @@ import {
   fromGridStackDashboardWidgets,
   mergeDashboardLayoutGeometry,
   normalizeDashboardLayout,
+  placeDashboardWidget,
   toGridStackDashboardWidget,
 } from './dashboardLayout';
 
@@ -138,5 +139,18 @@ describe('project dashboard layout', () => {
         config: { projectId: 'project-alpha', zoomLevel: 'week' },
       },
     ]);
+  });
+
+  it('places a widget in the first available grid area without overlap', () => {
+    const layout = [{ id: 'top', type: 'progress', x: 0, y: 0, w: 12, h: 3 }];
+
+    expect(placeDashboardWidget(layout, { id: 'next', type: 'status', w: 3, h: 3 })).toEqual({
+      id: 'next',
+      type: 'status',
+      w: 3,
+      h: 3,
+      x: 0,
+      y: 3,
+    });
   });
 });
