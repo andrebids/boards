@@ -9,6 +9,7 @@ module.exports = {
   httpUnsafeOrigin: 'http://localhost:3010',
   httpSafeOrigin: 'http://localhost:3013',
   httpAddress: '0.0.0.0',
+  websocketPort: 3012,
   enableEmbedding: true,
   adminKeys: [],
 };

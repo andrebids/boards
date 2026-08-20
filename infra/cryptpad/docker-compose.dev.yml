@@ -11,8 +11,9 @@ services:
     ports:
       - '127.0.0.1:3010:3000'
       # O sandbox é um segundo origin HTTP servido pelo mesmo processo principal.
-      # O porto 3003 é exclusivamente para WebSocket interno.
+      # O WebSocket usa um porto separado para a colaboração em tempo real.
       - '127.0.0.1:3013:3000'
+      - '127.0.0.1:3012:3012'
     volumes:
       - ./config/config.js:/cryptpad/config/config.js
       - ./data/blob:/cryptpad/blob
