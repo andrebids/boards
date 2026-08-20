@@ -4,6 +4,8 @@
  */
 
 module.exports = {
+  sync: true,
+
   inputs: {
     record: { type: 'ref', required: true },
     canEdit: { type: 'boolean', required: true },
