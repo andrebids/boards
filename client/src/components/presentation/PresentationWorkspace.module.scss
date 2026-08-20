@@ -14,13 +14,16 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex: 0 0 auto;
-    gap: 24px;
+    gap: 12px;
     justify-content: space-between;
-    padding: 12px 20px;
+    min-height: 44px;
+    padding: 8px 12px;
     -webkit-backdrop-filter: blur(12px);
   }
 
   .heading {
+    align-items: center;
+    display: flex;
     min-width: 0;
 
     h1,
@@ -30,14 +33,12 @@
 
     h1 {
       color: #fff;
-      font-size: 18px;
-      line-height: 24px;
+      font-size: 16px;
+      line-height: 20px;
     }
 
     p {
-      color: rgba(255, 255, 255, 0.64);
-      font-size: 12px;
-      line-height: 18px;
+      display: none;
     }
   }
 
@@ -46,9 +47,9 @@
     color: rgba(255, 255, 255, 0.72);
     display: flex;
     flex: 0 0 auto;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    gap: 8px;
+    gap: 6px;
 
     select {
       background: rgba(255, 255, 255, 0.1);
@@ -57,8 +58,8 @@
       color: #fff;
       cursor: pointer;
       font: inherit;
-      min-width: 190px;
-      padding: 8px 32px 8px 10px;
+      min-width: clamp(132px, 20vw, 160px);
+      padding: 6px 28px 6px 8px;
 
       &:focus-visible {
         outline: 2px solid rgba(143, 166, 247, 0.9);
@@ -186,19 +187,18 @@
 
   @media (max-width: 640px) {
     .header {
-      align-items: stretch;
-      flex-direction: column;
-      gap: 10px;
-      padding: 12px;
+      padding: 8px 12px;
     }
 
     .boardPicker {
-      align-items: stretch;
-      flex-direction: column;
-      gap: 4px;
-
       select {
-        width: 100%;
+        min-width: clamp(128px, 44vw, 160px);
+      }
+    }
+
+    @media (max-width: 420px) {
+      .boardPicker > span {
+        display: none;
       }
     }
 
