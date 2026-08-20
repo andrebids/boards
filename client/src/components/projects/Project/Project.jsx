@@ -34,7 +34,12 @@ const Project = React.memo(() => {
     // 1. Temos um projeto
     // 2. Não temos um quadro selecionado (estamos na página do projeto)
     // 3. Existe pelo menos um quadro no projeto
-    if (project && !board && firstBoardId && pathsMatch?.pattern.path !== Paths.GANTT) {
+    if (
+      project &&
+      !board &&
+      firstBoardId &&
+      ![Paths.GANTT, Paths.PRESENTATION].includes(pathsMatch?.pattern.path)
+    ) {
       navigate(Paths.BOARDS.replace(':id', firstBoardId));
     }
   }, [project, board, firstBoardId, pathsMatch, navigate]);

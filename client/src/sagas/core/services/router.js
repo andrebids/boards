@@ -104,7 +104,8 @@ export function* handleLocationChange() {
 
       break;
     case Paths.PROJECTS:
-    case Paths.GANTT: {
+    case Paths.GANTT:
+    case Paths.PRESENTATION: {
       const boardIds = yield select(selectors.selectBoardIdsForCurrentProject);
 
       if (boardIds && boardIds.length === 0) {

@@ -94,6 +94,7 @@ function Root({ store, history }) {
                 <Route path={Paths.DASHBOARD} element={<Core />} />
                 <Route path={Paths.PROJECTS} element={<Core />} />
                 <Route path={Paths.GANTT} element={<Core />} />
+                <Route path={Paths.PRESENTATION} element={<Core />} />
                 <Route path={Paths.BOARDS} element={<Core />} />
                 <Route path={Paths.CARDS} element={<Core />} />
                 <Route path="*" element={<NotFound />} />
