@@ -45,6 +45,7 @@ import LazyEmojiPicker, {
 } from '../LazyEmojiPicker';
 import { getReactionEmojiPickerPosition, QUICK_REACTION_EMOJIS } from '../reaction-utils';
 import { getConversationTitle, getParticipantUserIds, isDirectConversation } from '../utils';
+import { getPendingAttachmentCopy, isPendingAttachmentRetryable } from './attachment-state';
 
 import styles from './MessageList.module.scss';
 
@@ -970,6 +971,46 @@ const MessageList = React.memo(
                               {attachmentIcon}
                               <span>{attachment.name}</span>
                             </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {message.pendingFiles?.length > 0 && (
+                      <div className={styles.pendingAttachments}>
+                        {message.pendingFiles.map((pendingFile, pendingFileIndex) => {
+                          const status = pendingFile.status || 'uploading';
+                          const copy = getPendingAttachmentCopy(status);
+                          const name =
+                            pendingFile.file?.name || pendingFile.name || t('chat.sentFile');
+                          const isRetryable = isPendingAttachmentRetryable(pendingFile);
+
+                          return (
+                            <div
+                              key={pendingFile.clientAttachmentId || `${name}-${pendingFileIndex}`}
+                              className={styles.pendingAttachment}
+                            >
+                              <Paperclip aria-hidden="true" size={14} />
+                              <span>
+                                <strong>{name}</strong>
+                                {copy && <small>{t(copy)}</small>}
+                              </span>
+                              {isRetryable && (
+                                <button
+                                  type="button"
+                                  title={getDeliveryErrorMessage(pendingFile.error, t)}
+                                  onClick={() =>
+                                    dispatch(
+                                      entryActions.retryChatMessageAttachment(
+                                        message.id,
+                                        pendingFile.clientAttachmentId,
+                                      ),
+                                    )
+                                  }
+                                >
+                                  {t('chat.retry')}
+                                </button>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
