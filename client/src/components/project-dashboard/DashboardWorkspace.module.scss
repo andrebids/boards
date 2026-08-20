@@ -38,10 +38,6 @@
     flex: 1 1 auto;
     min-height: 620px;
 
-    :global(.grid-stack-item-content) {
-      position: relative;
-    }
-
     :global(.grid-stack-item > .ui-resizable-se) {
       background-color: var(--app-dark-canvas);
       border: 1px solid var(--app-dark-border);
