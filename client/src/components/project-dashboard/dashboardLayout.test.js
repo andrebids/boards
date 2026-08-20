@@ -1,4 +1,8 @@
-import { createDefaultDashboardLayout, normalizeDashboardLayout } from './dashboardLayout';
+import {
+  createDefaultDashboardLayout,
+  mergeDashboardLayoutGeometry,
+  normalizeDashboardLayout,
+} from './dashboardLayout';
 
 describe('project dashboard layout', () => {
   it('creates a non-overlapping default layout for the initial widgets', () => {
@@ -64,5 +68,39 @@ describe('project dashboard layout', () => {
         },
       ]),
     ).toThrow('invalid zoom level');
+  });
+
+  it('merges the complete GridStack serialization without losing widget configuration', () => {
+    expect(
+      mergeDashboardLayoutGeometry(
+        [
+          {
+            id: 'gantt-alpha',
+            type: 'gantt',
+            x: 0,
+            y: 0,
+            w: 12,
+            h: 7,
+            config: { projectId: 'project-alpha', zoomLevel: 'week' },
+          },
+          { id: 'overview', type: 'progress', x: 0, y: 7, w: 7, h: 6 },
+        ],
+        [
+          { id: 'overview', x: 5, y: 0, w: 7, h: 6 },
+          { id: 'gantt-alpha', x: 0, y: 6, w: 12, h: 7 },
+        ],
+      ),
+    ).toEqual([
+      { id: 'overview', type: 'progress', x: 5, y: 0, w: 7, h: 6 },
+      {
+        id: 'gantt-alpha',
+        type: 'gantt',
+        x: 0,
+        y: 6,
+        w: 12,
+        h: 7,
+        config: { projectId: 'project-alpha', zoomLevel: 'week' },
+      },
+    ]);
   });
 });

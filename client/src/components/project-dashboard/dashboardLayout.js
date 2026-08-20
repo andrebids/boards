@@ -97,4 +97,24 @@ export const normalizeDashboardLayout = (layout) => {
   });
 };
 
+export const mergeDashboardLayoutGeometry = (layout, gridWidgets) => {
+  const widgetsById = new Map(layout.map((widget) => [widget.id, widget]));
+
+  return gridWidgets.flatMap((gridWidget) => {
+    const widget = widgetsById.get(String(gridWidget.id));
+
+    return widget
+      ? [
+          {
+            ...widget,
+            x: Number(gridWidget.x),
+            y: Number(gridWidget.y),
+            w: Number(gridWidget.w),
+            h: Number(gridWidget.h),
+          },
+        ]
+      : [];
+  });
+};
+
 export { GRID_COLUMNS };

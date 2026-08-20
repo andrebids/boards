@@ -9,6 +9,7 @@ const Errors = {
   NOT_ENOUGH_RIGHTS: { notEnoughRights: 'Not enough rights' },
   LOCK_REQUIRED: { dashboardLockRequired: 'Acquire the dashboard edit lock first' },
   CONFLICT: { conflict: 'The dashboard was updated by another user' },
+  INVALID_LAYOUT: { invalidLayout: 'The dashboard layout is invalid' },
 };
 
 module.exports = {
@@ -21,6 +22,7 @@ module.exports = {
     notEnoughRights: { responseType: 'forbidden' },
     lockRequired: { responseType: 'conflict' },
     conflict: { responseType: 'conflict' },
+    invalidLayout: { responseType: 'badRequest' },
   },
 
   async fn(inputs) {
@@ -38,8 +40,15 @@ module.exports = {
       throw Errors.CONFLICT;
     }
 
+    let layout;
+    try {
+      layout = normalizeDashboardLayout(inputs.layout);
+    } catch (error) {
+      throw Errors.INVALID_LAYOUT;
+    }
+
     const item = await Dashboard.updateOne({ id: dashboard.id, version: inputs.version }).set({
-      layout: normalizeDashboardLayout(inputs.layout),
+      layout,
       version: dashboard.version + 1,
     });
 
