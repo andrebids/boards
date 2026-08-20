@@ -11,6 +11,7 @@ import { UserRoles } from '../../constants/Enums';
 import {
   createDefaultDashboardLayout,
   DASHBOARD_WIDGETS,
+  mergeDashboardLayoutGeometry,
   normalizeDashboardLayout,
 } from './dashboardLayout';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
@@ -140,23 +141,6 @@ const DashboardWorkspace = React.memo(() => {
     [applyDashboard, canEditDashboard],
   );
 
-  const updateLayoutFromGrid = useCallback(
-    (nodes) => {
-      const nodesById = new Map(nodes.map((node) => [node.id, node]));
-
-      setDashboardLayout((previousLayout) => {
-        const nextLayout = previousLayout.map((widget) => {
-          const node = nodesById.get(widget.id);
-
-          return node ? { ...widget, x: node.x, y: node.y, w: node.w, h: node.h } : widget;
-        });
-        scheduleLayoutSave(nextLayout);
-        return nextLayout;
-      });
-    },
-    [scheduleLayoutSave],
-  );
-
   const handleAddGantt = useCallback(() => {
     if (!ganttProjectId) {
       return;
@@ -215,17 +199,22 @@ const DashboardWorkspace = React.memo(() => {
     );
 
     if (!isTvMode && canEditDashboard) {
-      grid.on('change', (_, nodes) => {
-        updateLayoutFromGrid(nodes);
-      });
+      const persistGridLayout = () => {
+        if (grid.isIgnoreChangeCB()) {
+          return;
+        }
 
-      grid.on('removed', (_, nodes) => {
-        const removedIds = new Set(nodes.map((node) => node.id));
         setDashboardLayout((previousLayout) => {
-          const nextLayout = previousLayout.filter((widget) => !removedIds.has(widget.id));
+          const nextLayout = mergeDashboardLayoutGeometry(previousLayout, grid.save(false));
           scheduleLayoutSave(nextLayout);
           return nextLayout;
         });
+      };
+
+      grid.on('dragstop resizestop', persistGridLayout);
+
+      grid.on('removed', () => {
+        persistGridLayout();
       });
     }
 
@@ -244,7 +233,7 @@ const DashboardWorkspace = React.memo(() => {
       gridInstanceRef.current = null;
       grid.destroy(false);
     };
-  }, [canEditDashboard, isPreviewAllowed, isTvMode, scheduleLayoutSave, updateLayoutFromGrid]);
+  }, [canEditDashboard, isPreviewAllowed, isTvMode, scheduleLayoutSave]);
 
   if (!isPreviewAllowed) {
     return (
