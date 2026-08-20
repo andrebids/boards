@@ -132,6 +132,21 @@ const handleChatMessageCreate = (message, users) => ({
   payload: { message, users },
 });
 
+const handleChatMessageAttachmentCreate = (messageId, attachment) => ({
+  type: ActionTypes.CHAT_MESSAGE_ATTACHMENT_CREATE_HANDLE,
+  payload: { messageId, attachment },
+});
+
+const failChatMessageAttachmentUpload = (messageId, clientAttachmentId, status, error) => ({
+  type: ActionTypes.CHAT_MESSAGE_ATTACHMENT_UPLOAD__FAILURE,
+  payload: { messageId, clientAttachmentId, status, error },
+});
+
+const retryChatMessageAttachment = (messageId, clientAttachmentId) => ({
+  type: ActionTypes.CHAT_MESSAGE_ATTACHMENT_RETRY,
+  payload: { messageId, clientAttachmentId },
+});
+
 const retryChatMessage = (localId) => ({
   type: ActionTypes.CHAT_MESSAGE_RETRY,
   payload: { localId },
@@ -270,6 +285,9 @@ export default {
   createChatMessage,
   retryChatMessage,
   handleChatMessageCreate,
+  handleChatMessageAttachmentCreate,
+  failChatMessageAttachmentUpload,
+  retryChatMessageAttachment,
   updateChatMessage,
   handleChatMessageUpdate,
   deleteChatMessage,

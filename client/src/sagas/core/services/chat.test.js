@@ -1,15 +1,17 @@
-import { call, put, select } from 'redux-saga/effects';
+import { all, call, put, select } from 'redux-saga/effects';
 
 import actions from '../../../actions';
 import api from '../../../api';
 import selectors from '../../../selectors';
-import request from '../request';
+import request, { requestConcurrent } from '../request';
 import { playChatMessageSound } from '../../../utils/chat-message-sound';
 import {
   fetchChatInbox,
   handleChatConversationUpdate,
   handleChatMessageCreate,
   markChatConversationAsRead,
+  uploadChatMessageAttachment,
+  uploadChatMessageAttachments,
 } from './chat';
 
 jest.mock('../../../api', () => ({
@@ -17,6 +19,7 @@ jest.mock('../../../api', () => ({
   default: {
     getChatInbox: jest.fn(),
     markChatConversationAsRead: jest.fn(),
+    createChatMessageAttachment: jest.fn(),
   },
 }));
 jest.mock('../../../constants/Config', () => ({
@@ -138,7 +141,11 @@ describe('chat inbox services', () => {
   });
 
   test('plays a sound for a received message in an unopened conversation', () => {
-    const message = { id: 'message-1', conversationId: 'conversation-1', userId: 'other-user' };
+    const message = {
+      id: 'message-1',
+      conversationId: 'conversation-1',
+      userId: 'other-user',
+    };
     const generator = handleChatMessageCreate(message, []);
 
     expect(generator.next().value).toEqual(
@@ -157,7 +164,11 @@ describe('chat inbox services', () => {
   });
 
   test('does not play a sound for a message sent by the current user', () => {
-    const message = { id: 'message-1', conversationId: 'conversation-1', userId: 'current-user' };
+    const message = {
+      id: 'message-1',
+      conversationId: 'conversation-1',
+      userId: 'current-user',
+    };
     const generator = handleChatMessageCreate(message, []);
 
     generator.next();
@@ -165,5 +176,59 @@ describe('chat inbox services', () => {
     generator.next('current-user');
     generator.next([]);
     expect(generator.next([]).value).toEqual(put(actions.handleChatMessageCreate(message, [])));
+  });
+});
+
+describe('chat attachment uploads', () => {
+  const message = {
+    id: 'message-1',
+    clientMessageId: 'client-message-1',
+  };
+  const pendingFile = {
+    clientAttachmentId: 'client-attachment-1',
+    file: { name: 'image.png', size: 100, type: 'image/png' },
+    status: 'uploading',
+  };
+
+  test('uses the concurrent authenticated request and confirms the attachment', () => {
+    const generator = uploadChatMessageAttachment(message, pendingFile, 1);
+
+    expect(generator.next().value).toEqual(
+      call(requestConcurrent, api.createChatMessageAttachment, message.id, {
+        file: pendingFile.file,
+        clientAttachmentId: pendingFile.clientAttachmentId,
+      }),
+    );
+
+    const attachment = {
+      id: 'attachment-1',
+      clientAttachmentId: pendingFile.clientAttachmentId,
+    };
+    expect(generator.next({ item: attachment }).value).toEqual(
+      put(actions.handleChatMessageAttachmentCreate(message.id, attachment)),
+    );
+  });
+
+  test('starts up to three attachment requests together', () => {
+    const pendingFiles = [
+      pendingFile,
+      { ...pendingFile, clientAttachmentId: 'client-attachment-2' },
+      { ...pendingFile, clientAttachmentId: 'client-attachment-3' },
+      { ...pendingFile, clientAttachmentId: 'client-attachment-4' },
+    ];
+    const generator = uploadChatMessageAttachments(message, pendingFiles);
+
+    expect(generator.next().value).toEqual(
+      all(
+        pendingFiles
+          .slice(0, 3)
+          .map((item, index) =>
+            call(uploadChatMessageAttachment, message, item, index + 1, pendingFiles.length),
+          ),
+      ),
+    );
+    expect(generator.next().value).toEqual(
+      all([call(uploadChatMessageAttachment, message, pendingFiles[3], 4, pendingFiles.length)]),
+    );
   });
 });

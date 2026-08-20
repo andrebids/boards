@@ -86,6 +86,14 @@ const handleChatMessageCreate = (message, users) => ({
   type: EntryActionTypes.CHAT_MESSAGE_CREATE_HANDLE,
   payload: { message, users },
 });
+const handleChatMessageAttachmentCreate = (messageId, attachment) => ({
+  type: EntryActionTypes.CHAT_MESSAGE_ATTACHMENT_CREATE_HANDLE,
+  payload: { messageId, attachment },
+});
+const retryChatMessageAttachment = (messageId, clientAttachmentId) => ({
+  type: EntryActionTypes.CHAT_MESSAGE_ATTACHMENT_RETRY,
+  payload: { messageId, clientAttachmentId },
+});
 const updateChatMessage = (id, data) => ({
   type: EntryActionTypes.CHAT_MESSAGE_UPDATE,
   payload: { id, data },
@@ -180,6 +188,8 @@ export default {
   createChatMessage,
   retryChatMessage,
   handleChatMessageCreate,
+  handleChatMessageAttachmentCreate,
+  retryChatMessageAttachment,
   updateChatMessage,
   handleChatMessageUpdate,
   deleteChatMessage,

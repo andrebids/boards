@@ -114,4 +114,70 @@ describe('ChatMessage optimistic reconciliation', () => {
       expect(message.delete).not.toHaveBeenCalled();
     });
   });
+
+  test('confirms an attachment without duplicating it and clears its pending state', () => {
+    const messageModel = {
+      attachments: [{ id: 'attachment-1', name: 'old name' }],
+      pendingFiles: [
+        {
+          clientAttachmentId: 'client-attachment-1',
+          file: { name: 'image.png' },
+          status: 'uploading',
+        },
+      ],
+      update: jest.fn(),
+    };
+    const model = { withId: jest.fn(() => messageModel) };
+    const attachment = {
+      id: 'attachment-1',
+      clientAttachmentId: 'client-attachment-1',
+      name: 'image.png',
+    };
+
+    ChatMessage.reducer(
+      {
+        type: 'CHAT_MESSAGE_ATTACHMENT_CREATE_HANDLE',
+        payload: { messageId: 'message-1', attachment },
+      },
+      model,
+    );
+
+    expect(messageModel.update).toHaveBeenCalledWith({
+      attachments: [attachment],
+      pendingFiles: [],
+    });
+  });
+
+  test('marks only an uncertain attachment when its request times out', () => {
+    const pendingFile = {
+      clientAttachmentId: 'client-attachment-1',
+      file: { name: 'image.png' },
+      status: 'uploading',
+    };
+    const messageModel = {
+      isFailed: false,
+      pendingFiles: [pendingFile],
+      update: jest.fn(),
+    };
+    const model = { withId: jest.fn(() => messageModel) };
+    const error = { code: 'E_HTTP_TIMEOUT' };
+
+    ChatMessage.reducer(
+      {
+        type: 'CHAT_MESSAGE_ATTACHMENT_UPLOAD__FAILURE',
+        payload: {
+          messageId: 'message-1',
+          clientAttachmentId: 'client-attachment-1',
+          status: 'unknown',
+          error,
+        },
+      },
+      model,
+    );
+
+    expect(messageModel.update).toHaveBeenCalledWith({
+      pendingFiles: [{ ...pendingFile, status: 'unknown', error }],
+    });
+    expect(messageModel.isFailed).toBe(false);
+  });
 });

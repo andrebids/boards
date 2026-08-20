@@ -15,10 +15,16 @@ const transformDates = (item, fields) =>
     { ...item },
   );
 
+export const transformChatMessageAttachment = (attachment) =>
+  transformDates(attachment, ['createdAt', 'updatedAt']);
+
 export const transformChatMessage = (message) => ({
   ...transformDates(message, ['createdAt', 'updatedAt', 'editedAt', 'deletedAt']),
   ...(message.replyTo && {
     replyTo: transformDates(message.replyTo, ['deletedAt']),
+  }),
+  ...(message.attachments && {
+    attachments: message.attachments.map(transformChatMessageAttachment),
   }),
 });
 
@@ -142,12 +148,12 @@ const createChatMessage = (conversationId, data, headers) =>
     item: transformChatMessage(body.item),
   }));
 
-const createChatMessageAttachment = (messageId, { file }, headers) =>
+const createChatMessageAttachment = (messageId, { file, clientAttachmentId }, headers) =>
   http
-    .post(`/chat-messages/${messageId}/attachments`, { file }, headers, {
+    .post(`/chat-messages/${messageId}/attachments`, { file, clientAttachmentId }, headers, {
       timeout: 10 * 60 * 1000,
     })
-    .then((body) => ({ ...body, item: transformChatMessage(body.item) }));
+    .then((body) => ({ ...body, item: transformChatMessageAttachment(body.item) }));
 
 const createChatDiagnostic = (data, headers) => http.post('/chat-diagnostics', data, headers);
 
@@ -201,6 +207,13 @@ const makeHandleChatMessageCreate = (next) => (body) => {
 const makeHandleChatMessageUpdate = makeHandleChatMessageCreate;
 const makeHandleChatMessageDelete = makeHandleChatMessageCreate;
 
+const makeHandleChatMessageAttachmentCreate = (next) => (body) => {
+  next({
+    ...body,
+    item: transformChatMessageAttachment(body.item),
+  });
+};
+
 const makeHandleChatConversationRead = (next) => (body) => {
   next({
     ...body,
@@ -242,6 +255,7 @@ export default {
   makeHandleChatMessageCreate,
   makeHandleChatMessageUpdate,
   makeHandleChatMessageDelete,
+  makeHandleChatMessageAttachmentCreate,
   makeHandleChatConversationRead,
   makeHandleChatParticipantUpdate,
 };

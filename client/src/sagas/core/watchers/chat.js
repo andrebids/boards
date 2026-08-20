@@ -81,6 +81,16 @@ export default function* chatWatchers() {
     takeEvery(EntryActionTypes.CHAT_MESSAGE_CREATE_HANDLE, ({ payload: { message, users } }) =>
       services.handleChatMessageCreate(message, users),
     ),
+    takeEvery(
+      EntryActionTypes.CHAT_MESSAGE_ATTACHMENT_CREATE_HANDLE,
+      ({ payload: { messageId, attachment } }) =>
+        services.handleChatMessageAttachmentCreate(messageId, attachment),
+    ),
+    takeEvery(
+      EntryActionTypes.CHAT_MESSAGE_ATTACHMENT_RETRY,
+      ({ payload: { messageId, clientAttachmentId } }) =>
+        services.retryChatMessageAttachment(messageId, clientAttachmentId),
+    ),
     takeEvery(EntryActionTypes.CHAT_MESSAGE_UPDATE, ({ payload: { id, data } }) =>
       services.updateChatMessage(id, data),
     ),

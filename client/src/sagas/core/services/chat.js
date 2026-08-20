@@ -6,7 +6,7 @@
 import { all, call, delay, put, race, select } from 'redux-saga/effects';
 import { nanoid } from 'nanoid';
 
-import request from '../request';
+import request, { requestConcurrent } from '../request';
 import selectors from '../../../selectors';
 import actions from '../../../actions';
 import api from '../../../api';
@@ -449,36 +449,63 @@ export function* fetchChatMessages(conversationId, options = {}) {
   );
 }
 
-function* uploadChatMessageAttachments(message, files) {
-  let updatedMessage = message;
-  const failedFiles = [];
-  let lastError;
+const getAttachmentFailureStatus = (error) =>
+  ['E_HTTP_TIMEOUT', 'E_HTTP_NETWORK'].includes(error.code) ? 'unknown' : 'failed';
 
-  for (let index = 0; index < files.length; index += 1) {
-    const startedAt = Date.now();
-    try {
-      ({ item: updatedMessage } = yield call(request, api.createChatMessageAttachment, message.id, {
-        file: files[index],
-      }));
-    } catch (error) {
-      failedFiles.push(files[index]);
-      lastError = error;
-      yield call(reportChatDeliveryFailure, error, {
-        event: 'attachment-upload-failed',
-        transport: 'http',
-        clientMessageId: message.clientMessageId,
-        messageId: message.id,
-        durationMs: Math.min(Date.now() - startedAt, 10 * 60 * 1000),
-        hasAttachments: true,
-        fileCount: files.length,
-        fileSizeBucket: getFileSizeBucket(files[index]),
-        mimeGroup: getMimeGroup(files[index]),
-        attempt: index + 1,
-      });
-    }
+export function* uploadChatMessageAttachment(message, pendingFile, attempt, fileCount = 1) {
+  const startedAt = Date.now();
+  try {
+    const { item: attachment } = yield call(
+      requestConcurrent,
+      api.createChatMessageAttachment,
+      message.id,
+      {
+        file: pendingFile.file,
+        clientAttachmentId: pendingFile.clientAttachmentId,
+      },
+    );
+    yield put(actions.handleChatMessageAttachmentCreate(message.id, attachment));
+  } catch (error) {
+    yield put(
+      actions.failChatMessageAttachmentUpload(
+        message.id,
+        pendingFile.clientAttachmentId,
+        getAttachmentFailureStatus(error),
+        error,
+      ),
+    );
+    yield call(reportChatDeliveryFailure, error, {
+      event: 'attachment-upload-failed',
+      transport: 'http',
+      clientMessageId: message.clientMessageId,
+      messageId: message.id,
+      durationMs: Math.min(Date.now() - startedAt, 10 * 60 * 1000),
+      hasAttachments: true,
+      fileCount,
+      fileSizeBucket: getFileSizeBucket(pendingFile.file),
+      mimeGroup: getMimeGroup(pendingFile.file),
+      attempt,
+    });
   }
+}
 
-  return { failedFiles, lastError, message: updatedMessage };
+const ATTACHMENT_UPLOAD_CONCURRENCY = 3;
+
+export function* uploadChatMessageAttachments(message, pendingFiles) {
+  for (let index = 0; index < pendingFiles.length; index += ATTACHMENT_UPLOAD_CONCURRENCY) {
+    const batch = pendingFiles.slice(index, index + ATTACHMENT_UPLOAD_CONCURRENCY);
+    yield all(
+      batch.map((pendingFile, batchIndex) =>
+        call(
+          uploadChatMessageAttachment,
+          message,
+          pendingFile,
+          index + batchIndex + 1,
+          pendingFiles.length,
+        ),
+      ),
+    );
+  }
 }
 
 function* sendChatMessage(localId, conversationId, data, existingMessageId) {
@@ -515,26 +542,18 @@ function* sendChatMessage(localId, conversationId, data, existingMessageId) {
     return;
   }
 
-  const uploadResult = yield call(uploadChatMessageAttachments, message, files);
-
-  const conversationAfterUploads = yield select(
-    selectors.selectChatConversationById,
-    conversationId,
-  );
-  if (!conversationAfterUploads) {
-    return;
-  }
-
   yield put(
     actions.createChatMessage.success(localId, {
-      ...uploadResult.message,
+      ...message,
       clientMessageId,
-      pendingFiles: uploadResult.failedFiles,
+      pendingFiles: files,
       isPending: false,
-      isFailed: uploadResult.failedFiles.length > 0,
-      error: uploadResult.lastError,
+      isFailed: false,
+      error: null,
     }),
   );
+
+  yield call(uploadChatMessageAttachments, message, files);
 }
 
 export function* createChatMessage(conversationId, data) {
@@ -542,6 +561,13 @@ export function* createChatMessage(conversationId, data) {
   const clientMessageId = yield call(nanoid);
   const currentUserId = yield select(selectors.selectCurrentUserId);
   const { files = [], ...messageData } = data;
+  const clientAttachmentIds = yield all(files.map(() => call(nanoid)));
+  const pendingFiles = files.map((file, index) => ({
+    clientAttachmentId: clientAttachmentIds[index],
+    file,
+    status: 'uploading',
+    error: null,
+  }));
 
   yield put(
     actions.createChatMessage({
@@ -554,14 +580,14 @@ export function* createChatMessage(conversationId, data) {
       createdAt: new Date(),
       isPending: true,
       isFailed: false,
-      pendingFiles: files,
+      pendingFiles,
     }),
   );
 
   yield call(sendChatMessage, localId, conversationId, {
     ...messageData,
     clientMessageId,
-    files,
+    files: pendingFiles,
   });
 }
 
@@ -584,6 +610,23 @@ export function* retryChatMessage(localId) {
     },
     message.localId ? undefined : message.id,
   );
+}
+
+export function* retryChatMessageAttachment(messageId, clientAttachmentId) {
+  const message = yield select(selectors.selectChatMessageById, messageId);
+  const pendingFile = message?.pendingFiles?.find(
+    (item) => item.clientAttachmentId === clientAttachmentId,
+  );
+  if (!pendingFile || pendingFile.status === 'uploading') {
+    return;
+  }
+
+  yield put(actions.retryChatMessageAttachment(messageId, clientAttachmentId));
+  yield call(uploadChatMessageAttachment, message, pendingFile, 1);
+}
+
+export function* handleChatMessageAttachmentCreate(messageId, attachment) {
+  yield put(actions.handleChatMessageAttachmentCreate(messageId, attachment));
 }
 
 export function* handleChatMessageCreate(message, users) {

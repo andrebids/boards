@@ -108,6 +108,56 @@ export default class extends BaseModel {
         }
         break;
       }
+      case ActionTypes.CHAT_MESSAGE_ATTACHMENT_CREATE_HANDLE: {
+        const messageModel = ChatMessage.withId(payload.messageId);
+        if (messageModel) {
+          const attachments = messageModel.attachments || [];
+          const matchesAttachment = (attachment) =>
+            attachment.id === payload.attachment.id ||
+            (payload.attachment.clientAttachmentId &&
+              attachment.clientAttachmentId === payload.attachment.clientAttachmentId);
+          const hasAttachment = attachments.some(matchesAttachment);
+
+          messageModel.update({
+            attachments: hasAttachment
+              ? attachments.map((attachment) =>
+                  matchesAttachment(attachment) ? payload.attachment : attachment,
+                )
+              : [...attachments, payload.attachment],
+            pendingFiles: (messageModel.pendingFiles || []).filter(
+              ({ clientAttachmentId }) =>
+                clientAttachmentId !== payload.attachment.clientAttachmentId,
+            ),
+          });
+        }
+        break;
+      }
+      case ActionTypes.CHAT_MESSAGE_ATTACHMENT_UPLOAD__FAILURE: {
+        const messageModel = ChatMessage.withId(payload.messageId);
+        if (messageModel) {
+          messageModel.update({
+            pendingFiles: (messageModel.pendingFiles || []).map((pendingFile) =>
+              pendingFile.clientAttachmentId === payload.clientAttachmentId
+                ? { ...pendingFile, status: payload.status, error: payload.error }
+                : pendingFile,
+            ),
+          });
+        }
+        break;
+      }
+      case ActionTypes.CHAT_MESSAGE_ATTACHMENT_RETRY: {
+        const messageModel = ChatMessage.withId(payload.messageId);
+        if (messageModel) {
+          messageModel.update({
+            pendingFiles: (messageModel.pendingFiles || []).map((pendingFile) =>
+              pendingFile.clientAttachmentId === payload.clientAttachmentId
+                ? { ...pendingFile, status: 'uploading', error: null }
+                : pendingFile,
+            ),
+          });
+        }
+        break;
+      }
       case ActionTypes.CHAT_MESSAGE_RETRY: {
         const messageModel = ChatMessage.withId(payload.localId);
         if (messageModel) {
