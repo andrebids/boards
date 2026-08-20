@@ -9,8 +9,12 @@ const createProjectPresentation = (projectId, headers) =>
 const disableProjectPresentation = (id, headers) =>
   socket.post(`/project-presentations/${id}/disable`, {}, headers);
 
+const updateProjectPresentationCryptPadKey = (id, data, headers) =>
+  socket.post(`/project-presentations/${id}/cryptpad-key`, data, headers);
+
 export default {
   getProjectPresentation,
   createProjectPresentation,
   disableProjectPresentation,
+  updateProjectPresentationCryptPadKey,
 };

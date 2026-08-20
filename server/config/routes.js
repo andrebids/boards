@@ -99,7 +99,9 @@ module.exports.routes = {
   'POST /api/gantt-plans/:id/disable': 'gantt-plans/disable',
   'GET /api/projects/:projectId/presentation': 'project-presentations/show',
   'POST /api/projects/:projectId/presentation': 'project-presentations/create',
-  'POST /api/project-presentations/:id/disable': 'project-presentations/disable',
+    'POST /api/project-presentations/:id/disable': 'project-presentations/disable',
+    'POST /api/project-presentations/:id/cryptpad-key':
+      'project-presentations/update-cryptpad-key',
   'GET /api/gantt-plans/:id/source-tasks': 'gantt-plans/source-tasks',
   'POST /api/gantt-plans/:id/import-source-tasks': 'gantt-plans/import-source-tasks',
   'POST /api/gantt-plans/:ganttPlanId/items': 'gantt-items/create',
