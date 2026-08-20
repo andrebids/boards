@@ -35,7 +35,9 @@ module.exports = {
     }
 
     return {
-      item: presentation || null,
+      item: presentation
+        ? sails.helpers.projectPresentations.presentOne(presentation, access.canEdit)
+        : null,
       meta: { canEdit: access.canEdit },
     };
   },

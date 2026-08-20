@@ -16,6 +16,25 @@ module.exports = {
       type: 'string',
       required: true,
     },
+    documentData: {
+      type: 'json',
+      columnName: 'document_data',
+    },
+    cryptpadEditKey: {
+      type: 'string',
+      encrypt: true,
+      columnName: 'cryptpad_edit_key',
+    },
+    cryptpadViewKey: {
+      type: 'string',
+      encrypt: true,
+      columnName: 'cryptpad_view_key',
+    },
+    cryptpadKeyVersion: {
+      type: 'number',
+      defaultsTo: 0,
+      columnName: 'cryptpad_key_version',
+    },
     projectId: {
       model: 'Project',
       required: true,

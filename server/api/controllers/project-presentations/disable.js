@@ -35,9 +35,16 @@ module.exports = {
     }
 
     presentation = await ProjectPresentation.qm.updateOne(presentation.id, { isEnabled: false });
-    const payload = { item: presentation };
+    const payload = {
+      item: sails.helpers.projectPresentations.presentOne(presentation, true),
+    };
     access.memberUserIds.forEach((userId) => {
-      sails.sockets.broadcast(`@user:${userId}`, 'projectPresentationUpdate', payload, this.req);
+      sails.sockets.broadcast(
+        `@user:${userId}`,
+        'projectPresentationUpdate',
+        { item: _.omit(presentation, ['cryptpadEditKey', 'cryptpadViewKey']) },
+        this.req,
+      );
     });
 
     return payload;

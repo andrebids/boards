@@ -47,9 +47,17 @@ module.exports = {
       });
     }
 
-    const payload = { item: presentation, meta: { canEdit: true } };
+    const payload = {
+      item: sails.helpers.projectPresentations.presentOne(presentation, true),
+      meta: { canEdit: true },
+    };
     access.memberUserIds.forEach((userId) => {
-      sails.sockets.broadcast(`@user:${userId}`, 'projectPresentationUpdate', payload, this.req);
+      sails.sockets.broadcast(
+        `@user:${userId}`,
+        'projectPresentationUpdate',
+        { item: _.omit(presentation, ['cryptpadEditKey', 'cryptpadViewKey']) },
+        this.req,
+      );
     });
 
     if (this.req.isSocket) {
