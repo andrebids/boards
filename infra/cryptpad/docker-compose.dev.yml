@@ -1,7 +1,10 @@
 # Serviço independente do Planka. Não partilha rede, volumes nem credenciais com boards-dev-*.
 services:
   cryptpad:
-    image: cryptpad/cryptpad:version-2026.5.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: planka-cryptpad:2026.5.1
     restart: unless-stopped
     environment:
       CPAD_MAIN_DOMAIN: ${CPAD_MAIN_DOMAIN:-http://localhost:3010}

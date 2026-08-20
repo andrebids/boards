@@ -19,6 +19,7 @@ const PresentationWorkspace = React.memo(() => {
   const project = useSelector(selectors.selectCurrentProject);
   const { presentation, isLoading, error, reload } = usePresentation();
   const editorRef = useRef(null);
+  const isEditorInitializedRef = useRef(false);
   const [editorError, setEditorError] = useState(null);
 
   useEffect(() => {
@@ -28,10 +29,11 @@ const PresentationWorkspace = React.memo(() => {
   }, [isLoading, navigate, presentation, project]);
 
   useEffect(() => {
-    if (!presentation?.isEnabled || !editorRef.current) {
+    if (!presentation?.isEnabled || !editorRef.current || isEditorInitializedRef.current) {
       return undefined;
     }
 
+    let isCancelled = false;
     const script = document.createElement('script');
     script.src = `${Config.CRYPTPAD_URL}/cryptpad-api.js`;
     script.async = true;
@@ -41,39 +43,51 @@ const PresentationWorkspace = React.memo(() => {
         return;
       }
 
-      window
-        .CryptPadAPI('cryptpad-presentation-editor', {
-          document: {
-            url: `${Config.CRYPTPAD_URL}/common/onlyoffice/dist/v9/sdkjs/slide/themes/src/CP_01_Blank_light.pptx`,
-            fileType: 'pptx',
-            title: presentation.title,
-            key: presentation.cryptpadSessionKey,
-            permissions: { chat: false },
-          },
-          documentType: 'presentation',
-          mode: presentation.cryptpadMode,
-          editorConfig: { lang: 'pt' },
-          events: {
-            onNewKey: async (data, callback) => {
-              try {
-                const result = await api.updateProjectPresentationCryptPadKey(presentation.id, {
-                  keyVersion: presentation.cryptpadKeyVersion,
-                  editKey: data.new,
-                  viewKey: data.view,
-                });
-                callback(result.key);
-              } catch (nextError) {
-                setEditorError(nextError);
-              }
+      try {
+        if (isCancelled || isEditorInitializedRef.current) {
+          return;
+        }
+
+        isEditorInitializedRef.current = true;
+        window
+          .CryptPadAPI('cryptpad-presentation-editor', {
+            document: {
+              url: `${Config.CRYPTPAD_URL}/common/onlyoffice/dist/v9/sdkjs/slide/themes/src/CP_01_Blank_light.pptx`,
+              fileType: 'pptx',
+              title: presentation.title,
+              key: presentation.cryptpadSessionKey,
+              permissions: { chat: false },
             },
-          },
-        })
-        .catch(setEditorError);
+            documentType: 'presentation',
+            mode: presentation.cryptpadMode,
+            editorConfig: { lang: 'pt' },
+            events: {
+              onNewKey: async (data, callback) => {
+                try {
+                  const result = await api.updateProjectPresentationCryptPadKey(presentation.id, {
+                    keyVersion: presentation.cryptpadKeyVersion,
+                    editKey: data.new,
+                    viewKey: data.view,
+                  });
+                  callback(result.key);
+                } catch (nextError) {
+                  setEditorError(nextError);
+                }
+              },
+            },
+          })
+          .catch(setEditorError);
+      } catch (nextError) {
+        setEditorError(nextError);
+      }
     };
     script.onerror = () => setEditorError(new Error('CryptPad API unavailable'));
     document.head.appendChild(script);
 
-    return () => script.remove();
+    return () => {
+      isCancelled = true;
+      script.remove();
+    };
   }, [presentation]);
 
   if (isLoading) {
