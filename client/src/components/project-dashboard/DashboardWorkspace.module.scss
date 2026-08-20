@@ -52,6 +52,11 @@
     display: flex;
     gap: 16px;
     min-height: calc(100vh - 180px);
+
+    > section {
+      flex: 1 1 0;
+      min-width: 0;
+    }
   }
 
   .widgetLibrary {
