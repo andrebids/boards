@@ -18,6 +18,24 @@ const createResponseError = (body, statusCode) => {
   return error;
 };
 
+export const normalizeHttpError = (error) => {
+  if (error.name === 'AbortError') {
+    const timeoutError = new Error('HTTP network request failed');
+    timeoutError.code = 'E_HTTP_TIMEOUT';
+    timeoutError.name = error.name;
+    return timeoutError;
+  }
+
+  if (typeof error.code === 'string' || error.statusCode) {
+    return error;
+  }
+
+  const networkError = new Error('HTTP network request failed');
+  networkError.code = 'E_HTTP_NETWORK';
+  networkError.name = error.name || networkError.name;
+  return networkError;
+};
+
 // TODO: add all methods
 ['GET', 'POST', 'DELETE'].forEach((method) => {
   http[method.toLowerCase()] = (url, data, headers, options = {}) => {
@@ -58,14 +76,7 @@ const createResponseError = (body, statusCode) => {
         return body;
       })
       .catch((error) => {
-        if (error.code) {
-          throw error;
-        }
-
-        const networkError = new Error('HTTP network request failed');
-        networkError.code = error.name === 'AbortError' ? 'E_HTTP_TIMEOUT' : 'E_HTTP_NETWORK';
-        networkError.name = error.name || networkError.name;
-        throw networkError;
+        throw normalizeHttpError(error);
       })
       .finally(() => window.clearTimeout(timeoutId));
   };
