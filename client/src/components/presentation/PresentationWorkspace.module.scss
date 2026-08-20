@@ -7,14 +7,6 @@
     min-width: 0;
   }
 
-  .toolbar {
-    align-items: center;
-    border-bottom: 1px solid var(--app-border-color);
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 24px;
-  }
-
   .emptyState,
   .centerState {
     align-items: center;

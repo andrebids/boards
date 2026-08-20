@@ -4,9 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
-import Paths from '../../constants/Paths';
 import Config from '../../constants/Config';
 import api from '../../api';
 import { usePresentation } from './PresentationContext';
@@ -98,14 +96,6 @@ const PresentationWorkspace = React.memo(() => {
 
   return (
     <main className={styles.workspace}>
-      <header className={styles.toolbar}>
-        <Button
-          variant="secondary"
-          onClick={() => navigate(Paths.PROJECTS.replace(':id', project.id))}
-        >
-          {t('common.backToProject')}
-        </Button>
-      </header>
       {editorError ? (
         <section className={styles.emptyState} role="alert">
           <Icon name="warning circle" size="huge" />
