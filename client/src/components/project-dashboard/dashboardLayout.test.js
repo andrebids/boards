@@ -2,7 +2,9 @@ import { createDefaultDashboardLayout, normalizeDashboardLayout } from './dashbo
 
 describe('project dashboard layout', () => {
   it('creates a non-overlapping default layout for the initial widgets', () => {
-    expect(createDefaultDashboardLayout()).toEqual([
+    const layout = createDefaultDashboardLayout();
+
+    expect(layout).toEqual([
       { id: 'overview', type: 'progress', x: 0, y: 0, w: 7, h: 6 },
       { id: 'status-overview', type: 'status', x: 7, y: 0, w: 3, h: 3 },
       { id: 'upcoming-top', type: 'upcoming', x: 10, y: 0, w: 2, h: 3 },
@@ -11,6 +13,7 @@ describe('project dashboard layout', () => {
       { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
       { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
     ]);
+    expect(normalizeDashboardLayout(layout)).toEqual(layout);
   });
 
   it('rejects layouts with unknown widgets or geometry outside the grid', () => {
