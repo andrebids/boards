@@ -200,12 +200,14 @@ describe('chat attachment uploads', () => {
       }),
     );
 
-    const attachment = {
-      id: 'attachment-1',
-      clientAttachmentId: pendingFile.clientAttachmentId,
-    };
+    const attachment = { id: 'attachment-1' };
     expect(generator.next({ item: attachment }).value).toEqual(
-      put(actions.handleChatMessageAttachmentCreate(message.id, attachment)),
+      put(
+        actions.handleChatMessageAttachmentCreate(message.id, {
+          ...attachment,
+          clientAttachmentId: pendingFile.clientAttachmentId,
+        }),
+      ),
     );
   });
 

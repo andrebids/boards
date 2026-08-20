@@ -150,9 +150,17 @@ const createChatMessage = (conversationId, data, headers) =>
 
 const createChatMessageAttachment = (messageId, { file, clientAttachmentId }, headers) =>
   http
-    .post(`/chat-messages/${messageId}/attachments`, { file, clientAttachmentId }, headers, {
-      timeout: 10 * 60 * 1000,
-    })
+    .post(
+      `/chat-messages/${messageId}/attachments`,
+      { clientAttachmentId, file },
+      {
+        ...headers,
+        ...(clientAttachmentId && { 'X-Client-Attachment-Id': clientAttachmentId }),
+      },
+      {
+        timeout: 10 * 60 * 1000,
+      },
+    )
     .then((body) => ({ ...body, item: transformChatMessageAttachment(body.item) }));
 
 const createChatDiagnostic = (data, headers) => http.post('/chat-diagnostics', data, headers);

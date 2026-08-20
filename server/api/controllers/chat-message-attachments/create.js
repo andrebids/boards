@@ -53,6 +53,12 @@ module.exports = {
 
   async fn(inputs, exits) {
     const { currentUser } = this.req;
+    const clientAttachmentIdHeader = this.req.headers['x-client-attachment-id'];
+    const clientAttachmentId =
+      inputs.clientAttachmentId ||
+      (typeof clientAttachmentIdHeader === 'string' && clientAttachmentIdHeader.length <= 128
+        ? clientAttachmentIdHeader
+        : undefined);
     const startedAt = Date.now();
     const logContext = {
       messageId: inputs.messageId,
@@ -222,7 +228,7 @@ module.exports = {
           messageId: message.id,
           creatorUserId: currentUser.id,
           fileReferenceId: data.fileReferenceId,
-          clientAttachmentId: inputs.clientAttachmentId,
+          clientAttachmentId,
           name: data.filename,
           data,
         },

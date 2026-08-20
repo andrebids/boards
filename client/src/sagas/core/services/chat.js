@@ -464,7 +464,12 @@ export function* uploadChatMessageAttachment(message, pendingFile, attempt, file
         clientAttachmentId: pendingFile.clientAttachmentId,
       },
     );
-    yield put(actions.handleChatMessageAttachmentCreate(message.id, attachment));
+    yield put(
+      actions.handleChatMessageAttachmentCreate(message.id, {
+        ...attachment,
+        clientAttachmentId: attachment.clientAttachmentId || pendingFile.clientAttachmentId,
+      }),
+    );
   } catch (error) {
     yield put(
       actions.failChatMessageAttachmentUpload(

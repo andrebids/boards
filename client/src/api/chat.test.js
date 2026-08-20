@@ -21,15 +21,22 @@ describe('chat attachment API', () => {
       },
     });
 
-    const result = await chat.createChatMessageAttachment('message-1', {
-      file: 'file-1',
-      clientAttachmentId: 'client-attachment-1',
-    });
+    const result = await chat.createChatMessageAttachment(
+      'message-1',
+      {
+        file: 'file-1',
+        clientAttachmentId: 'client-attachment-1',
+      },
+      { Authorization: 'Bearer token' },
+    );
 
     expect(http.post).toHaveBeenCalledWith(
       '/chat-messages/message-1/attachments',
-      { file: 'file-1', clientAttachmentId: 'client-attachment-1' },
-      undefined,
+      { clientAttachmentId: 'client-attachment-1', file: 'file-1' },
+      {
+        Authorization: 'Bearer token',
+        'X-Client-Attachment-Id': 'client-attachment-1',
+      },
       { timeout: 10 * 60 * 1000 },
     );
     expect(result.item.createdAt).toEqual(new Date('2026-08-20T10:00:00.000Z'));
