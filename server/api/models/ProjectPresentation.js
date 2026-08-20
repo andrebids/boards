@@ -40,8 +40,12 @@ module.exports = {
     projectId: {
       model: 'Project',
       required: true,
-      unique: true,
       columnName: 'project_id',
+    },
+    boardId: {
+      model: 'Board',
+      unique: true,
+      columnName: 'board_id',
     },
     createdByUserId: {
       model: 'User',

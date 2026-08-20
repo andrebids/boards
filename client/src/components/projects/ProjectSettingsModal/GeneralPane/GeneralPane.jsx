@@ -16,7 +16,6 @@ import { usePopupInClosableContext } from '../../../../hooks';
 import EditInformation from './EditInformation';
 import ConfirmationStep from '../../../common/ConfirmationStep';
 import { useGantt } from '../../../gantt';
-import { usePresentation } from '../../../presentation';
 
 import styles from './GeneralPane.module.scss';
 
@@ -30,7 +29,6 @@ const GeneralPane = React.memo(() => {
   const canEdit = useSelector(selectors.selectIsCurrentUserManagerForCurrentProject);
   const canManageChat = useSelector(selectors.selectCanCurrentUserManageCurrentProjectChat);
   const canManageGantt = canManageChat;
-  const canManagePresentation = canManageChat;
   const {
     plan: ganttPlan,
     isLoading: isGanttLoading,
@@ -40,15 +38,6 @@ const GeneralPane = React.memo(() => {
     reload: reloadGantt,
   } = useGantt();
   const [isGanttSubmitting, setIsGanttSubmitting] = useState(false);
-  const {
-    presentation,
-    isLoading: isPresentationLoading,
-    error: presentationError,
-    activate: activatePresentation,
-    disable: disablePresentation,
-    reload: reloadPresentation,
-  } = usePresentation();
-  const [isPresentationSubmitting, setIsPresentationSubmitting] = useState(false);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -98,31 +87,6 @@ const GeneralPane = React.memo(() => {
       }
     },
     [activateGantt, disableGantt, ganttPlan?.isEnabled, t],
-  );
-
-  const handlePresentationToggleChange = useCallback(
-    async (_, { checked }) => {
-      const isEnabled = Boolean(presentation?.isEnabled);
-      if (checked === isEnabled) {
-        return;
-      }
-
-      setIsPresentationSubmitting(true);
-      try {
-        if (checked) {
-          await activatePresentation();
-          toast.success(t('common.presentationActivated'));
-        } else {
-          await disablePresentation();
-          toast.success(t('common.presentationDeactivated'));
-        }
-      } catch {
-        toast.error(t('common.presentationSaveFailed'));
-      } finally {
-        setIsPresentationSubmitting(false);
-      }
-    },
-    [activatePresentation, disablePresentation, presentation?.isEnabled, t],
   );
 
   const handleDeleteConfirm = useCallback(() => {
@@ -225,33 +189,6 @@ const GeneralPane = React.memo(() => {
           </p>
           {ganttError && (
             <Button variant="secondary" className={styles.retryButton} onClick={reloadGantt}>
-              {t('action.retry')}
-            </Button>
-          )}
-        </section>
-      )}
-      {canManagePresentation && (
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>{t('common.presentation')}</h3>
-          <div className={styles.settingRow}>
-            <Checkbox
-              toggle
-              label={t('common.presentationAvailability')}
-              checked={Boolean(presentation?.isEnabled)}
-              className={styles.radio}
-              disabled={
-                isPresentationLoading || isPresentationSubmitting || Boolean(presentationError)
-              }
-              onChange={handlePresentationToggleChange}
-            />
-          </div>
-          <p className={styles.hint} role={presentationError ? 'alert' : undefined}>
-            {presentationError
-              ? t('common.presentationLoadFailed')
-              : t('common.presentationAvailabilityHint')}
-          </p>
-          {presentationError && (
-            <Button variant="secondary" className={styles.retryButton} onClick={reloadPresentation}>
               {t('action.retry')}
             </Button>
           )}

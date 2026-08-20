@@ -28,16 +28,21 @@ module.exports = {
       throw Errors.PROJECT_NOT_FOUND;
     }
 
-    const presentation = await ProjectPresentation.qm.getOneByProjectId(project.id);
+    const presentations = await ProjectPresentation.qm.getByProjectId(project.id);
+    const accessiblePresentations = presentations.filter(
+      ({ boardId }) => boardId && access.accessibleBoardIds.includes(boardId),
+    );
 
-    if (presentation && this.req.isSocket) {
-      sails.sockets.join(this.req, `projectPresentation:${presentation.id}`);
+    if (this.req.isSocket) {
+      accessiblePresentations.forEach((presentation) => {
+        sails.sockets.join(this.req, `projectPresentation:${presentation.id}`);
+      });
     }
 
     return {
-      item: presentation
-        ? sails.helpers.projectPresentations.presentOne(presentation, access.canEdit)
-        : null,
+      items: accessiblePresentations.map((presentation) =>
+        sails.helpers.projectPresentations.presentOne(presentation, access.canEdit),
+      ),
       meta: { canEdit: access.canEdit },
     };
   },

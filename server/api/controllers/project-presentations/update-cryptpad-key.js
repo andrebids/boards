@@ -30,7 +30,7 @@ module.exports = {
     const access =
       project && (await sails.helpers.presentations.getProjectAccess(project, currentUser));
 
-    if (!presentation || !access) {
+    if (!presentation || !access || !access.accessibleBoardIds.includes(presentation.boardId)) {
       throw Errors.PRESENTATION_NOT_FOUND;
     }
     if (!access.canEdit) {

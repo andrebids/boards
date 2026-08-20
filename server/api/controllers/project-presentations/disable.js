@@ -24,10 +24,12 @@ module.exports = {
     const { currentUser } = this.req;
     let presentation = await ProjectPresentation.qm.getOneById(inputs.id);
     const project = presentation && (await Project.qm.getOneById(presentation.projectId));
+    const board =
+      presentation && presentation.boardId && (await Board.qm.getOneById(presentation.boardId));
     const access =
       project && (await sails.helpers.presentations.getProjectAccess(project, currentUser));
 
-    if (!presentation || !access) {
+    if (!presentation || !board || !access || !access.accessibleBoardIds.includes(board.id)) {
       throw Errors.PRESENTATION_NOT_FOUND;
     }
     if (!access.canEdit) {
@@ -38,7 +40,10 @@ module.exports = {
     const payload = {
       item: sails.helpers.projectPresentations.presentOne(presentation, true),
     };
-    access.memberUserIds.forEach((userId) => {
+    const scoper = sails.helpers.projects.makeScoper.with({ record: project, board });
+    const boardRelatedUserIds = await scoper.getBoardRelatedUserIds();
+
+    boardRelatedUserIds.forEach((userId) => {
       sails.sockets.broadcast(
         `@user:${userId}`,
         'projectPresentationUpdate',

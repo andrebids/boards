@@ -12,7 +12,7 @@ const Errors = {
 
 module.exports = {
   inputs: {
-    projectId: { ...idInput, required: true },
+    boardId: { ...idInput, required: true },
   },
 
   exits: {
@@ -22,7 +22,9 @@ module.exports = {
 
   async fn(inputs) {
     const { currentUser } = this.req;
-    const project = await Project.qm.getOneById(inputs.projectId);
+    const { board, project } = await sails.helpers.boards
+      .getPathToProjectById(inputs.boardId)
+      .intercept('pathNotFound', () => Errors.PROJECT_NOT_FOUND);
     const access =
       project && (await sails.helpers.presentations.getProjectAccess(project, currentUser));
 
@@ -33,7 +35,7 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
-    let presentation = await ProjectPresentation.qm.getOneByProjectId(project.id);
+    let presentation = await ProjectPresentation.qm.getOneByBoardId(board.id);
     if (presentation) {
       if (!presentation.isEnabled) {
         presentation = await ProjectPresentation.qm.updateOne(presentation.id, { isEnabled: true });
@@ -41,9 +43,10 @@ module.exports = {
     } else {
       presentation = await ProjectPresentation.qm.createOne({
         projectId: project.id,
+        boardId: board.id,
         createdByUserId: currentUser.id,
         isEnabled: true,
-        title: 'Apresentação',
+        title: `Apresentação — ${board.name}`,
       });
     }
 
@@ -51,7 +54,10 @@ module.exports = {
       item: sails.helpers.projectPresentations.presentOne(presentation, true),
       meta: { canEdit: true },
     };
-    access.memberUserIds.forEach((userId) => {
+    const scoper = sails.helpers.projects.makeScoper.with({ record: project, board });
+    const boardRelatedUserIds = await scoper.getBoardRelatedUserIds();
+
+    boardRelatedUserIds.forEach((userId) => {
       sails.sockets.broadcast(
         `@user:${userId}`,
         'projectPresentationUpdate',

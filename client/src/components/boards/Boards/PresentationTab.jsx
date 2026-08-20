@@ -6,17 +6,16 @@ import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
 import Paths from '../../../constants/Paths';
-import { usePresentation } from '../../presentation';
 
 import styles from './GanttTab.module.scss';
 
 const PresentationTab = React.memo(() => {
   const [t] = useTranslation();
   const project = useSelector(selectors.selectCurrentProject);
+  const board = useSelector(selectors.selectCurrentBoard);
   const pathsMatch = useSelector(selectors.selectPathsMatch);
-  const { presentation, isLoading } = usePresentation();
 
-  if (isLoading || !project || !presentation?.isEnabled) {
+  if (!project) {
     return null;
   }
 
@@ -25,11 +24,11 @@ const PresentationTab = React.memo(() => {
   return (
     <div className={styles.wrapper}>
       <Link
-        to={Paths.PRESENTATION.replace(':id', project.id)}
+        to={`${Paths.PRESENTATION.replace(':id', project.id)}${board ? `?board=${board.id}` : ''}`}
         className={classNames(styles.tab, isActive && styles.tabActive)}
         aria-current={isActive ? 'page' : undefined}
       >
-        <span>{t('common.presentation')}</span>
+        <span>{t('common.presentations')}</span>
       </Link>
     </div>
   );

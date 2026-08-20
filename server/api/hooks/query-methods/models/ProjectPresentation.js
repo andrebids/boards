@@ -2,13 +2,16 @@ const createOne = (values) => ProjectPresentation.create({ ...values }).fetch();
 
 const getOneById = (id) => ProjectPresentation.findOne(id);
 
-const getOneByProjectId = (projectId) => ProjectPresentation.findOne({ projectId });
+const getByProjectId = (projectId) => ProjectPresentation.find({ projectId }).sort('id');
+
+const getOneByBoardId = (boardId) => ProjectPresentation.findOne({ boardId });
 
 const updateOne = (criteria, values) => ProjectPresentation.updateOne(criteria).set({ ...values });
 
 module.exports = {
   createOne,
+  getByProjectId,
   getOneById,
-  getOneByProjectId,
+  getOneByBoardId,
   updateOne,
 };

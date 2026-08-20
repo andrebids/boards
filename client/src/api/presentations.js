@@ -1,10 +1,10 @@
 import socket from './socket';
 
-const getProjectPresentation = (projectId, headers) =>
+const getProjectPresentations = (projectId, headers) =>
   socket.get(`/projects/${projectId}/presentation`, undefined, headers);
 
-const createProjectPresentation = (projectId, headers) =>
-  socket.post(`/projects/${projectId}/presentation`, {}, headers);
+const createBoardPresentation = (boardId, headers) =>
+  socket.post(`/boards/${boardId}/presentation`, {}, headers);
 
 const disableProjectPresentation = (id, headers) =>
   socket.post(`/project-presentations/${id}/disable`, {}, headers);
@@ -13,8 +13,8 @@ const updateProjectPresentationCryptPadKey = (id, data, headers) =>
   socket.post(`/project-presentations/${id}/cryptpad-key`, data, headers);
 
 export default {
-  getProjectPresentation,
-  createProjectPresentation,
+  getProjectPresentations,
+  createBoardPresentation,
   disableProjectPresentation,
   updateProjectPresentationCryptPadKey,
 };

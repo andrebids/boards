@@ -1,94 +1,61 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Icon, Loader } from 'semantic-ui-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
+import { Icon, Loader } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
-import Paths from '../../constants/Paths';
-import Config from '../../constants/Config';
-import api from '../../api';
 import { usePresentation } from './PresentationContext';
+import PresentationEditor from './PresentationEditor';
 
 import styles from './PresentationWorkspace.module.scss';
 
 const PresentationWorkspace = React.memo(() => {
   const [t] = useTranslation();
-  const navigate = useNavigate();
-  const project = useSelector(selectors.selectCurrentProject);
-  const { presentation, isLoading, error, reload } = usePresentation();
-  const editorRef = useRef(null);
-  const isEditorInitializedRef = useRef(false);
-  const [editorError, setEditorError] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const boards = useSelector(selectors.selectBoardsForCurrentProject) || [];
+  const { presentations, canEdit, isLoading, error, activate, reload } = usePresentation();
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState(null);
 
-  useEffect(() => {
-    if (!isLoading && project && (!presentation || !presentation.isEnabled)) {
-      navigate(Paths.PROJECTS.replace(':id', project.id), { replace: true });
+  const selectedBoardId = searchParams.get('board');
+  const selectedBoard = boards.find(({ id }) => id === selectedBoardId) || null;
+  const selectedPresentation = selectedBoard
+    ? presentations.find(({ boardId }) => boardId === selectedBoard.id) || null
+    : null;
+
+  const handleBoardChange = useCallback(
+    ({ target: { value } }) => {
+      setCreateError(null);
+      setSearchParams(value ? { board: value } : {});
+    },
+    [setSearchParams],
+  );
+
+  const handleBoardOpen = useCallback(
+    (boardId) => {
+      setCreateError(null);
+      setSearchParams({ board: boardId });
+    },
+    [setSearchParams],
+  );
+
+  const handleCreate = useCallback(async () => {
+    if (!selectedBoard) {
+      return;
     }
-  }, [isLoading, navigate, presentation, project]);
 
-  useEffect(() => {
-    if (!presentation?.isEnabled || !editorRef.current || isEditorInitializedRef.current) {
-      return undefined;
+    setCreateError(null);
+    setIsCreating(true);
+    try {
+      await activate(selectedBoard.id);
+    } catch (nextError) {
+      setCreateError(nextError);
+    } finally {
+      setIsCreating(false);
     }
-
-    let isCancelled = false;
-    const script = document.createElement('script');
-    script.src = `${Config.CRYPTPAD_URL}/cryptpad-api.js`;
-    script.async = true;
-    script.onload = () => {
-      if (!window.CryptPadAPI || !editorRef.current) {
-        setEditorError(new Error('CryptPad API unavailable'));
-        return;
-      }
-
-      try {
-        if (isCancelled || isEditorInitializedRef.current) {
-          return;
-        }
-
-        isEditorInitializedRef.current = true;
-        window
-          .CryptPadAPI('cryptpad-presentation-editor', {
-            document: {
-              url: `${Config.CRYPTPAD_URL}/common/onlyoffice/dist/v9/sdkjs/slide/themes/src/CP_01_Blank_light.pptx`,
-              fileType: 'pptx',
-              title: presentation.title,
-              key: presentation.cryptpadSessionKey,
-              permissions: { chat: false },
-            },
-            documentType: 'presentation',
-            mode: presentation.cryptpadMode,
-            editorConfig: { lang: 'pt' },
-            events: {
-              onNewKey: async (data, callback) => {
-                try {
-                  const result = await api.updateProjectPresentationCryptPadKey(presentation.id, {
-                    keyVersion: presentation.cryptpadKeyVersion,
-                    editKey: data.new,
-                    viewKey: data.view,
-                  });
-                  callback(result.key);
-                } catch (nextError) {
-                  setEditorError(nextError);
-                }
-              },
-            },
-          })
-          .catch(setEditorError);
-      } catch (nextError) {
-        setEditorError(nextError);
-      }
-    };
-    script.onerror = () => setEditorError(new Error('CryptPad API unavailable'));
-    document.head.appendChild(script);
-
-    return () => {
-      isCancelled = true;
-      script.remove();
-    };
-  }, [presentation]);
+  }, [activate, selectedBoard]);
 
   if (isLoading) {
     return <Loader active size="huge" />;
@@ -98,7 +65,7 @@ const PresentationWorkspace = React.memo(() => {
     return (
       <div className={styles.centerState} role="alert">
         <Icon name="warning circle" size="big" />
-        <h1>{t('common.presentationLoadFailed')}</h1>
+        <h1>{t('common.presentationsLoadFailed')}</h1>
         <Button variant="secondary" onClick={reload}>
           {t('action.retry')}
         </Button>
@@ -106,21 +73,105 @@ const PresentationWorkspace = React.memo(() => {
     );
   }
 
-  if (!presentation?.isEnabled) {
-    return null;
+  let contentNode;
+  if (boards.length === 0) {
+    contentNode = (
+      <section className={styles.emptyState}>
+        <Icon name="columns" size="huge" />
+        <h2>{t('common.presentationNoBoards')}</h2>
+        <p>{t('common.presentationNoBoardsDescription')}</p>
+      </section>
+    );
+  } else if (!selectedBoard) {
+    contentNode = (
+      <section className={styles.boardList} aria-labelledby="presentations-board-list-title">
+        <h2 id="presentations-board-list-title">{t('common.presentationsByBoard')}</h2>
+        <ul>
+          {boards.map((board) => {
+            const presentation = presentations.find(({ boardId }) => boardId === board.id);
+            const isAvailable = Boolean(presentation?.isEnabled);
+
+            return (
+              <li key={board.id}>
+                <div className={styles.boardIdentity}>
+                  <Icon name="columns" />
+                  <div>
+                    <strong>{board.name}</strong>
+                    <span>
+                      {t(
+                        isAvailable
+                          ? 'common.presentationCreated'
+                          : 'common.presentationNotCreated',
+                      )}
+                    </span>
+                  </div>
+                </div>
+                <Button variant="secondary" onClick={() => handleBoardOpen(board.id)}>
+                  {t(isAvailable ? 'action.open' : 'action.view')}
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    );
+  } else if (selectedPresentation?.isEnabled) {
+    contentNode = (
+      <PresentationEditor key={selectedPresentation.id} presentation={selectedPresentation} />
+    );
+  } else {
+    contentNode = (
+      <section className={styles.emptyState}>
+        <Icon name="file powerpoint outline" size="huge" />
+        <h2>{t('common.presentationNotCreatedForBoard', { board: selectedBoard.name })}</h2>
+        <p>{t('common.presentationCreateDescription')}</p>
+        {canEdit ? (
+          <Button
+            variant="primary"
+            loading={isCreating}
+            disabled={isCreating}
+            onClick={handleCreate}
+          >
+            {t('action.createPresentation')}
+          </Button>
+        ) : (
+          <p>{t('common.presentationManagerRequired')}</p>
+        )}
+        {createError && (
+          <p className={styles.errorMessage} role="alert">
+            {t('common.presentationSaveFailed')}
+          </p>
+        )}
+      </section>
+    );
   }
 
   return (
     <main className={styles.workspace}>
-      {editorError ? (
-        <section className={styles.emptyState} role="alert">
-          <Icon name="warning circle" size="huge" />
-          <h2>{t('common.presentationLoadFailed')}</h2>
-          <p>{editorError.message}</p>
-        </section>
-      ) : (
-        <section ref={editorRef} className={styles.editor} id="cryptpad-presentation-editor" />
-      )}
+      <header className={styles.header}>
+        <div className={styles.heading}>
+          <h1>{t('common.presentations')}</h1>
+          <p>{t('common.presentationsDescription')}</p>
+        </div>
+        {boards.length > 0 && (
+          <label htmlFor="presentation-board-picker" className={styles.boardPicker}>
+            <span>{t('common.board')}</span>
+            <select
+              id="presentation-board-picker"
+              value={selectedBoard?.id || ''}
+              onChange={handleBoardChange}
+            >
+              <option value="">{t('common.allBoards')}</option>
+              {boards.map((board) => (
+                <option key={board.id} value={board.id}>
+                  {board.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </header>
+      {contentNode}
     </main>
   );
 });

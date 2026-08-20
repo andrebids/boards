@@ -25,6 +25,17 @@ module.exports = {
       isProjectManager ||
       (inputs.user.role === User.Roles.ADMIN && !inputs.project.ownerProjectManagerId);
 
-    return { canEdit, memberUserIds };
+    let accessibleBoardIds;
+    if (canEdit) {
+      const boards = await Board.qm.getByProjectId(inputs.project.id);
+      accessibleBoardIds = sails.helpers.utils.mapRecords(boards);
+    } else {
+      const boardMemberships = await BoardMembership.qm.getByProjectId(inputs.project.id);
+      accessibleBoardIds = boardMemberships
+        .filter(({ userId }) => userId === inputs.user.id)
+        .map(({ boardId }) => boardId);
+    }
+
+    return { canEdit, memberUserIds, accessibleBoardIds };
   },
 };

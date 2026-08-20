@@ -37,11 +37,11 @@ export const ProjectPresentationProvider = React.memo(({ projectId, children }) 
 
     dispatch({ type: 'loadStarted' });
     try {
-      const body = await api.getProjectPresentation(projectId);
+      const body = await api.getProjectPresentations(projectId);
       dispatch({
         type: 'loaded',
         payload: {
-          presentation: body.item || null,
+          presentations: body.items || [],
           canEdit: Boolean(body.meta?.canEdit),
         },
       });
@@ -56,28 +56,32 @@ export const ProjectPresentationProvider = React.memo(({ projectId, children }) 
 
   useEffect(() => {
     const handleUpdate = ({ item }) => {
-      dispatch({ type: 'presentationUpdated', presentation: item, projectId });
+      if (item?.projectId === projectId) {
+        load();
+      }
     };
 
     socket.on('projectPresentationUpdate', handleUpdate);
     return () => socket.off('projectPresentationUpdate', handleUpdate);
-  }, [projectId]);
+  }, [load, projectId]);
 
-  const activate = useCallback(async () => {
-    const body = await api.createProjectPresentation(projectId);
-    dispatch({ type: 'presentationUpdated', presentation: body.item, projectId });
-    return body.item;
-  }, [projectId]);
+  const activate = useCallback(
+    async (boardId) => {
+      const body = await api.createBoardPresentation(boardId);
+      dispatch({ type: 'presentationUpdated', presentation: body.item, projectId });
+      return body.item;
+    },
+    [projectId],
+  );
 
-  const disable = useCallback(async () => {
-    if (!state.presentation) {
-      return null;
-    }
-
-    const body = await api.disableProjectPresentation(state.presentation.id);
-    dispatch({ type: 'presentationUpdated', presentation: body.item, projectId });
-    return body.item;
-  }, [projectId, state.presentation]);
+  const disable = useCallback(
+    async (presentationId) => {
+      const body = await api.disableProjectPresentation(presentationId);
+      dispatch({ type: 'presentationUpdated', presentation: body.item, projectId });
+      return body.item;
+    },
+    [projectId],
+  );
 
   const value = useMemo(
     () => ({ ...state, activate, disable, reload: load }),
