@@ -1,7 +1,9 @@
 import {
   createDefaultDashboardLayout,
+  fromGridStackDashboardWidgets,
   mergeDashboardLayoutGeometry,
   normalizeDashboardLayout,
+  toGridStackDashboardWidget,
 } from './dashboardLayout';
 
 describe('project dashboard layout', () => {
@@ -9,10 +11,10 @@ describe('project dashboard layout', () => {
     const layout = createDefaultDashboardLayout();
 
     expect(layout).toEqual([
-      { id: 'overview', type: 'progress', x: 0, y: 0, w: 7, h: 6 },
-      { id: 'status-overview', type: 'status', x: 7, y: 0, w: 3, h: 3 },
-      { id: 'upcoming-top', type: 'upcoming', x: 10, y: 0, w: 2, h: 3 },
-      { id: 'attention-overview', type: 'attention', x: 7, y: 3, w: 5, h: 3 },
+      { id: 'overview', type: 'progress', x: 0, y: 0, w: 6, h: 6 },
+      { id: 'status-overview', type: 'status', x: 6, y: 0, w: 3, h: 3 },
+      { id: 'upcoming-top', type: 'upcoming', x: 9, y: 0, w: 3, h: 3 },
+      { id: 'attention-overview', type: 'attention', x: 6, y: 3, w: 6, h: 3 },
       { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
       { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
       { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
@@ -91,6 +93,40 @@ describe('project dashboard layout', () => {
         ],
       ),
     ).toEqual([
+      { id: 'overview', type: 'progress', x: 5, y: 0, w: 7, h: 6 },
+      {
+        id: 'gantt-alpha',
+        type: 'gantt',
+        x: 0,
+        y: 6,
+        w: 12,
+        h: 7,
+        config: { projectId: 'project-alpha', zoomLevel: 'week' },
+      },
+    ]);
+  });
+
+  it('round-trips GridStack widget props so added widgets are included in persistence', () => {
+    const layout = [
+      { id: 'overview', type: 'progress', x: 0, y: 0, w: 7, h: 6 },
+      {
+        id: 'gantt-alpha',
+        type: 'gantt',
+        x: 0,
+        y: 6,
+        w: 12,
+        h: 7,
+        config: { projectId: 'project-alpha', zoomLevel: 'week' },
+      },
+    ];
+
+    const serialized = layout.map(toGridStackDashboardWidget).map((widget, index) => ({
+      ...widget,
+      x: index === 0 ? 5 : 0,
+      y: index === 0 ? 0 : 6,
+    }));
+
+    expect(fromGridStackDashboardWidgets(serialized)).toEqual([
       { id: 'overview', type: 'progress', x: 5, y: 0, w: 7, h: 6 },
       {
         id: 'gantt-alpha',

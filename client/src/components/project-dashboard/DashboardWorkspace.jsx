@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { GridStack } from 'gridstack';
+import PropTypes from 'prop-types';
+import { GridStack as GridStackReact } from 'gridstack/dist/react';
 import 'gridstack/dist/gridstack.min.css';
 
 import api, { socket } from '../../api';
@@ -11,16 +12,31 @@ import { UserRoles } from '../../constants/Enums';
 import {
   createDefaultDashboardLayout,
   DASHBOARD_WIDGETS,
-  mergeDashboardLayoutGeometry,
+  fromGridStackDashboardWidgets,
   normalizeDashboardLayout,
+  toGridStackDashboardWidget,
 } from './dashboardLayout';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
 
 import styles from './DashboardWorkspace.module.scss';
 
+const WIDGET_LABELS = {
+  attention: 'Atenção',
+  progress: 'Progresso',
+  status: 'Estado',
+  upcoming: 'Próximas tarefas',
+};
+
+const DashboardWidget = React.memo(({ widget }) => <DashboardWidgetContent widget={widget} />);
+
+DashboardWidget.propTypes = {
+  widget: PropTypes.object.isRequired,
+};
+
+const dashboardWidgetComponents = { DashboardWidget };
+
 const DashboardWorkspace = React.memo(() => {
-  const gridRef = useRef(null);
-  const gridInstanceRef = useRef(null);
+  const gridComponentRef = useRef(null);
   const saveTimerRef = useRef(null);
   const layoutVersionRef = useRef(null);
   const [searchParams] = useSearchParams();
@@ -41,8 +57,12 @@ const DashboardWorkspace = React.memo(() => {
 
   const applyDashboard = useCallback((dashboard) => {
     const layout = normalizeDashboardLayout(dashboard.layout || []);
+    const nextLayout = layout.length > 0 ? layout : createDefaultDashboardLayout();
+
     layoutVersionRef.current = dashboard.version;
-    setDashboardLayout(layout.length > 0 ? layout : createDefaultDashboardLayout());
+    setDashboardLayout(nextLayout);
+
+    return nextLayout;
   }, []);
 
   const loadDashboard = useCallback(async () => {
@@ -107,20 +127,6 @@ const DashboardWorkspace = React.memo(() => {
     };
   }, [isDashboardLoading, isPreviewAllowed, isTvMode]);
 
-  useEffect(() => {
-    const handleDashboardUpdate = ({ item }) => {
-      if (!item || item.version === layoutVersionRef.current) {
-        return;
-      }
-
-      applyDashboard(item);
-      window.requestAnimationFrame(() => gridInstanceRef.current?.load(item.layout));
-    };
-
-    socket.on('dashboardUpdate', handleDashboardUpdate);
-    return () => socket.off('dashboardUpdate', handleDashboardUpdate);
-  }, [applyDashboard]);
-
   const scheduleLayoutSave = useCallback(
     (nextLayout) => {
       if (!canEditDashboard) {
@@ -141,100 +147,86 @@ const DashboardWorkspace = React.memo(() => {
     [applyDashboard, canEditDashboard],
   );
 
-  const handleAddGantt = useCallback(() => {
-    if (!ganttProjectId) {
+  const persistGridLayout = useCallback(() => {
+    const grid = gridComponentRef.current?.getGrid();
+
+    if (!canEditDashboard || !grid || grid.isIgnoreChangeCB()) {
       return;
     }
 
-    const id = `gantt-${Date.now()}`;
-    setDashboardLayout((previousLayout) => {
-      const y = previousLayout.reduce(
-        (maximum, widget) => Math.max(maximum, widget.y + widget.h),
-        0,
-      );
-
-      const nextLayout = [
-        ...previousLayout,
-        {
-          id,
-          type: 'gantt',
-          x: 0,
-          y,
-          w: 12,
-          h: 7,
-          config: { projectId: ganttProjectId, zoomLevel: 'week' },
-        },
-      ];
-      scheduleLayoutSave(nextLayout);
-      return nextLayout;
-    });
-
-    window.requestAnimationFrame(() => {
-      const item = gridRef.current?.querySelector(`[data-gs-id="${id}"]`);
-      if (item) {
-        gridInstanceRef.current?.makeWidget(item);
-      }
-    });
-  }, [ganttProjectId, scheduleLayoutSave]);
+    const nextLayout = fromGridStackDashboardWidgets(grid.save(false));
+    setDashboardLayout(nextLayout);
+    scheduleLayoutSave(nextLayout);
+  }, [canEditDashboard, scheduleLayoutSave]);
 
   useEffect(() => {
-    if (!isPreviewAllowed || !gridRef.current) {
-      return undefined;
-    }
+    const handleDashboardUpdate = ({ item }) => {
+      if (!item || item.version === layoutVersionRef.current) {
+        return;
+      }
 
-    const grid = GridStack.init(
-      {
-        acceptWidgets: true,
-        cellHeight: 88,
-        column: 12,
-        columnOpts: { breakpoints: [{ c: 1, w: 760 }] },
-        disableDrag: isTvMode || !canEditDashboard,
-        disableResize: isTvMode || !canEditDashboard,
-        float: false,
-        margin: 12,
-        removable: '#dashboard-trash',
-        resizable: { handles: 'se' },
-        staticGrid: isTvMode,
-      },
-      gridRef.current,
-    );
+      const layout = applyDashboard(item);
+      window.requestAnimationFrame(() => {
+        gridComponentRef.current?.getGrid()?.load(layout.map(toGridStackDashboardWidget));
+      });
+    };
 
-    if (!isTvMode && canEditDashboard) {
-      const persistGridLayout = () => {
-        if (grid.isIgnoreChangeCB()) {
-          return;
-        }
+    socket.on('dashboardUpdate', handleDashboardUpdate);
+    return () => socket.off('dashboardUpdate', handleDashboardUpdate);
+  }, [applyDashboard]);
 
-        setDashboardLayout((previousLayout) => {
-          const nextLayout = mergeDashboardLayoutGeometry(previousLayout, grid.save(false));
-          scheduleLayoutSave(nextLayout);
-          return nextLayout;
-        });
+  useEffect(
+    () => () => {
+      window.clearTimeout(saveTimerRef.current);
+    },
+    [],
+  );
+
+  const handleAddWidget = useCallback(
+    (type, config) => {
+      const grid = gridComponentRef.current?.getGrid();
+
+      if (!canEditDashboard || !grid) {
+        return;
+      }
+
+      const constraints = DASHBOARD_WIDGETS[type];
+      const widget = {
+        h: type === 'gantt' ? 7 : constraints.minH,
+        id: `${type}-${Date.now()}`,
+        type,
+        w: constraints.editorMinW || constraints.minW,
+        ...(config && { config }),
       };
 
-      grid.on('dragstop resizestop', persistGridLayout);
+      grid.addWidget(toGridStackDashboardWidget(widget));
+    },
+    [canEditDashboard],
+  );
 
-      grid.on('removed', () => {
-        persistGridLayout();
-      });
+  const handleAddGantt = useCallback(() => {
+    if (ganttProjectId) {
+      handleAddWidget('gantt', { projectId: ganttProjectId, zoomLevel: 'week' });
     }
+  }, [ganttProjectId, handleAddWidget]);
 
-    gridInstanceRef.current = grid;
-
-    if (!isTvMode && canEditDashboard) {
-      GridStack.setupDragIn(
-        '.dashboard-widget-template',
-        { appendTo: 'body', helper: 'clone' },
-        { h: 3, w: 4 },
-      );
-    }
-
-    return () => {
-      window.clearTimeout(saveTimerRef.current);
-      gridInstanceRef.current = null;
-      grid.destroy(false);
-    };
-  }, [canEditDashboard, isPreviewAllowed, isTvMode, scheduleLayoutSave]);
+  const gridOptions = useMemo(
+    () => ({
+      acceptWidgets: false,
+      cellHeight: 88,
+      children: dashboardLayout.map(toGridStackDashboardWidget),
+      column: 12,
+      columnOpts: { breakpoints: [{ c: 1, w: 760 }] },
+      disableDrag: isTvMode || !canEditDashboard,
+      disableResize: isTvMode || !canEditDashboard,
+      float: false,
+      margin: 12,
+      removable: '#dashboard-trash',
+      resizable: { handles: 'se' },
+      staticGrid: isTvMode,
+    }),
+    [canEditDashboard, dashboardLayout, isTvMode],
+  );
 
   if (!isPreviewAllowed) {
     return (
@@ -255,7 +247,7 @@ const DashboardWorkspace = React.memo(() => {
         <header className={styles.toolbar}>
           <div>
             <h1>Dashboard TV</h1>
-            <p>Arraste widgets para o canvas e ajuste o espaço livremente.</p>
+            <p>Adicione widgets e ajuste o espaço livremente.</p>
             {!canEditDashboard && (
               <p className={styles.lockHint}>Outro administrador está a editar o dashboard.</p>
             )}
@@ -269,12 +261,17 @@ const DashboardWorkspace = React.memo(() => {
         {!isTvMode && (
           <aside className={styles.widgetLibrary} aria-label="Widgets disponíveis">
             <span className={styles.libraryLabel}>Adicionar widget</span>
-            <div className={`${styles.widgetTemplate} dashboard-widget-template`}>Progresso</div>
-            <div className={`${styles.widgetTemplate} dashboard-widget-template`}>Estado</div>
-            <div className={`${styles.widgetTemplate} dashboard-widget-template`}>
-              Próximas tarefas
-            </div>
-            <div className={`${styles.widgetTemplate} dashboard-widget-template`}>Atenção</div>
+            {Object.entries(WIDGET_LABELS).map(([type, label]) => (
+              <button
+                className={styles.widgetTemplate}
+                disabled={!canEditDashboard}
+                key={type}
+                type="button"
+                onClick={() => handleAddWidget(type)}
+              >
+                {label}
+              </button>
+            ))}
             {canEditDashboard && (
               <div className={styles.ganttAdder}>
                 <span>Gantt por projeto</span>
@@ -302,30 +299,16 @@ const DashboardWorkspace = React.memo(() => {
             )}
           </aside>
         )}
-        <section className={`grid-stack ${styles.grid}`} ref={gridRef} aria-label="Dashboard TV">
-          {dashboardLayout.map((widget) => {
-            const constraints = DASHBOARD_WIDGETS[widget.type];
-
-            return (
-              <article
-                className="grid-stack-item"
-                data-gs-h={widget.h}
-                data-gs-id={widget.id}
-                data-gs-max-h={constraints.maxH}
-                data-gs-max-w={constraints.maxW}
-                data-gs-min-h={constraints.minH}
-                data-gs-min-w={constraints.editorMinW || constraints.minW}
-                data-gs-w={widget.w}
-                data-gs-x={widget.x}
-                data-gs-y={widget.y}
-                key={widget.id}
-              >
-                <div className="grid-stack-item-content">
-                  <DashboardWidgetContent widget={widget} />
-                </div>
-              </article>
-            );
-          })}
+        <section aria-label="Dashboard TV">
+          <GridStackReact
+            className={styles.grid}
+            components={dashboardWidgetComponents}
+            options={gridOptions}
+            ref={gridComponentRef}
+            onAdded={persistGridLayout}
+            onChange={persistGridLayout}
+            onRemoved={persistGridLayout}
+          />
         </section>
       </div>
       {!isTvMode && canEditDashboard && (
