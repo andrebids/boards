@@ -33,6 +33,10 @@ module.exports = {
       ...idInput,
       required: true,
     },
+    clientAttachmentId: {
+      type: 'string',
+      maxLength: 128,
+    },
   },
 
   exits: {
@@ -211,19 +215,21 @@ module.exports = {
     }
 
     let attachment;
+    let isCreated;
     try {
-      attachment = await ChatMessageAttachment.qm.createOne(
+      ({ attachment, isCreated } = await ChatMessageAttachment.qm.createOne(
         {
           messageId: message.id,
           creatorUserId: currentUser.id,
           fileReferenceId: data.fileReferenceId,
+          clientAttachmentId: inputs.clientAttachmentId,
           name: data.filename,
           data,
         },
         {
           maxAttachmentsPerMessage: sails.config.custom.chatAttachmentsPerMessageLimit,
         },
-      );
+      ));
     } catch (error) {
       sails.log.error('[CHAT_UPLOAD][PERSIST_ERROR]', {
         ...logContext,
@@ -249,6 +255,10 @@ module.exports = {
       }
 
       return exits.uploadError(error.message || 'Could not persist attachment');
+    }
+
+    if (!isCreated) {
+      await sails.helpers.chatMessageAttachments.discardFile(data.fileReferenceId);
     }
 
     const extras = await sails.helpers.chat.getMessageExtras([message.id]);

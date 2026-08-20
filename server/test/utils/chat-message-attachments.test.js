@@ -8,6 +8,7 @@ describe('Chat message attachment query methods', () => {
   let createCalls;
   let destroyCalls;
   let nativeQueryHandler;
+  let existingAttachment;
 
   beforeEach(() => {
     previousGlobals = {
@@ -17,6 +18,7 @@ describe('Chat message attachment query methods', () => {
     nativeQueries = [];
     createCalls = [];
     destroyCalls = [];
+    existingAttachment = null;
 
     const db = { name: 'test-connection' };
     global.sails = {
@@ -33,6 +35,12 @@ describe('Chat message attachment query methods', () => {
     };
 
     global.ChatMessageAttachment = {
+      findOne: () => ({
+        usingConnection: async (connection) => {
+          expect(connection).to.equal(db);
+          return existingAttachment;
+        },
+      }),
       create: (values) => {
         createCalls.push(values);
         return {
@@ -85,15 +93,43 @@ describe('Chat message attachment query methods', () => {
       name: 'brief.pdf',
       data: { fileReferenceId: 'file-1' },
     };
-    const attachment = await queryMethods.createOne(values, {
+    const result = await queryMethods.createOne(values, {
       maxAttachmentsPerMessage: 10,
     });
 
-    expect(attachment).to.include({ id: 'attachment-1', name: 'brief.pdf' });
+    expect(result).to.deep.include({ isCreated: true });
+    expect(result.attachment).to.include({ id: 'attachment-1', name: 'brief.pdf' });
     expect(createCalls).to.deep.equal([values]);
     expect(
       nativeQueries.map(({ query }) => query.trim().split(/\s+/).slice(0, 2).join(' ')),
     ).to.deep.equal(['SELECT id', 'SELECT COUNT(*)::int', 'UPDATE file_reference']);
+  });
+
+  it('reuses an attachment with the same client id without consuming another file reference', async () => {
+    existingAttachment = {
+      id: 'attachment-existing',
+      messageId: 'message-1',
+      clientAttachmentId: 'client-attachment-1',
+      fileReferenceId: 'file-existing',
+    };
+    nativeQueryHandler = (query) => {
+      if (query.includes('SELECT id FROM chat_message')) {
+        return { rowCount: 1, rows: [{ id: 'message-1' }] };
+      }
+      throw new Error(`Unexpected native query: ${query}`);
+    };
+
+    const result = await queryMethods.createOne({
+      messageId: 'message-1',
+      clientAttachmentId: 'client-attachment-1',
+      fileReferenceId: 'file-new',
+      name: 'image.png',
+      data: { fileReferenceId: 'file-new' },
+    });
+
+    expect(result).to.deep.equal({ attachment: existingAttachment, isCreated: false });
+    expect(createCalls).to.have.length(0);
+    expect(nativeQueries).to.have.length(1);
   });
 
   it('rejects a concurrent upload when the per-message limit has been reached', async () => {

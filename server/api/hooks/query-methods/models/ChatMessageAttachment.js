@@ -18,6 +18,17 @@ const createOne = (values, { maxAttachmentsPerMessage } = {}) =>
       throw 'messageNotFound';
     }
 
+    if (values.clientAttachmentId) {
+      const existingAttachment = await ChatMessageAttachment.findOne({
+        messageId: values.messageId,
+        clientAttachmentId: values.clientAttachmentId,
+      }).usingConnection(db);
+
+      if (existingAttachment) {
+        return { attachment: existingAttachment, isCreated: false };
+      }
+    }
+
     if (maxAttachmentsPerMessage) {
       const countResult = await sails
         .sendNativeQuery(
@@ -57,7 +68,7 @@ const createOne = (values, { maxAttachmentsPerMessage } = {}) =>
       });
     }
 
-    return attachment;
+    return { attachment, isCreated: true };
   });
 
 const getByMessageIds = (messageIds) => defaultFind({ messageId: messageIds });

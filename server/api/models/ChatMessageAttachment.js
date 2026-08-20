@@ -16,6 +16,11 @@ module.exports = {
       type: 'json',
       required: true,
     },
+    clientAttachmentId: {
+      type: 'string',
+      maxLength: 128,
+      columnName: 'client_attachment_id',
+    },
     messageId: {
       model: 'ChatMessage',
       required: true,
