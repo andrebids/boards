@@ -10,6 +10,7 @@ describe('Chat message attachment controller', () => {
   let broadcasts;
   let broadcastError;
   let responseStatus;
+  let createdValues;
   let temporaryDirectory;
   let temporaryFile;
 
@@ -23,6 +24,7 @@ describe('Chat message attachment controller', () => {
     broadcasts = [];
     broadcastError = null;
     responseStatus = null;
+    createdValues = null;
     temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'planka-chat-controller-'));
     temporaryFile = path.join(temporaryDirectory, 'image.png');
     fs.writeFileSync(temporaryFile, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
@@ -106,15 +108,18 @@ describe('Chat message attachment controller', () => {
     };
     global.ChatMessageAttachment = {
       qm: {
-        createOne: async () => ({
-          attachment: {
-            id: 'attachment-1',
-            messageId: 'message-1',
-            name: 'image.png',
-            data: { fileReferenceId: 'file-1' },
-          },
-          isCreated: true,
-        }),
+        createOne: async (values) => {
+          createdValues = values;
+          return {
+            attachment: {
+              id: 'attachment-1',
+              messageId: 'message-1',
+              name: 'image.png',
+              data: { fileReferenceId: 'file-1' },
+            },
+            isCreated: true,
+          };
+        },
       },
     };
   });
@@ -134,7 +139,11 @@ describe('Chat message attachment controller', () => {
   it('returns the persisted attachment without running conversation queries', async () => {
     const request = {
       currentUser: { id: 'user-1' },
-      headers: { 'content-length': '12', 'content-type': 'multipart/form-data' },
+      headers: {
+        'content-length': '12',
+        'content-type': 'multipart/form-data',
+        'x-client-attachment-id': 'client-attachment-from-header',
+      },
       once: () => {},
     };
     const response = {
@@ -147,7 +156,7 @@ describe('Chat message attachment controller', () => {
 
     const result = await controller.fn.call(
       { req: request, res: response },
-      { messageId: 'message-1', clientAttachmentId: 'client-attachment-1' },
+      { messageId: 'message-1' },
       {},
     );
     await new Promise((resolve) => {
@@ -155,6 +164,7 @@ describe('Chat message attachment controller', () => {
     });
 
     expect(responseStatus).to.equal(201);
+    expect(createdValues.clientAttachmentId).to.equal('client-attachment-from-header');
     expect(result).to.deep.equal({
       item: { id: 'attachment-1', name: 'image.png' },
       messageId: 'message-1',
