@@ -5,6 +5,32 @@ export const DASHBOARD_WIDGETS = {
   status: { minW: 4, minH: 3, maxW: 12, maxH: 5 },
   upcoming: { minW: 2, minH: 3, maxW: 12, maxH: 10 },
   attention: { minW: 4, minH: 4, maxW: 12, maxH: 10 },
+  gantt: { minW: 6, minH: 5, maxW: 12, maxH: 12 },
+};
+
+export const GANTT_ZOOM_LEVELS = ['day', 'week', 'month', 'quarter'];
+
+const normalizeWidgetConfig = (type, config) => {
+  if (type !== 'gantt') {
+    return undefined;
+  }
+
+  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+    throw new Error('Gantt dashboard widget must have a configuration');
+  }
+
+  if (typeof config.projectId !== 'string' || config.projectId.trim() === '') {
+    throw new Error('Gantt dashboard widget must reference a project');
+  }
+
+  if (!GANTT_ZOOM_LEVELS.includes(config.zoomLevel)) {
+    throw new Error('Gantt dashboard widget has an invalid zoom level');
+  }
+
+  return {
+    projectId: config.projectId,
+    zoomLevel: config.zoomLevel,
+  };
 };
 
 export const createDefaultDashboardLayout = () => [
@@ -37,6 +63,7 @@ export const normalizeDashboardLayout = (layout) => {
 
     ids.add(item.id);
 
+    const config = normalizeWidgetConfig(item.type, item.config);
     const normalizedItem = {
       id: String(item.id),
       type: item.type,
@@ -45,6 +72,10 @@ export const normalizeDashboardLayout = (layout) => {
       w: Number(item.w),
       h: Number(item.h),
     };
+
+    if (config) {
+      normalizedItem.config = config;
+    }
 
     if (
       !Number.isInteger(normalizedItem.x) ||
