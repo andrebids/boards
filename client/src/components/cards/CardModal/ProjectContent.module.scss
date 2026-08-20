@@ -137,6 +137,37 @@
     margin: 0 8px 0 0;
   }
 
+  .member {
+    display: inline-flex;
+    position: relative;
+
+    & + & {
+      margin-left: -6px;
+    }
+
+    &:focus-within,
+    &:hover {
+      z-index: 1;
+    }
+  }
+
+  .memberAddButton {
+    box-shadow: 0 0 0 2px var(--card-modal-surface);
+    margin-left: -6px;
+    position: relative;
+
+    &:focus-visible,
+    &:hover {
+      z-index: 1;
+    }
+  }
+
+  .members {
+    align-items: center;
+    display: inline-flex;
+    padding-left: 6px;
+  }
+
   .moduleHeader {
     color: var(--card-modal-text, #1f2937);
     font-size: 16px;

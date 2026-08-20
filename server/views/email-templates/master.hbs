@@ -23,12 +23,15 @@
   </style>
 </head>
 <body style="margin:0; padding:0; background-color:#0f1115; color:#f4f6f8;">
-  <div class="preheader">{{actor_name}} {{action_verb}} {{action_object}} - {{project_name}}</div>
+  <div class="preheader">{{#if is_chat_notification}}{{notification_title}} - {{project_name}}{{else}}{{actor_name}} {{action_verb}} {{action_object}} - {{project_name}}{{/if}}</div>
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; background-color:#0f1115;">
     <tr>
       <td align="center" style="padding:32px 16px 40px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="container" style="width:100%; max-width:600px; background-color:#171a21; border-radius:16px; box-shadow:0 18px 48px rgba(0,0,0,0.24);">
           {{> header}}
+          {{#if is_chat_notification}}
+          {{> chat_notification}}
+          {{else}}
           {{#if is_compact_notification}}
           {{> compact_notification}}
           {{else}}
@@ -37,6 +40,7 @@
           {{> notification_title}}
           {{> notification_summary}}
           {{> card_details}}
+          {{/if}}
           {{/if}}
           {{> footer}}
         </table>

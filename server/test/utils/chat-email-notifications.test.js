@@ -1,4 +1,9 @@
+const fs = require('fs');
+const path = require('path');
+
 const { expect } = require('chai');
+const Handlebars = require('handlebars');
+const juice = require('juice');
 
 const scheduleNotification = require('../../api/helpers/chat-email-notifications/schedule');
 const {
@@ -8,6 +13,26 @@ const {
 } = require('../../utils/chat-email-notifications');
 
 describe('Chat email notifications', () => {
+  const renderSharedEmailTemplate = (templateData) => {
+    const templatesDirectory = path.join(__dirname, '../../views/email-templates');
+    const partialsDirectory = path.join(templatesDirectory, 'partials');
+
+    fs.readdirSync(partialsDirectory)
+      .filter((fileName) => fileName.endsWith('.hbs'))
+      .forEach((fileName) => {
+        Handlebars.registerPartial(
+          path.basename(fileName, '.hbs'),
+          fs.readFileSync(path.join(partialsDirectory, fileName), 'utf8'),
+        );
+      });
+
+    const masterTemplate = Handlebars.compile(
+      fs.readFileSync(path.join(templatesDirectory, 'master.hbs'), 'utf8'),
+    );
+
+    return juice(masterTemplate(templateData));
+  };
+
   it('targets only explicitly mentioned recipients in group conversations', () => {
     const targets = getTargets(
       { type: 'projectGroup' },
@@ -46,7 +71,7 @@ describe('Chat email notifications', () => {
     expect(makeMessagePreview('x'.repeat(600), 'Attachment')).to.have.length(500);
   });
 
-  it('builds a localized, escaped email with a direct chat link', () => {
+  it('builds localized data for the shared email template with a direct chat link', () => {
     const email = buildEmail({
       baseUrl: 'https://boards.example.test',
       conversation: {
@@ -80,9 +105,52 @@ describe('Chat email notifications', () => {
     expect(email.url).to.equal(
       'https://boards.example.test/projects/project-1?chatConversation=conversation-1&chatMessage=message-1',
     );
-    expect(email.html).to.include('&lt;André&gt;');
-    expect(email.html).to.include('&lt;script&gt;');
-    expect(email.html).not.to.include('<script>');
+    expect(email.templateData).to.include({
+      email_language: 'fr-FR',
+      is_chat_notification: true,
+      notification_title: 'Mention non lue dans le chat',
+      project_name: '<2027 Collections>',
+      chat_conversation_name: '<Design>',
+      card_url:
+        'https://boards.example.test/projects/project-1?chatConversation=conversation-1&chatMessage=message-1',
+    });
+    expect(email.templateData.chat_messages).to.deep.equal([
+      {
+        preview: 'Bonjour @Aurélien <script>',
+        sender_name: '<André>',
+      },
+    ]);
+    expect(email).not.to.have.property('html');
+  });
+
+  it('renders chat content through the shared email layout and escapes dynamic values', () => {
+    const email = buildEmail({
+      baseUrl: 'https://boards.example.test',
+      conversation: {
+        id: 'conversation-1',
+        title: '<Design>',
+        type: 'projectGroup',
+      },
+      messages: [
+        {
+          id: 'message-1',
+          kind: 'mention',
+          sender: { name: '<André>' },
+          text: 'Hello <script>alert(1)</script>',
+        },
+      ],
+      project: { id: 'project-1', name: '<2027 Collections>' },
+      recipient: { language: 'en-US', name: '<Aurélien>' },
+    });
+
+    const html = renderSharedEmailTemplate(email.templateData);
+
+    expect(html).to.include('Blachere boards');
+    expect(html).to.match(/background-color:\s*#171a21/);
+    expect(html).to.include('OPEN CONVERSATION');
+    expect(html).to.include('&lt;André&gt;');
+    expect(html).to.include('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(html).not.to.include('<script>alert(1)</script>');
   });
 
   it('persists eligible notifications in the caller transaction', async () => {

@@ -137,6 +137,10 @@ export default {
       unmute: 'Volver a activar las notificaciones',
       unreadConversations_one: '{{count}} conversación sin leer',
       unreadConversations_other: '{{count}} conversaciones sin leer',
+      unreadChatNotification_one: 'Tienes mensajes sin leer en una conversación del chat.',
+      unreadChatNotification_other:
+        'Tienes mensajes sin leer en {{count}} conversaciones del chat.',
+      unreadChatMessagesTitle: 'Mensajes sin leer',
       unreadMention: 'Mención sin leer',
       unreadMessages_one: '{{count}} mensaje sin leer',
       unreadMessages_other: '{{count}} mensajes sin leer',

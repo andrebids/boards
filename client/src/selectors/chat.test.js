@@ -1,5 +1,6 @@
 import {
   selectChatInboxItems,
+  selectChatInboxNotificationItems,
   selectChatInboxUnreadConversationTotal,
   selectChatInboxUnreadMessageTotal,
   selectChatInboxUnreadTotalsByProjectId,
@@ -25,6 +26,54 @@ jest.mock('../constants/StaticUsers', () => ({
 const makeState = (chat) => ({ chat });
 
 describe('chat inbox selectors', () => {
+  test('selects the three most recent accessible conversations with unread messages', () => {
+    const state = makeState({
+      inboxItemsByConversationId: {
+        oldest: {
+          conversationId: 'oldest',
+          hasChatAccess: true,
+          lastMessageAt: '2026-07-15T09:00:00.000Z',
+          unreadCount: 1,
+        },
+        second: {
+          conversationId: 'second',
+          hasChatAccess: true,
+          lastMessageAt: '2026-07-15T11:00:00.000Z',
+          unreadCount: 2,
+        },
+        newest: {
+          conversationId: 'newest',
+          hasChatAccess: true,
+          lastMessageAt: '2026-07-15T12:00:00.000Z',
+          unreadCount: 1,
+        },
+        third: {
+          conversationId: 'third',
+          hasChatAccess: true,
+          lastMessageAt: '2026-07-15T10:00:00.000Z',
+          unreadCount: 3,
+        },
+        read: {
+          conversationId: 'read',
+          hasChatAccess: true,
+          lastMessageAt: '2026-07-15T13:00:00.000Z',
+          unreadCount: 0,
+        },
+        unavailable: {
+          conversationId: 'unavailable',
+          hasChatAccess: false,
+          lastMessageAt: '2026-07-15T14:00:00.000Z',
+          unreadCount: 4,
+        },
+      },
+      inboxMeta: {},
+    });
+
+    expect(
+      selectChatInboxNotificationItems(state).map(({ conversationId }) => conversationId),
+    ).toEqual(['newest', 'second', 'third']);
+  });
+
   test('sorts summaries by recent activity and uses authoritative totals', () => {
     const state = makeState({
       inboxItemsByConversationId: {
