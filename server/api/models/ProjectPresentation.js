@@ -22,11 +22,13 @@ module.exports = {
     },
     cryptpadEditKey: {
       type: 'string',
+      allowNull: true,
       encrypt: true,
       columnName: 'cryptpad_edit_key',
     },
     cryptpadViewKey: {
       type: 'string',
+      allowNull: true,
       encrypt: true,
       columnName: 'cryptpad_view_key',
     },
