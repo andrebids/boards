@@ -21,6 +21,7 @@ import ForcedPasswordChangeModal from '../../users/ForcedPasswordChangeModal';
 import ProjectBackground from '../../projects/ProjectBackground';
 import AddProjectModal from '../../projects/AddProjectModal';
 import { ProjectGanttProvider } from '../../gantt';
+import { ProjectPresentationProvider } from '../../presentation';
 
 const Core = React.memo(() => {
   const isInitializing = useSelector(selectors.selectIsInitializing);
@@ -126,8 +127,10 @@ const Core = React.memo(() => {
           <Toaster />
           {project && project.backgroundType && <ProjectBackground />}
           <ProjectGanttProvider projectId={project?.id}>
-            <Fixed />
-            <Static />
+            <ProjectPresentationProvider projectId={project?.id}>
+              <Fixed />
+              <Static />
+            </ProjectPresentationProvider>
           </ProjectGanttProvider>
           {modalNode}
         </>

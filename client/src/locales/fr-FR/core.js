@@ -234,6 +234,18 @@ export default merge({}, enUSCore, {
       ganttAvailability: 'Disponibilité du Gantt',
       ganttAvailabilityHint:
         'Lorsqu’il est activé, le Gantt apparaît dans ce projet. L’échelle chronologique est sélectionnée dans le Gantt lui-même.',
+      presentation: 'Présentation',
+      presentationAvailability: 'Disponibilité de la présentation',
+      presentationAvailabilityHint:
+        'Lorsqu’elle est activée, la présentation apparaît dans ce projet et reste liée à son chat et à sa bibliothèque de médias.',
+      presentationActivated: 'Présentation activée.',
+      presentationDeactivated: 'Présentation désactivée.',
+      presentationLoadFailed: 'Impossible de charger la présentation.',
+      presentationSaveFailed: 'Impossible d’enregistrer la modification de la présentation.',
+      presentationPreparingTitle: 'Préparation de l’éditeur de présentations',
+      presentationPreparingDescription:
+        'L’éditeur collaboratif sera connecté une fois le service CryptPad configuré.',
+      backToProject: 'Retour au projet',
       ganttDisabledOption: 'Désactivé',
       ganttEnabledOption: 'Activé',
       ganttSelectProjectMembers: 'Sélectionner les membres du projet',

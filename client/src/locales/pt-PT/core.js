@@ -629,6 +629,18 @@ export default {
       ganttAvailability: 'Disponibilidade do Gantt',
       ganttAvailabilityHint:
         'Quando ativo, o Gantt aparece neste projeto. A escala temporal é escolhida dentro do próprio Gantt.',
+      presentation: 'Apresentação',
+      presentationAvailability: 'Disponibilidade da apresentação',
+      presentationAvailabilityHint:
+        'Quando ativa, a apresentação aparece neste projeto e mantém ligação ao respetivo chat e biblioteca de media.',
+      presentationActivated: 'Apresentação ativada.',
+      presentationDeactivated: 'Apresentação desativada.',
+      presentationLoadFailed: 'Não foi possível carregar a apresentação.',
+      presentationSaveFailed: 'Não foi possível guardar a alteração da apresentação.',
+      presentationPreparingTitle: 'Editor de apresentações a preparar',
+      presentationPreparingDescription:
+        'O editor colaborativo será ligado assim que o serviço CryptPad estiver configurado.',
+      backToProject: 'Voltar ao projeto',
       ganttDisabledOption: 'Desativado',
       ganttEnabledOption: 'Ativado',
       ganttSelectProjectMembers: 'Selecionar membros do projeto',

@@ -1,0 +1,46 @@
+:global(#app) {
+  .workspace {
+    background: var(--app-background-color);
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .toolbar {
+    align-items: center;
+    border-bottom: 1px solid var(--app-border-color);
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 24px;
+
+    h1 {
+      margin: 0;
+    }
+
+    span {
+      color: var(--app-secondary-text-color);
+    }
+  }
+
+  .emptyState,
+  .centerState {
+    align-items: center;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .emptyState {
+    color: var(--app-secondary-text-color);
+
+    h2,
+    p {
+      margin: 0;
+    }
+  }
+}

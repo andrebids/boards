@@ -356,6 +356,18 @@ export default {
       ganttAvailability: 'Gantt availability',
       ganttAvailabilityHint:
         'When enabled, Gantt appears in this project. The timeline scale is selected inside Gantt itself.',
+      presentation: 'Presentation',
+      presentationAvailability: 'Presentation availability',
+      presentationAvailabilityHint:
+        'When enabled, the presentation appears in this project and stays connected to its chat and media library.',
+      presentationActivated: 'Presentation activated.',
+      presentationDeactivated: 'Presentation disabled.',
+      presentationLoadFailed: 'Presentation could not be loaded.',
+      presentationSaveFailed: 'Presentation change could not be saved.',
+      presentationPreparingTitle: 'Presentation editor is being prepared',
+      presentationPreparingDescription:
+        'The collaborative editor will be connected once the CryptPad service is configured.',
+      backToProject: 'Back to project',
       ganttDisabledOption: 'Disabled',
       ganttEnabledOption: 'Enabled',
       ganttSelectProjectMembers: 'Select project members',
