@@ -17,14 +17,18 @@ const PresentationEditor = React.memo(({ presentation }) => {
   const [t] = useTranslation();
   const editorRef = useRef(null);
   const isEditorInitializedRef = useRef(false);
+  const presentationRef = useRef(presentation);
   const [editorError, setEditorError] = useState(null);
   const containerId = useMemo(
     () => `cryptpad-presentation-editor-${presentation.id}`,
     [presentation.id],
   );
 
+  presentationRef.current = presentation;
+
   useEffect(() => {
-    if (!presentation.isEnabled || !editorRef.current || isEditorInitializedRef.current) {
+    const initialPresentation = presentationRef.current;
+    if (!initialPresentation.isEnabled || !editorRef.current || isEditorInitializedRef.current) {
       return undefined;
     }
 
@@ -39,7 +43,7 @@ const PresentationEditor = React.memo(({ presentation }) => {
 
     const loadDocument = async () => {
       const fileResponse = await fetch(
-        `${Config.SERVER_BASE_URL}/api/project-presentations/${presentation.id}/file`,
+        `${Config.SERVER_BASE_URL}/api/project-presentations/${initialPresentation.id}/file`,
         { credentials: 'include' },
       );
 
@@ -83,21 +87,31 @@ const PresentationEditor = React.memo(({ presentation }) => {
             document: {
               url: documentUrl,
               fileType: 'pptx',
-              title: presentation.title,
-              key: presentation.cryptpadSessionKey,
+              title: initialPresentation.title,
+              key: initialPresentation.cryptpadSessionKey,
               permissions: { chat: false },
             },
             documentType: 'presentation',
-            mode: presentation.cryptpadMode,
-            editorConfig: { lang: 'pt' },
+            mode: initialPresentation.cryptpadMode,
+            editorConfig: {
+              lang: 'pt',
+              customization: {
+                logo: {
+                  visible: false,
+                },
+              },
+            },
             events: {
               onNewKey: async (data, callback) => {
                 try {
-                  const result = await api.updateProjectPresentationCryptPadKey(presentation.id, {
-                    keyVersion: presentation.cryptpadKeyVersion,
-                    editKey: data.new,
-                    viewKey: data.view,
-                  });
+                  const result = await api.updateProjectPresentationCryptPadKey(
+                    initialPresentation.id,
+                    {
+                      keyVersion: initialPresentation.cryptpadKeyVersion,
+                      editKey: data.new,
+                      viewKey: data.view,
+                    },
+                  );
                   callback(result.key);
                 } catch (nextError) {
                   setEditorError(nextError);
@@ -109,7 +123,7 @@ const PresentationEditor = React.memo(({ presentation }) => {
                 });
 
                 api
-                  .saveProjectPresentationFile(presentation.id, presentationFile)
+                  .saveProjectPresentationFile(initialPresentation.id, presentationFile)
                   .then(() => callback())
                   .catch((nextError) => {
                     setEditorError(nextError);
@@ -141,9 +155,10 @@ const PresentationEditor = React.memo(({ presentation }) => {
       if (documentUrl) {
         URL.revokeObjectURL(documentUrl);
       }
+      isEditorInitializedRef.current = false;
       editorElement.replaceChildren();
     };
-  }, [containerId, presentation]);
+  }, [containerId, presentation.isEnabled]);
 
   if (editorError) {
     return (
