@@ -1,0 +1,25 @@
+# Serviço independente do Planka. Não partilha rede, volumes nem credenciais com boards-dev-*.
+services:
+  cryptpad:
+    image: cryptpad/cryptpad:version-2026.5.1
+    restart: unless-stopped
+    environment:
+      CPAD_MAIN_DOMAIN: ${CPAD_MAIN_DOMAIN:-http://localhost:3010}
+      CPAD_SANDBOX_DOMAIN: ${CPAD_SANDBOX_DOMAIN:-http://localhost:3013}
+      CPAD_CONF: /cryptpad/config/config.js
+      CPAD_INSTALL_ONLYOFFICE: 'yes'
+    ports:
+      - '127.0.0.1:3010:3000'
+      - '127.0.0.1:3013:3003'
+    volumes:
+      - ./data/blob:/cryptpad/blob
+      - ./data/block:/cryptpad/block
+      - ./data/data:/cryptpad/data
+      - ./data/files:/cryptpad/datastore
+      - ./customize:/cryptpad/customize
+      - ./onlyoffice-dist:/cryptpad/www/common/onlyoffice/dist
+      - ./onlyoffice-conf:/cryptpad/onlyoffice-conf
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000

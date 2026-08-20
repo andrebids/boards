@@ -21,6 +21,10 @@ backups/
 .env
 .env.local
 .env.production
+infra/cryptpad/data/
+infra/cryptpad/customize/
+infra/cryptpad/onlyoffice-dist/
+infra/cryptpad/onlyoffice-conf/
 start-planka.bat
 build-docker.bat
 
