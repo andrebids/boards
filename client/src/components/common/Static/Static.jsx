@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { Icon, Loader } from 'semantic-ui-react';
+import { ErrorBoundary } from '@sentry/react';
 import { useTransitioning } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
@@ -17,10 +18,24 @@ import { BoardViews } from '../../../constants/Enums';
 import Home from '../Home';
 import Board from '../../boards/Board';
 import GanttWorkspace from '../../gantt';
-import DashboardWorkspace from '../../project-dashboard/DashboardWorkspace';
 import Paths from '../../../constants/Paths';
 
 import styles from './Static.module.scss';
+
+const DashboardWorkspace = React.lazy(() => import('../../project-dashboard/DashboardWorkspace'));
+
+function DashboardErrorFallback() {
+  const [t] = useTranslation();
+
+  return (
+    <main className={styles.message} role="alert">
+      <p>{t('common.unexpectedApplicationError')}</p>
+      <button type="button" onClick={() => window.location.reload()}>
+        {t('action.reload')}
+      </button>
+    </main>
+  );
+}
 
 const Static = React.memo(() => {
   const { cardId, projectId } = useSelector(selectors.selectPath);
@@ -56,7 +71,13 @@ const Static = React.memo(() => {
       isDashboardTv ? styles.wrapperDashboardTv : styles.wrapperGantt,
       styles.wrapperFlex,
     ];
-    contentNode = <DashboardWorkspace />;
+    contentNode = (
+      <ErrorBoundary fallback={DashboardErrorFallback}>
+        <React.Suspense fallback={<Loader active size="huge" />}>
+          <DashboardWorkspace />
+        </React.Suspense>
+      </ErrorBoundary>
+    );
   } else if (projectId === undefined) {
     wrapperClassNames = [
       isFavoritesActive && styles.wrapperWithFavorites,
