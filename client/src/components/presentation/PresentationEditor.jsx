@@ -8,6 +8,11 @@ import api from '../../api';
 
 import styles from './PresentationWorkspace.module.scss';
 
+const PRESENTATION_MIME_TYPE =
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
+const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
+
 const PresentationEditor = React.memo(({ presentation }) => {
   const [t] = useTranslation();
   const editorRef = useRef(null);
@@ -30,8 +35,32 @@ const PresentationEditor = React.memo(({ presentation }) => {
     editorElement.appendChild(containerElement);
     let isCancelled = false;
     let script;
+    let documentUrl;
 
-    const initializeEditor = () => {
+    const loadDocument = async () => {
+      const fileResponse = await fetch(
+        `${Config.SERVER_BASE_URL}/api/project-presentations/${presentation.id}/file`,
+        { credentials: 'include' },
+      );
+
+      if (fileResponse.ok) {
+        return fileResponse.blob();
+      }
+      if (fileResponse.status !== 404) {
+        throw new Error(getErrorMessage(fileResponse));
+      }
+
+      const templateResponse = await fetch(
+        `${Config.CRYPTPAD_URL}/common/onlyoffice/dist/v9/sdkjs/slide/themes/src/CP_01_Blank_light.pptx`,
+      );
+      if (!templateResponse.ok) {
+        throw new Error(getErrorMessage(templateResponse));
+      }
+
+      return templateResponse.blob();
+    };
+
+    const initializeEditor = async () => {
       if (!window.CryptPadAPI || !editorRef.current) {
         setEditorError(new Error('CryptPad API unavailable'));
         return;
@@ -42,11 +71,17 @@ const PresentationEditor = React.memo(({ presentation }) => {
           return;
         }
 
+        const documentBlob = await loadDocument();
+        if (isCancelled || isEditorInitializedRef.current) {
+          return;
+        }
+
+        documentUrl = URL.createObjectURL(documentBlob);
         isEditorInitializedRef.current = true;
         window
           .CryptPadAPI(containerId, {
             document: {
-              url: `${Config.CRYPTPAD_URL}/common/onlyoffice/dist/v9/sdkjs/slide/themes/src/CP_01_Blank_light.pptx`,
+              url: documentUrl,
               fileType: 'pptx',
               title: presentation.title,
               key: presentation.cryptpadSessionKey,
@@ -67,6 +102,19 @@ const PresentationEditor = React.memo(({ presentation }) => {
                 } catch (nextError) {
                   setEditorError(nextError);
                 }
+              },
+              onSave: (file, callback) => {
+                const presentationFile = new File([file], 'presentation.pptx', {
+                  type: PRESENTATION_MIME_TYPE,
+                });
+
+                api
+                  .saveProjectPresentationFile(presentation.id, presentationFile)
+                  .then(() => callback())
+                  .catch((nextError) => {
+                    setEditorError(nextError);
+                    callback({ error: nextError.message });
+                  });
               },
             },
           })
@@ -90,6 +138,9 @@ const PresentationEditor = React.memo(({ presentation }) => {
     return () => {
       isCancelled = true;
       script?.remove();
+      if (documentUrl) {
+        URL.revokeObjectURL(documentUrl);
+      }
       editorElement.replaceChildren();
     };
   }, [containerId, presentation]);

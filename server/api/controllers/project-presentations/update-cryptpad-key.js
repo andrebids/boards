@@ -46,8 +46,14 @@ module.exports = {
       },
     );
 
-    const currentPresentation =
-      updatedPresentation || (await ProjectPresentation.qm.getOneById(inputs.id));
+    if (updatedPresentation) {
+      return {
+        key: inputs.editKey,
+        keyVersion: inputs.keyVersion + 1,
+      };
+    }
+
+    const currentPresentation = await ProjectPresentation.qm.getOneById(inputs.id);
 
     return {
       key: currentPresentation.cryptpadEditKey,

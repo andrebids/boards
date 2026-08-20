@@ -1,4 +1,5 @@
 import socket from './socket';
+import http from './http';
 
 const getProjectPresentations = (projectId, headers) =>
   socket.get(`/projects/${projectId}/presentation`, undefined, headers);
@@ -12,9 +13,13 @@ const disableProjectPresentation = (id, headers) =>
 const updateProjectPresentationCryptPadKey = (id, data, headers) =>
   socket.post(`/project-presentations/${id}/cryptpad-key`, data, headers);
 
+const saveProjectPresentationFile = (id, file, headers) =>
+  http.post(`/project-presentations/${id}/file`, { file }, headers);
+
 export default {
   getProjectPresentations,
   createBoardPresentation,
   disableProjectPresentation,
   updateProjectPresentationCryptPadKey,
+  saveProjectPresentationFile,
 };
