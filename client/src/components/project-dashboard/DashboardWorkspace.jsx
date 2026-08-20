@@ -155,9 +155,38 @@ const DashboardWorkspace = React.memo(() => {
     }
 
     const nextLayout = fromGridStackDashboardWidgets(grid.save(false));
-    setDashboardLayout(nextLayout);
     scheduleLayoutSave(nextLayout);
   }, [canEditDashboard, scheduleLayoutSave]);
+
+  // The GridStack React component consumes `options.children` only when it mounts.
+  // The dashboard layout arrives asynchronously, so load it explicitly after the
+  // grid is ready rather than expecting a later options update to add the items.
+  useEffect(() => {
+    if (isDashboardLoading) {
+      return undefined;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      gridComponentRef.current
+        ?.getGrid()
+        ?.load(dashboardLayout.map(toGridStackDashboardWidget));
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [dashboardLayout, isDashboardLoading]);
+
+  // GridStack can be mounted while the edit lock is still being acquired. Apply
+  // the final interaction state directly once the lock result is known.
+  useEffect(() => {
+    const grid = gridComponentRef.current?.getGrid();
+
+    if (!grid || isTvMode) {
+      return;
+    }
+
+    grid.enableMove(canEditDashboard);
+    grid.enableResize(canEditDashboard);
+  }, [canEditDashboard, isTvMode]);
 
   useEffect(() => {
     const handleDashboardUpdate = ({ item }) => {
