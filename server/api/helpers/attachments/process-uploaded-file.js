@@ -112,39 +112,27 @@ module.exports = {
           const thumbnailsExtension = metadata.format === 'jpeg' ? 'jpg' : metadata.format;
 
           try {
-            const outside360Buffer = await image
-              .resize(360, 360, {
-                fit: 'outside',
-                withoutEnlargement: true,
-              })
-              .png({
-                quality: 75,
-                force: false,
-              })
-              .toBuffer();
+            const createThumbnail = async (size) => {
+              const thumbnailBuffer = await image
+                .clone()
+                .resize(size, size, {
+                  fit: 'outside',
+                  withoutEnlargement: true,
+                })
+                .png({
+                  quality: 75,
+                  force: false,
+                })
+                .toBuffer();
 
-            await fileManager.save(
-              `${thumbnailsPathSegment}/outside-360.${thumbnailsExtension}`,
-              outside360Buffer,
-              inputs.file.type,
-            );
+              await fileManager.save(
+                `${thumbnailsPathSegment}/outside-${size}.${thumbnailsExtension}`,
+                thumbnailBuffer,
+                inputs.file.type,
+              );
+            };
 
-            const outside720Buffer = await image
-              .resize(720, 720, {
-                fit: 'outside',
-                withoutEnlargement: true,
-              })
-              .png({
-                quality: 75,
-                force: false,
-              })
-              .toBuffer();
-
-            await fileManager.save(
-              `${thumbnailsPathSegment}/outside-720.${thumbnailsExtension}`,
-              outside720Buffer,
-              inputs.file.type,
-            );
+            await Promise.all([createThumbnail(360), createThumbnail(720)]);
 
             data.image = {
               width,
