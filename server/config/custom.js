@@ -66,7 +66,6 @@ module.exports.custom = {
   userAvatarsPathSegment: 'public/user-avatars',
   backgroundImagesPathSegment: 'public/background-images',
   attachmentsPathSegment: 'private/attachments',
-  projectPresentationsPathSegment: 'private/project-presentations',
 
   attachmentMaxBytes: envToPositiveNumber(process.env.ATTACHMENT_MAX_BYTES, 25 * 1024 * 1024),
 

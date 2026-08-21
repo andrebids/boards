@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const getFilePath = require('../../../utils/project-presentation-file-path');
 
 const Errors = {
   PRESENTATION_FILE_NOT_FOUND: { presentationFileNotFound: 'Presentation file not found' },
@@ -37,9 +38,7 @@ module.exports = {
     const fileManager = sails.hooks['file-manager'].getInstance();
     let readStream;
     try {
-      readStream = await fileManager.read(
-        `${sails.config.custom.projectPresentationsPathSegment}/${presentation.id}/presentation.pptx`,
-      );
+      readStream = await fileManager.read(getFilePath(presentation.id));
     } catch (error) {
       throw Errors.PRESENTATION_FILE_NOT_FOUND;
     }

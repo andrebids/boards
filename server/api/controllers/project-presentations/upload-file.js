@@ -6,6 +6,7 @@
 const fsPromises = require('fs').promises;
 
 const { idInput } = require('../../../utils/inputs');
+const getFilePath = require('../../../utils/project-presentation-file-path');
 
 const PRESENTATION_MIME_TYPE =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation';
@@ -66,10 +67,7 @@ module.exports = {
 
     const fileManager = sails.hooks['file-manager'].getInstance();
     try {
-      await fileManager.saveFromPath(
-        `${sails.config.custom.projectPresentationsPathSegment}/${presentation.id}/presentation.pptx`,
-        file.fd,
-      );
+      await fileManager.saveFromPath(getFilePath(presentation.id), file.fd);
     } finally {
       await fsPromises.rm(file.fd, { force: true });
     }
