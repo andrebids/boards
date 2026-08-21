@@ -11,55 +11,37 @@
 
   .header {
     align-items: center;
-    border-bottom: 1px solid var(--app-dark-border);
-    display: flex;
+    display: grid;
     flex: 0 0 auto;
-    justify-content: space-between;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) 48px 48px;
     min-height: 52px;
     padding: 8px 14px;
-
-    div {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-
-    > div > span {
-      color: var(--app-dark-text-muted);
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
 
     strong {
       font-size: clamp(15px, 1.25vw, 19px);
       line-height: 1.15;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
-  .columnHeadings {
-    border-bottom: 1px solid var(--app-dark-border);
-    display: grid;
-    flex: 0 0 auto;
-    grid-template-columns: minmax(0, 1fr) 48px 48px;
-    padding: 7px 14px;
-
-    .trackerChip {
-      align-items: center;
-      background: color-mix(in oklab, var(--app-dark-surface-hover) 68%, transparent);
-      border: 1px solid var(--app-dark-border);
-      border-radius: 999px;
-      color: var(--app-dark-text-muted);
-      display: inline-flex;
-      font-size: 11px;
-      font-weight: 700;
-      justify-content: center;
-      line-height: 20px;
-      min-height: 22px;
-      padding: 0 8px;
-      justify-self: center;
-    }
+  .trackerChip {
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--app-dark-border);
+    border-radius: 999px;
+    color: var(--app-dark-text-muted);
+    display: inline-flex;
+    font-size: 11px;
+    font-weight: 700;
+    justify-content: center;
+    justify-self: center;
+    line-height: 20px;
+    min-height: 22px;
+    padding: 0 8px;
   }
 
   .list {
@@ -127,7 +109,7 @@
       padding-right: 10px;
     }
 
-    .columnHeadings {
+    .header {
       grid-template-columns: minmax(0, 1fr) 44px 44px;
     }
   }

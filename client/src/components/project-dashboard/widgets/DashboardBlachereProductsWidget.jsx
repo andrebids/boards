@@ -38,16 +38,10 @@ TaskTicker.propTypes = {
 const DashboardBlachereProductsWidget = React.memo(() => (
   <section className={styles.wrapper} aria-labelledby="blachere-products-title">
     <header className={styles.header}>
-      <div>
-        <span>Lista de produção</span>
-        <strong id="blachere-products-title">Blachere Products</strong>
-      </div>
-    </header>
-    <div className={styles.columnHeadings} aria-label="Colunas de produção">
-      <span aria-hidden="true" />
+      <strong id="blachere-products-title">Blachere Products</strong>
       <span className={styles.trackerChip}>2D</span>
       <span className={styles.trackerChip}>3D</span>
-    </div>
+    </header>
     <ul className={styles.list}>
       {TASKS.map((task) => (
         <li key={task.id}>
