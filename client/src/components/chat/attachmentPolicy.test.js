@@ -17,6 +17,8 @@ describe('chat attachment policy', () => {
     expect(isChatAttachmentAllowed({ name: 'brief.PDF' })).toBeTruthy();
     expect(isChatAttachmentAllowed({ name: 'proposal.docx' })).toBeTruthy();
     expect(isChatAttachmentAllowed({ name: 'screenshot.png' })).toBeTruthy();
+    expect(isChatAttachmentAllowed({ name: 'iphone-photo.HEIC' })).toBeTruthy();
+    expect(isChatAttachmentAllowed({ name: 'iphone-photo.heif' })).toBeTruthy();
     expect(isChatAttachmentAllowed({ name: 'design.psd' })).toBeTruthy();
     expect(CHAT_ATTACHMENT_ACCEPT).toContain('.xlsx');
   });

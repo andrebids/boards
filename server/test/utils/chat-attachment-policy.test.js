@@ -40,6 +40,17 @@ const makeOoxmlFile = (folder, extraEntries = []) => {
   return Buffer.concat([localHeader, centralDirectory, endRecord]);
 };
 
+const makeIsoMediaFile = (majorBrand, compatibleBrands = []) => {
+  const buffer = Buffer.alloc(16 + compatibleBrands.length * 4);
+  buffer.writeUInt32BE(buffer.length, 0);
+  buffer.write('ftyp', 4, 'ascii');
+  buffer.write(majorBrand, 8, 'ascii');
+  compatibleBrands.forEach((brand, index) => {
+    buffer.write(brand, 16 + index * 4, 'ascii');
+  });
+  return buffer;
+};
+
 describe('Chat attachment policy', () => {
   let tempDirectory;
   let fileCounter;
@@ -149,6 +160,25 @@ describe('Chat attachment policy', () => {
 
   it('rejects a non-PSD file renamed with a PSD extension', async () => {
     expect(await validateBuffer('fake.psd', Buffer.from('%PDF-1.7\ncontent'))).to.deep.equal({
+      isValid: false,
+      reason: 'contentMismatch',
+    });
+  });
+
+  it('allows HEIC and HEIF images only when their ISO media brands match', async () => {
+    const heic = makeIsoMediaFile('mif1', ['heic']);
+    const heif = makeIsoMediaFile('heix', ['mif1']);
+    const mp4 = makeIsoMediaFile('isom', ['mp42']);
+
+    expect(await validateBuffer('iphone-photo.heic', heic)).to.include({
+      extension: 'heic',
+      isValid: true,
+    });
+    expect(await validateBuffer('iphone-photo.heif', heif)).to.include({
+      extension: 'heif',
+      isValid: true,
+    });
+    expect(await validateBuffer('renamed-video.heic', mp4)).to.deep.equal({
       isValid: false,
       reason: 'contentMismatch',
     });

@@ -1,7 +1,7 @@
 FROM node:22-alpine
 
 RUN apk -U upgrade \
-  && apk add bash build-base python3 xdg-utils ffmpeg --no-cache \
+  && apk add bash build-base python3 xdg-utils ffmpeg libheif-libde265 --no-cache \
   && npm install npm --global
 
 # Configurar variáveis de ambiente para resolver problemas com undici

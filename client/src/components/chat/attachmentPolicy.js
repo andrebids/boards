@@ -6,6 +6,8 @@ export const CHAT_ATTACHMENT_ALLOWED_EXTENSIONS = Object.freeze([
   'docx',
   'flac',
   'gif',
+  'heic',
+  'heif',
   'jpeg',
   'jpg',
   'json',
