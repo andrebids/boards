@@ -69,6 +69,7 @@ module.exports.routes = {
   'DELETE /api/access-tokens/me': 'access-tokens/delete',
 
   'GET /api/dashboard': 'dashboard/show',
+  'GET /api/dashboard/news': 'dashboard/news',
   'PATCH /api/dashboard': 'dashboard/update',
   'POST /api/dashboard/edit-lock': 'dashboard/acquire-edit-lock',
   'DELETE /api/dashboard/edit-lock': 'dashboard/release-edit-lock',

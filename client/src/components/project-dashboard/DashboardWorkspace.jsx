@@ -10,6 +10,7 @@ import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import { UserRoles } from '../../constants/Enums';
 import * as dashboardLayoutHelpers from './dashboardLayout';
+import DashboardNewsTicker from './DashboardNewsTicker';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
 
 import styles from './DashboardWorkspace.module.scss';
@@ -393,6 +394,7 @@ const DashboardWorkspace = React.memo(() => {
           </DashboardWidgetActionsContext.Provider>
         </section>
       </div>
+      {isTvMode && <DashboardNewsTicker />}
     </main>
   );
 });

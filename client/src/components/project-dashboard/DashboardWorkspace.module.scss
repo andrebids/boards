@@ -174,7 +174,7 @@
   }
 
   .tvMode {
-    padding: 16px;
+    padding: 16px 16px 64px;
 
     .grid {
       min-height: calc(100vh - 32px);
@@ -187,11 +187,11 @@
 
   @media only screen and (width < 760px) {
     .tvMode {
-      padding: 10px;
+      padding: 10px 10px 58px;
 
       .grid,
       .editorLayout {
-        min-height: calc(100vh - 20px);
+        min-height: calc(100vh - 68px);
       }
     }
 
