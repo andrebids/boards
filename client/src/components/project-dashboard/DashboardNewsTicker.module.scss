@@ -7,42 +7,29 @@
     box-shadow: 0 -8px 22px rgb(0 0 0 / 0.18);
     color: var(--app-dark-text);
     display: flex;
-    height: 48px;
+    height: 108px;
     left: 0;
     position: fixed;
     right: 0;
     z-index: 10;
   }
 
-  .label {
-    align-items: center;
-    background: color-mix(in oklab, var(--app-dark-surface-hover) 82%, #000);
-    border-right: 1px solid var(--app-dark-border);
-    color: var(--app-dark-text-muted);
-    display: flex;
-    flex: 0 0 auto;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.07em;
-    padding: 0 20px;
-    text-transform: uppercase;
-  }
-
   .viewport {
     align-items: center;
     display: flex;
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
     position: relative;
 
     &::before,
     &::after {
-      content: '';
+      content: "";
       height: 100%;
       pointer-events: none;
       position: absolute;
       top: 0;
-      width: 34px;
+      width: 48px;
       z-index: 1;
     }
 
@@ -58,18 +45,24 @@
   }
 
   .track {
-    align-items: center;
-    animation: news-ticker 110s linear infinite;
-    display: flex;
-    flex: 0 0 auto;
-    width: max-content;
-    will-change: transform;
+    height: 100%;
+    position: relative;
+    width: 100%;
   }
 
   .sequence {
     align-items: center;
+    animation: news-ticker-sequence 180s linear infinite;
     display: flex;
-    flex: 0 0 auto;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    will-change: transform;
+
+    &:first-child {
+      animation-delay: -90s;
+    }
   }
 
   .item {
@@ -78,25 +71,18 @@
     display: flex;
     flex: 0 0 auto;
     font-size: 14px;
-    gap: 10px;
-    padding: 0 28px;
+    gap: 14px;
+    padding: 0 16px;
     text-decoration: none;
-    white-space: nowrap;
+    width: 460px;
 
     &::before {
       background: var(--app-dark-text-muted);
       border-radius: 50%;
-      content: '';
+      content: "";
+      flex: 0 0 auto;
       height: 4px;
       width: 4px;
-    }
-
-    span {
-      color: var(--app-dark-text-muted);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
     }
 
     &:hover,
@@ -106,8 +92,51 @@
     }
   }
 
-  .viewport:hover .track,
-  .track:focus-within {
+  .thumbnail {
+    background: var(--app-dark-surface-hover);
+    border-radius: 5px;
+    flex: 0 0 auto;
+    height: 72px;
+    object-fit: cover;
+    width: 104px;
+  }
+
+  .copy {
+    background: color-mix(
+      in oklab,
+      var(--app-dark-surface-hover) 72%,
+      transparent
+    );
+    border: 1px solid
+      color-mix(in oklab, var(--app-dark-border) 76%, transparent);
+    border-radius: 6px;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .source {
+    color: var(--app-dark-text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .title {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    line-height: 1.25;
+    overflow: hidden;
+  }
+
+  .viewport:hover .sequence,
+  .track:focus-within .sequence {
     animation-play-state: paused;
   }
 
@@ -117,9 +146,13 @@
     padding: 0 20px;
   }
 
-  @keyframes news-ticker {
+  @keyframes news-ticker-sequence {
+    from {
+      transform: translateX(100%);
+    }
+
     to {
-      transform: translateX(-50%);
+      transform: translateX(-100%);
     }
   }
 
@@ -130,6 +163,17 @@
 
     .track {
       animation: none;
+    }
+
+    .sequence {
+      animation: none;
+      position: static;
+      transform: none;
+      width: max-content;
+    }
+
+    .sequence:first-child {
+      animation-delay: 0s;
     }
 
     .sequence:last-child {

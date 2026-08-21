@@ -42,12 +42,15 @@ const DashboardNewsTicker = React.memo(() => {
 
   return (
     <aside className={styles.ticker} aria-label="Notícias de tecnologia">
-      <span className={styles.label}>Notícias</span>
       <div className={styles.viewport}>
         {items.length > 0 ? (
           <div className={styles.track}>
             {tickerSequences.map(([sequenceId, sequenceItems]) => (
-              <div className={styles.sequence} key={sequenceId}>
+              <div
+                aria-hidden={sequenceId === 'duplicate'}
+                className={styles.sequence}
+                key={sequenceId}
+              >
                 {sequenceItems.map((item) => (
                   <a
                     className={styles.item}
@@ -56,8 +59,24 @@ const DashboardNewsTicker = React.memo(() => {
                     rel="noreferrer"
                     target="_blank"
                   >
-                    <span>{item.source}</span>
-                    {item.title}
+                    {item.imageUrl && (
+                      <img
+                        alt=""
+                        className={styles.thumbnail}
+                        decoding="async"
+                        loading="eager"
+                        referrerPolicy="no-referrer"
+                        src={item.imageUrl}
+                        onError={(event) => {
+                          const image = event.currentTarget;
+                          image.hidden = true;
+                        }}
+                      />
+                    )}
+                    <span className={styles.copy}>
+                      <span className={styles.source}>{item.source}</span>
+                      <span className={styles.title}>{item.title}</span>
+                    </span>
                   </a>
                 ))}
               </div>

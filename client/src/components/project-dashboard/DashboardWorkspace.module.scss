@@ -66,15 +66,26 @@
     position: absolute;
     right: 8px;
     top: 8px;
-    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease,
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease,
       opacity 120ms ease;
     width: 28px;
     z-index: 3;
 
     &:hover,
     &:focus-visible {
-      background: color-mix(in oklab, var(--app-danger) 18%, var(--app-dark-canvas));
-      border-color: color-mix(in oklab, var(--app-danger) 58%, var(--app-dark-border));
+      background: color-mix(
+        in oklab,
+        var(--app-danger) 18%,
+        var(--app-dark-canvas)
+      );
+      border-color: color-mix(
+        in oklab,
+        var(--app-danger) 58%,
+        var(--app-dark-border)
+      );
       color: var(--app-dark-text);
       opacity: 1;
     }
@@ -174,24 +185,24 @@
   }
 
   .tvMode {
-    padding: 16px 16px 64px;
+    padding: 16px 16px 124px;
 
     .grid {
-      min-height: calc(100vh - 32px);
+      min-height: calc(100vh - 140px);
     }
 
     .editorLayout {
-      min-height: calc(100vh - 32px);
+      min-height: calc(100vh - 140px);
     }
   }
 
   @media only screen and (width < 760px) {
     .tvMode {
-      padding: 10px 10px 58px;
+      padding: 10px 10px 118px;
 
       .grid,
       .editorLayout {
-        min-height: calc(100vh - 68px);
+        min-height: calc(100vh - 128px);
       }
     }
 
