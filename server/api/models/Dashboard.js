@@ -11,6 +11,10 @@ module.exports = {
       type: 'json',
       defaultsTo: [],
     },
+    codexUsage: {
+      type: 'json',
+      columnName: 'codex_usage',
+    },
     version: {
       type: 'number',
       defaultsTo: 1,

@@ -1,104 +1,204 @@
-const { expect } = require('chai');
+const { expect } = require("chai");
 
-const { normalizeDashboardLayout } = require('../../utils/dashboard-layout');
+const { normalizeDashboardLayout } = require("../../utils/dashboard-layout");
 
-describe('dashboard layout', () => {
-  it('accepts the initial dashboard widgets inside a 12-column grid', () => {
+describe("dashboard layout", () => {
+  it("accepts the initial dashboard widgets inside a 12-column grid", () => {
     expect(
       normalizeDashboardLayout([
-        { id: 'progress', type: 'progress', x: 0, y: 0, w: 4, h: 3 },
-        { id: 'status', type: 'status', x: 4, y: 0, w: 8, h: 3 },
+        { id: "progress", type: "progress", x: 0, y: 0, w: 4, h: 3 },
+        { id: "status", type: "status", x: 4, y: 0, w: 8, h: 3 },
       ]),
     ).to.deep.equal([
-      { id: 'progress', type: 'progress', x: 0, y: 0, w: 4, h: 3 },
-      { id: 'status', type: 'status', x: 4, y: 0, w: 8, h: 3 },
+      { id: "progress", type: "progress", x: 0, y: 0, w: 4, h: 3 },
+      { id: "status", type: "status", x: 4, y: 0, w: 8, h: 3 },
     ]);
   });
 
-  it('accepts the same default geometry rendered by the dashboard editor', () => {
+  it("accepts the same default geometry rendered by the dashboard editor", () => {
     expect(
       normalizeDashboardLayout([
-        { id: 'overview', type: 'progress', x: 0, y: 0, w: 6, h: 6 },
-        { id: 'status-overview', type: 'status', x: 6, y: 0, w: 3, h: 3 },
-        { id: 'upcoming-top', type: 'upcoming', x: 9, y: 0, w: 3, h: 3 },
-        { id: 'attention-overview', type: 'attention', x: 6, y: 3, w: 6, h: 3 },
-        { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
-        { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
-        { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
-        { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 10, w: 12, h: 5 },
-        { id: 'codex-usage', type: 'codexUsage', x: 0, y: 15, w: 4, h: 4 },
+        { id: "overview", type: "progress", x: 0, y: 0, w: 6, h: 6 },
+        { id: "status-overview", type: "status", x: 6, y: 0, w: 3, h: 3 },
+        { id: "upcoming-top", type: "upcoming", x: 9, y: 0, w: 3, h: 3 },
+        { id: "attention-overview", type: "attention", x: 6, y: 3, w: 6, h: 3 },
+        { id: "upcoming-list", type: "upcoming", x: 0, y: 6, w: 4, h: 4 },
+        { id: "attention-list", type: "attention", x: 4, y: 6, w: 4, h: 4 },
+        { id: "status-detail", type: "status", x: 8, y: 6, w: 4, h: 4 },
+        {
+          id: "blachere-static",
+          type: "blachereStatic",
+          x: 0,
+          y: 10,
+          w: 6,
+          h: 7,
+        },
+        {
+          id: "blachere-animated",
+          type: "blachereAnimated",
+          x: 6,
+          y: 10,
+          w: 6,
+          h: 9,
+        },
+        { id: "codex-usage", type: "codexUsage", x: 0, y: 19, w: 4, h: 4 },
       ]),
-    ).to.have.length(9);
+    ).to.have.length(10);
   });
 
-  it('accepts the Blachere Products task list without configuration', () => {
-    expect(
-      normalizeDashboardLayout([
-        { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 },
-      ]),
-    ).to.deep.equal([
-      { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 },
-    ]);
-  });
-
-  it('accepts a Codex usage widget without local connection details', () => {
-    expect(
-      normalizeDashboardLayout([
-        { id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 },
-      ]),
-    ).to.deep.equal([{ id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 }]);
-  });
-
-  it('rejects duplicate ids and widgets outside their permitted size', () => {
-    expect(() =>
-      normalizeDashboardLayout([
-        { id: 'progress', type: 'progress', x: 0, y: 0, w: 4, h: 3 },
-        { id: 'progress', type: 'progress', x: 4, y: 0, w: 4, h: 3 },
-      ]),
-    ).to.throw('unique');
-
-    expect(() =>
-      normalizeDashboardLayout([{ id: 'progress', type: 'progress', x: 0, y: 0, w: 2, h: 3 }]),
-    ).to.throw('outside the dashboard grid');
-  });
-
-  it('keeps only the permitted configuration for a Gantt widget', () => {
+  it("accepts separate Static and Animated task lists without configuration", () => {
     expect(
       normalizeDashboardLayout([
         {
-          id: 'gantt-alpha',
-          type: 'gantt',
+          id: "blachere-static",
+          type: "blachereStatic",
           x: 0,
           y: 0,
-          w: 12,
-          h: 7,
-          config: { projectId: 'project-alpha', zoomLevel: 'week', ignored: true },
+          w: 3,
+          h: 5,
+        },
+        {
+          id: "blachere-animated",
+          type: "blachereAnimated",
+          x: 3,
+          y: 0,
+          w: 3,
+          h: 5,
+        },
+      ]),
+    ).to.deep.equal([
+      { id: "blachere-static", type: "blachereStatic", x: 0, y: 0, w: 3, h: 5 },
+      {
+        id: "blachere-animated",
+        type: "blachereAnimated",
+        x: 3,
+        y: 0,
+        w: 3,
+        h: 5,
+      },
+    ]);
+  });
+
+  it("keeps only valid 2D and 3D task states for Blachere widgets", () => {
+    expect(
+      normalizeDashboardLayout([
+        {
+          id: "blachere-static",
+          type: "blachereStatic",
+          x: 0,
+          y: 0,
+          w: 3,
+          h: 5,
+          config: {
+            taskStates: {
+              "Static-Cherry Light-0": {
+                twoD: "done",
+                threeD: "pending",
+                ignored: "value",
+              },
+            },
+          },
         },
       ]),
     ).to.deep.equal([
       {
-        id: 'gantt-alpha',
-        type: 'gantt',
+        id: "blachere-static",
+        type: "blachereStatic",
         x: 0,
         y: 0,
-        w: 12,
-        h: 7,
-        config: { projectId: 'project-alpha', zoomLevel: 'week' },
+        w: 3,
+        h: 5,
+        config: {
+          taskStates: {
+            "Static-Cherry Light-0": { twoD: "done", threeD: "pending" },
+          },
+        },
       },
     ]);
 
     expect(() =>
       normalizeDashboardLayout([
         {
-          id: 'gantt-alpha',
-          type: 'gantt',
+          id: "blachere-static",
+          type: "blachereStatic",
+          x: 0,
+          y: 0,
+          w: 3,
+          h: 5,
+          config: {
+            taskStates: { "Static-Cherry Light-0": { twoD: "completed" } },
+          },
+        },
+      ]),
+    ).to.throw("invalid task state");
+  });
+
+  it("accepts a Codex usage widget without local connection details", () => {
+    expect(
+      normalizeDashboardLayout([
+        { id: "codex-usage", type: "codexUsage", x: 0, y: 0, w: 4, h: 4 },
+      ]),
+    ).to.deep.equal([
+      { id: "codex-usage", type: "codexUsage", x: 0, y: 0, w: 4, h: 4 },
+    ]);
+  });
+
+  it("rejects duplicate ids and widgets outside their permitted size", () => {
+    expect(() =>
+      normalizeDashboardLayout([
+        { id: "progress", type: "progress", x: 0, y: 0, w: 4, h: 3 },
+        { id: "progress", type: "progress", x: 4, y: 0, w: 4, h: 3 },
+      ]),
+    ).to.throw("unique");
+
+    expect(() =>
+      normalizeDashboardLayout([
+        { id: "progress", type: "progress", x: 0, y: 0, w: 2, h: 3 },
+      ]),
+    ).to.throw("outside the dashboard grid");
+  });
+
+  it("keeps only the permitted configuration for a Gantt widget", () => {
+    expect(
+      normalizeDashboardLayout([
+        {
+          id: "gantt-alpha",
+          type: "gantt",
           x: 0,
           y: 0,
           w: 12,
           h: 7,
-          config: { projectId: 'project-alpha', zoomLevel: 'year' },
+          config: {
+            projectId: "project-alpha",
+            zoomLevel: "week",
+            ignored: true,
+          },
         },
       ]),
-    ).to.throw('invalid zoom level');
+    ).to.deep.equal([
+      {
+        id: "gantt-alpha",
+        type: "gantt",
+        x: 0,
+        y: 0,
+        w: 12,
+        h: 7,
+        config: { projectId: "project-alpha", zoomLevel: "week" },
+      },
+    ]);
+
+    expect(() =>
+      normalizeDashboardLayout([
+        {
+          id: "gantt-alpha",
+          type: "gantt",
+          x: 0,
+          y: 0,
+          w: 12,
+          h: 7,
+          config: { projectId: "project-alpha", zoomLevel: "year" },
+        },
+      ]),
+    ).to.throw("invalid zoom level");
   });
 });

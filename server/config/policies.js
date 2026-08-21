@@ -29,4 +29,5 @@ module.exports.policies = {
   'access-tokens/exchange-with-oidc': true,
   'password-reset-requests/create': true,
   'password-resets/create': true,
+  'dashboard/update-codex-usage': true,
 };

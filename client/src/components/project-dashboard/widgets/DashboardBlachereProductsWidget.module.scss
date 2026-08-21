@@ -13,8 +13,8 @@
     align-items: center;
     display: grid;
     flex: 0 0 auto;
-    gap: 8px;
-    grid-template-columns: minmax(0, 1fr) 48px 48px;
+    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) 36px 36px;
     min-height: 52px;
     padding: 8px 14px;
 
@@ -31,8 +31,7 @@
   .trackerChip {
     align-items: center;
     background: transparent;
-    border: 1px solid var(--app-dark-border);
-    border-radius: 999px;
+    border: 0;
     color: var(--app-dark-text-muted);
     display: inline-flex;
     font-size: 11px;
@@ -56,18 +55,38 @@
 
     li {
       align-items: center;
-      border-bottom: 1px solid color-mix(in oklab, var(--app-dark-border) 72%, transparent);
+      border-bottom: 1px solid
+        color-mix(in oklab, var(--app-dark-border) 72%, transparent);
+      box-sizing: border-box;
       display: grid;
-      flex: 1 0 36px;
-      gap: 8px;
-      grid-template-columns: minmax(0, 1fr) 48px 48px;
-      min-height: 36px;
+      flex: 0 0 42px;
+      gap: 4px;
+      grid-template-columns: minmax(0, 1fr) 36px 36px;
+      min-height: 42px;
       padding: 6px 14px;
     }
 
     li:last-child {
       border-bottom: 0;
     }
+  }
+
+  .groupTitle {
+    background: color-mix(
+      in oklab,
+      var(--app-dark-canvas) 56%,
+      var(--app-dark-surface)
+    );
+    color: var(--app-dark-text-muted);
+    display: flex !important;
+    flex-basis: 30px !important;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    min-height: 30px !important;
+    padding-bottom: 4px !important;
+    padding-top: 4px !important;
+    text-transform: uppercase;
   }
 
   .taskName {
@@ -92,6 +111,17 @@
     width: 22px;
   }
 
+  .editableTicker {
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+
+    &:focus-visible {
+      outline: 2px solid var(--app-focus);
+      outline-offset: 2px;
+    }
+  }
+
   .done {
     background: var(--app-accent);
     border-color: var(--app-accent);
@@ -104,13 +134,13 @@
 
   @media only screen and (width < 760px) {
     .list li {
-      grid-template-columns: minmax(0, 1fr) 44px 44px;
+      grid-template-columns: minmax(0, 1fr) 32px 32px;
       padding-left: 10px;
       padding-right: 10px;
     }
 
     .header {
-      grid-template-columns: minmax(0, 1fr) 44px 44px;
+      grid-template-columns: minmax(0, 1fr) 32px 32px;
     }
   }
 }

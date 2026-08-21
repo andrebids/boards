@@ -7,7 +7,7 @@ import DashboardCodexUsageWidget from './DashboardCodexUsageWidget';
 
 import styles from './DashboardWidgetContent.module.scss';
 
-const DashboardWidgetContent = React.memo(({ widget }) => {
+const DashboardWidgetContent = React.memo(({ isEditable, onToggleTask, widget }) => {
   if (widget.type === 'gantt') {
     return (
       <DashboardGanttWidget
@@ -19,6 +19,17 @@ const DashboardWidgetContent = React.memo(({ widget }) => {
 
   if (widget.type === 'blachereProducts') {
     return <DashboardBlachereProductsWidget />;
+  }
+
+  if (widget.type === 'blachereStatic' || widget.type === 'blachereAnimated') {
+    return (
+      <DashboardBlachereProductsWidget
+        group={widget.type === 'blachereStatic' ? 'static' : 'animated'}
+        isEditable={isEditable}
+        taskStates={widget.config?.taskStates}
+        onToggleTask={(taskId, column) => onToggleTask(widget.id, taskId, column)}
+      />
+    );
   }
 
   if (widget.type === 'codexUsage') {
@@ -34,14 +45,27 @@ const DashboardWidgetContent = React.memo(({ widget }) => {
 });
 
 DashboardWidgetContent.propTypes = {
+  isEditable: PropTypes.bool,
+  onToggleTask: PropTypes.func,
   widget: PropTypes.shape({
     id: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     config: PropTypes.shape({
       projectId: PropTypes.string,
+      taskStates: PropTypes.objectOf(
+        PropTypes.shape({
+          twoD: PropTypes.oneOf(['done', 'pending']),
+          threeD: PropTypes.oneOf(['done', 'pending']),
+        }),
+      ),
       zoomLevel: PropTypes.oneOf(['day', 'week', 'month', 'quarter']),
     }),
   }).isRequired,
+};
+
+DashboardWidgetContent.defaultProps = {
+  isEditable: false,
+  onToggleTask: () => {},
 };
 
 export default DashboardWidgetContent;

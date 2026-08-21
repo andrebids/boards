@@ -46,6 +46,8 @@ module.exports.custom = {
 
   tokenExpiresIn: parseInt(process.env.TOKEN_EXPIRES_IN, 10) || 365,
 
+  codexUsageBridgeToken: process.env.CODEX_USAGE_BRIDGE_TOKEN,
+
   passwordResetEnabled: process.env.PASSWORD_RESET_ENABLED !== 'false',
   passwordResetTokenExpiresInMinutes: envToPositiveNumber(
     process.env.PASSWORD_RESET_TOKEN_EXPIRES_IN_MINUTES,
