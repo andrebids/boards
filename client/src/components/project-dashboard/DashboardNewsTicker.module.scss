@@ -77,12 +77,11 @@
     width: 460px;
 
     &::before {
-      background: var(--app-dark-text-muted);
-      border-radius: 50%;
+      background: color-mix(in oklab, var(--app-dark-border) 84%, transparent);
       content: "";
       flex: 0 0 auto;
-      height: 4px;
-      width: 4px;
+      height: 48px;
+      width: 1px;
     }
 
     &:hover,
@@ -102,21 +101,13 @@
   }
 
   .copy {
-    background: color-mix(
-      in oklab,
-      var(--app-dark-surface-hover) 72%,
-      transparent
-    );
-    border: 1px solid
-      color-mix(in oklab, var(--app-dark-border) 76%, transparent);
-    border-radius: 6px;
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     justify-content: center;
     min-width: 0;
-    padding: 8px 10px;
+    padding: 6px 0;
   }
 
   .source {
