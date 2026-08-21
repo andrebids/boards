@@ -3,8 +3,7 @@ import commonjs from "vite-plugin-commonjs";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
-// eslint-disable-next-line import/no-unresolved
-import browserslistToEsbuild from "browserslist-to-esbuild";
+import legacy from "@vitejs/plugin-legacy";
 
 // Configuração simples com nome fixo do servidor
 const serverTarget = process.env.PLANKA_SERVER_HOST || "http://boards-server:1337";
@@ -20,7 +19,12 @@ export default defineConfig({
       include: ["fs", "path", "process", "url"]
     }),
     react(),
-    svgr()
+    svgr(),
+    legacy({
+      targets: ["Chrome >= 49"],
+      modernTargets: ["Chrome >= 64"],
+      modernPolyfills: true
+    })
   ],
   resolve: {
     alias: {
@@ -73,8 +77,5 @@ export default defineConfig({
         secure: false
       }
     }
-  },
-  build: {
-    target: browserslistToEsbuild([">0.2%", "not dead", "not op_mini all"])
   }
 });
