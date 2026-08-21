@@ -57,7 +57,7 @@ export const getClipboardImageFiles = (clipboardData) => {
     .filter(Boolean);
 };
 
-const CHAT_PNG_OPTIMIZATION_MIN_BYTES = 1024 * 1024;
+const CHAT_PNG_OPTIMIZATION_MIN_BYTES = 10 * 1024 * 1024;
 const CHAT_WEBP_QUALITY = 0.9;
 
 const convertChatImageToWebp = async (file) => {

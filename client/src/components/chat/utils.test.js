@@ -125,8 +125,22 @@ describe('chat utils', () => {
     ).toEqual([image]);
   });
 
+  test('does not convert PNG attachments below 10 MiB', async () => {
+    const screenshot = new File([new Uint8Array(10 * 1024 * 1024 - 1)], 'screenshot.png', {
+      type: 'image/png',
+    });
+    const convertImage = jest.fn(
+      async () => new Blob([new Uint8Array(256 * 1024)], { type: 'image/webp' }),
+    );
+
+    const [preparedFile] = await prepareChatAttachmentFiles([screenshot], convertImage);
+
+    expect(preparedFile).toBe(screenshot);
+    expect(convertImage).not.toHaveBeenCalled();
+  });
+
   test('replaces large PNG attachments with a smaller WebP while preserving order', async () => {
-    const screenshot = new File([new Uint8Array(2 * 1024 * 1024)], 'screenshot.png', {
+    const screenshot = new File([new Uint8Array(10 * 1024 * 1024)], 'screenshot.png', {
       type: 'image/png',
       lastModified: 123,
     });
@@ -151,11 +165,11 @@ describe('chat utils', () => {
   });
 
   test('keeps PNG attachments when WebP conversion does not reduce their size', async () => {
-    const screenshot = new File([new Uint8Array(2 * 1024 * 1024)], 'screenshot.png', {
+    const screenshot = new File([new Uint8Array(10 * 1024 * 1024)], 'screenshot.png', {
       type: 'image/png',
     });
     const convertImage = jest.fn(
-      async () => new Blob([new Uint8Array(3 * 1024 * 1024)], { type: 'image/webp' }),
+      async () => new Blob([new Uint8Array(11 * 1024 * 1024)], { type: 'image/webp' }),
     );
 
     const [preparedFile] = await prepareChatAttachmentFiles([screenshot], convertImage);
@@ -167,7 +181,7 @@ describe('chat utils', () => {
     const smallScreenshot = new File([new Uint8Array(512 * 1024)], 'small.png', {
       type: 'image/png',
     });
-    const largeScreenshot = new File([new Uint8Array(2 * 1024 * 1024)], 'large.png', {
+    const largeScreenshot = new File([new Uint8Array(10 * 1024 * 1024)], 'large.png', {
       type: 'image/png',
     });
     const convertImage = jest.fn(async () => {
