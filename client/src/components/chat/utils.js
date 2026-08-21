@@ -1,22 +1,18 @@
 export const isGeneralConversation = (conversation) =>
-  ["project_group", "projectGroup", "general"].includes(conversation.type);
+  ['project_group', 'projectGroup', 'general'].includes(conversation.type);
 
 export const isCustomGroupConversation = (conversation) =>
-  conversation?.type === "projectCustomGroup";
+  conversation?.type === 'projectCustomGroup';
 
-export const isDirectConversation = (conversation) =>
-  conversation?.type === "projectDirect";
+export const isDirectConversation = (conversation) => conversation?.type === 'projectDirect';
 
-export const hasUnreadMessages = (conversation) =>
-  (conversation?.unreadCount || 0) > 0;
+export const hasUnreadMessages = (conversation) => (conversation?.unreadCount || 0) > 0;
 
-export const shouldConcealChatDock = (
-  isConversationListOpen,
-  isConversationListClosing,
-) => isConversationListOpen && !isConversationListClosing;
+export const shouldConcealChatDock = (isConversationListOpen, isConversationListClosing) =>
+  isConversationListOpen && !isConversationListClosing;
 
 export const getChatParticipantMuteExpiration = (participant) => {
-  if (!participant?.mutedUntil || participant.notificationLevel === "none") {
+  if (!participant?.mutedUntil || participant.notificationLevel === 'none') {
     return null;
   }
 
@@ -29,23 +25,18 @@ export const isChatParticipantMuted = (participant, now = Date.now()) => {
     return false;
   }
 
-  if (participant.notificationLevel === "none") {
+  if (participant.notificationLevel === 'none') {
     return true;
   }
 
   const expiration = getChatParticipantMuteExpiration(participant);
   const currentTime = now instanceof Date ? now.getTime() : Number(now);
 
-  return (
-    expiration !== null &&
-    Number.isFinite(currentTime) &&
-    expiration > currentTime
-  );
+  return expiration !== null && Number.isFinite(currentTime) && expiration > currentTime;
 };
 
 export const isChatParticipantMentionsOnly = (participant, now = Date.now()) =>
-  participant?.notificationLevel === "mentions" &&
-  !isChatParticipantMuted(participant, now);
+  participant?.notificationLevel === 'mentions' && !isChatParticipantMuted(participant, now);
 
 export const getClipboardImageFiles = (clipboardData) => {
   if (!clipboardData) {
@@ -53,7 +44,7 @@ export const getClipboardImageFiles = (clipboardData) => {
   }
 
   const files = Array.from(clipboardData.files || []).filter((file) =>
-    file.type.startsWith("image/"),
+    file.type.startsWith('image/'),
   );
 
   if (files.length > 0) {
@@ -61,7 +52,7 @@ export const getClipboardImageFiles = (clipboardData) => {
   }
 
   return Array.from(clipboardData.items || [])
-    .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+    .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
     .map((item) => item.getAsFile())
     .filter(Boolean);
 };
@@ -73,13 +64,13 @@ const convertChatImageToWebp = async (file) => {
   const image = await window.createImageBitmap(file);
 
   try {
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = image.width;
     canvas.height = image.height;
 
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext('2d');
     if (!context) {
-      throw new Error("Canvas is unavailable");
+      throw new Error('Canvas is unavailable');
     }
 
     context.drawImage(image, 0, 0);
@@ -90,10 +81,10 @@ const convertChatImageToWebp = async (file) => {
           if (blob) {
             resolve(blob);
           } else {
-            reject(new Error("Image conversion failed"));
+            reject(new Error('Image conversion failed'));
           }
         },
-        "image/webp",
+        'image/webp',
         CHAT_WEBP_QUALITY,
       );
     });
@@ -102,30 +93,24 @@ const convertChatImageToWebp = async (file) => {
   }
 };
 
-export const prepareChatAttachmentFiles = (
-  files,
-  convertImage = convertChatImageToWebp,
-) =>
+export const prepareChatAttachmentFiles = (files, convertImage = convertChatImageToWebp) =>
   Promise.all(
     files.map(async (file) => {
-      if (
-        file.type !== "image/png" ||
-        file.size < CHAT_PNG_OPTIMIZATION_MIN_BYTES
-      ) {
+      if (file.type !== 'image/png' || file.size < CHAT_PNG_OPTIMIZATION_MIN_BYTES) {
         return file;
       }
 
       try {
         const optimizedBlob = await convertImage(file);
         if (
-          optimizedBlob.type !== "image/webp" ||
+          optimizedBlob.type !== 'image/webp' ||
           optimizedBlob.size === 0 ||
           optimizedBlob.size >= file.size
         ) {
           return file;
         }
 
-        const name = file.name.toLowerCase().endsWith(".png")
+        const name = file.name.toLowerCase().endsWith('.png')
           ? `${file.name.slice(0, -4)}.webp`
           : `${file.name}.webp`;
 
@@ -143,7 +128,7 @@ export const getParticipantUserIds = (conversation) =>
   conversation.participantUserIds ||
   conversation.userIds ||
   (conversation.participants || []).map((participant) =>
-    typeof participant === "string" ? participant : participant.userId,
+    typeof participant === 'string' ? participant : participant.userId,
   );
 
 export const getDirectUser = (conversation, members, currentUserId) => {
