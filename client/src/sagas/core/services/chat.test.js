@@ -5,11 +5,13 @@ import api from '../../../api';
 import selectors from '../../../selectors';
 import request, { requestConcurrent } from '../request';
 import { playChatMessageSound } from '../../../utils/chat-message-sound';
-import {
+import chatServices, {
   fetchChatInbox,
   handleChatConversationUpdate,
+  handleChatMessageAttachmentCreate,
   handleChatMessageCreate,
   markChatConversationAsRead,
+  retryChatMessageAttachment,
   uploadChatMessageAttachment,
   uploadChatMessageAttachments,
 } from './chat';
@@ -189,6 +191,15 @@ describe('chat attachment uploads', () => {
     file: { name: 'image.png', size: 100, type: 'image/png' },
     status: 'uploading',
   };
+
+  test('exposes the attachment services used by chat watchers', () => {
+    expect(chatServices).toEqual(
+      expect.objectContaining({
+        handleChatMessageAttachmentCreate,
+        retryChatMessageAttachment,
+      }),
+    );
+  });
 
   test('uses the concurrent authenticated request and confirms the attachment', () => {
     const generator = uploadChatMessageAttachment(message, pendingFile, 1);
