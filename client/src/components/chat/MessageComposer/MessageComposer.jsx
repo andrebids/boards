@@ -17,7 +17,7 @@ import LazyEmojiPicker, {
   EMOJI_PICKER_HEIGHT,
   EMOJI_PICKER_WIDTH,
 } from '../LazyEmojiPicker';
-import { getClipboardImageFiles } from '../utils';
+import { getClipboardImageFiles, prepareChatAttachmentFiles } from '../utils';
 import {
   CHAT_ATTACHMENT_ACCEPT,
   getChatAttachmentMaxBytes,
@@ -101,6 +101,7 @@ const mentionsInputStyle = {
 const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   const [t] = useTranslation();
   const [files, setFiles] = useState([]);
+  const [attachmentPreparationCount, setAttachmentPreparationCount] = useState(0);
   const [attachmentError, setAttachmentError] = useState(null);
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const [isEmojiMenuOpen, setIsEmojiMenuOpen] = useState(false);
@@ -157,7 +158,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   const send = useCallback(() => {
     const normalizedText = text.trim();
 
-    if ((!normalizedText && files.length === 0) || isDisabled) {
+    if ((!normalizedText && files.length === 0) || attachmentPreparationCount > 0 || isDisabled) {
       return;
     }
 
@@ -173,7 +174,15 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
     dispatch(entryActions.updateChatTyping(conversationId, false));
     setFiles([]);
     setIsEmojiMenuOpen(false);
-  }, [conversationId, dispatch, files, isDisabled, replyTarget?.id, text]);
+  }, [
+    attachmentPreparationCount,
+    conversationId,
+    dispatch,
+    files,
+    isDisabled,
+    replyTarget?.id,
+    text,
+  ]);
 
   const handleKeyDown = useCallback(
     (event) => {
@@ -200,7 +209,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
     [conversationId, dispatch],
   );
   const handleFilesSelect = useCallback(
-    (selectedFiles) => {
+    async (selectedFiles) => {
       const candidateFiles = Array.isArray(selectedFiles) ? selectedFiles : [selectedFiles];
       const typeAllowedFiles = candidateFiles.filter(isChatAttachmentAllowed);
       const oversizedFiles = typeAllowedFiles.filter((file) =>
@@ -246,10 +255,19 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
       }
 
       setAttachmentError(errors.length > 0 ? errors.join(' ') : null);
-      if (allowedFiles.length > 0) {
-        setFiles((currentFiles) => [...currentFiles, ...allowedFiles]);
-      }
       setIsAttachmentMenuOpen(false);
+
+      if (allowedFiles.length === 0) {
+        return;
+      }
+
+      setAttachmentPreparationCount((count) => count + 1);
+      try {
+        const preparedFiles = await prepareChatAttachmentFiles(allowedFiles);
+        setFiles((currentFiles) => [...currentFiles, ...preparedFiles]);
+      } finally {
+        setAttachmentPreparationCount((count) => Math.max(0, count - 1));
+      }
     },
     [attachmentLimits, t],
   );
@@ -440,7 +458,9 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
           type="button"
           aria-label={t('chat.sendMessage')}
           className={styles.sendButton}
-          disabled={(!text.trim() && files.length === 0) || isDisabled}
+          disabled={
+            (!text.trim() && files.length === 0) || attachmentPreparationCount > 0 || isDisabled
+          }
           onClick={send}
         >
           <Send aria-hidden="true" size={17} strokeWidth={2} />

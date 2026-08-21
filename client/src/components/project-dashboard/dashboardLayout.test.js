@@ -1,6 +1,7 @@
 import {
   createDefaultDashboardLayout,
   fromGridStackDashboardWidgets,
+  hasDashboardGridChanged,
   mergeDashboardLayoutGeometry,
   normalizeDashboardLayout,
   placeDashboardWidget,
@@ -20,8 +21,23 @@ describe('project dashboard layout', () => {
       { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
       { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
       { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
-      { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 10, w: 12, h: 5 },
-      { id: 'codex-usage', type: 'codexUsage', x: 0, y: 15, w: 4, h: 4 },
+      {
+        id: 'blachere-static',
+        type: 'blachereStatic',
+        x: 0,
+        y: 10,
+        w: 6,
+        h: 7,
+      },
+      {
+        id: 'blachere-animated',
+        type: 'blachereAnimated',
+        x: 6,
+        y: 10,
+        w: 6,
+        h: 9,
+      },
+      { id: 'codex-usage', type: 'codexUsage', x: 0, y: 19, w: 4, h: 4 },
     ]);
     expect(normalizeDashboardLayout(layout)).toEqual(layout);
   });
@@ -36,19 +52,96 @@ describe('project dashboard layout', () => {
     ).toThrow('outside the dashboard grid');
   });
 
-  it('accepts the Blachere Products task list without configuration', () => {
+  it('accepts separate Static and Animated task lists without configuration', () => {
     expect(
       normalizeDashboardLayout([
-        { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 },
+        {
+          id: 'blachere-static',
+          type: 'blachereStatic',
+          x: 0,
+          y: 0,
+          w: 3,
+          h: 5,
+        },
+        {
+          id: 'blachere-animated',
+          type: 'blachereAnimated',
+          x: 3,
+          y: 0,
+          w: 3,
+          h: 5,
+        },
       ]),
-    ).toEqual([{ id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 }]);
+    ).toEqual([
+      { id: 'blachere-static', type: 'blachereStatic', x: 0, y: 0, w: 3, h: 5 },
+      {
+        id: 'blachere-animated',
+        type: 'blachereAnimated',
+        x: 3,
+        y: 0,
+        w: 3,
+        h: 5,
+      },
+    ]);
+  });
+
+  it('keeps only valid 2D and 3D task states for Blachere widgets', () => {
+    expect(
+      normalizeDashboardLayout([
+        {
+          id: 'blachere-static',
+          type: 'blachereStatic',
+          x: 0,
+          y: 0,
+          w: 3,
+          h: 5,
+          config: {
+            taskStates: {
+              'Static-Cherry Light-0': {
+                twoD: 'done',
+                threeD: 'pending',
+                ignored: 'value',
+              },
+            },
+          },
+        },
+      ]),
+    ).toEqual([
+      {
+        id: 'blachere-static',
+        type: 'blachereStatic',
+        x: 0,
+        y: 0,
+        w: 3,
+        h: 5,
+        config: {
+          taskStates: {
+            'Static-Cherry Light-0': { twoD: 'done', threeD: 'pending' },
+          },
+        },
+      },
+    ]);
+
+    expect(() =>
+      normalizeDashboardLayout([
+        {
+          id: 'blachere-static',
+          type: 'blachereStatic',
+          x: 0,
+          y: 0,
+          w: 3,
+          h: 5,
+          config: {
+            taskStates: { 'Static-Cherry Light-0': { twoD: 'completed' } },
+          },
+        },
+      ]),
+    ).toThrow('invalid task state');
   });
 
   it('accepts a Codex usage widget without persisting a local connection configuration', () => {
     expect(
-      normalizeDashboardLayout([
-        { id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 },
-      ]),
+      normalizeDashboardLayout([{ id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 }]),
     ).toEqual([{ id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 }]);
   });
 
@@ -62,7 +155,11 @@ describe('project dashboard layout', () => {
           y: 0,
           w: 12,
           h: 7,
-          config: { projectId: 'project-alpha', zoomLevel: 'week', ignored: 'value' },
+          config: {
+            projectId: 'project-alpha',
+            zoomLevel: 'week',
+            ignored: 'value',
+          },
         },
       ]),
     ).toEqual([
@@ -160,6 +257,56 @@ describe('project dashboard layout', () => {
     ]);
   });
 
+  it('keeps a task state changed in React when GridStack still has stale widget props', () => {
+    const currentLayout = [
+      {
+        id: 'blachere-static',
+        type: 'blachereStatic',
+        x: 0,
+        y: 0,
+        w: 3,
+        h: 5,
+        config: {
+          taskStates: {
+            'Static-Cherry Light-0': { twoD: 'done' },
+          },
+        },
+      },
+    ];
+    const staleGridWidgets = [
+      {
+        id: 'blachere-static',
+        x: 0,
+        y: 0,
+        w: 3,
+        h: 5,
+        props: {
+          widget: {
+            ...currentLayout[0],
+            config: undefined,
+          },
+        },
+      },
+    ];
+
+    expect(fromGridStackDashboardWidgets(staleGridWidgets, currentLayout)).toEqual(currentLayout);
+  });
+
+  it('does not reload the GridStack layout when only a Blachere task state changes', () => {
+    const previousLayout = [
+      { id: 'blachere-static', type: 'blachereStatic', x: 0, y: 0, w: 3, h: 5 },
+    ];
+    const nextLayout = [
+      {
+        ...previousLayout[0],
+        config: { taskStates: { 'Static-Cherry Light-0': { twoD: 'done' } } },
+      },
+    ];
+
+    expect(hasDashboardGridChanged(previousLayout, nextLayout)).toBe(false);
+    expect(hasDashboardGridChanged(previousLayout, [{ ...previousLayout[0], x: 3 }])).toBe(true);
+  });
+
   it('restores dimensions omitted by GridStack when they equal minimum constraints', () => {
     expect(
       fromGridStackDashboardWidgets([
@@ -170,7 +317,14 @@ describe('project dashboard layout', () => {
           minW: 3,
           minH: 3,
           props: {
-            widget: { id: 'status-minimum', type: 'status', x: 0, y: 0, w: 4, h: 4 },
+            widget: {
+              id: 'status-minimum',
+              type: 'status',
+              x: 0,
+              y: 0,
+              w: 4,
+              h: 4,
+            },
           },
         },
       ]),

@@ -7,6 +7,7 @@ const { rimraf } = require('rimraf');
 
 const { idInput } = require('../../../utils/inputs');
 const { validateChatAttachment } = require('../../../utils/chat-attachment-policy');
+const { normalizeHeifUpload } = require('../../../utils/heif-file');
 
 const Errors = {
   MESSAGE_NOT_FOUND: { messageNotFound: 'Message not found' },
@@ -207,9 +208,25 @@ module.exports = {
       throw Errors.UNSUPPORTED_FILE_TYPE;
     }
 
+    let uploadedFile = files[0];
+    try {
+      uploadedFile = await normalizeHeifUpload(uploadedFile, {
+        maxBytes: sails.config.custom.chatAttachmentMaxBytes,
+      });
+    } catch (error) {
+      await rimraf(uploadedFile.fd);
+      sails.log.error('[CHAT_UPLOAD][HEIF_CONVERSION_ERROR]', {
+        ...logContext,
+        errorType: error.name,
+        errorCode: error.code || 'HEIF_CONVERSION_ERROR',
+        durationMs: Date.now() - startedAt,
+      });
+      throw Errors.UNSUPPORTED_FILE_TYPE;
+    }
+
     let data;
     try {
-      data = await sails.helpers.attachments.processUploadedFile(files[0]);
+      data = await sails.helpers.attachments.processUploadedFile(uploadedFile);
     } catch (error) {
       sails.log.error('[CHAT_UPLOAD][PROCESS_ERROR]', {
         ...logContext,

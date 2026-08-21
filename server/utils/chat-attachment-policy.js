@@ -11,6 +11,8 @@ const ALLOWED_EXTENSIONS = Object.freeze([
   'docx',
   'flac',
   'gif',
+  'heic',
+  'heif',
   'jpeg',
   'jpg',
   'json',
@@ -80,6 +82,8 @@ const EXPECTED_CONTENT_KIND = Object.freeze({
   docx: 'docx',
   flac: 'flac',
   gif: 'gif',
+  heic: 'heif',
+  heif: 'heif',
   jpeg: 'jpeg',
   jpg: 'jpeg',
   json: 'text',
@@ -110,6 +114,8 @@ const CHAT_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
 const PSD_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
 const VIDEO_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
 const UNSAFE_OOXML_ENTRY_PARTS = ['/activex/', '/vbadata.xml', '/vbaproject.bin'];
+const AVIF_BRANDS = new Set(['avif', 'avis']);
+const HEIF_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1']);
 
 const startsWith = (buffer, signature) =>
   buffer.length >= signature.length && buffer.subarray(0, signature.length).equals(signature);
@@ -237,6 +243,30 @@ const looksLikeText = (buffer) => {
   return buffer.length === 0 || controlBytes / buffer.length < 0.01;
 };
 
+const detectIsoMediaKind = (header) => {
+  if (header.length < 12 || header.subarray(4, 8).toString('ascii') !== 'ftyp') {
+    return null;
+  }
+
+  const declaredBoxSize = header.readUInt32BE(0);
+  const boxEnd =
+    declaredBoxSize >= 16 && declaredBoxSize <= header.length ? declaredBoxSize : header.length;
+  const brands = [header.subarray(8, 12).toString('ascii').toLowerCase()];
+
+  for (let offset = 16; offset + 4 <= boxEnd; offset += 4) {
+    brands.push(
+      header
+        .subarray(offset, offset + 4)
+        .toString('ascii')
+        .toLowerCase(),
+    );
+  }
+
+  if (brands.some((brand) => AVIF_BRANDS.has(brand))) return 'avif';
+  if (brands.some((brand) => HEIF_BRANDS.has(brand))) return 'heif';
+  return 'isoMedia';
+};
+
 const getAttachmentMaxBytes = (filename, extension, limits) => {
   if (extension === 'psd') {
     return limits.psd;
@@ -308,10 +338,8 @@ const detectContentKind = async (filePath) => {
     ) {
       return 'mp3';
     }
-    if (header.length >= 12 && header.subarray(4, 8).toString('ascii') === 'ftyp') {
-      const brand = header.subarray(8, 12).toString('ascii').toLowerCase();
-      return ['avif', 'avis'].includes(brand) ? 'avif' : 'isoMedia';
-    }
+    const isoMediaKind = detectIsoMediaKind(header);
+    if (isoMediaKind) return isoMediaKind;
     if (
       header.length >= 8 &&
       ['free', 'mdat', 'moov', 'wide'].includes(header.subarray(4, 8).toString('ascii'))

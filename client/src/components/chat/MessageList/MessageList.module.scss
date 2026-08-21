@@ -709,6 +709,23 @@
     pointer-events: auto;
   }
 
+  .sendingStatus {
+    align-items: center;
+    display: inline-flex;
+    gap: 3px;
+  }
+
+  .sendingSpinner {
+    animation: chatSendingSpin 0.8s linear infinite;
+    flex: 0 0 auto;
+  }
+
+  @keyframes chatSendingSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .seenIcon {
     color: var(--chat-accent);
     display: inline-flex;
@@ -928,6 +945,10 @@
     }
 
     .skeletons span {
+      animation: none;
+    }
+
+    .sendingSpinner {
       animation: none;
     }
   }

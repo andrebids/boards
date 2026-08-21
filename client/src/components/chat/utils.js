@@ -57,6 +57,77 @@ export const getClipboardImageFiles = (clipboardData) => {
     .filter(Boolean);
 };
 
+const CHAT_IMAGE_OPTIMIZATION_MIN_BYTES = 10 * 1024 * 1024;
+const CHAT_WEBP_OPTIMIZATION_MIME_TYPES = new Set(['image/jpeg', 'image/png']);
+const CHAT_WEBP_QUALITY = 0.9;
+
+const convertChatImageToWebp = async (file) => {
+  const image = await window.createImageBitmap(file);
+
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('Canvas is unavailable');
+    }
+
+    context.drawImage(image, 0, 0);
+
+    return await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Image conversion failed'));
+          }
+        },
+        'image/webp',
+        CHAT_WEBP_QUALITY,
+      );
+    });
+  } finally {
+    image.close?.();
+  }
+};
+
+export const prepareChatAttachmentFiles = (files, convertImage = convertChatImageToWebp) =>
+  Promise.all(
+    files.map(async (file) => {
+      if (
+        !CHAT_WEBP_OPTIMIZATION_MIME_TYPES.has(file.type) ||
+        file.size < CHAT_IMAGE_OPTIMIZATION_MIN_BYTES
+      ) {
+        return file;
+      }
+
+      try {
+        const optimizedBlob = await convertImage(file);
+        if (
+          optimizedBlob.type !== 'image/webp' ||
+          optimizedBlob.size === 0 ||
+          optimizedBlob.size >= file.size
+        ) {
+          return file;
+        }
+
+        const name = /\.(?:jpe?g|png)$/i.test(file.name)
+          ? file.name.replace(/\.(?:jpe?g|png)$/i, '.webp')
+          : `${file.name}.webp`;
+
+        return new File([optimizedBlob], name, {
+          type: optimizedBlob.type,
+          lastModified: file.lastModified,
+        });
+      } catch {
+        return file;
+      }
+    }),
+  );
+
 export const getParticipantUserIds = (conversation) =>
   conversation.participantUserIds ||
   conversation.userIds ||

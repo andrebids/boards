@@ -32,7 +32,9 @@ export function* handleLocationChange() {
 
   switch (pathsMatch.pattern.path) {
     case Paths.ROOT:
+    case Paths.DASHBOARD:
     case Paths.PROJECTS:
+    case Paths.GANTT:
     case Paths.BOARDS:
     case Paths.CARDS:
       yield call(goToLogin);

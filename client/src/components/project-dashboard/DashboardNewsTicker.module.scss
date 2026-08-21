@@ -52,7 +52,7 @@
 
   .sequence {
     align-items: center;
-    animation: news-ticker-sequence 180s linear infinite;
+    animation: news-ticker-sequence 220s linear infinite;
     display: flex;
     height: 100%;
     left: 0;
@@ -61,7 +61,7 @@
     will-change: transform;
 
     &:first-child {
-      animation-delay: -90s;
+      animation-delay: -110s;
     }
   }
 

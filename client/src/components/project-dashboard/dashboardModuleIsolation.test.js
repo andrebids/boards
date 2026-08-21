@@ -21,4 +21,15 @@ describe('dashboard module isolation', () => {
 
     expect(dashboardWorkspaceSource).toMatch(/^import \* as \w+ from '.\/dashboardLayout';$/m);
   });
+
+  it('uses one explicit GridStack drag handle for every dashboard widget in the editor', () => {
+    const dashboardWorkspaceSource = readSource('./DashboardWorkspace.jsx');
+
+    expect(dashboardWorkspaceSource).toMatch(
+      /isEditor && \(\s*<div aria-hidden="true" className={styles\.dragHandle}>/,
+    );
+    expect(dashboardWorkspaceSource).toMatch(
+      /draggable: \{ handle: `\.\$\{styles\.dragHandle\}` \},/,
+    );
+  });
 });
