@@ -29,18 +29,38 @@ const WIDGET_LABELS = {
 const DashboardWidgetActionsContext = React.createContext({
   canEdit: false,
   canRemove: false,
+  isEditor: false,
   onRemove: () => {},
   onToggleTask: () => {},
+  taskStatesByWidget: {},
 });
 
 const DashboardWidget = React.memo(({ widget }) => {
-  const { canEdit, canRemove, onRemove, onToggleTask } = React.useContext(
-    DashboardWidgetActionsContext,
-  );
+  const { canEdit, canRemove, isEditor, onRemove, onToggleTask, taskStatesByWidget } =
+    React.useContext(DashboardWidgetActionsContext);
+  const taskStates = taskStatesByWidget[widget.id];
+  const widgetWithCurrentTaskStates = taskStates
+    ? {
+        ...widget,
+        config: { ...widget.config, taskStates },
+      }
+    : widget;
 
   return (
-    <>
-      <DashboardWidgetContent isEditable={canEdit} widget={widget} onToggleTask={onToggleTask} />
+    <div className={styles.widgetFrame}>
+      {isEditor && (
+        <div aria-hidden="true" className={styles.dragHandle}>
+          <span>⠿</span>
+          Arrastar
+        </div>
+      )}
+      <div className={styles.widgetContent}>
+        <DashboardWidgetContent
+          isEditable={canEdit}
+          widget={widgetWithCurrentTaskStates}
+          onToggleTask={onToggleTask}
+        />
+      </div>
       {canRemove && (
         <button
           aria-label={`Remover widget ${WIDGET_LABELS[widget.type] || 'Gantt'}`}
@@ -55,12 +75,20 @@ const DashboardWidget = React.memo(({ widget }) => {
           ×
         </button>
       )}
-    </>
+    </div>
   );
 });
 
 DashboardWidget.propTypes = {
   widget: PropTypes.shape({
+    config: PropTypes.shape({
+      taskStates: PropTypes.objectOf(
+        PropTypes.shape({
+          twoD: PropTypes.oneOf(['done', 'pending']),
+          threeD: PropTypes.oneOf(['done', 'pending']),
+        }),
+      ),
+    }),
     id: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
   }).isRequired,
@@ -74,6 +102,7 @@ const DashboardWorkspace = React.memo(() => {
   const layoutVersionRef = useRef(null);
   const isLoadingGridRef = useRef(false);
   const gridLoadTimerRef = useRef(null);
+  const loadedGridLayoutRef = useRef(null);
   const [searchParams] = useSearchParams();
   const user = useSelector(selectors.selectCurrentUser);
   const projects = useSelector((state) => {
@@ -234,8 +263,15 @@ const DashboardWorkspace = React.memo(() => {
       return undefined;
     }
 
+    if (
+      !dashboardLayoutHelpers.hasDashboardGridChanged(loadedGridLayoutRef.current, dashboardLayout)
+    ) {
+      return undefined;
+    }
+
     const frameId = window.requestAnimationFrame(() => {
       loadGridLayout(dashboardLayout);
+      loadedGridLayoutRef.current = dashboardLayout;
     });
 
     return () => window.cancelAnimationFrame(frameId);
@@ -260,15 +296,12 @@ const DashboardWorkspace = React.memo(() => {
         return;
       }
 
-      const layout = applyDashboard(item);
-      window.requestAnimationFrame(() => {
-        loadGridLayout(layout);
-      });
+      applyDashboard(item);
     };
 
     socket.on('dashboardUpdate', handleDashboardUpdate);
     return () => socket.off('dashboardUpdate', handleDashboardUpdate);
-  }, [applyDashboard, loadGridLayout]);
+  }, [applyDashboard]);
 
   useEffect(
     () => () => {
@@ -367,14 +400,28 @@ const DashboardWorkspace = React.memo(() => {
     [canEditDashboard, scheduleLayoutSave, setCurrentDashboardLayout],
   );
 
+  const taskStatesByWidget = useMemo(
+    () =>
+      dashboardLayout.reduce((result, widget) => {
+        if (widget.config?.taskStates) {
+          return { ...result, [widget.id]: widget.config.taskStates };
+        }
+
+        return result;
+      }, {}),
+    [dashboardLayout],
+  );
+
   const widgetActions = useMemo(
     () => ({
       canEdit: !isTvMode && canEditDashboard,
       canRemove: !isTvMode && canEditDashboard,
+      isEditor: !isTvMode,
       onRemove: handleRemoveWidget,
       onToggleTask: handleToggleBlachereTask,
+      taskStatesByWidget,
     }),
-    [canEditDashboard, handleRemoveWidget, handleToggleBlachereTask, isTvMode],
+    [canEditDashboard, handleRemoveWidget, handleToggleBlachereTask, isTvMode, taskStatesByWidget],
   );
 
   const gridOptions = useMemo(
@@ -386,6 +433,7 @@ const DashboardWorkspace = React.memo(() => {
       columnOpts: { breakpoints: [{ c: 1, w: 760 }] },
       disableDrag: isTvMode || !canEditDashboard,
       disableResize: isTvMode || !canEditDashboard,
+      draggable: { handle: `.${styles.dragHandle}` },
       float: false,
       margin: 12,
       resizable: { handles: 'se' },

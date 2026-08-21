@@ -186,6 +186,27 @@ export const mergeDashboardLayoutGeometry = (layout, gridWidgets) => {
   });
 };
 
+export const hasDashboardGridChanged = (previousLayout, nextLayout) => {
+  if (!previousLayout || previousLayout.length !== nextLayout.length) {
+    return true;
+  }
+
+  const previousWidgetsById = new Map(previousLayout.map((widget) => [widget.id, widget]));
+
+  return nextLayout.some((widget) => {
+    const previousWidget = previousWidgetsById.get(widget.id);
+
+    return (
+      !previousWidget ||
+      previousWidget.type !== widget.type ||
+      previousWidget.x !== widget.x ||
+      previousWidget.y !== widget.y ||
+      previousWidget.w !== widget.w ||
+      previousWidget.h !== widget.h
+    );
+  });
+};
+
 const widgetsOverlap = (first, second) =>
   !(
     first.x + first.w <= second.x ||

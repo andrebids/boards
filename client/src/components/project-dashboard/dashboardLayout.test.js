@@ -1,6 +1,7 @@
 import {
   createDefaultDashboardLayout,
   fromGridStackDashboardWidgets,
+  hasDashboardGridChanged,
   mergeDashboardLayoutGeometry,
   normalizeDashboardLayout,
   placeDashboardWidget,
@@ -289,6 +290,21 @@ describe('project dashboard layout', () => {
     ];
 
     expect(fromGridStackDashboardWidgets(staleGridWidgets, currentLayout)).toEqual(currentLayout);
+  });
+
+  it('does not reload the GridStack layout when only a Blachere task state changes', () => {
+    const previousLayout = [
+      { id: 'blachere-static', type: 'blachereStatic', x: 0, y: 0, w: 3, h: 5 },
+    ];
+    const nextLayout = [
+      {
+        ...previousLayout[0],
+        config: { taskStates: { 'Static-Cherry Light-0': { twoD: 'done' } } },
+      },
+    ];
+
+    expect(hasDashboardGridChanged(previousLayout, nextLayout)).toBe(false);
+    expect(hasDashboardGridChanged(previousLayout, [{ ...previousLayout[0], x: 3 }])).toBe(true);
   });
 
   it('restores dimensions omitted by GridStack when they equal minimum constraints', () => {
