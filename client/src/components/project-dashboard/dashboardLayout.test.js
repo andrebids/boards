@@ -20,6 +20,8 @@ describe('project dashboard layout', () => {
       { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
       { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
       { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
+      { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 10, w: 12, h: 5 },
+      { id: 'codex-usage', type: 'codexUsage', x: 0, y: 15, w: 4, h: 4 },
     ]);
     expect(normalizeDashboardLayout(layout)).toEqual(layout);
   });
@@ -32,6 +34,22 @@ describe('project dashboard layout', () => {
     expect(() =>
       normalizeDashboardLayout([{ id: 'progress', type: 'progress', x: 10, y: 0, w: 4, h: 3 }]),
     ).toThrow('outside the dashboard grid');
+  });
+
+  it('accepts the Blachere Products task list without configuration', () => {
+    expect(
+      normalizeDashboardLayout([
+        { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 },
+      ]),
+    ).toEqual([{ id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 }]);
+  });
+
+  it('accepts a Codex usage widget without persisting a local connection configuration', () => {
+    expect(
+      normalizeDashboardLayout([
+        { id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 },
+      ]),
+    ).toEqual([{ id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 }]);
   });
 
   it('accepts a configured Gantt widget and rejects an unsafe configuration', () => {

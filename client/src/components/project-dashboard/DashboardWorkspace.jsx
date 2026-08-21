@@ -20,6 +20,8 @@ const WIDGET_LABELS = {
   progress: 'Progresso',
   status: 'Estado',
   upcoming: 'Próximas tarefas',
+  blachereProducts: 'Blachere Products',
+  codexUsage: 'Uso do Codex',
 };
 
 const DashboardWidgetActionsContext = React.createContext({

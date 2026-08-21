@@ -6,6 +6,8 @@ export const DASHBOARD_WIDGETS = {
   upcoming: { minW: 2, editorMinW: 3, minH: 3, maxW: 12, maxH: 10 },
   attention: { minW: 4, editorMinW: 4, minH: 3, maxW: 12, maxH: 10 },
   gantt: { minW: 6, editorMinW: 6, minH: 5, maxW: 12, maxH: 12 },
+  blachereProducts: { minW: 3, editorMinW: 3, minH: 4, maxW: 12, maxH: 10 },
+  codexUsage: { minW: 4, editorMinW: 4, minH: 4, maxW: 6, maxH: 6 },
 };
 
 export const GANTT_ZOOM_LEVELS = ['day', 'week', 'month', 'quarter'];
@@ -43,6 +45,8 @@ export const createDefaultDashboardLayout = () => [
   { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
   { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
   { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
+  { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 10, w: 12, h: 5 },
+  { id: 'codex-usage', type: 'codexUsage', x: 0, y: 15, w: 4, h: 4 },
 ];
 
 export const normalizeDashboardLayout = (layout) => {

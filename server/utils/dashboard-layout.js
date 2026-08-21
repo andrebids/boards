@@ -6,6 +6,8 @@ const WIDGETS = {
   upcoming: { minW: 2, minH: 3, maxW: 12, maxH: 10 },
   attention: { minW: 4, minH: 3, maxW: 12, maxH: 10 },
   gantt: { minW: 6, minH: 5, maxW: 12, maxH: 12 },
+  blachereProducts: { minW: 3, minH: 4, maxW: 12, maxH: 10 },
+  codexUsage: { minW: 4, minH: 4, maxW: 6, maxH: 6 },
 };
 
 const GANTT_ZOOM_LEVELS = new Set(['day', 'week', 'month', 'quarter']);

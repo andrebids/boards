@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import DashboardGanttWidget from './DashboardGanttWidget';
+import DashboardBlachereProductsWidget from './DashboardBlachereProductsWidget';
+import DashboardCodexUsageWidget from './DashboardCodexUsageWidget';
 
 import styles from './DashboardWidgetContent.module.scss';
 
@@ -13,6 +15,14 @@ const DashboardWidgetContent = React.memo(({ widget }) => {
         zoomLevel={widget.config.zoomLevel}
       />
     );
+  }
+
+  if (widget.type === 'blachereProducts') {
+    return <DashboardBlachereProductsWidget />;
+  }
+
+  if (widget.type === 'codexUsage') {
+    return <DashboardCodexUsageWidget />;
   }
 
   return (

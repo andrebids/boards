@@ -25,8 +25,28 @@ describe('dashboard layout', () => {
         { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
         { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
         { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
+        { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 10, w: 12, h: 5 },
+        { id: 'codex-usage', type: 'codexUsage', x: 0, y: 15, w: 4, h: 4 },
       ]),
-    ).to.have.length(7);
+    ).to.have.length(9);
+  });
+
+  it('accepts the Blachere Products task list without configuration', () => {
+    expect(
+      normalizeDashboardLayout([
+        { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 },
+      ]),
+    ).to.deep.equal([
+      { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 },
+    ]);
+  });
+
+  it('accepts a Codex usage widget without local connection details', () => {
+    expect(
+      normalizeDashboardLayout([
+        { id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 },
+      ]),
+    ).to.deep.equal([{ id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 }]);
   });
 
   it('rejects duplicate ids and widgets outside their permitted size', () => {
