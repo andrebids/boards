@@ -164,6 +164,28 @@ describe('chat utils', () => {
     expect(convertImage).toHaveBeenCalledWith(screenshot);
   });
 
+  test('replaces large JPEG attachments with a smaller WebP', async () => {
+    const photo = new File([new Uint8Array(10 * 1024 * 1024)], 'iphone-photo.JPEG', {
+      type: 'image/jpeg',
+      lastModified: 456,
+    });
+    const convertImage = jest.fn(
+      async () => new Blob([new Uint8Array(512 * 1024)], { type: 'image/webp' }),
+    );
+
+    const [preparedFile] = await prepareChatAttachmentFiles([photo], convertImage);
+
+    expect(preparedFile).toEqual(
+      expect.objectContaining({
+        name: 'iphone-photo.webp',
+        size: 512 * 1024,
+        type: 'image/webp',
+        lastModified: 456,
+      }),
+    );
+    expect(convertImage).toHaveBeenCalledWith(photo);
+  });
+
   test('keeps PNG attachments when WebP conversion does not reduce their size', async () => {
     const screenshot = new File([new Uint8Array(10 * 1024 * 1024)], 'screenshot.png', {
       type: 'image/png',

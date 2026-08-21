@@ -57,7 +57,8 @@ export const getClipboardImageFiles = (clipboardData) => {
     .filter(Boolean);
 };
 
-const CHAT_PNG_OPTIMIZATION_MIN_BYTES = 10 * 1024 * 1024;
+const CHAT_IMAGE_OPTIMIZATION_MIN_BYTES = 10 * 1024 * 1024;
+const CHAT_WEBP_OPTIMIZATION_MIME_TYPES = new Set(['image/jpeg', 'image/png']);
 const CHAT_WEBP_QUALITY = 0.9;
 
 const convertChatImageToWebp = async (file) => {
@@ -96,7 +97,10 @@ const convertChatImageToWebp = async (file) => {
 export const prepareChatAttachmentFiles = (files, convertImage = convertChatImageToWebp) =>
   Promise.all(
     files.map(async (file) => {
-      if (file.type !== 'image/png' || file.size < CHAT_PNG_OPTIMIZATION_MIN_BYTES) {
+      if (
+        !CHAT_WEBP_OPTIMIZATION_MIME_TYPES.has(file.type) ||
+        file.size < CHAT_IMAGE_OPTIMIZATION_MIN_BYTES
+      ) {
         return file;
       }
 
@@ -110,8 +114,8 @@ export const prepareChatAttachmentFiles = (files, convertImage = convertChatImag
           return file;
         }
 
-        const name = file.name.toLowerCase().endsWith('.png')
-          ? `${file.name.slice(0, -4)}.webp`
+        const name = /\.(?:jpe?g|png)$/i.test(file.name)
+          ? file.name.replace(/\.(?:jpe?g|png)$/i, '.webp')
           : `${file.name}.webp`;
 
         return new File([optimizedBlob], name, {
