@@ -42,35 +42,8 @@
     }
   }
 
-  .boardPicker {
-    align-items: center;
-    color: rgba(255, 255, 255, 0.72);
-    display: flex;
+  .backButton {
     flex: 0 0 auto;
-    font-size: 11px;
-    font-weight: 600;
-    gap: 6px;
-
-    select {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: 3px;
-      color: #fff;
-      cursor: pointer;
-      font: inherit;
-      min-width: clamp(132px, 20vw, 160px);
-      padding: 6px 28px 6px 8px;
-
-      &:focus-visible {
-        outline: 2px solid rgba(143, 166, 247, 0.9);
-        outline-offset: 2px;
-      }
-
-      option {
-        background: #242936;
-        color: #fff;
-      }
-    }
   }
 
   .emptyState,
@@ -188,18 +161,6 @@
   @media (max-width: 640px) {
     .header {
       padding: 8px 12px;
-    }
-
-    .boardPicker {
-      select {
-        min-width: clamp(128px, 44vw, 160px);
-      }
-    }
-
-    @media (max-width: 420px) {
-      .boardPicker > span {
-        display: none;
-      }
     }
 
     .boardList {

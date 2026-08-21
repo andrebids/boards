@@ -8,6 +8,7 @@ import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import { usePresentation } from './PresentationContext';
 import PresentationEditor from './PresentationEditor';
+import makePresentationBoardSearchParams from './presentationNavigation';
 
 import styles from './PresentationWorkspace.module.scss';
 
@@ -25,18 +26,10 @@ const PresentationWorkspace = React.memo(() => {
     ? presentations.find(({ boardId }) => boardId === selectedBoard.id) || null
     : null;
 
-  const handleBoardChange = useCallback(
-    ({ target: { value } }) => {
-      setCreateError(null);
-      setSearchParams(value ? { board: value } : {});
-    },
-    [setSearchParams],
-  );
-
-  const handleBoardOpen = useCallback(
+  const handleBoardSelect = useCallback(
     (boardId) => {
       setCreateError(null);
-      setSearchParams({ board: boardId });
+      setSearchParams(makePresentationBoardSearchParams(boardId));
     },
     [setSearchParams],
   );
@@ -106,7 +99,7 @@ const PresentationWorkspace = React.memo(() => {
                     </span>
                   </div>
                 </div>
-                <Button variant="secondary" onClick={() => handleBoardOpen(board.id)}>
+                <Button variant="secondary" onClick={() => handleBoardSelect(board.id)}>
                   {t(isAvailable ? 'action.open' : 'action.view')}
                 </Button>
               </li>
@@ -153,22 +146,15 @@ const PresentationWorkspace = React.memo(() => {
           <h1>{t('common.presentations')}</h1>
           <p>{t('common.presentationsDescription')}</p>
         </div>
-        {boards.length > 0 && (
-          <label htmlFor="presentation-board-picker" className={styles.boardPicker}>
-            <span>{t('common.board')}</span>
-            <select
-              id="presentation-board-picker"
-              value={selectedBoard?.id || ''}
-              onChange={handleBoardChange}
-            >
-              <option value="">{t('common.allBoards')}</option>
-              {boards.map((board) => (
-                <option key={board.id} value={board.id}>
-                  {board.name}
-                </option>
-              ))}
-            </select>
-          </label>
+        {selectedBoard && (
+          <Button
+            variant="secondary"
+            className={styles.backButton}
+            onClick={() => handleBoardSelect()}
+          >
+            <Icon name="arrow left" />
+            {t('common.allBoards')}
+          </Button>
         )}
       </header>
       {contentNode}
