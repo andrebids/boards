@@ -29,7 +29,7 @@ ENV VITE_SENTRY_TRACES_SAMPLE_RATE=$VITE_SENTRY_TRACES_SAMPLE_RATE
 
 COPY client .
 
-RUN npm install --omit=dev
+RUN npm install
 
 RUN DISABLE_ESLINT_PLUGIN=true npm run build
 
