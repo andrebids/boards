@@ -10,6 +10,10 @@ on:
         description: 'Branch ou commit a construir; vazio usa a ref atual'
         required: false
         default: ''
+      registry_repository:
+        description: 'Package GHCR de destino; use boards quando o host só tem acesso a esse package'
+        required: false
+        default: 'boards-cryptpad'
 
 jobs:
   build:
@@ -40,6 +44,6 @@ jobs:
           context: infra/cryptpad
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/boards-cryptpad:${{ inputs.image_tag }}
+          tags: ghcr.io/${{ github.repository_owner }}/${{ inputs.registry_repository }}:${{ inputs.image_tag }}
           cache-from: type=gha,scope=cryptpad
           cache-to: type=gha,mode=max,scope=cryptpad
