@@ -10,34 +10,32 @@
   }
 
   .button {
-    background: transparent;
+    align-self: start;
+    align-items: center;
+    background: rgba(147, 197, 253, 0.12);
     box-shadow: none;
-    height: 22px;
-    width: 22px;
-    line-height: 22px;
-    min-height: auto;
-    padding: 0;
-    transition: color 0.15s ease;
     color: #93c5fd;
     display: inline-flex !important;
-    align-items: center;
+    height: 24px;
     justify-content: center;
-    border-radius: 4px;
+    line-height: 24px;
+    min-height: auto;
+    padding: 0;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+    width: 24px;
+    border-radius: 6px;
     position: static;
     z-index: 1;
     text-align: center;
 
-    /* centralização simplificada do ícone */
     > i.icon {
-      position: absolute !important;
-      top: 50% !important;
-      left: 50% !important;
-      transform: translate(-50%, -50%) !important;
       margin: 0 !important;
-      width: 14px !important;
-      height: 14px !important;
+      position: static !important;
+      transform: none !important;
+      font-size: 13px;
       line-height: 1 !important;
-      font-size: 14px;
       text-align: center;
     }
 
@@ -49,9 +47,14 @@
     }
 
     &:hover {
-      background: transparent !important;
+      background: rgba(147, 197, 253, 0.2) !important;
       box-shadow: none !important;
-      color: #bfdbfe;
+      color: #dbeafe;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #93c5fd;
+      outline-offset: 1px;
     }
 
     &::before,
@@ -94,14 +97,14 @@
   }
 
   .wrapper {
-    align-items: center;
+    align-items: start;
     background: rgba(255, 255, 255, 0.055);
     border: 0;
     border-radius: 8px;
     box-shadow: none;
     column-gap: 8px;
     display: grid;
-    grid-template-columns: 32px minmax(0, 1fr) 22px;
+    grid-template-columns: 28px minmax(0, 1fr) 24px;
     margin: 2px 0 0;
     padding: 8px 8px 8px 10px;
     transition: background 0.2s ease, border-color 0.2s ease;
