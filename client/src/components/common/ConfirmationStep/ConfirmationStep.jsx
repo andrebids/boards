@@ -22,6 +22,7 @@ const ConfirmationStep = React.memo(
   ({
     title,
     content,
+    contentValues,
     buttonContent,
     variant,
     typeValue,
@@ -67,10 +68,8 @@ const ConfirmationStep = React.memo(
           })}
         </Popup.Header>
         <Popup.Content>
-          <div className={styles.content}>{t(content)}</div>
-          {typeContent && (
-            <div className={styles.content}>{t(typeContent)}</div>
-          )}
+          <div className={styles.content}>{t(content, contentValues)}</div>
+          {typeContent && <div className={styles.content}>{t(typeContent)}</div>}
           <Form onSubmit={handleSubmit}>
             {typeValue && (
               <Input
@@ -84,22 +83,20 @@ const ConfirmationStep = React.memo(
                 onChange={handleFieldChange}
               />
             )}
-            <Button
-              fullWidth
-              type="submit"
-              variant={variant}
-              content={t(buttonContent)}
-            />
+            <Button fullWidth type="submit" variant={variant} content={t(buttonContent)} />
           </Form>
         </Popup.Content>
       </>
     );
-  }
+  },
 );
 
 ConfirmationStep.propTypes = {
   title: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
+  contentValues: PropTypes.objectOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool]),
+  ),
   buttonContent: PropTypes.string.isRequired,
   typeValue: PropTypes.string,
   typeContent: PropTypes.string,
@@ -109,6 +106,7 @@ ConfirmationStep.propTypes = {
 };
 
 ConfirmationStep.defaultProps = {
+  contentValues: undefined,
   typeValue: undefined,
   typeContent: undefined,
   onBack: undefined,

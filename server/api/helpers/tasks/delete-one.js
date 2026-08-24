@@ -5,6 +5,7 @@
 
 const _ = require('lodash');
 const Action = require('../../models/Action');
+const { POSITION_GAP } = require('../../../constants');
 
 module.exports = {
   inputs: {
@@ -46,17 +47,53 @@ module.exports = {
     const childTasks = await Task.qm.getByTaskListId(inputs.taskList.id, {
       parentTaskId: inputs.record.id,
     });
+    const rootTasks = childTasks.length
+      ? await Task.qm.getByTaskListId(inputs.taskList.id, {
+          exceptIdOrIds: inputs.record.id,
+          parentTaskId: null,
+        })
+      : [];
+    let insertionPosition = inputs.record.position;
 
     // Preserve child tasks when their parent is removed and keep connected clients in sync.
     // eslint-disable-next-line no-restricted-syntax
     for (const childTask of childTasks) {
+      const { position, repositions } = sails.helpers.utils.insertToPositionables(
+        insertionPosition,
+        rootTasks,
+      );
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const reposition of repositions) {
+        // eslint-disable-next-line no-await-in-loop
+        const repositionedTask = await Task.qm.updateOne(reposition.record.id, {
+          position: reposition.position,
+        });
+        const rootTaskIndex = rootTasks.findIndex(({ id }) => id === reposition.record.id);
+        rootTasks[rootTaskIndex] = repositionedTask;
+        sails.sockets.broadcast(`board:${inputs.board.id}`, 'taskUpdate', {
+          item: repositionedTask,
+        });
+      }
+
       // eslint-disable-next-line no-await-in-loop
       const promotedTask = await Task.qm.updateOne(childTask.id, {
         parentTaskId: null,
+        position,
       });
       sails.sockets.broadcast(`board:${inputs.board.id}`, 'taskUpdate', {
         item: promotedTask,
       });
+
+      rootTasks.push(promotedTask);
+      rootTasks.sort(
+        (taskA, taskB) => taskA.position - taskB.position || taskA.id.localeCompare(taskB.id),
+      );
+      const promotedTaskIndex = rootTasks.findIndex(({ id }) => id === promotedTask.id);
+      const nextTask = rootTasks[promotedTaskIndex + 1];
+      insertionPosition = nextTask
+        ? position + (nextTask.position - position) / 2
+        : position + POSITION_GAP;
     }
     const task = await sails.models.task.qm.deleteOne(inputs.record.id);
 

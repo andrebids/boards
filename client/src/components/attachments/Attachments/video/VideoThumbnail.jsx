@@ -9,42 +9,67 @@ import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
 import { Icon } from 'semantic-ui-react';
 
+import getVideoThumbnailState from './get-video-thumbnail-state';
+
 import styles from './VideoThumbnail.module.scss';
 
 var VideoThumbnail = React.memo(function VideoThumbnail(props) {
   var attachment = props.attachment;
   var size = props.size || '360';
   var t = useTranslation()[0];
-  var loadingState = React.useState(true);
-  var isLoading = loadingState[0];
-  var setIsLoading = loadingState[1];
-  var errorState = React.useState(false);
-  var hasError = errorState[0];
-  var setHasError = errorState[1];
+  const [loadedThumbnailUrl, setLoadedThumbnailUrl] = React.useState(null);
+  const [failedThumbnailUrl, setFailedThumbnailUrl] = React.useState(null);
 
-    var thumbnailUrl = React.useMemo(function() {
-    if (!attachment.data.thumbnailUrls) {
-      return null;
-    }
+  const thumbnailUrl = React.useMemo(
+    () => {
+      if (!attachment.data.thumbnailUrls) {
+        return null;
+      }
 
-    // Usar thumbnail do tamanho especificado (360 ou 720)
-    if (size === '720') {
-      return attachment.data.thumbnailUrls.outside720 || null;
-    }
-    return attachment.data.thumbnailUrls.outside360 || null;
-  }, [attachment.data.thumbnailUrls, size]);
+      // Usar thumbnail do tamanho especificado (360 ou 720)
+      if (size === '720') {
+        return attachment.data.thumbnailUrls.outside720 || null;
+      }
+      return attachment.data.thumbnailUrls.outside360 || null;
+    },
+    [attachment.data.thumbnailUrls, size],
+  );
 
-  var handleLoad = function() {
-    setIsLoading(false);
-    setHasError(false);
+  const isLoading = Boolean(thumbnailUrl && loadedThumbnailUrl !== thumbnailUrl);
+  const hasError = Boolean(thumbnailUrl && failedThumbnailUrl === thumbnailUrl);
+  const state = getVideoThumbnailState({
+    status: attachment.data.video && attachment.data.video.status,
+    thumbnailUrl,
+    hasError,
+  });
+
+  const handleLoad = () => {
+    setLoadedThumbnailUrl(thumbnailUrl);
+    setFailedThumbnailUrl(null);
   };
 
-  var handleError = function() {
-    setIsLoading(false);
-    setHasError(true);
+  const handleError = () => {
+    setFailedThumbnailUrl(thumbnailUrl);
   };
 
-  if (!thumbnailUrl) {
+  if (state === 'processing') {
+    return React.createElement(
+      'div',
+      {
+        className: styles.container,
+        role: 'status',
+        'aria-live': 'polite',
+      },
+      React.createElement(
+        'div',
+        { className: styles.loading },
+        React.createElement('div', { className: styles.spinner, 'aria-hidden': 'true' }),
+        React.createElement('span', null, t('common.generatingVideoPreview')),
+      ),
+    );
+  }
+
+  if (state === 'unavailable') {
     return React.createElement(
       'div',
       { className: classNames(styles.container, styles.error) },
@@ -56,7 +81,7 @@ var VideoThumbnail = React.memo(function VideoThumbnail(props) {
     );
   }
 
-  if (hasError) {
+  if (state === 'error') {
     return React.createElement(
       'div',
       { className: classNames(styles.container, styles.error) },

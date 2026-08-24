@@ -71,6 +71,10 @@ export default {
         'Are you sure you want to delete this notification service?',
       areYouSureYouWantToDeleteThisProject: 'Are you sure you want to delete this project?',
       areYouSureYouWantToDeleteThisTask: 'Are you sure you want to delete this task?',
+      areYouSureYouWantToDeleteThisTaskWithSubtasks_one:
+        'This task has {{count}} subtask. Delete the parent task? The subtask will be kept as a regular task.',
+      areYouSureYouWantToDeleteThisTaskWithSubtasks_other:
+        'This task has {{count}} subtasks. Delete the parent task? The subtasks will be kept as regular tasks.',
       areYouSureYouWantToDeleteThisTaskList: 'Are you sure you want to delete this task list?',
       areYouSureYouWantToDeleteThisUser: 'Are you sure you want to delete this user?',
       areYouSureYouWantToEmptyTrash: 'Are you sure you want to empty the trash?',
@@ -637,6 +641,7 @@ export default {
       activityLogMessage: '<0>{{user}}</0> performed an action on card <2>{{card}}</2>',
       video: 'Video',
       loading: 'Loading...',
+      generatingVideoPreview: 'Generating preview...',
       loadingVideoPreview: 'Loading video preview...',
       noVideoPreviewAvailable: 'No preview available',
       errorLoadingVideoPreview: 'Unable to load preview',

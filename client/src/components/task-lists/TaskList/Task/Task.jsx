@@ -244,6 +244,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
                           )}
                           <ActionsPopup
                             taskId={id}
+                            childTaskCount={childTasks.length}
                             canEditTask={isEditable}
                             onNameEdit={handleNameEdit}
                             onAddSubtask={isSubtask ? undefined : handleAddSubtask}

@@ -56,6 +56,10 @@ export default merge({}, enUSCore, {
         'Êtes-vous sûr de vouloir supprimer ce projet ?',
       areYouSureYouWantToDeleteThisTask:
         'Êtes-vous sûr de vouloir supprimer cette tâche ?',
+      areYouSureYouWantToDeleteThisTaskWithSubtasks_one:
+        'Cette tâche contient {{count}} sous-tâche. Supprimer la tâche parente ? La sous-tâche sera conservée comme tâche normale.',
+      areYouSureYouWantToDeleteThisTaskWithSubtasks_other:
+        'Cette tâche contient {{count}} sous-tâches. Supprimer la tâche parente ? Les sous-tâches seront conservées comme tâches normales.',
       areYouSureYouWantToDeleteThisUser:
         'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
       areYouSureYouWantToLeaveProject:
@@ -433,6 +437,7 @@ export default merge({}, enUSCore, {
         '<0>{{user}}</0> a effectué une action sur la carte <2>{{card}}</2>',
       video: 'Vidéo',
       loading: 'Chargement...',
+      generatingVideoPreview: 'Génération de l’aperçu...',
       loadingVideoPreview: 'Chargement de l’aperçu vidéo...',
       noVideoPreviewAvailable: 'Aucun aperçu disponible',
       errorLoadingVideoPreview: 'Impossible de charger l’aperçu',

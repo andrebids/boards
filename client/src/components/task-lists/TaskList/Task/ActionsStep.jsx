@@ -18,6 +18,7 @@ import ConfirmationStep from '../../../common/ConfirmationStep';
 import Paths from '../../../../constants/Paths';
 import selectors from '../../../../selectors';
 import { useGantt } from '../../../gantt';
+import { getTaskDeleteConfirmation } from './ActionsStep.utils';
 
 import styles from './ActionsStep.module.scss';
 
@@ -25,7 +26,8 @@ const StepTypes = {
   DELETE: 'DELETE',
 };
 
-const ActionsStep = React.memo(({ taskId, canEditTask, onNameEdit, onAddSubtask, onClose }) => {
+const ActionsStep = React.memo((props) => {
+  const { taskId, childTaskCount, canEditTask, onNameEdit, onAddSubtask, onClose } = props;
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [step, openStep, handleBack] = useSteps();
@@ -36,6 +38,7 @@ const ActionsStep = React.memo(({ taskId, canEditTask, onNameEdit, onAddSubtask,
   const navigate = useNavigate();
   const linkedItem = linkedItemsByTaskId[taskId];
   const canUseGantt = Boolean(plan?.isEnabled && canEditGantt && isEditModeEnabled);
+  const deleteConfirmation = getTaskDeleteConfirmation(childTaskCount);
 
   const handleDeleteConfirm = useCallback(() => {
     dispatch(entryActions.deleteTask(taskId));
@@ -77,7 +80,8 @@ const ActionsStep = React.memo(({ taskId, canEditTask, onNameEdit, onAddSubtask,
     return (
       <ConfirmationStep
         title="common.deleteTask"
-        content="common.areYouSureYouWantToDeleteThisTask"
+        content={deleteConfirmation.content}
+        contentValues={deleteConfirmation.contentValues}
         buttonContent="action.deleteTask"
         onConfirm={handleDeleteConfirm}
         onBack={handleBack}
@@ -130,6 +134,7 @@ const ActionsStep = React.memo(({ taskId, canEditTask, onNameEdit, onAddSubtask,
 
 ActionsStep.propTypes = {
   taskId: PropTypes.string.isRequired,
+  childTaskCount: PropTypes.number.isRequired,
   canEditTask: PropTypes.bool.isRequired,
   onNameEdit: PropTypes.func.isRequired,
   onAddSubtask: PropTypes.func,

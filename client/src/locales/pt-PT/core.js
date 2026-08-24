@@ -328,6 +328,10 @@ export default {
         'Tem certeza de que deseja excluir este serviço de notificação?',
       areYouSureYouWantToDeleteThisProject: 'Tem certeza de que deseja apagar este projeto?',
       areYouSureYouWantToDeleteThisTask: 'Tem certeza de que deseja excluir esta tarefa?',
+      areYouSureYouWantToDeleteThisTaskWithSubtasks_one:
+        'Esta tarefa tem {{count}} subtarefa. Eliminar a tarefa principal? A subtarefa será mantida como tarefa normal.',
+      areYouSureYouWantToDeleteThisTaskWithSubtasks_other:
+        'Esta tarefa tem {{count}} subtarefas. Eliminar a tarefa principal? As subtarefas serão mantidas como tarefas normais.',
       areYouSureYouWantToDeleteThisTaskList:
         'Tem certeza de que deseja excluir esta lista de tarefas?',
       areYouSureYouWantToDeleteThisUser: 'Tem a certeza de que deseja eliminar este utilizador?',
@@ -891,6 +895,7 @@ export default {
       writeComment: 'Escreva um comentário...',
       video: 'Vídeo',
       loading: 'A carregar...',
+      generatingVideoPreview: 'A gerar miniatura...',
       loadingVideoPreview: 'A carregar pré-visualização do vídeo...',
       noVideoPreviewAvailable: 'Nenhuma pré-visualização disponível',
       errorLoadingVideoPreview: 'Erro ao carregar pré-visualização',
