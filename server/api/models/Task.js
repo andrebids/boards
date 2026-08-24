@@ -49,7 +49,6 @@ module.exports = {
     },
     parentTaskId: {
       model: 'Task',
-      allowNull: true,
       columnName: 'parent_task_id',
     },
   },

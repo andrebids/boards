@@ -48,28 +48,4 @@
     margin-top: 6px;
     padding-bottom: 8px;
   }
-
-  .wrapperSubtask {
-    margin-left: 40px;
-    position: relative;
-    width: calc(100% - 40px);
-
-    &:before {
-      border-left: 1px solid var(--card-modal-border, #e3e7ec);
-      bottom: 0;
-      content: '';
-      left: -21px;
-      position: absolute;
-      top: -6px;
-    }
-
-    &:after {
-      border-top: 1px solid var(--card-modal-border, #e3e7ec);
-      content: '';
-      left: -21px;
-      position: absolute;
-      top: 16px;
-      width: 21px;
-    }
-  }
 }

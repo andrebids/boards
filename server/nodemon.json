@@ -11,5 +11,5 @@
   "ext": "js,json",
   "verbose": true,
   "delay": 1000,
-  "legacyWatch": false
+  "legacyWatch": true
 }

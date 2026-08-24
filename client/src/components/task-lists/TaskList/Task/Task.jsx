@@ -279,7 +279,6 @@ const Task = React.memo(({ id, index, isSubtask }) => {
         <AddTask
           taskListId={task.taskListId}
           parentTaskId={id}
-          isChild
           isOpened={isAddSubtaskOpened}
           onClose={handleAddSubtaskClose}
         >
