@@ -339,6 +339,8 @@ export default merge({}, enUSCore, {
         '<0>{{user}}</0> a ajouté cette carte à {{list}}',
       userLeftNewCommentToCard:
         '<0>{{user}}</0> a laissé un nouveau commentaire {{comment}} à <2>{{card}}</2>',
+      userReactedToYourCommentOnCard:
+        '<0>{{user}}</0> a réagi {{emoji}} à votre commentaire sur <2>{{card}}</2>',
       userAddedYouToBoard:
         '<0>{{user}}</0> vous a ajouté au tableau <2>{{board}}</2>',
       userMovedCardFromListToList:
