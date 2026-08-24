@@ -67,7 +67,11 @@ module.exports = {
     const customFieldValues = await CustomFieldValue.qm.getByCardId(inputs.record.id);
 
     const ids = await sails.helpers.utils.generateIds(
-      taskLists.length + attachments.length + customFieldGroups.length + customFields.length,
+      taskLists.length +
+        tasks.length +
+        attachments.length +
+        customFieldGroups.length +
+        customFields.length,
     );
 
     const duplicated = await sails.getDatastore().transaction(async (db) => {
@@ -132,9 +136,15 @@ module.exports = {
       });
       const nextTaskLists = await TaskList.qm.create(nextTaskListsValues).usingConnection(db);
 
+      const nextTaskIdByTaskId = {};
+      tasks.forEach((task) => {
+        nextTaskIdByTaskId[task.id] = ids.shift();
+      });
       const nextTasksValues = tasks.map((task) => ({
         ..._.pick(task, ['assigneeUserId', 'position', 'name', 'isCompleted']),
+        id: nextTaskIdByTaskId[task.id],
         taskListId: nextTaskListIdByTaskListId[task.taskListId],
+        parentTaskId: task.parentTaskId ? nextTaskIdByTaskId[task.parentTaskId] : null,
       }));
       const nextTasks = await Task.qm.create(nextTasksValues).usingConnection(db);
 

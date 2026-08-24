@@ -87,8 +87,8 @@ const runFileUpload = async (file, inputOverrides = {}) => {
 };
 
 describe('attachment upload limit', () => {
-  it('accepts regular attachments up to 250 MiB by default', () => {
-    expect(custom.attachmentMaxBytes).to.equal(250 * 1024 * 1024);
+  it('accepts regular attachments up to 500 MiB by default', () => {
+    expect(custom.attachmentMaxBytes).to.equal(500 * 1024 * 1024);
   });
 
   it('keeps general design attachments at 500 MiB by default', () => {
@@ -199,22 +199,22 @@ describe('attachment upload limit', () => {
     expect(result.uploadError).to.equal('O ficheiro de design não pode ter mais de 500 MB.');
   });
 
-  it('rejects a generic attachment above the regular 250 MiB limit', async () => {
+  it('rejects a generic attachment above the regular 500 MiB limit', async () => {
     const result = await runFileUpload({
       fd: path.join(__dirname, 'missing-document.pdf'),
       filename: 'document.pdf',
-      size: 251 * 1024 * 1024,
+      size: 501 * 1024 * 1024,
     });
 
     expect(result.processedFile).to.equal(undefined);
-    expect(result.uploadError).to.equal('O ficheiro não pode ter mais de 250 MB.');
+    expect(result.uploadError).to.equal('O ficheiro não pode ter mais de 500 MB.');
   });
 
-  it('accepts a high-quality TIFF image up to 250 MiB', async () => {
+  it('accepts a high-quality TIFF image up to 500 MiB', async () => {
     const file = {
       fd: path.join(__dirname, 'missing-high-quality.tiff'),
       filename: 'high-quality.tiff',
-      size: 250 * 1024 * 1024,
+      size: 500 * 1024 * 1024,
     };
 
     const result = await runFileUpload(file);

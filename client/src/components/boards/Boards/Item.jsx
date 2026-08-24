@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Draggable } from '@hello-pangea/dnd';
 import { Icon } from 'semantic-ui-react';
 import { Button } from '../../../lib/custom-ui';
@@ -16,11 +16,13 @@ import { Button } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import Paths from '../../../constants/Paths';
+import { makePathWithPresentationBoard } from '../../presentation/presentationNavigation';
 
 import styles from './Item.module.scss';
 
 const Item = React.memo(({ id, index }) => {
   const [t] = useTranslation();
+  const [searchParams] = useSearchParams();
   const selectBoardById = useMemo(() => selectors.makeSelectBoardById(), []);
 
   const selectNotificationsTotalByBoardId = useMemo(
@@ -52,6 +54,10 @@ const Item = React.memo(({ id, index }) => {
     dispatch(entryActions.openBoardSettingsModal(id));
   }, [id, dispatch]);
 
+  const boardPath = makePathWithPresentationBoard(
+    Paths.BOARDS.replace(':id', id),
+    searchParams.get('board'),
+  );
 
   return (
     <Draggable
@@ -71,7 +77,7 @@ const Item = React.memo(({ id, index }) => {
             {board.isPersisted ? (
               <>
                 <Link
-                  to={Paths.BOARDS.replace(':id', id)}
+                  to={boardPath}
                   title={board.name}
                   className={styles.link}
                 >

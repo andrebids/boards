@@ -104,7 +104,7 @@
       border: solid #fff;
       border-width: 0 2px 2px 0;
       color: transparent !important;
-      content: '' !important;
+      content: "" !important;
       height: 8px !important;
       left: 6px !important;
       top: 3px !important;
@@ -192,16 +192,10 @@
 
     &:hover,
     &:focus-within {
-      :global(.ui.checkbox).checkbox
-        input:not(:checked)
-        ~ label:before {
+      :global(.ui.checkbox).checkbox input:not(:checked) ~ label:before {
         background: var(--card-modal-surface, #fff) !important;
         border: 1px solid
-          color-mix(
-            in oklab,
-            var(--card-modal-muted, #8a94a3) 45%,
-            transparent
-          ) !important;
+          color-mix(in oklab, var(--card-modal-muted, #8a94a3) 45%, transparent) !important;
       }
     }
   }
@@ -210,5 +204,30 @@
     background: var(--card-modal-surface, #fff);
     border-color: var(--card-modal-accent, #bfdbfe);
     box-shadow: 0 8px 24px rgba(31, 41, 55, 0.12);
+  }
+
+  .wrapperSubtask {
+    margin-left: 24px;
+    width: calc(100% - 24px);
+
+    &:before {
+      border-left: 1px solid var(--card-modal-border, #e3e7ec);
+      bottom: 0;
+      content: "";
+      left: -13px;
+      position: absolute;
+      top: 0;
+    }
+  }
+
+  .subtaskProgress {
+    color: var(--card-modal-muted, #7b8494);
+    float: right;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 20px;
+    margin-left: 8px;
+    white-space: nowrap;
   }
 }

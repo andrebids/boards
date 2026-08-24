@@ -23,4 +23,17 @@
     color: #6b7280;
     text-decoration: line-through;
   }
+
+  .wrapperSubtask {
+    margin-left: 14px;
+    padding-left: 16px;
+
+    &:before {
+      border-left: 1px solid rgba(156, 163, 175, 0.45);
+      bottom: 5px;
+      content: "";
+      left: 10px;
+      top: 0;
+    }
+  }
 }

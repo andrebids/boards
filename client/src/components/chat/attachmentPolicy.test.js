@@ -41,7 +41,9 @@ describe('chat attachment policy', () => {
     expect(isChatAttachmentAllowed({ name: 'README' })).toBeFalsy();
   });
 
-  test('rejects regular attachments larger than 250 MiB before upload', () => {
+  test('rejects regular attachments larger than 500 MiB before upload', () => {
+    expect(CHAT_ATTACHMENT_MAX_BYTES).toBe(500 * 1024 * 1024);
+
     expect(
       isChatAttachmentTooLarge({
         name: 'document.pdf',

@@ -25,7 +25,7 @@ const DEFAULT_DATA = {
 
 const MULTIPLE_REGEX = /\s*\r?\n\s*/;
 
-const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
+const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onClose }) => {
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [data, handleFieldChange, setData] = useForm(DEFAULT_DATA);
@@ -52,17 +52,18 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
             entryActions.createTask(taskListId, {
               ...cleanData,
               name,
+              parentTaskId,
             }),
           );
         });
       } else {
-        dispatch(entryActions.createTask(taskListId, cleanData));
+        dispatch(entryActions.createTask(taskListId, { ...cleanData, parentTaskId }));
       }
 
       setData(DEFAULT_DATA);
       focusNameField();
     },
-    [taskListId, dispatch, data, setData, focusNameField, nameFieldRef],
+    [taskListId, parentTaskId, dispatch, data, setData, focusNameField, nameFieldRef],
   );
 
   const handleSubmit = useCallback(() => {
@@ -137,8 +138,13 @@ const AddTask = React.memo(({ children, taskListId, isOpened, onClose }) => {
 AddTask.propTypes = {
   children: PropTypes.element.isRequired,
   taskListId: PropTypes.string.isRequired,
+  parentTaskId: PropTypes.string,
   isOpened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+};
+
+AddTask.defaultProps = {
+  parentTaskId: undefined,
 };
 
 export default AddTask;

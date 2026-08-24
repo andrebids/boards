@@ -5,7 +5,7 @@
 
 import upperFirst from 'lodash/upperFirst';
 import camelCase from 'lodash/camelCase';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
@@ -19,7 +19,7 @@ import { usePopup } from '../../../lib/popup';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import DroppableTypes from '../../../constants/DroppableTypes';
-import { BoardMembershipRoles, ListTypes } from '../../../constants/Enums';
+import { AttachmentTypes, BoardMembershipRoles, ListTypes } from '../../../constants/Enums';
 import { ListTypeIcons } from '../../../constants/Icons';
 import EditName from './EditName';
 import ActionsStep from './ActionsStep';
@@ -31,6 +31,12 @@ import {
   buildProjectCardDataFromFile,
   processSupportedFiles,
 } from '../../../utils/file-helpers';
+import handleAttachmentFiles from '../../../utils/attachment-upload';
+import {
+  getCardIdFromFileDropTarget,
+  getFileDropTarget,
+  NEW_CARD_FILE_DROP_TARGET,
+} from '../../../utils/file-drop-target';
 
 import styles from './List.module.scss';
 import globalStyles from '../../../styles.module.scss';
@@ -97,10 +103,9 @@ const List = React.memo(({ id, index }) => {
   const [t] = useTranslation();
   const [isEditNameOpened, setIsEditNameOpened] = useState(false);
   const [isAddCardOpened, setIsAddCardOpened] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const [fileDropTarget, setFileDropTarget] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0 });
-  const [dragFileCount, setDragFileCount] = useState(0);
 
   const wrapperRef = useRef(null);
   const cardsWrapperRef = useRef(null);
@@ -148,95 +153,113 @@ const List = React.memo(({ id, index }) => {
     setIsEditNameOpened(false);
   }, []);
 
-  const handleDragOver = useCallback(event => {
-    if (event.dataTransfer?.types?.includes('Files')) {
-      event.preventDefault();
-      event.stopPropagation();
-      const fileCount = event.dataTransfer.files.length;
-      setDragFileCount(fileCount);
-      setIsDragOver(true);
-    }
+  const resetFileDropState = useCallback(() => {
+    setFileDropTarget(null);
   }, []);
 
-  const handleDragLeave = useCallback(event => {
+  const handleNewCardFiles = useCallback(
+    async files => {
+      const processedFiles = processSupportedFiles(handleAttachmentFiles(files, { t }));
+      if (processedFiles.length === 0) return;
+
+      setIsProcessing(true);
+      setProcessingProgress({ current: 0, total: processedFiles.length });
+
+      try {
+        for (let i = 0; i < processedFiles.length; i += 1) {
+          const fileData = processedFiles[i];
+          const cardData = buildProjectCardDataFromFile(fileData);
+
+          setProcessingProgress({ current: i + 1, total: processedFiles.length });
+          dispatch(entryActions.createCardWithAttachment(id, cardData, fileData.file));
+
+          if (i < processedFiles.length - 1) {
+            await new Promise((resolve) => {
+              setTimeout(resolve, 100);
+            });
+          }
+        }
+      } finally {
+        setIsProcessing(false);
+        setProcessingProgress({ current: 0, total: 0 });
+      }
+    },
+    [dispatch, id, t],
+  );
+
+  const handleFileDragOverCapture = useCallback(event => {
     if (!event.dataTransfer?.types?.includes('Files')) {
       return;
     }
 
     event.preventDefault();
-    event.stopPropagation();
-
-    // Só remove o estado de drag se realmente sair da área
-    if (!event.currentTarget.contains(event.relatedTarget)) {
-      setIsDragOver(false);
-      setDragFileCount(0);
-    }
+    setFileDropTarget(getFileDropTarget(event.target));
   }, []);
 
-  const handleDrop = useCallback(
+  const handleFileDragLeaveCapture = useCallback(
+    event => {
+      if (!event.dataTransfer?.types?.includes('Files')) {
+        return;
+      }
+
+      if (!event.currentTarget.contains(event.relatedTarget)) {
+        resetFileDropState();
+      }
+    },
+    [resetFileDropState],
+  );
+
+  const handleFileDropCapture = useCallback(
     async event => {
       if (!event.dataTransfer?.types?.includes('Files')) {
         return;
       }
 
       event.preventDefault();
-      event.stopPropagation();
-      setIsDragOver(false);
 
+      const target = getFileDropTarget(event.target);
+      const cardId = getCardIdFromFileDropTarget(target);
       const files = Array.from(event.dataTransfer.files);
-      if (files.length === 0) return;
 
-      const processedFiles = processSupportedFiles(files);
-      if (processedFiles.length === 0) return;
+      resetFileDropState();
 
-      console.log('Processando arquivos:', processedFiles);
+      if (cardId) {
+        event.stopPropagation();
+        handleAttachmentFiles(files, {
+          onAccepted: (file) => {
+            dispatch(
+              entryActions.createAttachment(cardId, {
+                file,
+                name: file.name,
+                type: AttachmentTypes.FILE,
+              }),
+            );
+          },
+          t,
+        });
 
-      setIsProcessing(true);
-      setProcessingProgress({ current: 0, total: processedFiles.length });
+        return;
+      }
 
-      try {
-        // Processar arquivos sequencialmente para melhor controle
-        for (let i = 0; i < processedFiles.length; i++) {
-          const fileData = processedFiles[i];
-          const cardData = buildProjectCardDataFromFile(fileData);
-
-          console.log(`🎴 Criando card ${i + 1}/${processedFiles.length}:`, cardData);
-          console.log(
-            '📄 Tipo de arquivo:',
-            fileData.isImage ? 'Imagem (capa)' : 'Anexo'
-          );
-          console.log('📄 Arquivo:', fileData.file);
-          console.log(
-            '📄 Nome do arquivo:',
-            fileData.file ? fileData.file.name : 'undefined'
-          );
-          console.log(
-            '📄 Tamanho do arquivo:',
-            fileData.file ? fileData.file.size : 'undefined'
-          );
-
-          // Atualizar progresso
-          setProcessingProgress({ current: i + 1, total: processedFiles.length });
-
-          dispatch(
-            entryActions.createCardWithAttachment(id, cardData, fileData.file)
-          );
-
-          // Pequena pausa entre criações para evitar sobrecarga
-          if (i < processedFiles.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao processar arquivos:', error);
-      } finally {
-        setIsProcessing(false);
-        setProcessingProgress({ current: 0, total: 0 });
-        console.log('✅ Processamento finalizado');
+      if (target === NEW_CARD_FILE_DROP_TARGET && !isAddCardOpened) {
+        event.stopPropagation();
+        await handleNewCardFiles(files);
       }
     },
-    [id, dispatch]
+    [dispatch, handleNewCardFiles, isAddCardOpened, resetFileDropState, t],
   );
+
+  useEffect(() => {
+    window.addEventListener('blur', resetFileDropState);
+    window.addEventListener('dragend', resetFileDropState);
+    window.addEventListener('drop', resetFileDropState);
+
+    return () => {
+      window.removeEventListener('blur', resetFileDropState);
+      window.removeEventListener('dragend', resetFileDropState);
+      window.removeEventListener('drop', resetFileDropState);
+    };
+  }, [resetFileDropState]);
 
   const handleWrapperTransitionEnd = useTransitioning(
     wrapperRef,
@@ -269,6 +292,7 @@ const List = React.memo(({ id, index }) => {
                 id={cardId}
                 index={cardIndex}
                 className={styles.card}
+                isFileDragOver={fileDropTarget === `card:${cardId}`}
               />
             ))}
             {placeholder}
@@ -276,6 +300,7 @@ const List = React.memo(({ id, index }) => {
               <AddCard
                 isOpened={isAddCardOpened}
                 className={styles.addCard}
+                isFileDragOver={fileDropTarget === NEW_CARD_FILE_DROP_TARGET}
                 onCreate={handleCardCreate}
                 onCreateWithAttachment={handleCardCreateWithAttachment}
                 onClose={handleAddCardClose}
@@ -302,6 +327,7 @@ const List = React.memo(({ id, index }) => {
         >
           <div
             ref={wrapperRef}
+            data-file-drop-target={NEW_CARD_FILE_DROP_TARGET}
             className={classNames(
               styles.outerWrapper,
               list.color &&
@@ -312,13 +338,13 @@ const List = React.memo(({ id, index }) => {
                 LIGHT_LIST_COLORS.has(list.color) &&
                 styles.outerWrapperLight,
               isFavoritesActive && styles.outerWrapperWithFavorites,
-              isDragOver && styles.outerWrapperFileDragOver
+              !!fileDropTarget && styles.outerWrapperFileDragOver
             )}
             onTransitionEnd={handleWrapperTransitionEnd}
-            onDragEnter={canAddCard ? handleDragOver : undefined}
-            onDragOver={canAddCard ? handleDragOver : undefined}
-            onDragLeave={canAddCard ? handleDragLeave : undefined}
-            onDrop={canAddCard ? handleDrop : undefined}
+            onDragEnterCapture={canAddCard ? handleFileDragOverCapture : undefined}
+            onDragOverCapture={canAddCard ? handleFileDragOverCapture : undefined}
+            onDragLeaveCapture={canAddCard ? handleFileDragLeaveCapture : undefined}
+            onDropCapture={canAddCard ? handleFileDropCapture : undefined}
           >
             {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                          jsx-a11y/no-static-element-interactions */}
@@ -378,14 +404,14 @@ const List = React.memo(({ id, index }) => {
                 disabled={!list.isPersisted || isProcessing}
                 className={classNames(
                   styles.addCardButton,
-                  isDragOver && styles.addCardButtonDragOver,
+                  fileDropTarget === NEW_CARD_FILE_DROP_TARGET && styles.addCardButtonDragOver,
                   isProcessing && styles.addCardButtonProcessing
                 )}
                 onClick={handleAddCardClick}
               >
                 <PlusMathIcon className={styles.addCardButtonIcon} />
                 <span className={styles.addCardButtonText}>
-                  {isDragOver
+                  {fileDropTarget === NEW_CARD_FILE_DROP_TARGET
                     ? t('common.dropFilesHere')
                     : isProcessing
                       ? t('common.processingFiles')
@@ -405,16 +431,6 @@ const List = React.memo(({ id, index }) => {
                    </div>
                  )}
               </button>
-            )}
-            {isDragOver && (
-              <div className={styles.listDragOverlay}>
-                <Icon name="upload" size="large" />
-                <span>
-                  {dragFileCount > 1
-                    ? `${t('common.dropFilesHere')} (${dragFileCount})`
-                    : t('common.dropFilesHere')}
-                </span>
-              </div>
             )}
           </div>
         </div>

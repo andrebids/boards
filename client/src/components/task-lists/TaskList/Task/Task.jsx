@@ -26,15 +26,22 @@ import ActionsStep from './ActionsStep';
 import Linkify from '../../../common/Linkify';
 import UserAvatar from '../../../users/UserAvatar';
 import { useGantt } from '../../../gantt';
+import AddTask from '../AddTask';
 
 import styles from './Task.module.scss';
 
-const Task = React.memo(({ id, index }) => {
+const Task = React.memo(({ id, index, isSubtask }) => {
   const [t] = useTranslation();
   const selectTaskById = useMemo(() => selectors.makeSelectTaskById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
+  const selectTasksByTaskListId = useMemo(() => selectors.makeSelectTasksByTaskListId(), []);
 
   const task = useSelector((state) => selectTaskById(state, id));
+  const childTasks = useSelector((state) =>
+    selectTasksByTaskListId(state, task.taskListId).filter(
+      (childTask) => childTask.parentTaskId === id,
+    ),
+  );
   const isEditModeEnabled = useSelector(selectors.selectIsEditModeEnabled);
   const { plan, canEdit: canEditGantt } = useGantt();
 
@@ -60,6 +67,7 @@ const Task = React.memo(({ id, index }) => {
 
   const dispatch = useDispatch();
   const [isEditNameOpened, setIsEditNameOpened] = useState(false);
+  const [isAddSubtaskOpened, setIsAddSubtaskOpened] = useState(false);
   const [, , setIsClosableActive] = useContext(ClosableContext);
 
   const handleToggleChange = useCallback(() => {
@@ -106,6 +114,14 @@ const Task = React.memo(({ id, index }) => {
     setIsEditNameOpened(false);
   }, []);
 
+  const handleAddSubtask = useCallback(() => {
+    setIsAddSubtaskOpened(true);
+  }, []);
+
+  const handleAddSubtaskClose = useCallback(() => {
+    setIsAddSubtaskOpened(false);
+  }, []);
+
   useDidUpdate(() => {
     setIsClosableActive(isEditNameOpened);
   }, [isEditNameOpened]);
@@ -114,130 +130,157 @@ const Task = React.memo(({ id, index }) => {
   const ActionsPopup = usePopupInClosableContext(ActionsStep);
 
   return (
-    <Draggable
-      draggableId={`task:${id}`}
-      index={index}
-      isDragDisabled={isEditNameOpened || !isEditable}
-    >
-      {({ innerRef, draggableProps, dragHandleProps }, { isDragging }) => {
-        let assigneeControl = null;
-        if (isEditable) {
-          assigneeControl = (
-            <SelectAssigneePopup
-              currentUserId={task.assigneeUserId}
-              onUserSelect={handleUserSelect}
-              onUserDeselect={handleUserDeselect}
-            >
-              {task.assigneeUserId ? (
-                <UserAvatar
-                  id={task.assigneeUserId}
-                  size="tiny"
-                  className={styles.assigneeUserAvatar}
-                />
-              ) : (
-                <Button
-                  variant="secondary"
-                  type="button"
-                  aria-label={t('action.addMember')}
-                  title={t('action.addMember')}
-                  className={styles.button}
-                >
-                  <Icon fitted name="add user" size="small" />
-                </Button>
-              )}
-            </SelectAssigneePopup>
-          );
-        } else if (task.assigneeUserId) {
-          assigneeControl = (
-            <UserAvatar
-              id={task.assigneeUserId}
-              size="tiny"
-              className={styles.assigneeUserAvatar}
-            />
-          );
-        }
-
-        const contentNode = (
-          <div
-            {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
-            {...dragHandleProps} // eslint-disable-line react/jsx-props-no-spreading
-            ref={innerRef}
-            className={classNames(styles.wrapper, isDragging && styles.wrapperDragging)}
-          >
-            <span className={styles.checkboxWrapper}>
-              <Checkbox
-                aria-label={task.name}
-                checked={task.isCompleted}
-                disabled={!task.isPersisted || !canToggle}
-                className={styles.checkbox}
-                onChange={handleToggleChange}
-              />
-            </span>
-            {isEditNameOpened ? (
-              <EditName taskId={id} onClose={handleEditNameClose} />
-            ) : (
-              <div className={classNames(canEdit && styles.contentHoverable)}>
-                {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
-                                             jsx-a11y/no-static-element-interactions */}
-                <span
-                  className={classNames(styles.text, canEdit && styles.textEditable)}
-                  onClick={handleClick}
-                >
-                  <span
-                    className={classNames(styles.task, task.isCompleted && styles.taskCompleted)}
+    <>
+      <Draggable
+        draggableId={`task:${id}`}
+        index={index}
+        isDragDisabled={isSubtask || isEditNameOpened || !isEditable}
+      >
+        {({ innerRef, draggableProps, dragHandleProps }, { isDragging }) => {
+          let assigneeControl = null;
+          if (isEditable) {
+            assigneeControl = (
+              <SelectAssigneePopup
+                currentUserId={task.assigneeUserId}
+                onUserSelect={handleUserSelect}
+                onUserDeselect={handleUserDeselect}
+              >
+                {task.assigneeUserId ? (
+                  <UserAvatar
+                    id={task.assigneeUserId}
+                    size="tiny"
+                    className={styles.assigneeUserAvatar}
+                  />
+                ) : (
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    aria-label={t('action.addMember')}
+                    title={t('action.addMember')}
+                    className={styles.button}
                   >
-                    <Linkify linkStopPropagation>{task.name}</Linkify>
-                  </span>
-                </span>
-                {(task.assigneeUserId || isEditable || canUseGantt) && (
-                  <div
-                    className={classNames(
-                      styles.actions,
-                      (isEditable || canUseGantt) && styles.actionsEditable,
-                    )}
-                  >
-                    {isEditable || canUseGantt ? (
-                      <>
-                        {assigneeControl}
-                        <ActionsPopup
-                          taskId={id}
-                          canEditTask={isEditable}
-                          onNameEdit={handleNameEdit}
-                        >
-                          <Button
-                            variant="secondary"
-                            type="button"
-                            aria-label={t('action.edit')}
-                            title={t('action.edit')}
-                            className={styles.button}
-                          >
-                            <Icon fitted name="pencil" size="small" />
-                          </Button>
-                        </ActionsPopup>
-                      </>
-                    ) : (
-                      <UserAvatar
-                        id={task.assigneeUserId}
-                        size="tiny"
-                        className={styles.assigneeUserAvatar}
-                      />
-                    )}
-                  </div>
+                    <Icon fitted name="add user" size="small" />
+                  </Button>
                 )}
-              </div>
-            )}
-          </div>
-        );
+              </SelectAssigneePopup>
+            );
+          } else if (task.assigneeUserId) {
+            assigneeControl = (
+              <UserAvatar
+                id={task.assigneeUserId}
+                size="tiny"
+                className={styles.assigneeUserAvatar}
+              />
+            );
+          }
 
-        return isDragging ? ReactDOM.createPortal(contentNode, document.body) : contentNode;
-      }}
-    </Draggable>
+          const contentNode = (
+            <div
+              {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
+              {...dragHandleProps} // eslint-disable-line react/jsx-props-no-spreading
+              ref={innerRef}
+              className={classNames(
+                styles.wrapper,
+                isSubtask && styles.wrapperSubtask,
+                isDragging && styles.wrapperDragging,
+              )}
+            >
+              <span className={styles.checkboxWrapper}>
+                <Checkbox
+                  aria-label={task.name}
+                  checked={task.isCompleted}
+                  disabled={childTasks.length > 0 || !task.isPersisted || !canToggle}
+                  className={styles.checkbox}
+                  onChange={handleToggleChange}
+                />
+              </span>
+              {isEditNameOpened ? (
+                <EditName taskId={id} onClose={handleEditNameClose} />
+              ) : (
+                <div className={classNames(canEdit && styles.contentHoverable)}>
+                  {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
+                                             jsx-a11y/no-static-element-interactions */}
+                  <span
+                    className={classNames(styles.text, canEdit && styles.textEditable)}
+                    onClick={handleClick}
+                  >
+                    <span
+                      className={classNames(styles.task, task.isCompleted && styles.taskCompleted)}
+                    >
+                      <Linkify linkStopPropagation>{task.name}</Linkify>
+                    </span>
+                    {childTasks.length > 0 && (
+                      <span
+                        className={styles.subtaskProgress}
+                        aria-label={`${childTasks.filter((childTask) => childTask.isCompleted).length}/${childTasks.length}`}
+                      >
+                        {childTasks.filter((childTask) => childTask.isCompleted).length}/
+                        {childTasks.length}
+                      </span>
+                    )}
+                  </span>
+                  {(task.assigneeUserId || isEditable || canUseGantt) && (
+                    <div
+                      className={classNames(
+                        styles.actions,
+                        (isEditable || canUseGantt) && styles.actionsEditable,
+                      )}
+                    >
+                      {isEditable || canUseGantt ? (
+                        <>
+                          {assigneeControl}
+                          <ActionsPopup
+                            taskId={id}
+                            canEditTask={isEditable}
+                            onNameEdit={handleNameEdit}
+                            onAddSubtask={isSubtask ? undefined : handleAddSubtask}
+                          >
+                            <Button
+                              variant="secondary"
+                              type="button"
+                              aria-label={t('action.edit')}
+                              title={t('action.edit')}
+                              className={styles.button}
+                            >
+                              <Icon fitted name="pencil" size="small" />
+                            </Button>
+                          </ActionsPopup>
+                        </>
+                      ) : (
+                        <UserAvatar
+                          id={task.assigneeUserId}
+                          size="tiny"
+                          className={styles.assigneeUserAvatar}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+
+          return isDragging ? ReactDOM.createPortal(contentNode, document.body) : contentNode;
+        }}
+      </Draggable>
+      {!isSubtask && (
+        <AddTask
+          taskListId={task.taskListId}
+          parentTaskId={id}
+          isOpened={isAddSubtaskOpened}
+          onClose={handleAddSubtaskClose}
+        >
+          <span />
+        </AddTask>
+      )}
+    </>
   );
 });
 
 Task.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
+  isSubtask: PropTypes.bool.isRequired,
 };
 
 export default Task;

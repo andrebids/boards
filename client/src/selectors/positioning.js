@@ -12,7 +12,7 @@ import Config from '../constants/Config';
 const nextPosition = (items, index, excludedId) => {
   const filteredItems = isUndefined(excludedId)
     ? items
-    : items.filter(item => item.id !== excludedId);
+    : items.filter((item) => item.id !== excludedId);
 
   if (isUndefined(index)) {
     const lastItem = filteredItems[filteredItems.length - 1];
@@ -43,12 +43,8 @@ export const selectNextBoardPosition = createSelector(
       return projectModel;
     }
 
-    return nextPosition(
-      projectModel.getBoardsQuerySet().toRefArray(),
-      index,
-      excludedId
-    );
-  }
+    return nextPosition(projectModel.getBoardsQuerySet().toRefArray(), index, excludedId);
+  },
 );
 
 export const selectNextLabelPosition = createSelector(
@@ -63,12 +59,8 @@ export const selectNextLabelPosition = createSelector(
       return boardModel;
     }
 
-    return nextPosition(
-      boardModel.getLabelsQuerySet().toRefArray(),
-      index,
-      excludedId
-    );
-  }
+    return nextPosition(boardModel.getLabelsQuerySet().toRefArray(), index, excludedId);
+  },
 );
 
 export const selectNextListPosition = createSelector(
@@ -83,12 +75,8 @@ export const selectNextListPosition = createSelector(
       return boardModel;
     }
 
-    return nextPosition(
-      boardModel.getFiniteListsQuerySet().toRefArray(),
-      index,
-      excludedId
-    );
-  }
+    return nextPosition(boardModel.getFiniteListsQuerySet().toRefArray(), index, excludedId);
+  },
 );
 
 export const selectNextCardPosition = createSelector(
@@ -103,12 +91,8 @@ export const selectNextCardPosition = createSelector(
       return listModel;
     }
 
-    return nextPosition(
-      listModel.getFilteredCardsModelArray(),
-      index,
-      excludedId
-    );
-  }
+    return nextPosition(listModel.getFilteredCardsModelArray(), index, excludedId);
+  },
 );
 
 export const selectNextTaskListPosition = createSelector(
@@ -123,12 +107,8 @@ export const selectNextTaskListPosition = createSelector(
       return cardModel;
     }
 
-    return nextPosition(
-      cardModel.getTaskListsQuerySet().toRefArray(),
-      index,
-      excludedId
-    );
-  }
+    return nextPosition(cardModel.getTaskListsQuerySet().toRefArray(), index, excludedId);
+  },
 );
 
 export const selectNextTaskPosition = createSelector(
@@ -136,7 +116,8 @@ export const selectNextTaskPosition = createSelector(
   (_, taskListId) => taskListId,
   (_, __, index) => index,
   (_, __, ___, excludedId) => excludedId,
-  ({ TaskList }, taskListId, index, excludedId) => {
+  (_, __, ___, ____, parentTaskId) => parentTaskId,
+  ({ TaskList }, taskListId, index, excludedId, parentTaskId) => {
     const taskListModel = TaskList.withId(taskListId);
 
     if (!taskListModel) {
@@ -144,11 +125,14 @@ export const selectNextTaskPosition = createSelector(
     }
 
     return nextPosition(
-      taskListModel.getTasksQuerySet().toRefArray(),
+      taskListModel
+        .getTasksQuerySet()
+        .toRefArray()
+        .filter((task) => (task.parentTaskId || null) === (parentTaskId || null)),
       index,
-      excludedId
+      excludedId,
     );
-  }
+  },
 );
 
 export const selectNextCustomFieldGroupPositionInBoard = createSelector(
@@ -163,12 +147,8 @@ export const selectNextCustomFieldGroupPositionInBoard = createSelector(
       return boardModel;
     }
 
-    return nextPosition(
-      boardModel.getCustomFieldGroupsQuerySet().toRefArray(),
-      index,
-      excludedId
-    );
-  }
+    return nextPosition(boardModel.getCustomFieldGroupsQuerySet().toRefArray(), index, excludedId);
+  },
 );
 
 export const selectNextCustomFieldGroupPositionInCard = createSelector(
@@ -183,12 +163,8 @@ export const selectNextCustomFieldGroupPositionInCard = createSelector(
       return cardModel;
     }
 
-    return nextPosition(
-      cardModel.getCustomFieldGroupsQuerySet().toRefArray(),
-      index,
-      excludedId
-    );
-  }
+    return nextPosition(cardModel.getCustomFieldGroupsQuerySet().toRefArray(), index, excludedId);
+  },
 );
 
 export const selectNextCustomFieldPositionInBaseGroup = createSelector(
@@ -197,9 +173,7 @@ export const selectNextCustomFieldPositionInBaseGroup = createSelector(
   (_, __, index) => index,
   (_, __, ___, excludedId) => excludedId,
   ({ BaseCustomFieldGroup }, baseCustomFieldGroupId, index, excludedId) => {
-    const baseCustomFieldGroupModel = BaseCustomFieldGroup.withId(
-      baseCustomFieldGroupId
-    );
+    const baseCustomFieldGroupModel = BaseCustomFieldGroup.withId(baseCustomFieldGroupId);
 
     if (!baseCustomFieldGroupModel) {
       return baseCustomFieldGroupModel;
@@ -208,9 +182,9 @@ export const selectNextCustomFieldPositionInBaseGroup = createSelector(
     return nextPosition(
       baseCustomFieldGroupModel.getCustomFieldsQuerySet().toRefArray(),
       index,
-      excludedId
+      excludedId,
     );
-  }
+  },
 );
 
 export const selectNextCustomFieldPositionInGroup = createSelector(
@@ -228,9 +202,9 @@ export const selectNextCustomFieldPositionInGroup = createSelector(
     return nextPosition(
       customFieldGroupModel.getCustomFieldsQuerySet().toRefArray(),
       index,
-      excludedId
+      excludedId,
     );
-  }
+  },
 );
 
 export default {

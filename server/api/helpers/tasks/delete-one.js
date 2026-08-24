@@ -43,6 +43,21 @@ module.exports = {
 
   async fn(inputs) {
     const linkedItem = await GanttItem.qm.getOneBySourceTaskId(inputs.record.id);
+    const childTasks = await Task.qm.getByTaskListId(inputs.taskList.id, {
+      parentTaskId: inputs.record.id,
+    });
+
+    // Preserve child tasks when their parent is removed and keep connected clients in sync.
+    // eslint-disable-next-line no-restricted-syntax
+    for (const childTask of childTasks) {
+      // eslint-disable-next-line no-await-in-loop
+      const promotedTask = await Task.qm.updateOne(childTask.id, {
+        parentTaskId: null,
+      });
+      sails.sockets.broadcast(`board:${inputs.board.id}`, 'taskUpdate', {
+        item: promotedTask,
+      });
+    }
     const task = await sails.models.task.qm.deleteOne(inputs.record.id);
 
     if (task) {
@@ -89,6 +104,14 @@ module.exports = {
       if (linkedItem) {
         await sails.helpers.gantt.broadcastDetachedItems.with({
           items: [linkedItem],
+          request: inputs.request,
+        });
+      }
+
+      if (inputs.record.parentTaskId) {
+        await sails.helpers.tasks.syncParentCompletion.with({
+          parentTaskId: inputs.record.parentTaskId,
+          board: inputs.board,
           request: inputs.request,
         });
       }

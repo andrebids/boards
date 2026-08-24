@@ -30,7 +30,7 @@ const designAttachmentMaxBytes = envToPositiveNumber(
   process.env.DESIGN_ATTACHMENT_MAX_BYTES,
   500 * 1024 * 1024,
 );
-const attachmentMaxBytes = envToPositiveNumber(process.env.ATTACHMENT_MAX_BYTES, 250 * 1024 * 1024);
+const attachmentMaxBytes = envToPositiveNumber(process.env.ATTACHMENT_MAX_BYTES, 500 * 1024 * 1024);
 const psdAttachmentMaxBytes = envToPositiveNumber(
   process.env.PSD_ATTACHMENT_MAX_BYTES,
   1024 * 1024 * 1024,

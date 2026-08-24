@@ -3,9 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-const Action = require('../../models/Action');
-const Task = require('../../models/Task');
 const _ = require('lodash');
+const Action = require('../../models/Action');
 
 module.exports = {
   inputs: {
@@ -41,7 +40,9 @@ module.exports = {
   async fn(inputs) {
     const { values } = inputs;
 
-    const tasks = await sails.models.task.qm.getByTaskListId(values.taskList.id);
+    const tasks = await sails.models.task.qm.getByTaskListId(values.taskList.id, {
+      parentTaskId: values.parentTaskId || null,
+    });
 
     const { position, repositions } = sails.helpers.utils.insertToPositionables(
       values.position,
@@ -85,6 +86,14 @@ module.exports = {
       },
       inputs.request,
     );
+
+    if (task.parentTaskId) {
+      await sails.helpers.tasks.syncParentCompletion.with({
+        parentTaskId: task.parentTaskId,
+        board: inputs.board,
+        request: inputs.request,
+      });
+    }
 
     sails.helpers.utils.sendWebhooks.with({
       event: 'taskCreate',

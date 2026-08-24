@@ -649,6 +649,7 @@ export default {
       presentationNoBoardsDescription:
         'Crie um quadro antes de adicionar a respetiva apresentação.',
       presentationLoadFailed: 'Não foi possível carregar a apresentação.',
+      presentationLoadStage: 'Fase técnica: {{stage}}',
       presentationSaveFailed: 'Não foi possível guardar a alteração da apresentação.',
       presentationPreparingTitle: 'Editor de apresentações a preparar',
       presentationPreparingDescription:

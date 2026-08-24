@@ -28,6 +28,7 @@ import {
   preventFileDropPropagation,
   processSupportedFiles,
 } from '../../../utils/file-helpers';
+import handleAttachmentFiles from '../../../utils/attachment-upload';
 import UserAvatar from '../../users/UserAvatar';
 import LabelChip from '../../labels/LabelChip';
 
@@ -38,7 +39,7 @@ const DEFAULT_DATA = {
 };
 
 const AddCard = React.memo(
-  ({ isOpened, className, onCreate, onCreateWithAttachment, onClose }) => {
+  ({ isOpened, className, isFileDragOver: isFileDragOverProp, onCreate, onCreateWithAttachment, onClose }) => {
     // Dados Redux para mentions
     const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
     const labels = useSelector(selectors.selectLabelsForCurrentBoard);
@@ -51,8 +52,10 @@ const AddCard = React.memo(
 
     const [focusNameFieldState, focusNameField] = useToggle();
     // Estados para drag & drop
-    const [isDragOver, setIsDragOver] = useState(false);
+    const [isLocalDragOver, setIsLocalDragOver] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const isFileDragOverControlled = typeof isFileDragOverProp === 'boolean';
+    const isDragOver = isFileDragOverControlled ? isFileDragOverProp : isLocalDragOver;
 
     // Estados para mentions (utilizadores e etiquetas a adicionar)
     const [usersToAdd, setUsersToAdd] = useState([]);
@@ -397,27 +400,29 @@ const AddCard = React.memo(
 
       // Verificar se há arquivos sendo arrastados
       if (e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
-        setIsDragOver(true);
+        if (!isFileDragOverControlled) {
+          setIsLocalDragOver(true);
+        }
       }
-    }, []);
+    }, [isFileDragOverControlled]);
 
     const handleDragLeave = useCallback(e => {
       e.preventDefault();
       e.stopPropagation();
 
       // Só remove o estado de drag se realmente sair da área
-      if (!e.currentTarget.contains(e.relatedTarget)) {
-        setIsDragOver(false);
+      if (!isFileDragOverControlled && !e.currentTarget.contains(e.relatedTarget)) {
+        setIsLocalDragOver(false);
       }
-    }, []);
+    }, [isFileDragOverControlled]);
 
     const handleDrop = useCallback(
       async e => {
         preventFileDropPropagation(e);
-        setIsDragOver(false);
+        setIsLocalDragOver(false);
 
         const files = Array.from(e.dataTransfer.files);
-        const processedFiles = processSupportedFiles(files);
+        const processedFiles = processSupportedFiles(handleAttachmentFiles(files, { t }));
 
         if (processedFiles.length === 0) {
           return;
@@ -442,7 +447,7 @@ const AddCard = React.memo(
           setIsProcessing(false);
         }
       },
-      [data.name, onCreate, onCreateWithAttachment]
+      [data.name, onCreate, onCreateWithAttachment, t]
     );
 
     useEffect(() => {
@@ -463,7 +468,8 @@ const AddCard = React.memo(
         className={classNames(className, !isOpened && styles.wrapperClosed)}
         onSubmit={handleSubmit}
       >
-                <div
+        <div
+          data-file-drop-target="new-card"
           className={classNames(
             styles.fieldWrapper,
             isDragOver && styles.fieldWrapperDragOver,
@@ -635,6 +641,7 @@ const AddCard = React.memo(
 AddCard.propTypes = {
   isOpened: PropTypes.bool,
   className: PropTypes.string,
+  isFileDragOver: PropTypes.bool,
   onCreate: PropTypes.func.isRequired,
   onCreateWithAttachment: PropTypes.func,
   onClose: PropTypes.func.isRequired,
@@ -643,6 +650,7 @@ AddCard.propTypes = {
 AddCard.defaultProps = {
   isOpened: true,
   className: undefined,
+  isFileDragOver: undefined,
 };
 
 export default AddCard;

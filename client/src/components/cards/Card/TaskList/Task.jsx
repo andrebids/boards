@@ -13,16 +13,17 @@ import Linkify from '../../../common/Linkify';
 
 import styles from './Task.module.scss';
 
-const Task = React.memo(({ id }) => {
+const Task = React.memo(({ id, isSubtask }) => {
   const selectTaskById = useMemo(() => selectors.makeSelectTaskById(), []);
 
-  const task = useSelector(state => selectTaskById(state, id));
+  const task = useSelector((state) => selectTaskById(state, id));
 
   return (
     <li
       className={classNames(
         styles.wrapper,
-        task.isCompleted && styles.wrapperCompleted
+        isSubtask && styles.wrapperSubtask,
+        task.isCompleted && styles.wrapperCompleted,
       )}
     >
       <Linkify linkStopPropagation>{task.name}</Linkify>
@@ -32,6 +33,7 @@ const Task = React.memo(({ id }) => {
 
 Task.propTypes = {
   id: PropTypes.string.isRequired,
+  isSubtask: PropTypes.bool.isRequired,
 };
 
 export default Task;

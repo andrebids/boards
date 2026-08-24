@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { LOCATION_CHANGE_HANDLE } from '../../../lib/redux-router';
 
 import { goToBoard, goToCard } from './router';
+import { createAttachment } from './attachments';
 import request from '../request';
 import selectors from '../../../selectors';
 import actions from '../../../actions';
@@ -314,27 +315,13 @@ export function* createCardWithAttachment(listId, cardData, attachmentFile) {
 }
 
 export function* uploadCardAttachment(cardId, attachmentFile) {
-  try {
-    const attachmentData = {
-      name: attachmentFile.name,
-      type: AttachmentTypes.FILE,
-    };
+  const attachment = yield call(createAttachment, cardId, {
+    name: attachmentFile.name,
+    type: AttachmentTypes.FILE,
+    file: attachmentFile,
+  });
 
-    const requestId = yield call(createLocalId);
-
-    let attachment;
-    ({ item: attachment } = yield call(
-      request,
-      api.createAttachmentWithFile,
-      cardId,
-      { ...attachmentData, file: attachmentFile },
-      requestId
-    ));
-
-    // The socket event excludes the originating request, so add the uploaded attachment
-    // to the local store explicitly. Otherwise a newly-created card only shows it after reload.
-    yield put(actions.handleAttachmentCreate(attachment));
-  } catch {
+  if (!attachment) {
     yield call(
       toast,
       {

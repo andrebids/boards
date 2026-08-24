@@ -1,4 +1,4 @@
-FROM cryptpad/cryptpad:version-2026.5.1
+FROM cryptpad/cryptpad:version-2026.5.1@sha256:1f89dcdd28c1375f675e47b1d0cf07a51f3e9a07a79dc93c8cddb3295b98a34d
 
 # The upstream Integration API omits the data argument for GET_BLOB. Message
 # ports cannot clone the callback function, so Office integrations remain on

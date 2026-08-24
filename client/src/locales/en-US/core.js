@@ -375,6 +375,7 @@ export default {
       presentationNoBoards: 'This project has no boards yet',
       presentationNoBoardsDescription: 'Create a board before adding its presentation.',
       presentationLoadFailed: 'Presentation could not be loaded.',
+      presentationLoadStage: 'Technical stage: {{stage}}',
       presentationSaveFailed: 'Presentation change could not be saved.',
       presentationPreparingTitle: 'Presentation editor is being prepared',
       presentationPreparingDescription:

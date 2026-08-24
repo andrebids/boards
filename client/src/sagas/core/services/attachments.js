@@ -41,10 +41,11 @@ export function* createAttachment(cardId, data) {
       : call(request, api.createAttachment, cardId, nextData));
   } catch (error) {
     yield put(actions.createAttachment.failure(localId, error));
-    return;
+    return null;
   }
 
   yield put(actions.createAttachment.success(localId, attachment));
+  return attachment;
 }
 
 export function* createAttachmentInCurrentCard(data) {

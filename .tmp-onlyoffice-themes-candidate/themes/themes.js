@@ -1,0 +1,1 @@
+AscCommon.g_defaultThemes = ["Blank","Blank","Blank","Blank","Blank","Blank","Office Theme","Simple Light"];

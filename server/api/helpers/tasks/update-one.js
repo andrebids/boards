@@ -67,9 +67,14 @@ module.exports = {
 
     const taskList = values.taskList || inputs.taskList;
 
+    const parentTaskId = !_.isUndefined(values.parentTaskId)
+      ? values.parentTaskId
+      : inputs.record.parentTaskId;
+
     if (!_.isUndefined(values.position)) {
       const tasks = await sails.models.task.qm.getByTaskListId(taskList.id, {
         exceptIdOrIds: inputs.record.id,
+        parentTaskId: parentTaskId || null,
       });
 
       const { position, repositions } = sails.helpers.utils.insertToPositionables(
@@ -178,6 +183,17 @@ module.exports = {
           task,
           taskList,
           card: inputs.card,
+          board: inputs.board,
+          request: inputs.request,
+        });
+      }
+
+      const parentTaskIds = _.uniq([inputs.record.parentTaskId, task.parentTaskId].filter(Boolean));
+      // eslint-disable-next-line no-restricted-syntax
+      for (const parentTaskIdToSync of parentTaskIds) {
+        // eslint-disable-next-line no-await-in-loop
+        await sails.helpers.tasks.syncParentCompletion.with({
+          parentTaskId: parentTaskIdToSync,
           board: inputs.board,
           request: inputs.request,
         });

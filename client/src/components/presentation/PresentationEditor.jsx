@@ -1,10 +1,17 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Icon } from 'semantic-ui-react';
+import { Icon, Loader } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 
 import Config from '../../constants/Config';
 import api from '../../api';
+import { Button } from '../../lib/custom-ui';
+
+import {
+  createPresentationLoadDiagnostic,
+  normalizePresentationLoadError,
+} from './presentationEditorDiagnostics';
+import getPresentationEditorLanguage from './presentationLocale';
 
 import styles from './PresentationWorkspace.module.scss';
 
@@ -14,17 +21,31 @@ const PRESENTATION_MIME_TYPE =
 const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
 
 const PresentationEditor = React.memo(({ presentation }) => {
-  const [t] = useTranslation();
+  const [t, i18n] = useTranslation();
   const editorRef = useRef(null);
   const isEditorInitializedRef = useRef(false);
   const presentationRef = useRef(presentation);
+  const editorLanguageRef = useRef(
+    getPresentationEditorLanguage(i18n.resolvedLanguage || i18n.language),
+  );
   const [editorError, setEditorError] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+  const [loadPhase, setLoadPhase] = useState('initializing');
+  const [attempt, setAttempt] = useState(1);
   const containerId = useMemo(
     () => `cryptpad-presentation-editor-${presentation.id}`,
     [presentation.id],
   );
 
   presentationRef.current = presentation;
+
+  const handleRetry = useCallback(() => {
+    isEditorInitializedRef.current = false;
+    setEditorError(null);
+    setIsReady(false);
+    setLoadPhase('initializing');
+    setAttempt((previousAttempt) => previousAttempt + 1);
+  }, []);
 
   useEffect(() => {
     const initialPresentation = presentationRef.current;
@@ -40,20 +61,57 @@ const PresentationEditor = React.memo(({ presentation }) => {
     let isCancelled = false;
     let script;
     let documentUrl;
+    let currentPhase = 'initializing';
+    const startedAt = Date.now();
+
+    const setPhase = (nextPhase) => {
+      currentPhase = nextPhase;
+      if (!isCancelled) {
+        setLoadPhase(nextPhase);
+      }
+    };
+
+    const reportFailure = (phase, nextError) => {
+      const error = normalizePresentationLoadError(nextError);
+      const diagnostic = createPresentationLoadDiagnostic({
+        presentationId: initialPresentation.id,
+        attempt,
+        phase,
+        startedAt,
+        error,
+      });
+
+      if (!isCancelled) {
+        if (process.env.NODE_ENV !== 'production') {
+          // Do not include session keys, document URLs, or file contents in diagnostics.
+          // eslint-disable-next-line no-console
+          console.error('[PresentationEditor] Load failed', diagnostic);
+        }
+        isEditorInitializedRef.current = false;
+        setIsReady(false);
+        setLoadPhase(phase);
+        setEditorError(error);
+      }
+
+      return error;
+    };
 
     const loadDocument = async () => {
+      setPhase('document-fetch');
       const fileResponse = await fetch(
         `${Config.SERVER_BASE_URL}/api/project-presentations/${initialPresentation.id}/file`,
         { credentials: 'include' },
       );
 
       if (fileResponse.ok) {
+        setPhase('document-ready');
         return fileResponse.blob();
       }
       if (fileResponse.status !== 404) {
         throw new Error(getErrorMessage(fileResponse));
       }
 
+      setPhase('template-fetch');
       const templateResponse = await fetch(
         `${Config.CRYPTPAD_URL}/common/onlyoffice/dist/v9/sdkjs/slide/themes/src/CP_01_Blank_light.pptx`,
       );
@@ -61,12 +119,13 @@ const PresentationEditor = React.memo(({ presentation }) => {
         throw new Error(getErrorMessage(templateResponse));
       }
 
+      setPhase('document-ready');
       return templateResponse.blob();
     };
 
     const initializeEditor = async () => {
       if (!window.CryptPadAPI || !editorRef.current) {
-        setEditorError(new Error('CryptPad API unavailable'));
+        reportFailure('cryptpad-api', new Error('CryptPad API unavailable'));
         return;
       }
 
@@ -82,8 +141,9 @@ const PresentationEditor = React.memo(({ presentation }) => {
 
         documentUrl = URL.createObjectURL(documentBlob);
         isEditorInitializedRef.current = true;
+        setPhase('cryptpad-init');
         window
-          .CryptPadAPI(containerId, {
+          .CryptPadAPI(Config.CRYPTPAD_URL, containerId, {
             document: {
               url: documentUrl,
               fileType: 'pptx',
@@ -94,7 +154,7 @@ const PresentationEditor = React.memo(({ presentation }) => {
             documentType: 'presentation',
             mode: initialPresentation.cryptpadMode,
             editorConfig: {
-              lang: 'pt',
+              lang: editorLanguageRef.current,
               customization: {
                 about: false,
                 help: false,
@@ -105,6 +165,15 @@ const PresentationEditor = React.memo(({ presentation }) => {
               },
             },
             events: {
+              onDocumentReady: () => {
+                if (!isCancelled) {
+                  setPhase('ready');
+                  setIsReady(true);
+                }
+              },
+              onError: (nextError) => {
+                reportFailure('cryptpad-runtime', nextError);
+              },
               onNewKey: async (data, callback) => {
                 try {
                   const result = await api.updateProjectPresentationCryptPadKey(
@@ -117,7 +186,7 @@ const PresentationEditor = React.memo(({ presentation }) => {
                   );
                   callback(result.key);
                 } catch (nextError) {
-                  setEditorError(nextError);
+                  reportFailure('cryptpad-key-update', nextError);
                 }
               },
               onSave: (file, callback) => {
@@ -129,15 +198,15 @@ const PresentationEditor = React.memo(({ presentation }) => {
                   .saveProjectPresentationFile(initialPresentation.id, presentationFile)
                   .then(() => callback())
                   .catch((nextError) => {
-                    setEditorError(nextError);
-                    callback({ error: nextError.message });
+                    const error = reportFailure('document-save', nextError);
+                    callback({ error: error.message });
                   });
               },
             },
           })
-          .catch(setEditorError);
+          .catch((nextError) => reportFailure('cryptpad-init', nextError));
       } catch (nextError) {
-        setEditorError(nextError);
+        reportFailure(currentPhase, nextError);
       }
     };
 
@@ -148,7 +217,8 @@ const PresentationEditor = React.memo(({ presentation }) => {
       script.src = `${Config.CRYPTPAD_URL}/cryptpad-api.js`;
       script.async = true;
       script.onload = initializeEditor;
-      script.onerror = () => setEditorError(new Error('CryptPad API unavailable'));
+      script.onerror = () =>
+        reportFailure('cryptpad-script', new Error('CryptPad API unavailable'));
       document.head.appendChild(script);
     }
 
@@ -161,7 +231,7 @@ const PresentationEditor = React.memo(({ presentation }) => {
       isEditorInitializedRef.current = false;
       editorElement.replaceChildren();
     };
-  }, [containerId, presentation.isEnabled]);
+  }, [attempt, containerId, presentation.isEnabled]);
 
   if (editorError) {
     return (
@@ -169,11 +239,27 @@ const PresentationEditor = React.memo(({ presentation }) => {
         <Icon name="warning circle" size="huge" />
         <h2>{t('common.presentationLoadFailed')}</h2>
         <p>{editorError.message}</p>
+        <p className={styles.diagnostic}>
+          {t('common.presentationLoadStage', { stage: loadPhase })}
+        </p>
+        <Button variant="secondary" onClick={handleRetry}>
+          {t('action.retry')}
+        </Button>
       </section>
     );
   }
 
-  return <section ref={editorRef} className={styles.editor} />;
+  return (
+    <section className={styles.editor} aria-busy={!isReady}>
+      {!isReady && (
+        <div className={styles.editorStatus} role="status">
+          <Loader active inline />
+          <span>{t('common.presentationPreparingTitle')}</span>
+        </div>
+      )}
+      <div ref={editorRef} className={styles.editorMount} />
+    </section>
+  );
 });
 
 PresentationEditor.propTypes = {

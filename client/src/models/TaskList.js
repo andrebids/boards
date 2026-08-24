@@ -33,7 +33,7 @@ export default class extends BaseModel {
       case ActionTypes.BOARD_MEMBERSHIP_CREATE_HANDLE:
       case ActionTypes.CARD_UPDATE_HANDLE:
         if (payload.taskLists) {
-          payload.taskLists.forEach(taskList => {
+          payload.taskLists.forEach((taskList) => {
             TaskList.upsert(taskList);
           });
         }
@@ -43,7 +43,7 @@ export default class extends BaseModel {
         TaskList.all().delete();
 
         if (payload.taskLists) {
-          payload.taskLists.forEach(taskList => {
+          payload.taskLists.forEach((taskList) => {
             TaskList.upsert(taskList);
           });
         }
@@ -53,7 +53,7 @@ export default class extends BaseModel {
       case ActionTypes.CARDS_FETCH__SUCCESS:
       case ActionTypes.CARD_CREATE_HANDLE:
       case ActionTypes.CARD_DUPLICATE__SUCCESS:
-        payload.taskLists.forEach(taskList => {
+        payload.taskLists.forEach((taskList) => {
           TaskList.upsert(taskList);
         });
 
@@ -114,9 +114,15 @@ export default class extends BaseModel {
       ...data,
     });
 
-    this.tasks.toModelArray().forEach(taskModel => {
-      taskModel.duplicate(`${taskModel.id}-${rootId}`, {
+    const nextTaskIdByTaskId = {};
+    this.tasks.toModelArray().forEach((taskModel) => {
+      nextTaskIdByTaskId[taskModel.id] = `${taskModel.id}-${rootId}`;
+    });
+
+    this.tasks.toModelArray().forEach((taskModel) => {
+      taskModel.duplicate(nextTaskIdByTaskId[taskModel.id], {
         taskListId: taskListModel.id,
+        parentTaskId: taskModel.parentTaskId ? nextTaskIdByTaskId[taskModel.parentTaskId] : null,
       });
     });
 

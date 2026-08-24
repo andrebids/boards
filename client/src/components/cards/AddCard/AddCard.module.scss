@@ -129,6 +129,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 6px;
+    pointer-events: none;
     z-index: 10;
     animation: fadeIn 0.2s ease-in-out;
     padding: 20px;

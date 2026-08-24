@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const _ = require('lodash');
+
 const defaultFind = (criteria, { sort = 'id', limit } = {}) =>
   Task.find(criteria).sort(sort).limit(limit);
 
@@ -14,7 +16,10 @@ const createOne = (values) => Task.create({ ...values }).fetch();
 
 const getByIds = (ids) => defaultFind(ids);
 
-const getByTaskListId = async (taskListId, { exceptIdOrIds, sort = ['position', 'id'] } = {}) => {
+const getByTaskListId = async (
+  taskListId,
+  { exceptIdOrIds, parentTaskId, sort = ['position', 'id'] } = {},
+) => {
   const criteria = {
     taskListId,
   };
@@ -23,6 +28,10 @@ const getByTaskListId = async (taskListId, { exceptIdOrIds, sort = ['position', 
     criteria.id = {
       '!=': exceptIdOrIds,
     };
+  }
+
+  if (!_.isUndefined(parentTaskId)) {
+    criteria.parentTaskId = parentTaskId;
   }
 
   return defaultFind(criteria, { sort });

@@ -33,6 +33,10 @@ module.exports = {
     isCompleted: {
       type: 'boolean',
     },
+    parentTaskId: {
+      ...idInput,
+      allowNull: true,
+    },
   },
 
   exits: {
@@ -64,7 +68,17 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
-    const values = _.pick(inputs, ['position', 'name', 'isCompleted']);
+    let parentTask;
+    if (inputs.parentTaskId) {
+      parentTask = await Task.qm.getOneById(inputs.parentTaskId, {
+        taskListId: taskList.id,
+      });
+      if (!parentTask || parentTask.parentTaskId) {
+        throw Errors.TASK_LIST_NOT_FOUND;
+      }
+    }
+
+    const values = _.pick(inputs, ['position', 'name', 'isCompleted', 'parentTaskId']);
 
     const task = await sails.helpers.tasks.createOne.with({
       project,

@@ -40,6 +40,7 @@ const DraggableCard = React.memo(({ id, index, className, ...props }) => {
           <div
             {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
             {...dragHandleProps} // eslint-disable-line react/jsx-props-no-spreading
+            data-file-drop-target={`card:${id}`}
             ref={innerRef}
             className={classNames(styles.wrapper, className)}
           >

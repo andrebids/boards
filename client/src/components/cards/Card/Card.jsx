@@ -24,7 +24,7 @@ import {
   CardTypes,
   ListTypes,
 } from '../../../constants/Enums';
-import handleAttachmentFiles from '../../../utils/attachment-upload';
+import handleAttachmentFiles, { hasPendingAttachment } from '../../../utils/attachment-upload';
 import ProjectContent from './ProjectContent';
 import StoryContent from './StoryContent';
 import InlineContent from './InlineContent';
@@ -34,16 +34,20 @@ import ActionsStep from './ActionsStep';
 import styles from './Card.module.scss';
 import globalStyles from '../../../styles.module.scss';
 
-const Card = React.memo(({ id, isInline }) => {
+const Card = React.memo(({ id, isInline, isFileDragOver: isFileDragOverProp }) => {
   const selectCardById = useMemo(() => selectors.makeSelectCardById(), []);
   const selectIsCardWithIdRecent = useMemo(
     () => selectors.makeSelectIsCardWithIdRecent(),
     []
   );
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
+  const selectAttachmentsForCard = useMemo(() => selectors.makeSelectAttachmentsForCard(), []);
 
   const card = useSelector(state => selectCardById(state, id));
   const list = useSelector(state => selectListById(state, card.listId));
+  const isAttachmentUploading = useSelector((state) =>
+    hasPendingAttachment(selectAttachmentsForCard(state, id)),
+  );
 
   const isHighlightedAsRecent = useSelector(state => {
     const { turnOffRecentCardHighlighting } =
@@ -67,7 +71,11 @@ const Card = React.memo(({ id, isInline }) => {
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [isEditNameOpened, setIsEditNameOpened] = useState(false);
-  const [isFileDragOver, setIsFileDragOver] = useState(false);
+  const [isLocalFileDragOver, setIsLocalFileDragOver] = useState(false);
+  const isFileDragOverControlled = typeof isFileDragOverProp === 'boolean';
+  const isFileDragOver = isFileDragOverControlled
+    ? isFileDragOverProp
+    : isLocalFileDragOver;
 
   const handleClick = useCallback(() => {
     if (document.activeElement) {
@@ -87,39 +95,50 @@ const Card = React.memo(({ id, isInline }) => {
 
   const handleFileDragOver = useCallback(
     event => {
-      if (!canUseActions || !event.dataTransfer?.types?.includes('Files')) {
+      if (
+        isFileDragOverControlled ||
+        !canUseActions ||
+        !event.dataTransfer?.types?.includes('Files')
+      ) {
         return;
       }
 
       event.preventDefault();
       event.stopPropagation();
-      setIsFileDragOver(true);
+      setIsLocalFileDragOver(true);
     },
-    [canUseActions]
+    [canUseActions, isFileDragOverControlled]
   );
 
-  const handleFileDragLeave = useCallback(event => {
-    if (!event.dataTransfer?.types?.includes('Files')) {
-      return;
-    }
+  const handleFileDragLeave = useCallback(
+    event => {
+      if (isFileDragOverControlled || !event.dataTransfer?.types?.includes('Files')) {
+        return;
+      }
 
-    event.preventDefault();
-    event.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
 
-    if (!event.currentTarget.contains(event.relatedTarget)) {
-      setIsFileDragOver(false);
-    }
-  }, []);
+      if (!event.currentTarget.contains(event.relatedTarget)) {
+        setIsLocalFileDragOver(false);
+      }
+    },
+    [isFileDragOverControlled],
+  );
 
   const handleFileDrop = useCallback(
     event => {
-      if (!canUseActions || !event.dataTransfer?.types?.includes('Files')) {
+      if (
+        isFileDragOverControlled ||
+        !canUseActions ||
+        !event.dataTransfer?.types?.includes('Files')
+      ) {
         return;
       }
 
       event.preventDefault();
       event.stopPropagation();
-      setIsFileDragOver(false);
+      setIsLocalFileDragOver(false);
 
       handleAttachmentFiles(event.dataTransfer.files, {
         onAccepted: (file) => {
@@ -134,7 +153,7 @@ const Card = React.memo(({ id, isInline }) => {
         t,
       });
     },
-    [canUseActions, dispatch, id, t]
+    [canUseActions, dispatch, id, isFileDragOverControlled, t]
   );
 
   const ActionsPopup = usePopup(ActionsStep, { variantClass: 'notifications' });
@@ -163,6 +182,7 @@ const Card = React.memo(({ id, isInline }) => {
 
   return (
     <div
+      data-file-drop-target={`card:${id}`}
       className={classNames(
         styles.wrapper,
         !isInline && card.type === CardTypes.STORY && styles.wrapperStory,
@@ -170,13 +190,18 @@ const Card = React.memo(({ id, isInline }) => {
         isFileDragOver && styles.wrapperFileDragOver,
         'card'
       )}
-      onDragEnter={handleFileDragOver}
-      onDragOver={handleFileDragOver}
-      onDragLeave={handleFileDragLeave}
-      onDrop={handleFileDrop}
+      onDragEnter={isFileDragOverControlled ? undefined : handleFileDragOver}
+      onDragOver={isFileDragOverControlled ? undefined : handleFileDragOver}
+      onDragLeave={isFileDragOverControlled ? undefined : handleFileDragLeave}
+      onDrop={isFileDragOverControlled ? undefined : handleFileDrop}
     >
       {isFileDragOver && (
         <div className={styles.fileDropOverlay}>{t('common.dropFileToUpload')}</div>
+      )}
+      {isAttachmentUploading && !isFileDragOver && (
+        <span role="status" aria-label={t('common.loading')} className={styles.uploadIndicator}>
+          <Icon fitted loading name="spinner" />
+        </span>
       )}
       {card.isPersisted ? (
         <>
@@ -222,10 +247,12 @@ const Card = React.memo(({ id, isInline }) => {
 
 Card.propTypes = {
   id: PropTypes.string.isRequired,
+  isFileDragOver: PropTypes.bool,
   isInline: PropTypes.bool,
 };
 
 Card.defaultProps = {
+  isFileDragOver: undefined,
   isInline: false,
 };
 

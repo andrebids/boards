@@ -5,13 +5,14 @@
 
 import React from 'react';
 import classNames from 'classnames';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
 import Paths from '../../../constants/Paths';
 import { useGantt } from '../../gantt';
+import { makePathWithPresentationBoard } from '../../presentation/presentationNavigation';
 
 import styles from './GanttTab.module.scss';
 
@@ -20,17 +21,22 @@ const GanttTab = React.memo(() => {
   const project = useSelector(selectors.selectCurrentProject);
   const pathsMatch = useSelector(selectors.selectPathsMatch);
   const { plan, isLoading } = useGantt();
+  const [searchParams] = useSearchParams();
 
   if (isLoading || !project || !plan?.isEnabled) {
     return null;
   }
 
   const isActive = pathsMatch?.pattern.path === Paths.GANTT;
+  const ganttPath = makePathWithPresentationBoard(
+    Paths.GANTT.replace(':id', project.id),
+    searchParams.get('board'),
+  );
 
   return (
     <div className={styles.wrapper}>
       <Link
-        to={Paths.GANTT.replace(':id', project.id)}
+        to={ganttPath}
         className={classNames(styles.tab, isActive && styles.tabActive)}
         aria-current={isActive ? 'page' : undefined}
       >

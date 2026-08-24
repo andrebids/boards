@@ -125,8 +125,10 @@ describe('Chat attachment policy', () => {
     });
   });
 
-  it('rejects any regular attachment larger than 250 MiB', async () => {
+  it('rejects any regular attachment larger than 500 MiB', async () => {
     const pdf = Buffer.from('%PDF-1.7\ncontent');
+
+    expect(CHAT_ATTACHMENT_MAX_BYTES).to.equal(500 * 1024 * 1024);
 
     expect(await validateBuffer('brief.pdf', pdf, CHAT_ATTACHMENT_MAX_BYTES)).to.include({
       extension: 'pdf',

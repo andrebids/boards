@@ -250,6 +250,7 @@ export default merge({}, enUSCore, {
       presentationNoBoardsDescription:
         'Créez un tableau avant d’ajouter sa présentation.',
       presentationLoadFailed: 'Impossible de charger la présentation.',
+      presentationLoadStage: 'Étape technique : {{stage}}',
       presentationSaveFailed: 'Impossible d’enregistrer la modification de la présentation.',
       presentationPreparingTitle: 'Préparation de l’éditeur de présentations',
       presentationPreparingDescription:

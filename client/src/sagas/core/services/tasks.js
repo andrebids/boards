@@ -16,7 +16,13 @@ export function* createTask(taskListId, data) {
 
   const nextData = {
     ...data,
-    position: yield select(selectors.selectNextTaskPosition, taskListId),
+    position: yield select(
+      selectors.selectNextTaskPosition,
+      taskListId,
+      undefined,
+      undefined,
+      data.parentTaskId,
+    ),
   };
 
   yield put(
@@ -24,17 +30,12 @@ export function* createTask(taskListId, data) {
       ...nextData,
       taskListId,
       id: localId,
-    })
+    }),
   );
 
   let task;
   try {
-    ({ item: task } = yield call(
-      request,
-      api.createTask,
-      taskListId,
-      nextData
-    ));
+    ({ item: task } = yield call(request, api.createTask, taskListId, nextData));
   } catch (error) {
     yield put(actions.createTask.failure(localId, error));
     return;
@@ -66,12 +67,7 @@ export function* handleTaskUpdate(task) {
 }
 
 export function* moveTask(id, taskListId, index) {
-  const position = yield select(
-    selectors.selectNextTaskPosition,
-    taskListId,
-    index,
-    id
-  );
+  const position = yield select(selectors.selectNextTaskPosition, taskListId, index, id);
 
   yield call(updateTask, id, {
     taskListId,

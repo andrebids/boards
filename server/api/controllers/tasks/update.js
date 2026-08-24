@@ -18,6 +18,9 @@ const Errors = {
   USER_NOT_FOUND: {
     userNotFound: 'User not found',
   },
+  PARENT_TASK_NOT_FOUND: {
+    parentTaskNotFound: 'Parent task not found',
+  },
 };
 
 module.exports = {
@@ -43,6 +46,10 @@ module.exports = {
     isCompleted: {
       type: 'boolean',
     },
+    parentTaskId: {
+      ...idInput,
+      allowNull: true,
+    },
   },
 
   exits: {
@@ -56,6 +63,9 @@ module.exports = {
       responseType: 'notFound',
     },
     userNotFound: {
+      responseType: 'notFound',
+    },
+    parentTaskNotFound: {
       responseType: 'notFound',
     },
   },
@@ -94,6 +104,16 @@ module.exports = {
       }
     }
 
+    if (!_.isUndefined(inputs.parentTaskId) && inputs.parentTaskId) {
+      const parentTask = await Task.qm.getOneById(inputs.parentTaskId, {
+        taskListId: (nextTaskList || taskList).id,
+      });
+
+      if (!parentTask || parentTask.id === task.id || parentTask.parentTaskId) {
+        throw Errors.PARENT_TASK_NOT_FOUND;
+      }
+    }
+
     if (inputs.assigneeUserId) {
       const isBoardMember = await sails.helpers.users.isBoardMember(
         inputs.assigneeUserId,
@@ -105,7 +125,13 @@ module.exports = {
       }
     }
 
-    const values = _.pick(inputs, ['assigneeUserId', 'position', 'name', 'isCompleted']);
+    const values = _.pick(inputs, [
+      'assigneeUserId',
+      'position',
+      'name',
+      'isCompleted',
+      'parentTaskId',
+    ]);
 
     task = await sails.helpers.tasks.updateOne.with({
       project,

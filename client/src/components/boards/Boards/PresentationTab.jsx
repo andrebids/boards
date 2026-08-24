@@ -6,7 +6,9 @@ import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
 import Paths from '../../../constants/Paths';
-import makePresentationBoardSearchParams from '../../presentation/presentationNavigation';
+import makePresentationBoardSearchParams, {
+  makePathWithPresentationBoard,
+} from '../../presentation/presentationNavigation';
 
 import styles from './GanttTab.module.scss';
 
@@ -31,15 +33,16 @@ const PresentationTab = React.memo(() => {
     return null;
   }
 
+  const presentationPath = makePathWithPresentationBoard(
+    Paths.PRESENTATION.replace(':id', project.id),
+    selectedBoardId || board?.id,
+  );
+
   return (
     <div className={styles.wrapper}>
       {isActive ? (
         <div className={classNames(styles.tab, styles.tabActive, styles.tabWithSelect)}>
-          <Link
-            to={`${Paths.PRESENTATION.replace(':id', project.id)}${board ? `?board=${board.id}` : ''}`}
-            className={styles.tabLink}
-            aria-current="page"
-          >
+          <Link to={presentationPath} className={styles.tabLink} aria-current="page">
             <span>{t('common.presentations')}</span>
           </Link>
           <select
@@ -57,10 +60,7 @@ const PresentationTab = React.memo(() => {
           </select>
         </div>
       ) : (
-        <Link
-          to={`${Paths.PRESENTATION.replace(':id', project.id)}${board ? `?board=${board.id}` : ''}`}
-          className={styles.tab}
-        >
+        <Link to={presentationPath} className={styles.tab}>
           <span>{t('common.presentations')}</span>
         </Link>
       )}

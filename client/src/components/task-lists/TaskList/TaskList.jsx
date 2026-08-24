@@ -25,9 +25,14 @@ const TaskList = React.memo(({ id }) => {
   const selectTaskListById = useMemo(() => selectors.makeSelectTaskListById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
   const selectTasksByTaskListId = useMemo(() => selectors.makeSelectTasksByTaskListId(), []);
+  const selectRootTasksByTaskListId = useMemo(
+    () => selectors.makeSelectRootTasksByTaskListId(),
+    [],
+  );
 
   const taskList = useSelector((state) => selectTaskListById(state, id));
   const tasks = useSelector((state) => selectTasksByTaskListId(state, id));
+  const rootTasks = useSelector((state) => selectRootTasksByTaskListId(state, id));
 
   const canEdit = useSelector((state) => {
     const { listId } = selectors.selectCurrentCard(state);
@@ -45,10 +50,15 @@ const TaskList = React.memo(({ id }) => {
   const [isAddOpened, setIsAddOpened] = useState(false);
   const [, , setIsClosableActive] = useContext(ClosableContext);
 
+  const leafTasks = useMemo(
+    () => tasks.filter((task) => !tasks.some((childTask) => childTask.parentTaskId === task.id)),
+    [tasks],
+  );
+
   // TODO: move to selector?
   const completedTasksTotal = useMemo(
-    () => tasks.reduce((result, task) => (task.isCompleted ? result + 1 : result), 0),
-    [tasks],
+    () => leafTasks.reduce((result, task) => (task.isCompleted ? result + 1 : result), 0),
+    [leafTasks],
   );
 
   const handleAddClick = useCallback(() => {
@@ -70,18 +80,18 @@ const TaskList = React.memo(({ id }) => {
           <span className={styles.progressWrapper}>
             <Progress
               value={completedTasksTotal}
-              total={tasks.length}
+              total={leafTasks.length}
               color="blue"
               size="tiny"
-              aria-label={`${taskList.name}: ${completedTasksTotal}/${tasks.length}`}
+              aria-label={`${taskList.name}: ${completedTasksTotal}/${leafTasks.length}`}
               aria-valuemin={0}
-              aria-valuemax={tasks.length}
+              aria-valuemax={leafTasks.length}
               aria-valuenow={completedTasksTotal}
               className={styles.progress}
             />
           </span>
           <span className={styles.count} aria-hidden="true">
-            {completedTasksTotal}/{tasks.length}
+            {completedTasksTotal}/{leafTasks.length}
           </span>
         </div>
       )}
@@ -93,15 +103,26 @@ const TaskList = React.memo(({ id }) => {
         {({ innerRef, droppableProps, placeholder }) => (
           // eslint-disable-next-line react/jsx-props-no-spreading
           <div
+            // eslint-disable-next-line react/jsx-props-no-spreading
             {...droppableProps}
             ref={innerRef}
             role="group"
             aria-label={taskList.name}
             className={styles.tasks}
           >
-            {tasks.map((task, index) => (
-              <Task key={task.id} id={task.id} index={index} />
-            ))}
+            {rootTasks
+              .flatMap((task) => [
+                task,
+                ...tasks.filter((childTask) => childTask.parentTaskId === task.id),
+              ])
+              .map((task, index) => (
+                <Task
+                  key={task.id}
+                  id={task.id}
+                  index={index}
+                  isSubtask={Boolean(task.parentTaskId)}
+                />
+              ))}
             {placeholder}
           </div>
         )}

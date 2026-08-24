@@ -116,4 +116,20 @@
     text-align: center;
     z-index: 3;
   }
+
+  .uploadIndicator {
+    align-items: center;
+    background: rgba(15, 23, 42, 0.82);
+    border-radius: 50%;
+    color: #ffffff;
+    display: inline-flex;
+    height: 24px;
+    justify-content: center;
+    pointer-events: none;
+    position: absolute;
+    right: 40px;
+    top: 6px;
+    width: 24px;
+    z-index: 2;
+  }
 }

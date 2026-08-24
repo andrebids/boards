@@ -47,5 +47,10 @@ module.exports = {
       model: 'User',
       columnName: 'assignee_user_id',
     },
+    parentTaskId: {
+      model: 'Task',
+      allowNull: true,
+      columnName: 'parent_task_id',
+    },
   },
 };

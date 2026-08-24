@@ -26,10 +26,24 @@
   .editor {
     flex: 1 1 auto;
     min-height: 0;
+    position: relative;
 
     .editorMount {
       height: 100%;
       width: 100%;
+    }
+
+    .editorStatus {
+      align-items: center;
+      background: var(--app-background-color);
+      color: var(--app-secondary-text-color);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      inset: 0;
+      justify-content: center;
+      position: absolute;
+      z-index: 1;
     }
 
     :global(iframe) {
@@ -50,6 +64,12 @@
 
   .errorMessage {
     color: #ffb4b4;
+  }
+
+  .diagnostic {
+    color: var(--app-secondary-text-color);
+    font-family: monospace;
+    font-size: 0.875rem;
   }
 
   @media (max-width: 640px) {

@@ -16,31 +16,34 @@ import Task from './Task';
 import styles from './TaskList.module.scss';
 
 const TaskList = React.memo(({ id }) => {
-  const selectTasksByTaskListId = useMemo(
-    () => selectors.makeSelectTasksByTaskListId(),
-    []
+  const selectTasksByTaskListId = useMemo(() => selectors.makeSelectTasksByTaskListId(), []);
+  const selectRootTasksByTaskListId = useMemo(
+    () => selectors.makeSelectRootTasksByTaskListId(),
+    [],
   );
 
-  const tasks = useSelector(state => selectTasksByTaskListId(state, id));
+  const tasks = useSelector((state) => selectTasksByTaskListId(state, id));
+  const rootTasks = useSelector((state) => selectRootTasksByTaskListId(state, id));
 
   const [isOpened, toggleOpened] = useToggle();
 
+  const leafTasks = useMemo(
+    () => tasks.filter((task) => !tasks.some((childTask) => childTask.parentTaskId === task.id)),
+    [tasks],
+  );
+
   // TODO: move to selector?
   const completedTasksTotal = useMemo(
-    () =>
-      tasks.reduce(
-        (result, task) => (task.isCompleted ? result + 1 : result),
-        0
-      ),
-    [tasks]
+    () => leafTasks.reduce((result, task) => (task.isCompleted ? result + 1 : result), 0),
+    [leafTasks],
   );
 
   const handleToggleClick = useCallback(
-    event => {
+    (event) => {
       event.stopPropagation();
       toggleOpened();
     },
-    [toggleOpened]
+    [toggleOpened],
   );
 
   if (tasks.length === 0) {
@@ -56,26 +59,28 @@ const TaskList = React.memo(({ id }) => {
           <Progress
             autoSuccess
             value={completedTasksTotal}
-            total={tasks.length}
+            total={leafTasks.length}
             color="blue"
             size="tiny"
             className={styles.progress}
           />
         </span>
         <span
-          className={classNames(
-            styles.count,
-            isOpened ? styles.countOpened : styles.countClosed
-          )}
+          className={classNames(styles.count, isOpened ? styles.countOpened : styles.countClosed)}
         >
-          {completedTasksTotal}/{tasks.length}
+          {completedTasksTotal}/{leafTasks.length}
         </span>
       </div>
       {isOpened && (
         <ul className={styles.tasks}>
-          {tasks.map(task => (
-            <Task key={task.id} id={task.id} />
-          ))}
+          {rootTasks
+            .flatMap((task) => [
+              task,
+              ...tasks.filter((childTask) => childTask.parentTaskId === task.id),
+            ])
+            .map((task) => (
+              <Task key={task.id} id={task.id} isSubtask={Boolean(task.parentTaskId)} />
+            ))}
         </ul>
       )}
     </>

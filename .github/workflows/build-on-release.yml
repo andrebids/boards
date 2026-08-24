@@ -45,6 +45,8 @@ jobs:
           tags: |
             ${{ (github.event_name == 'release' && format('ghcr.io/{0}/boards:{1}', github.repository_owner, github.event.release.tag_name)) || (inputs.release_tag != '' && format('ghcr.io/{0}/boards:{1}', github.repository_owner, inputs.release_tag)) }}
             ${{ (github.event_name == 'release' || inputs.release_tag != '') && format('ghcr.io/{0}/boards:latest', github.repository_owner) }}
+          build-args: |
+            VITE_CRYPTPAD_URL=${{ vars.VITE_CRYPTPAD_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
