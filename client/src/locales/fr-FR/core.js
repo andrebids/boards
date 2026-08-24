@@ -114,6 +114,7 @@ export default merge({}, enUSCore, {
       enterDescription: 'Saisir la description...',
       enterFilename: 'Saisir le nom du fichier',
       enterListTitle: 'Saisie le titre de la liste...',
+      enterSubtaskDescription: 'Saisir la description de la sous-tâche...',
       enterTaskDescription: 'Saisir la description de la tâche...',
       filterByLabels_title: 'Filtrer par étiquettes',
       filterByMembers_title: 'Filtrer par membres',
@@ -159,6 +160,7 @@ export default merge({}, enUSCore, {
       noLists: 'Pas de liste',
       noProjects: 'Pas de projet',
       noUnreadNotifications: 'Aucune notification non lue.',
+      newSubtaskOf: 'Nouvelle sous-tâche de « {{task}} »',
       notifications: 'Notifications',
       personalNotifications: 'Notifications personnelles',
       personalNotificationsDescription:

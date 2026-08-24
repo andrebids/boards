@@ -459,6 +459,7 @@ export default {
       enterDescription: 'Digite a descrição...',
       enterFilename: 'Digite o nome do ficheiro',
       enterListTitle: 'Digite o título da lista...',
+      enterSubtaskDescription: 'Digite a descrição da subtarefa...',
       enterTaskDescription: 'Digite a descrição da tarefa...',
       filterByLabels_title: 'Filtrar por Rótulos',
       filterByMembers_title: 'Filtrar por Membros',
@@ -535,6 +536,7 @@ export default {
       noProjects: 'Sem projetos',
       noUnreadProjectNotifications: 'Não há notificações por ler neste projeto.',
       noUnreadNotifications: 'Nenhuma notificação não lida.',
+      newSubtaskOf: 'Nova subtarefa de “{{task}}”',
       notifications: 'Notificações',
       personalNotifications: 'Notificações pessoais',
       personalNotificationsDescription:

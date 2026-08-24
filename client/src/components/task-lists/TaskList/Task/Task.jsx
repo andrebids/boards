@@ -182,6 +182,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
               className={classNames(
                 styles.wrapper,
                 isSubtask && styles.wrapperSubtask,
+                isAddSubtaskOpened && styles.wrapperAddingSubtask,
                 isDragging && styles.wrapperDragging,
               )}
             >
@@ -279,6 +280,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
         <AddTask
           taskListId={task.taskListId}
           parentTaskId={id}
+          parentTaskName={task.name}
           isOpened={isAddSubtaskOpened}
           onClose={handleAddSubtaskClose}
         >

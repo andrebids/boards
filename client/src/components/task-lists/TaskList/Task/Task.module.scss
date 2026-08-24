@@ -206,6 +206,16 @@
     box-shadow: 0 8px 24px rgba(31, 41, 55, 0.12);
   }
 
+  .wrapperAddingSubtask {
+    background: var(--card-modal-surface-hover, #fff);
+    border-color: var(--card-modal-accent, #2563eb);
+    box-shadow: 0 0 0 3px var(--card-modal-accent-soft, rgba(37, 99, 235, 0.12));
+
+    .button {
+      opacity: 1;
+    }
+  }
+
   .wrapperSubtask {
     background: var(--card-modal-surface-hover, #f7f8fa);
     margin-left: 40px;

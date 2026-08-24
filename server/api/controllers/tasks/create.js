@@ -70,20 +70,8 @@ module.exports = {
 
     let parentTask;
     if (inputs.parentTaskId) {
-      const parentTaskById = await Task.findOne({ id: inputs.parentTaskId });
-      const parentTaskByIdAndTaskList = await Task.findOne({
-        id: inputs.parentTaskId,
-        taskListId: taskList.id,
-      });
       parentTask = await Task.qm.getOneById(inputs.parentTaskId, {
         taskListId: taskList.id,
-      });
-      sails.log.info('[NESTED_TASK_DEBUG]', {
-        parentTaskId: inputs.parentTaskId,
-        taskListId: taskList.id,
-        parentTaskById,
-        parentTaskByIdAndTaskList,
-        parentTask,
       });
       if (!parentTask || parentTask.parentTaskId) {
         throw Errors.TASK_LIST_NOT_FOUND;

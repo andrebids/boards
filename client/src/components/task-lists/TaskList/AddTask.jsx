@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Form, TextArea } from 'semantic-ui-react';
+import { Form, Icon, TextArea } from 'semantic-ui-react';
 import { Button } from '../../../lib/custom-ui';
 import { useClickAwayListener, useDidUpdate, useToggle } from '../../../lib/hooks';
 
@@ -25,7 +25,8 @@ const DEFAULT_DATA = {
 
 const MULTIPLE_REGEX = /\s*\r?\n\s*/;
 
-const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onClose }) => {
+const AddTask = React.memo((props) => {
+  const { children, taskListId, parentTaskId, parentTaskName, isOpened, onClose } = props;
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [data, handleFieldChange, setData] = useForm(DEFAULT_DATA);
@@ -33,6 +34,7 @@ const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onCl
 
   const [nameFieldRef, handleNameFieldRef] = useNestedRef();
   const [buttonRef, handleButtonRef] = useNestedRef();
+  const [cancelButtonRef, handleCancelButtonRef] = useNestedRef();
 
   const submit = useCallback(
     (isMultiple = false) => {
@@ -87,7 +89,7 @@ const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onCl
   }, [nameFieldRef]);
 
   const clickAwayProps = useClickAwayListener(
-    [nameFieldRef, buttonRef],
+    [nameFieldRef, buttonRef, cancelButtonRef],
     onClose,
     handleClickAwayCancel,
   );
@@ -108,13 +110,23 @@ const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onCl
 
   return (
     <Form className={styles.wrapper} onSubmit={handleSubmit}>
+      {parentTaskId && (
+        <div className={styles.context} title={parentTaskName}>
+          <Icon fitted name="level down alternate" className={styles.contextIcon} />
+          <span className={styles.contextText}>
+            {t('common.newSubtaskOf', { task: parentTaskName })}
+          </span>
+        </div>
+      )}
       <TextArea
         {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
         ref={handleNameFieldRef}
         as={TextareaAutosize}
         name="name"
         value={data.name}
-        placeholder={t('common.enterTaskDescription')}
+        placeholder={t(
+          parentTaskId ? 'common.enterSubtaskDescription' : 'common.enterTaskDescription',
+        )}
         maxLength={1024}
         minRows={2}
         spellCheck={false}
@@ -130,6 +142,17 @@ const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onCl
           content={t(parentTaskId ? 'action.addSubtask' : 'action.addTask')}
           className={styles.submitButton}
         />
+        {parentTaskId && (
+          <Button
+            {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
+            variant="secondary"
+            type="button"
+            ref={handleCancelButtonRef}
+            content={t('action.cancel')}
+            className={styles.cancelButton}
+            onClick={onClose}
+          />
+        )}
       </div>
     </Form>
   );
@@ -139,12 +162,14 @@ AddTask.propTypes = {
   children: PropTypes.element.isRequired,
   taskListId: PropTypes.string.isRequired,
   parentTaskId: PropTypes.string,
+  parentTaskName: PropTypes.string,
   isOpened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
 };
 
 AddTask.defaultProps = {
   parentTaskId: undefined,
+  parentTaskName: undefined,
 };
 
 export default AddTask;
