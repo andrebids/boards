@@ -172,7 +172,7 @@ Parâmetros de deep link:
 
 | Variável | Comportamento atual |
 |---|---|
-| `CHAT_ATTACHMENT_MAX_BYTES` | Limite por anexo; por omissão 25 MiB |
+| `CHAT_ATTACHMENT_MAX_BYTES` | Limite por anexo; por omissão 250 MiB |
 | `CHAT_ATTACHMENTS_PER_MESSAGE_LIMIT` | Máximo por mensagem; por omissão 10 |
 | `CHAT_EXTERNAL_LINK_PREVIEWS_ENABLED` | Ativa previews externos apenas quando igual a `true` |
 | `SENTRY_DSN` | Ativa reporte seguro de erros inesperados no servidor |

@@ -11,8 +11,59 @@ const WIDGETS = {
 };
 
 const GANTT_ZOOM_LEVELS = new Set(['day', 'week', 'month', 'quarter']);
+const BLACHERE_PRODUCT_STATUSES = new Set(['done', 'pending']);
+const MAX_BLACHERE_PRODUCTS = 50;
 
 const normalizeWidgetConfig = (type, config) => {
+  if (type === 'blachereProducts') {
+    if (config === undefined) {
+      return undefined;
+    }
+
+    if (
+      !config ||
+      typeof config !== 'object' ||
+      Array.isArray(config) ||
+      !Array.isArray(config.tasks)
+    ) {
+      throw new Error('Blachere Products widget must have a task list configuration');
+    }
+
+    if (config.tasks.length > MAX_BLACHERE_PRODUCTS) {
+      throw new Error('Blachere Products widget has too many tasks');
+    }
+
+    const taskIds = new Set();
+    return {
+      tasks: config.tasks.map((task) => {
+        if (
+          !task ||
+          typeof task !== 'object' ||
+          Array.isArray(task) ||
+          typeof task.id !== 'string' ||
+          task.id.trim() === '' ||
+          task.id.length > 64 ||
+          taskIds.has(task.id) ||
+          typeof task.title !== 'string' ||
+          task.title.trim() === '' ||
+          task.title.length > 160 ||
+          !BLACHERE_PRODUCT_STATUSES.has(task.twoD) ||
+          !BLACHERE_PRODUCT_STATUSES.has(task.threeD)
+        ) {
+          throw new Error('Blachere Products widget has an invalid task');
+        }
+
+        taskIds.add(task.id);
+        return {
+          id: task.id,
+          title: task.title.trim(),
+          twoD: task.twoD,
+          threeD: task.threeD,
+        };
+      }),
+    };
+  }
+
   if (type !== 'gantt') {
     return undefined;
   }

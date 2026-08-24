@@ -4,8 +4,10 @@
  */
 
 const fsPromises = require('fs').promises;
+const { v4: uuid } = require('uuid');
 
 const { idInput } = require('../../../utils/inputs');
+const { validateChatAttachment } = require('../../../utils/chat-attachment-policy');
 const getFilePath = require('../../../utils/project-presentation-file-path');
 
 const PRESENTATION_MIME_TYPE =
@@ -61,24 +63,73 @@ module.exports = {
     }
 
     const file = _.last(files);
-    if (file.type !== PRESENTATION_MIME_TYPE || !Number.isFinite(file.size) || file.size === 0) {
+    const validation = await validateChatAttachment({
+      fd: file.fd,
+      filename: file.filename,
+      size: file.size,
+      maxBytes: sails.config.custom.attachmentMaxBytes,
+    });
+
+    if (
+      !Number.isFinite(file.size) ||
+      file.size === 0 ||
+      !validation.isValid ||
+      validation.extension !== 'pptx'
+    ) {
       throw Errors.INVALID_PRESENTATION_FILE;
     }
 
     const fileManager = sails.hooks['file-manager'].getInstance();
+    const filename = `presentation-${uuid()}.pptx`;
+    const filePath = getFilePath(presentation.id, filename);
+    const previousFilePath = getFilePath(
+      presentation.id,
+      presentation.documentData && presentation.documentData.filename,
+    );
+
+    const discardUnpublishedFile = async () => {
+      try {
+        await fileManager.delete(filePath);
+      } catch (error) {
+        sails.log.warn('Failed to remove unfinished project presentation upload', {
+          presentationId: presentation.id,
+          error: error.message,
+        });
+      }
+    };
+
+    let updatedPresentation;
     try {
-      await fileManager.saveFromPath(getFilePath(presentation.id), file.fd);
+      await fileManager.saveFromPath(filePath, file.fd, PRESENTATION_MIME_TYPE);
+
+      updatedPresentation = await ProjectPresentation.qm.updateOne(presentation.id, {
+        documentData: {
+          mimeType: PRESENTATION_MIME_TYPE,
+          sizeInBytes: file.size,
+          filename,
+        },
+      });
+
+      if (!updatedPresentation) {
+        throw Errors.PRESENTATION_NOT_FOUND;
+      }
+    } catch (error) {
+      await discardUnpublishedFile();
+      throw error;
     } finally {
       await fsPromises.rm(file.fd, { force: true });
     }
 
-    const documentData = {
-      mimeType: PRESENTATION_MIME_TYPE,
-      sizeInBytes: file.size,
-    };
-    const updatedPresentation = await ProjectPresentation.qm.updateOne(presentation.id, {
-      documentData,
-    });
+    if (previousFilePath !== filePath) {
+      try {
+        await fileManager.delete(previousFilePath);
+      } catch (error) {
+        sails.log.warn('Failed to remove replaced project presentation file', {
+          presentationId: presentation.id,
+          error: error.message,
+        });
+      }
+    }
 
     return exits.success({
       item: sails.helpers.projectPresentations.presentOne(updatedPresentation, true),

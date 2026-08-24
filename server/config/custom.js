@@ -27,8 +27,17 @@ const envToPositiveNumber = (value, defaultValue) => {
 
 const parsedBasedUrl = new URL(process.env.BASE_URL);
 const designAttachmentMaxBytes = envToPositiveNumber(
-  process.env.DESIGN_ATTACHMENT_MAX_BYTES || process.env.PSD_ATTACHMENT_MAX_BYTES,
+  process.env.DESIGN_ATTACHMENT_MAX_BYTES,
   500 * 1024 * 1024,
+);
+const attachmentMaxBytes = envToPositiveNumber(process.env.ATTACHMENT_MAX_BYTES, 250 * 1024 * 1024);
+const psdAttachmentMaxBytes = envToPositiveNumber(
+  process.env.PSD_ATTACHMENT_MAX_BYTES,
+  1024 * 1024 * 1024,
+);
+const threeDAttachmentMaxBytes = envToPositiveNumber(
+  process.env.THREE_D_ATTACHMENT_MAX_BYTES,
+  1024 * 1024 * 1024,
 );
 
 module.exports.custom = {
@@ -67,10 +76,11 @@ module.exports.custom = {
   backgroundImagesPathSegment: 'public/background-images',
   attachmentsPathSegment: 'private/attachments',
 
-  attachmentMaxBytes: envToPositiveNumber(process.env.ATTACHMENT_MAX_BYTES, 25 * 1024 * 1024),
+  attachmentMaxBytes,
 
   designAttachmentMaxBytes,
-  psdAttachmentMaxBytes: designAttachmentMaxBytes,
+  psdAttachmentMaxBytes,
+  threeDAttachmentMaxBytes,
 
   videoAttachmentMaxBytes: envToPositiveNumber(
     process.env.VIDEO_ATTACHMENT_MAX_BYTES,
@@ -84,7 +94,7 @@ module.exports.custom = {
 
   chatAttachmentMaxBytes: envToPositiveNumber(
     process.env.CHAT_ATTACHMENT_MAX_BYTES,
-    25 * 1024 * 1024,
+    attachmentMaxBytes,
   ),
   chatAttachmentsPerMessageLimit: envToPositiveNumber(
     process.env.CHAT_ATTACHMENTS_PER_MESSAGE_LIMIT,

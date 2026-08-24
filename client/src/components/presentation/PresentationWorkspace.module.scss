@@ -7,45 +7,6 @@
     min-width: 0;
   }
 
-  .header {
-    align-items: center;
-    backdrop-filter: blur(12px);
-    background: rgba(20, 24, 34, 0.82);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex: 0 0 auto;
-    gap: 12px;
-    justify-content: space-between;
-    min-height: 44px;
-    padding: 8px 12px;
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  .heading {
-    align-items: center;
-    display: flex;
-    min-width: 0;
-
-    h1,
-    p {
-      margin: 0;
-    }
-
-    h1 {
-      color: #fff;
-      font-size: 16px;
-      line-height: 20px;
-    }
-
-    p {
-      display: none;
-    }
-  }
-
-  .backButton {
-    flex: 0 0 auto;
-  }
-
   .emptyState,
   .centerState {
     align-items: center;
@@ -87,93 +48,11 @@
     }
   }
 
-  .boardList {
-    align-self: center;
-    background: rgba(20, 24, 34, 0.72);
-    color: #fff;
-    margin: 24px;
-    max-width: 760px;
-    padding: 20px;
-    width: calc(100% - 48px);
-
-    h2 {
-      font-size: 16px;
-      margin: 0 0 12px;
-    }
-
-    ul {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    li {
-      align-items: center;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      gap: 16px;
-      justify-content: space-between;
-      min-height: 64px;
-      padding: 10px 12px;
-    }
-  }
-
-  .boardIdentity {
-    align-items: center;
-    display: flex;
-    gap: 12px;
-    min-width: 0;
-
-    > i {
-      color: rgba(255, 255, 255, 0.64);
-      flex: 0 0 auto;
-      margin: 0;
-    }
-
-    div {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    strong,
-    span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    span {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 12px;
-      margin-top: 2px;
-    }
-  }
-
   .errorMessage {
     color: #ffb4b4;
   }
 
   @media (max-width: 640px) {
-    .header {
-      padding: 8px 12px;
-    }
-
-    .boardList {
-      margin: 12px;
-      padding: 12px;
-      width: calc(100% - 24px);
-
-      li {
-        align-items: stretch;
-        flex-direction: column;
-      }
-    }
-
     .emptyState {
       margin: 12px;
     }

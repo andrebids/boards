@@ -20,10 +20,10 @@ const Errors = {
     unsupportedFileType: 'File type is not allowed',
   },
   ATTACHMENT_TOO_LARGE: {
-    attachmentTooLarge: 'File cannot be larger than 25 MB',
+    attachmentTooLarge: 'File cannot be larger than 250 MB',
   },
   PSD_ATTACHMENT_TOO_LARGE: {
-    psdAttachmentTooLarge: 'PSD file cannot be larger than 500 MB',
+    psdAttachmentTooLarge: 'PSD/PSB file cannot be larger than 1 GB',
   },
 };
 

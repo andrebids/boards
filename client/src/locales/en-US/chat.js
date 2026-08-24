@@ -146,7 +146,7 @@ export default {
       attachmentUploading: 'Uploading attachment…',
       attachmentConfirming: 'Confirming attachment…',
       attachmentFailed: 'The attachment could not be uploaded.',
-      psdAttachmentTooLarge: 'PSD files cannot be larger than {{size}} MB.',
+      psdAttachmentTooLarge: 'PSD/PSB files cannot be larger than {{size}} MB.',
       videoAttachmentTooLarge: 'Videos cannot be larger than {{size}} MB.',
       uploadFailed: 'The file could not be uploaded.',
       uploadNetworkError: 'The connection was lost while uploading the file.',

@@ -21,7 +21,7 @@ services:
           echo "Dependências do servidor ausentes ou incompletas; a reinstalar..."
           rm -f node_modules/.planka-dev-lock
           npm install
-          npm rebuild bcrypt lodepng --build-from-source --force
+          npm rebuild bcrypt lodepng --force
           sha256sum package-lock.json > node_modules/.planka-dev-lock
         fi
 

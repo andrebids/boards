@@ -12,6 +12,8 @@ import { FilePicker, Popup } from '../../../lib/custom-ui';
 
 import entryActions from '../../../entry-actions';
 import { AttachmentTypes } from '../../../constants/Enums';
+import { SUPPORTED_FILE_ACCEPT } from '../../../utils/file-helpers';
+import handleAttachmentFiles from '../../../utils/attachment-upload';
 
 import styles from './AddAttachmentStep.module.scss';
 
@@ -20,20 +22,23 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
   const [t] = useTranslation();
 
   const handleFilesSelect = useCallback(
-    files => {
-      files.forEach(file => {
-        dispatch(
-          entryActions.createAttachmentInCurrentCard({
-            file,
-            type: AttachmentTypes.FILE,
-            name: file.name,
-          })
-        );
+    (files) => {
+      handleAttachmentFiles(files, {
+        onAccepted: (file) => {
+          dispatch(
+            entryActions.createAttachmentInCurrentCard({
+              file,
+              type: AttachmentTypes.FILE,
+              name: file.name,
+            }),
+          );
+        },
+        t,
       });
 
       onClose();
     },
-    [onClose, dispatch]
+    [onClose, dispatch, t],
   );
 
   return (
@@ -45,7 +50,7 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
       </Popup.Header>
       <Popup.Content>
         <Menu secondary vertical className={styles.menu}>
-          <FilePicker multiple onSelect={handleFilesSelect}>
+          <FilePicker accept={SUPPORTED_FILE_ACCEPT} multiple onSelect={handleFilesSelect}>
             <Menu.Item className={styles.menuItem}>
               {t('common.fromComputer', {
                 context: 'title',

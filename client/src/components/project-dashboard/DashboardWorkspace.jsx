@@ -25,16 +25,24 @@ const WIDGET_LABELS = {
 };
 
 const DashboardWidgetActionsContext = React.createContext({
+  canEdit: false,
   canRemove: false,
+  onProductsChange: () => {},
   onRemove: () => {},
 });
 
 const DashboardWidget = React.memo(({ widget }) => {
-  const { canRemove, onRemove } = React.useContext(DashboardWidgetActionsContext);
+  const { canEdit, canRemove, onProductsChange, onRemove } = React.useContext(
+    DashboardWidgetActionsContext,
+  );
 
   return (
     <>
-      <DashboardWidgetContent widget={widget} />
+      <DashboardWidgetContent
+        isEditing={canEdit}
+        widget={widget}
+        onProductsChange={(tasks) => onProductsChange(widget.id, tasks)}
+      />
       {canRemove && (
         <button
           aria-label={`Remover widget ${WIDGET_LABELS[widget.type] || 'Gantt'}`}
@@ -54,7 +62,10 @@ const DashboardWidget = React.memo(({ widget }) => {
 });
 
 DashboardWidget.propTypes = {
-  widget: PropTypes.object.isRequired,
+  widget: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    type: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 const dashboardWidgetComponents = { DashboardWidget };
@@ -269,7 +280,10 @@ const DashboardWorkspace = React.memo(() => {
 
   const handleAddGantt = useCallback(() => {
     if (ganttProjectId) {
-      handleAddWidget('gantt', { projectId: ganttProjectId, zoomLevel: 'week' });
+      handleAddWidget('gantt', {
+        projectId: ganttProjectId,
+        zoomLevel: 'week',
+      });
     }
   }, [ganttProjectId, handleAddWidget]);
 
@@ -286,12 +300,29 @@ const DashboardWorkspace = React.memo(() => {
     [canEditDashboard, dashboardLayout, scheduleLayoutSave],
   );
 
+  const handleProductsChange = useCallback(
+    (widgetId, tasks) => {
+      if (!canEditDashboard) {
+        return;
+      }
+
+      const nextLayout = dashboardLayout.map((widget) =>
+        widget.id === widgetId ? { ...widget, config: { tasks } } : widget,
+      );
+      setDashboardLayout(nextLayout);
+      scheduleLayoutSave(nextLayout);
+    },
+    [canEditDashboard, dashboardLayout, scheduleLayoutSave],
+  );
+
   const widgetActions = useMemo(
     () => ({
+      canEdit: !isTvMode && canEditDashboard,
       canRemove: !isTvMode && canEditDashboard,
+      onProductsChange: handleProductsChange,
       onRemove: handleRemoveWidget,
     }),
-    [canEditDashboard, handleRemoveWidget, isTvMode],
+    [canEditDashboard, handleProductsChange, handleRemoveWidget, isTvMode],
   );
 
   const gridOptions = useMemo(

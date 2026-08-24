@@ -5,7 +5,7 @@ export default {
       addToGroup: 'Añadir',
       allAuthorizedMembers: 'Todos los miembros autorizados',
       attachFiles: 'Adjuntar archivos',
-      attachmentTooLarge: 'Los archivos no pueden superar los 25 MB.',
+      attachmentTooLarge: 'Los archivos no pueden superar los {{size}} MB.',
       available: 'Disponible',
       backToConversations: 'Volver a las conversaciones',
       blockedConversation: 'Ya no puedes enviar mensajes en esta conversación.',

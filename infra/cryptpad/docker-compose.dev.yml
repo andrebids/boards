@@ -24,6 +24,8 @@ services:
       - ./data/data:/cryptpad/data
       - ./data/files:/cryptpad/datastore
       - ./customize:/cryptpad/customize
+      - ./customize/integration/index.html:/cryptpad/www/integration/index.html
+      - ./customize/presentation/inner.html:/cryptpad/www/presentation/inner.html
       - ./onlyoffice-dist:/cryptpad/www/common/onlyoffice/dist
       - ./onlyoffice-conf:/cryptpad/onlyoffice-conf
     ulimits:

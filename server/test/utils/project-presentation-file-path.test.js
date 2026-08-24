@@ -25,4 +25,10 @@ describe('Project presentation file path', () => {
       'private/attachments/project-presentations/presentation-1/presentation.pptx',
     );
   });
+
+  it('supports an immutable versioned file for a replacement upload', () => {
+    expect(getFilePath('presentation-1', 'presentation-2.pptx')).to.equal(
+      'private/attachments/project-presentations/presentation-1/presentation-2.pptx',
+    );
+  });
 });

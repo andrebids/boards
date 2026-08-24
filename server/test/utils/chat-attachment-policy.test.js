@@ -77,6 +77,10 @@ describe('Chat attachment policy', () => {
       extension: 'psd',
       isValid: true,
     });
+    expect(await validateBuffer('large-design.psb', Buffer.from('8BPS\0\x02content'))).to.include({
+      extension: 'psb',
+      isValid: true,
+    });
   });
 
   it('rejects executable, script, archive and macro-enabled extensions', async () => {
@@ -121,7 +125,7 @@ describe('Chat attachment policy', () => {
     });
   });
 
-  it('rejects any attachment larger than 25 MiB', async () => {
+  it('rejects any regular attachment larger than 250 MiB', async () => {
     const pdf = Buffer.from('%PDF-1.7\ncontent');
 
     expect(await validateBuffer('brief.pdf', pdf, CHAT_ATTACHMENT_MAX_BYTES)).to.include({
@@ -134,14 +138,14 @@ describe('Chat attachment policy', () => {
     });
   });
 
-  it('allows PSD attachments up to 500 MiB and rejects larger ones', async () => {
+  it('allows PSD and PSB attachments up to 1 GiB and rejects larger ones', async () => {
     const psd = Buffer.from('8BPS\0\x01content');
 
     expect(await validateBuffer('design.psd', psd, PSD_ATTACHMENT_MAX_BYTES)).to.include({
       extension: 'psd',
       isValid: true,
     });
-    expect(await validateBuffer('design.psd', psd, PSD_ATTACHMENT_MAX_BYTES + 1)).to.deep.equal({
+    expect(await validateBuffer('design.psb', psd, PSD_ATTACHMENT_MAX_BYTES + 1)).to.deep.equal({
       isValid: false,
       reason: 'psdAttachmentTooLarge',
     });

@@ -27,10 +27,17 @@ module.exports = {
     const { currentUser } = this.req;
     const presentation = await ProjectPresentation.qm.getOneById(inputs.id);
     const project = presentation && (await Project.qm.getOneById(presentation.projectId));
+    const board =
+      presentation && presentation.boardId && (await Board.qm.getOneById(presentation.boardId));
     const access =
       project && (await sails.helpers.presentations.getProjectAccess(project, currentUser));
 
-    if (!presentation || !access || !access.accessibleBoardIds.includes(presentation.boardId)) {
+    if (
+      !presentation ||
+      !board ||
+      !access ||
+      !access.accessibleBoardIds.includes(presentation.boardId)
+    ) {
       throw Errors.PRESENTATION_NOT_FOUND;
     }
     if (!access.canEdit) {
@@ -47,6 +54,21 @@ module.exports = {
     );
 
     if (updatedPresentation) {
+      const scoper = sails.helpers.projects.makeScoper.with({
+        record: project,
+        board,
+      });
+      const boardRelatedUserIds = await scoper.getBoardRelatedUserIds();
+
+      boardRelatedUserIds.forEach((userId) => {
+        sails.sockets.broadcast(
+          `@user:${userId}`,
+          'projectPresentationUpdate',
+          { item: _.omit(updatedPresentation, ['cryptpadEditKey', 'cryptpadViewKey']) },
+          this.req,
+        );
+      });
+
       return {
         key: inputs.editKey,
         keyVersion: inputs.keyVersion + 1,

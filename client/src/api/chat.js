@@ -158,7 +158,7 @@ const createChatMessageAttachment = (messageId, { file, clientAttachmentId }, he
         ...(clientAttachmentId && { 'X-Client-Attachment-Id': clientAttachmentId }),
       },
       {
-        timeout: 10 * 60 * 1000,
+        timeout: 60 * 60 * 1000,
       },
     )
     .then((body) => ({ ...body, item: transformChatMessageAttachment(body.item) }));

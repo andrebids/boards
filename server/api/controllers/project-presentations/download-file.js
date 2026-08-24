@@ -38,7 +38,9 @@ module.exports = {
     const fileManager = sails.hooks['file-manager'].getInstance();
     let readStream;
     try {
-      readStream = await fileManager.read(getFilePath(presentation.id));
+      readStream = await fileManager.read(
+        getFilePath(presentation.id, presentation.documentData.filename),
+      );
     } catch (error) {
       throw Errors.PRESENTATION_FILE_NOT_FOUND;
     }

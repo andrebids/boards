@@ -23,11 +23,16 @@ module.exports = {
   },
 
   async fn(inputs) {
+    const presentation = await ProjectPresentation.qm.getOneByBoardId(inputs.record.id);
     const { boardMemberships } = await sails.helpers.boards.deleteRelated(inputs.record);
 
     const board = await Board.qm.deleteOne(inputs.record.id);
 
     if (board) {
+      if (presentation) {
+        await sails.helpers.projectPresentations.removeRelatedFiles(presentation);
+      }
+
       const scoper = sails.helpers.projects.makeScoper.with({
         board,
         record: inputs.project,

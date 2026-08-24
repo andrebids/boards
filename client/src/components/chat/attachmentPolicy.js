@@ -18,6 +18,7 @@ export const CHAT_ATTACHMENT_ALLOWED_EXTENSIONS = Object.freeze([
   'ogg',
   'pdf',
   'png',
+  'psb',
   'psd',
   'pptx',
   'tif',
@@ -29,8 +30,8 @@ export const CHAT_ATTACHMENT_ALLOWED_EXTENSIONS = Object.freeze([
   'xlsx',
 ]);
 
-export const CHAT_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
-export const PSD_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
+export const CHAT_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
+export const PSD_ATTACHMENT_MAX_BYTES = 1024 * 1024 * 1024;
 export const VIDEO_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
 
 const VIDEO_EXTENSIONS = new Set(['3g2', '3gp', 'm4v', 'mov', 'mp4', 'ogg', 'webm']);
@@ -99,7 +100,8 @@ export const isChatAttachmentAllowed = (file) => {
   return !parts.slice(1, -1).some((part) => DANGEROUS_EXTENSIONS.has(part));
 };
 
-export const isChatPsdAttachment = (file) => getChatAttachmentExtension(file?.name) === 'psd';
+export const isChatPsdAttachment = (file) =>
+  ['psb', 'psd'].includes(getChatAttachmentExtension(file?.name));
 
 export const isChatVideoAttachment = (file) =>
   VIDEO_EXTENSIONS.has(getChatAttachmentExtension(file?.name));

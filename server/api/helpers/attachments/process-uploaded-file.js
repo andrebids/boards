@@ -4,6 +4,7 @@
  */
 
 const fsPromises = require('fs').promises;
+const path = require('path');
 const { rimraf } = require('rimraf');
 const { getEncoding } = require('istextorbinary');
 const mime = require('mime');
@@ -12,6 +13,21 @@ const sharp = require('sharp');
 const filenamify = require('../../../utils/filenamify');
 const { isVideoFile } = require('../../../utils/video-file');
 const { MAX_SIZE_IN_BYTES_TO_GET_ENCODING } = require('../../../constants');
+
+const EXTENSIONS_EXCLUDED_FROM_SHARP = new Set([
+  '.afdesign',
+  '.afphoto',
+  '.afpub',
+  '.ai',
+  '.eps',
+  '.fig',
+  '.idml',
+  '.indd',
+  '.psb',
+  '.psd',
+  '.sketch',
+  '.xd',
+]);
 
 module.exports = {
   inputs: {
@@ -90,7 +106,10 @@ module.exports = {
         'application/eps',
         'application/x-illustrator',
       ];
-      if (!formatsExcludedFromSharp.includes(mimeType)) {
+      if (
+        !formatsExcludedFromSharp.includes(mimeType) &&
+        !EXTENSIONS_EXCLUDED_FROM_SHARP.has(path.extname(filename).toLowerCase())
+      ) {
         let image = sharp(buffer || sourceFilePath, {
           animated: true,
         });

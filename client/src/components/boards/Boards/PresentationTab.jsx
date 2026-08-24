@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import classNames from 'classnames';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
 import Paths from '../../../constants/Paths';
+import makePresentationBoardSearchParams from '../../presentation/presentationNavigation';
 
 import styles from './GanttTab.module.scss';
 
@@ -13,23 +14,56 @@ const PresentationTab = React.memo(() => {
   const [t] = useTranslation();
   const project = useSelector(selectors.selectCurrentProject);
   const board = useSelector(selectors.selectCurrentBoard);
+  const boards = useSelector(selectors.selectBoardsForCurrentProject) || [];
   const pathsMatch = useSelector(selectors.selectPathsMatch);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isActive = pathsMatch?.pattern.path === Paths.PRESENTATION;
+  const selectedBoardId = searchParams.get('board');
+  const handleBoardSelect = useCallback(
+    (boardId) => {
+      setSearchParams(makePresentationBoardSearchParams(boardId));
+    },
+    [setSearchParams],
+  );
 
   if (!project) {
     return null;
   }
 
-  const isActive = pathsMatch?.pattern.path === Paths.PRESENTATION;
-
   return (
     <div className={styles.wrapper}>
-      <Link
-        to={`${Paths.PRESENTATION.replace(':id', project.id)}${board ? `?board=${board.id}` : ''}`}
-        className={classNames(styles.tab, isActive && styles.tabActive)}
-        aria-current={isActive ? 'page' : undefined}
-      >
-        <span>{t('common.presentations')}</span>
-      </Link>
+      {isActive ? (
+        <div className={classNames(styles.tab, styles.tabActive, styles.tabWithSelect)}>
+          <Link
+            to={`${Paths.PRESENTATION.replace(':id', project.id)}${board ? `?board=${board.id}` : ''}`}
+            className={styles.tabLink}
+            aria-current="page"
+          >
+            <span>{t('common.presentations')}</span>
+          </Link>
+          <select
+            aria-label={t('common.selectBoard')}
+            className={styles.boardSelect}
+            value={selectedBoardId || ''}
+            onChange={({ target: { value } }) => handleBoardSelect(value || undefined)}
+          >
+            <option value="">{t('common.selectBoard')}</option>
+            {boards.map((nextBoard) => (
+              <option key={nextBoard.id} value={nextBoard.id}>
+                {nextBoard.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : (
+        <Link
+          to={`${Paths.PRESENTATION.replace(':id', project.id)}${board ? `?board=${board.id}` : ''}`}
+          className={styles.tab}
+        >
+          <span>{t('common.presentations')}</span>
+        </Link>
+      )}
     </div>
   );
 });

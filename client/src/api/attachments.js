@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 import http from './http';
 import socket from './socket';
 
-const ATTACHMENT_UPLOAD_TIMEOUT = 10 * 60 * 1000;
+const ATTACHMENT_UPLOAD_TIMEOUT = 60 * 60 * 1000;
 
 const getUploadErrorMessage = (error, filename) => {
   if (error.code === 'E_HTTP_TIMEOUT') {

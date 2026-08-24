@@ -36,12 +36,48 @@ describe('project dashboard layout', () => {
     ).toThrow('outside the dashboard grid');
   });
 
-  it('accepts the Blachere Products task list without configuration', () => {
+  it('keeps the configured Blachere Products list with 2D and 3D statuses', () => {
     expect(
       normalizeDashboardLayout([
-        { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 },
+        {
+          id: 'blachere-products',
+          type: 'blachereProducts',
+          x: 0,
+          y: 0,
+          w: 3,
+          h: 5,
+          config: {
+            tasks: [
+              {
+                id: 'catalogue',
+                title: 'Atualizar catálogo',
+                twoD: 'done',
+                threeD: 'pending',
+              },
+            ],
+          },
+        },
       ]),
-    ).toEqual([{ id: 'blachere-products', type: 'blachereProducts', x: 0, y: 0, w: 3, h: 5 }]);
+    ).toEqual([
+      {
+        id: 'blachere-products',
+        type: 'blachereProducts',
+        x: 0,
+        y: 0,
+        w: 3,
+        h: 5,
+        config: {
+          tasks: [
+            {
+              id: 'catalogue',
+              title: 'Atualizar catálogo',
+              twoD: 'done',
+              threeD: 'pending',
+            },
+          ],
+        },
+      },
+    ]);
   });
 
   it('accepts a Codex usage widget without persisting a local connection configuration', () => {

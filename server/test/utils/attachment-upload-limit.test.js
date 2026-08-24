@@ -5,6 +5,10 @@ const lodash = require('lodash');
 
 process.env.BASE_URL = process.env.BASE_URL || 'http://localhost:3008';
 delete process.env.ATTACHMENT_MAX_BYTES;
+delete process.env.DESIGN_ATTACHMENT_MAX_BYTES;
+delete process.env.PSD_ATTACHMENT_MAX_BYTES;
+delete process.env.THREE_D_ATTACHMENT_MAX_BYTES;
+delete process.env.CHAT_ATTACHMENT_MAX_BYTES;
 sails.config = { appPath: path.resolve(__dirname, '../..') };
 
 const { custom } = require('../../config/custom');
@@ -83,13 +87,17 @@ const runFileUpload = async (file, inputOverrides = {}) => {
 };
 
 describe('attachment upload limit', () => {
-  it('accepts regular attachments up to 25 MiB by default', () => {
-    expect(custom.attachmentMaxBytes).to.equal(25 * 1024 * 1024);
+  it('accepts regular attachments up to 250 MiB by default', () => {
+    expect(custom.attachmentMaxBytes).to.equal(250 * 1024 * 1024);
   });
 
-  it('accepts design attachments up to 500 MiB by default', () => {
+  it('keeps general design attachments at 500 MiB by default', () => {
     expect(custom.designAttachmentMaxBytes).to.equal(500 * 1024 * 1024);
-    expect(custom.psdAttachmentMaxBytes).to.equal(500 * 1024 * 1024);
+  });
+
+  it('accepts PSD, PSB and 3D attachments up to 1 GiB by default', () => {
+    expect(custom.psdAttachmentMaxBytes).to.equal(1024 * 1024 * 1024);
+    expect(custom.threeDAttachmentMaxBytes).to.equal(1024 * 1024 * 1024);
   });
 
   it('accepts video attachments up to 250 MiB by default', () => {
@@ -100,16 +108,16 @@ describe('attachment upload limit', () => {
     expect(custom.archiveAttachmentMaxBytes).to.equal(500 * 1024 * 1024);
   });
 
-  it('uses the PSD transport limit and processes a PSD larger than 25 MiB', async () => {
+  it('uses the 1 GiB transport limit and processes a large PSD', async () => {
     const file = {
       fd: path.join(__dirname, 'missing-design.psd'),
       filename: 'design.psd',
-      size: 100 * 1024 * 1024,
+      size: 900 * 1024 * 1024,
     };
 
     const result = await runFileUpload(file);
 
-    expect(result.receivedMaxBytes).to.equal(500 * 1024 * 1024);
+    expect(result.receivedMaxBytes).to.equal(1024 * 1024 * 1024);
     expect(result.processedFile).to.equal(file);
     expect(result.uploadError).to.equal(undefined);
     expect(result.result.item.id).to.equal('attachment-1');
@@ -143,6 +151,43 @@ describe('attachment upload limit', () => {
     });
   });
 
+  ['psb', 'fbx'].forEach((extension) => {
+    it(`allows ${extension.toUpperCase()} files up to the 1 GiB limit`, async () => {
+      const file = {
+        fd: path.join(__dirname, `missing-large.${extension}`),
+        filename: `large.${extension}`,
+        size: 900 * 1024 * 1024,
+      };
+
+      const result = await runFileUpload(file);
+
+      expect(result.processedFile).to.equal(file);
+      expect(result.uploadError).to.equal(undefined);
+    });
+  });
+
+  it('explains when a PSD or PSB exceeds 1 GiB', async () => {
+    const result = await runFileUpload({
+      fd: path.join(__dirname, 'missing-oversized.psb'),
+      filename: 'oversized.psb',
+      size: 1025 * 1024 * 1024,
+    });
+
+    expect(result.processedFile).to.equal(undefined);
+    expect(result.uploadError).to.equal('O ficheiro PSD/PSB não pode ter mais de 1024 MB.');
+  });
+
+  it('explains when a 3D file exceeds 1 GiB', async () => {
+    const result = await runFileUpload({
+      fd: path.join(__dirname, 'missing-oversized.fbx'),
+      filename: 'oversized.fbx',
+      size: 1025 * 1024 * 1024,
+    });
+
+    expect(result.processedFile).to.equal(undefined);
+    expect(result.uploadError).to.equal('O ficheiro 3D não pode ter mais de 1024 MB.');
+  });
+
   it('rejects Illustrator files above the 500 MiB design limit', async () => {
     const result = await runFileUpload({
       fd: path.join(__dirname, 'missing-large-design.ai'),
@@ -154,18 +199,31 @@ describe('attachment upload limit', () => {
     expect(result.uploadError).to.equal('O ficheiro de design não pode ter mais de 500 MB.');
   });
 
-  it('rejects a non-PSD attachment above the regular 25 MiB limit', async () => {
+  it('rejects a generic attachment above the regular 250 MiB limit', async () => {
     const result = await runFileUpload({
       fd: path.join(__dirname, 'missing-document.pdf'),
       filename: 'document.pdf',
-      size: 26 * 1024 * 1024,
+      size: 251 * 1024 * 1024,
     });
 
     expect(result.processedFile).to.equal(undefined);
-    expect(result.uploadError).to.equal('O ficheiro não pode ter mais de 25 MB.');
+    expect(result.uploadError).to.equal('O ficheiro não pode ter mais de 250 MB.');
   });
 
-  it('uses the video limit and processes an MP4 larger than 25 MiB', async () => {
+  it('accepts a high-quality TIFF image up to 250 MiB', async () => {
+    const file = {
+      fd: path.join(__dirname, 'missing-high-quality.tiff'),
+      filename: 'high-quality.tiff',
+      size: 250 * 1024 * 1024,
+    };
+
+    const result = await runFileUpload(file);
+
+    expect(result.processedFile).to.equal(file);
+    expect(result.uploadError).to.equal(undefined);
+  });
+
+  it('uses the video limit and processes an MP4 up to 250 MiB', async () => {
     const file = {
       fd: path.join(__dirname, 'missing-video.mp4'),
       filename: 'video.mp4',
@@ -174,7 +232,7 @@ describe('attachment upload limit', () => {
 
     const result = await runFileUpload(file);
 
-    expect(result.receivedMaxBytes).to.equal(500 * 1024 * 1024);
+    expect(result.receivedMaxBytes).to.equal(1024 * 1024 * 1024);
     expect(result.processedFile).to.equal(file);
     expect(result.uploadError).to.equal(undefined);
   });

@@ -6,6 +6,9 @@
 import { CardTypes } from '../constants/Enums';
 
 export const IMAGE_TYPES = [
+  'image/avif',
+  'image/heic',
+  'image/heif',
   'image/jpeg',
   'image/jpg',
   'image/png',
@@ -13,10 +16,14 @@ export const IMAGE_TYPES = [
   'image/webp',
   'image/bmp',
   'image/svg+xml',
+  'image/tiff',
 ];
 
 export const SUPPORTED_FILE_TYPES = [
   // Imagens
+  'image/avif',
+  'image/heic',
+  'image/heif',
   'image/jpeg',
   'image/jpg',
   'image/png',
@@ -24,6 +31,7 @@ export const SUPPORTED_FILE_TYPES = [
   'image/webp',
   'image/bmp',
   'image/svg+xml',
+  'image/tiff',
   // Documentos
   'application/pdf',
   'application/msword',
@@ -63,6 +71,97 @@ export const SUPPORTED_FILE_TYPES = [
   'application/x-rar-compressed',
 ];
 
+export const SUPPORTED_FILE_EXTENSIONS = Object.freeze([
+  // Imagens
+  'avif',
+  'heic',
+  'heif',
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+  'bmp',
+  'svg',
+  'tif',
+  'tiff',
+  // Documentos
+  'pdf',
+  'doc',
+  'docx',
+  'xls',
+  'xlsx',
+  'ppt',
+  'pptx',
+  'txt',
+  'csv',
+  // Design
+  'psd',
+  'psb',
+  'ai',
+  'eps',
+  'indd',
+  'idml',
+  'xd',
+  'sketch',
+  'fig',
+  'afdesign',
+  'afphoto',
+  'afpub',
+  // 3D e CAD
+  'obj',
+  'mtl',
+  'fbx',
+  'stl',
+  'glb',
+  'gltf',
+  'blend',
+  '3ds',
+  'max',
+  'dae',
+  'c4d',
+  'skp',
+  '3dm',
+  'step',
+  'stp',
+  'iges',
+  'igs',
+  'usd',
+  'usda',
+  'usdc',
+  'usdz',
+  'dwg',
+  'dxf',
+  // Vídeos
+  'mp4',
+  'webm',
+  'ogv',
+  'mov',
+  'avi',
+  'wmv',
+  'flv',
+  'mkv',
+  'm4v',
+  '3gp',
+  '3g2',
+  'mpeg',
+  'mpg',
+  'mpe',
+  'ts',
+  'mts',
+  'm2ts',
+  'vob',
+  'asf',
+  'mxf',
+  // Arquivos comprimidos
+  'zip',
+  'rar',
+]);
+
+export const SUPPORTED_FILE_ACCEPT = SUPPORTED_FILE_EXTENSIONS.map(
+  (extension) => `.${extension}`,
+).join(',');
+
 const fileNameCollator = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: 'base',
@@ -72,59 +171,28 @@ export const isImageFile = file => {
   return IMAGE_TYPES.includes(file.type);
 };
 
+export const getFileExtension = filename => {
+  if (typeof filename !== 'string') {
+    return null;
+  }
+
+  const basename = filename.replace(/\\/g, '/').split('/').pop().toLowerCase();
+  const lastDotIndex = basename.lastIndexOf('.');
+
+  return lastDotIndex > -1 && lastDotIndex < basename.length - 1
+    ? basename.slice(lastDotIndex + 1)
+    : null;
+};
+
 export const isSupportedFile = file => {
   // Verificar por MIME type primeiro
   const isSupportedByMimeType = SUPPORTED_FILE_TYPES.includes(file.type);
 
   // Se não for suportado por MIME type, verificar por extensão
   if (!isSupportedByMimeType) {
-    const extension = file.name.toLowerCase().split('.').pop();
+    const extension = getFileExtension(file.name);
 
-    const supportedExtensions = [
-      'jpg',
-      'jpeg',
-      'png',
-      'gif',
-      'webp',
-      'bmp',
-      'svg',
-      'pdf',
-      'doc',
-      'docx',
-      'xls',
-      'xlsx',
-      'ppt',
-      'pptx',
-      'psd',
-      'ai',
-      'eps',
-      'txt',
-      'csv',
-      'zip',
-      'rar',
-      'mp4',
-      'webm',
-      'ogv',
-      'mov',
-      'avi',
-      'wmv',
-      'flv',
-      'mkv',
-      'm4v',
-      '3gp',
-      '3g2',
-      'mpeg',
-      'mpg',
-      'mpe',
-      'ts',
-      'mts',
-      'm2ts',
-      'vob',
-      'asf',
-      'mxf',
-    ];
-
-    return supportedExtensions.includes(extension);
+    return !!extension && SUPPORTED_FILE_EXTENSIONS.includes(extension);
   }
 
   return isSupportedByMimeType;

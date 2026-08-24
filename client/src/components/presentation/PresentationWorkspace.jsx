@@ -8,13 +8,12 @@ import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import { usePresentation } from './PresentationContext';
 import PresentationEditor from './PresentationEditor';
-import makePresentationBoardSearchParams from './presentationNavigation';
 
 import styles from './PresentationWorkspace.module.scss';
 
 const PresentationWorkspace = React.memo(() => {
   const [t] = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const boards = useSelector(selectors.selectBoardsForCurrentProject) || [];
   const { presentations, canEdit, isLoading, error, activate, reload } = usePresentation();
   const [isCreating, setIsCreating] = useState(false);
@@ -25,14 +24,6 @@ const PresentationWorkspace = React.memo(() => {
   const selectedPresentation = selectedBoard
     ? presentations.find(({ boardId }) => boardId === selectedBoard.id) || null
     : null;
-
-  const handleBoardSelect = useCallback(
-    (boardId) => {
-      setCreateError(null);
-      setSearchParams(makePresentationBoardSearchParams(boardId));
-    },
-    [setSearchParams],
-  );
 
   const handleCreate = useCallback(async () => {
     if (!selectedBoard) {
@@ -77,35 +68,10 @@ const PresentationWorkspace = React.memo(() => {
     );
   } else if (!selectedBoard) {
     contentNode = (
-      <section className={styles.boardList} aria-labelledby="presentations-board-list-title">
-        <h2 id="presentations-board-list-title">{t('common.presentationsByBoard')}</h2>
-        <ul>
-          {boards.map((board) => {
-            const presentation = presentations.find(({ boardId }) => boardId === board.id);
-            const isAvailable = Boolean(presentation?.isEnabled);
-
-            return (
-              <li key={board.id}>
-                <div className={styles.boardIdentity}>
-                  <Icon name="columns" />
-                  <div>
-                    <strong>{board.name}</strong>
-                    <span>
-                      {t(
-                        isAvailable
-                          ? 'common.presentationCreated'
-                          : 'common.presentationNotCreated',
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <Button variant="secondary" onClick={() => handleBoardSelect(board.id)}>
-                  {t(isAvailable ? 'action.open' : 'action.view')}
-                </Button>
-              </li>
-            );
-          })}
-        </ul>
+      <section className={styles.emptyState}>
+        <Icon name="columns" size="huge" />
+        <h2>{t('common.selectBoard')}</h2>
+        <p>{t('common.presentationsDescription')}</p>
       </section>
     );
   } else if (selectedPresentation?.isEnabled) {
@@ -141,22 +107,6 @@ const PresentationWorkspace = React.memo(() => {
 
   return (
     <main className={styles.workspace}>
-      <header className={styles.header}>
-        <div className={styles.heading}>
-          <h1>{t('common.presentations')}</h1>
-          <p>{t('common.presentationsDescription')}</p>
-        </div>
-        {selectedBoard && (
-          <Button
-            variant="secondary"
-            className={styles.backButton}
-            onClick={() => handleBoardSelect()}
-          >
-            <Icon name="arrow left" />
-            {t('common.allBoards')}
-          </Button>
-        )}
-      </header>
       {contentNode}
     </main>
   );

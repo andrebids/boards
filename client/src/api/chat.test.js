@@ -37,7 +37,7 @@ describe('chat attachment API', () => {
         Authorization: 'Bearer token',
         'X-Client-Attachment-Id': 'client-attachment-1',
       },
-      { timeout: 10 * 60 * 1000 },
+      { timeout: 60 * 60 * 1000 },
     );
     expect(result.item.createdAt).toEqual(new Date('2026-08-20T10:00:00.000Z'));
     expect(result.messageId).toBe('message-1');

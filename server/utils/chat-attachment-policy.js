@@ -23,6 +23,7 @@ const ALLOWED_EXTENSIONS = Object.freeze([
   'ogg',
   'pdf',
   'png',
+  'psb',
   'psd',
   'pptx',
   'tif',
@@ -92,6 +93,7 @@ const EXPECTED_CONTENT_KIND = Object.freeze({
   ogg: 'ogg',
   pdf: 'pdf',
   png: 'png',
+  psb: 'psd',
   psd: 'psd',
   pptx: 'pptx',
   tif: 'tiff',
@@ -106,8 +108,8 @@ const EXPECTED_CONTENT_KIND = Object.freeze({
 const ZIP_END_OF_CENTRAL_DIRECTORY = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
 const MAX_ZIP_CENTRAL_DIRECTORY_BYTES = 4 * 1024 * 1024;
 const MAX_TEXT_SAMPLE_BYTES = 64 * 1024;
-const CHAT_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
-const PSD_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
+const CHAT_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
+const PSD_ATTACHMENT_MAX_BYTES = 1024 * 1024 * 1024;
 const VIDEO_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
 const UNSAFE_OOXML_ENTRY_PARTS = ['/activex/', '/vbadata.xml', '/vbaproject.bin'];
 
@@ -238,7 +240,7 @@ const looksLikeText = (buffer) => {
 };
 
 const getAttachmentMaxBytes = (filename, extension, limits) => {
-  if (extension === 'psd') {
+  if (['psb', 'psd'].includes(extension)) {
     return limits.psd;
   }
   if (isVideoFile(filename)) {
@@ -249,7 +251,7 @@ const getAttachmentMaxBytes = (filename, extension, limits) => {
 };
 
 const getAttachmentTooLargeReason = (filename, extension) => {
-  if (extension === 'psd') {
+  if (['psb', 'psd'].includes(extension)) {
     return 'psdAttachmentTooLarge';
   }
   if (isVideoFile(filename)) {

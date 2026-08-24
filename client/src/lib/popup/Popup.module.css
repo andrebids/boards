@@ -37,6 +37,17 @@
   color: #e6edf3;
 }
 
+/*
+ * Semantic UI renders a dropdown menu inside its trigger. When there is no
+ * room below, that menu opens upward; keeping the popup scrollable in that
+ * moment clips the first options and makes them impossible to select.
+ *
+ * The popup resumes scrolling as soon as the dropdown closes.
+ */
+.glass:has(:global(.ui.dropdown.visible)) {
+  overflow: visible;
+}
+
 .glass::after {
   content: '';
   position: absolute;

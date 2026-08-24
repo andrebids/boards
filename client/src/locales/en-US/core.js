@@ -111,6 +111,7 @@ export default {
       cardNotFound_title: 'Card Not Found',
       cardCreatedButAttachmentUploadFailed:
         'The card was created, but its attachment could not be uploaded.',
+      emptyAttachmentFile: '{{name}} was not uploaded because the file is empty.',
       cardsOnThisListAreAvailableToAllBoardMembers:
         'Cards on this list are available to all board members.',
       cardsOnThisListAreCompleteAndReadyToBeArchived:
@@ -163,6 +164,10 @@ export default {
       download: 'Download',
       display: 'Display',
       dropFileToUpload: 'Drop file to upload',
+      unknownFileType: 'an unrecognized file type',
+      unnamedFile: 'Unnamed file',
+      unsupportedAttachmentFileType:
+        '{{name}} was not uploaded because {{extension}} is not a supported format.',
       dueDate_title: 'Due Date',
       dynamicAndUnevenlySpacedLayout: 'Dynamic and unevenly spaced layout.',
       editAttachment_title: 'Edit Attachment',

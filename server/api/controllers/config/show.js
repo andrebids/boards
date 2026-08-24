@@ -46,9 +46,10 @@ module.exports = {
             oidc,
             attachmentLimits: {
               archive: sails.config.custom.archiveAttachmentMaxBytes,
-              default: sails.config.custom.attachmentMaxBytes,
+              default: sails.config.custom.chatAttachmentMaxBytes,
               design: sails.config.custom.designAttachmentMaxBytes,
               psd: sails.config.custom.psdAttachmentMaxBytes,
+              threeD: sails.config.custom.threeDAttachmentMaxBytes,
               video: sails.config.custom.videoAttachmentMaxBytes,
             },
             passwordResetEnabled:

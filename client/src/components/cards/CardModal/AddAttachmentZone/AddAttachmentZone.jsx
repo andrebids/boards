@@ -14,6 +14,7 @@ import entryActions from '../../../../entry-actions';
 import { useModal } from '../../../../hooks';
 import { isUrl } from '../../../../utils/validator';
 import { isActiveTextElement } from '../../../../utils/element-helpers';
+import handleAttachmentFiles from '../../../../utils/attachment-upload';
 import { AttachmentTypes } from '../../../../constants/Enums';
 import AddTextFileModal from './AddTextFileModal';
 
@@ -37,6 +38,16 @@ const AddAttachmentZone = React.memo(({ children }) => {
     [dispatch]
   );
 
+  const submitFiles = useCallback(
+    files => {
+      handleAttachmentFiles(files, {
+        onAccepted: submitFile,
+        t,
+      });
+    },
+    [submitFile, t]
+  );
+
   const submitLink = useCallback(
     url => {
       dispatch(
@@ -50,19 +61,10 @@ const AddAttachmentZone = React.memo(({ children }) => {
     [dispatch]
   );
 
-  const handleDropAccepted = useCallback(
-    files => {
-      files.forEach(file => {
-        submitFile(file);
-      });
-    },
-    [submitFile]
-  );
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     noClick: true,
     noKeyboard: true,
-    onDropAccepted: handleDropAccepted,
+    onDropAccepted: submitFiles,
   });
 
   const handleFileCreate = useCallback(
@@ -81,9 +83,7 @@ const AddAttachmentZone = React.memo(({ children }) => {
       const { files, items } = event.clipboardData;
 
       if (files.length > 0) {
-        [...files].forEach(file => {
-          submitFile(file);
-        });
+        submitFiles(files);
 
         return;
       }
@@ -112,13 +112,12 @@ const AddAttachmentZone = React.memo(({ children }) => {
         return;
       }
 
-      [...items].forEach(item => {
-        if (item.kind !== 'file') {
-          return;
-        }
-
-        submitFile(item.getAsFile());
-      });
+      submitFiles(
+        [...items]
+          .filter(item => item.kind === 'file')
+          .map(item => item.getAsFile())
+          .filter(Boolean)
+      );
     };
 
     window.addEventListener('paste', handlePaste);
@@ -126,7 +125,7 @@ const AddAttachmentZone = React.memo(({ children }) => {
     return () => {
       window.removeEventListener('paste', handlePaste);
     };
-  }, [openModal, submitFile, submitLink]);
+  }, [openModal, submitFiles, submitLink]);
 
   return (
     <>

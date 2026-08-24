@@ -142,7 +142,7 @@ export default {
       viewAllMembers: 'Voir les {{count}} membres',
       unavailable: 'Indisponible',
       unmute: 'Réactiver les notifications',
-      attachmentTooLarge: 'La taille d’un fichier ne peut pas dépasser 25 Mo.',
+      attachmentTooLarge: 'La taille d’un fichier ne peut pas dépasser {{size}} Mo.',
       unreadMessages_one: '{{count}} message non lu',
       unreadMessages_other: '{{count}} messages non lus',
       unsupportedAttachmentType:

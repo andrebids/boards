@@ -12,9 +12,61 @@ export const DASHBOARD_WIDGETS = {
 
 export const GANTT_ZOOM_LEVELS = ['day', 'week', 'month', 'quarter'];
 
+const BLACHERE_PRODUCT_STATUSES = ['done', 'pending'];
+const MAX_BLACHERE_PRODUCTS = 50;
+
 export const GRIDSTACK_DASHBOARD_COMPONENT = 'DashboardWidget';
 
 const normalizeWidgetConfig = (type, config) => {
+  if (type === 'blachereProducts') {
+    if (config === undefined) {
+      return undefined;
+    }
+
+    if (
+      !config ||
+      typeof config !== 'object' ||
+      Array.isArray(config) ||
+      !Array.isArray(config.tasks)
+    ) {
+      throw new Error('Blachere Products widget must have a task list configuration');
+    }
+
+    if (config.tasks.length > MAX_BLACHERE_PRODUCTS) {
+      throw new Error('Blachere Products widget has too many tasks');
+    }
+
+    const taskIds = new Set();
+    return {
+      tasks: config.tasks.map((task) => {
+        if (
+          !task ||
+          typeof task !== 'object' ||
+          Array.isArray(task) ||
+          typeof task.id !== 'string' ||
+          task.id.trim() === '' ||
+          task.id.length > 64 ||
+          taskIds.has(task.id) ||
+          typeof task.title !== 'string' ||
+          task.title.trim() === '' ||
+          task.title.length > 160 ||
+          !BLACHERE_PRODUCT_STATUSES.includes(task.twoD) ||
+          !BLACHERE_PRODUCT_STATUSES.includes(task.threeD)
+        ) {
+          throw new Error('Blachere Products widget has an invalid task');
+        }
+
+        taskIds.add(task.id);
+        return {
+          id: task.id,
+          title: task.title.trim(),
+          twoD: task.twoD,
+          threeD: task.threeD,
+        };
+      }),
+    };
+  }
+
   if (type !== 'gantt') {
     return undefined;
   }
@@ -45,7 +97,14 @@ export const createDefaultDashboardLayout = () => [
   { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
   { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
   { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
-  { id: 'blachere-products', type: 'blachereProducts', x: 0, y: 10, w: 12, h: 5 },
+  {
+    id: 'blachere-products',
+    type: 'blachereProducts',
+    x: 0,
+    y: 10,
+    w: 12,
+    h: 5,
+  },
   { id: 'codex-usage', type: 'codexUsage', x: 0, y: 15, w: 4, h: 4 },
 ];
 

@@ -56,7 +56,8 @@
 
     li {
       align-items: center;
-      border-bottom: 1px solid color-mix(in oklab, var(--app-dark-border) 72%, transparent);
+      border-bottom: 1px solid
+        color-mix(in oklab, var(--app-dark-border) 72%, transparent);
       display: grid;
       flex: 1 0 36px;
       gap: 8px;
@@ -76,6 +77,75 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .editorControls {
+    border-bottom: 1px solid
+      color-mix(in oklab, var(--app-dark-border) 72%, transparent);
+    padding: 0 14px 8px;
+  }
+
+  .addTask,
+  .removeTask {
+    align-items: center;
+    background: var(--app-dark-surface-hover);
+    border: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+  }
+
+  .addTask {
+    font-size: 12px;
+    font-weight: 650;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 9px;
+  }
+
+  .editingList li {
+    grid-template-columns: minmax(0, 1fr) 48px 48px 28px;
+  }
+
+  .taskInput {
+    background: var(--app-dark-canvas);
+    border: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text);
+    font: inherit;
+    font-size: inherit;
+    font-weight: 600;
+    min-width: 0;
+    padding: 4px 7px;
+  }
+
+  .removeTask {
+    height: 28px;
+    justify-content: center;
+    padding: 0;
+    width: 28px;
+  }
+
+  .addTask:hover,
+  .addTask:focus-visible,
+  .removeTask:hover,
+  .removeTask:focus-visible,
+  .taskInput:focus-visible {
+    border-color: var(--app-focus);
+  }
+
+  .addTask:focus-visible,
+  .removeTask:focus-visible,
+  .taskInput:focus-visible {
+    outline: 2px solid var(--app-focus);
+    outline-offset: 2px;
+  }
+
+  .emptyState {
+    color: var(--app-dark-text-muted);
+    font-size: 13px;
+    margin: 0;
+    padding: 14px;
   }
 
   .ticker {
@@ -111,6 +181,10 @@
 
     .header {
       grid-template-columns: minmax(0, 1fr) 44px 44px;
+    }
+
+    .editingList li {
+      grid-template-columns: minmax(0, 1fr) 44px 44px 28px;
     }
   }
 }

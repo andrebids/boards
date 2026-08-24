@@ -9,15 +9,64 @@ const { rimraf } = require('rimraf');
 const { isUrl } = require('../../../utils/validators');
 const { idInput } = require('../../../utils/inputs');
 const { isVideoFile } = require('../../../utils/video-file');
+const { isHeifFilename, normalizeHeifUpload } = require('../../../utils/heif-file');
 
 const bytesToMiB = (bytes) => Math.floor(bytes / (1024 * 1024));
 
+const DESIGN_EXTENSIONS = new Set([
+  '.afdesign',
+  '.afphoto',
+  '.afpub',
+  '.ai',
+  '.eps',
+  '.fig',
+  '.idml',
+  '.indd',
+  '.sketch',
+  '.xd',
+]);
+const PSD_EXTENSIONS = new Set(['.psb', '.psd']);
+const THREE_D_EXTENSIONS = new Set([
+  '.3dm',
+  '.3ds',
+  '.blend',
+  '.c4d',
+  '.dae',
+  '.dwg',
+  '.dxf',
+  '.fbx',
+  '.glb',
+  '.gltf',
+  '.igs',
+  '.iges',
+  '.max',
+  '.mtl',
+  '.obj',
+  '.skp',
+  '.step',
+  '.stl',
+  '.stp',
+  '.usd',
+  '.usda',
+  '.usdc',
+  '.usdz',
+]);
+
 const isDesignFile = (filename) =>
-  ['.ai', '.eps', '.psd'].includes(path.extname(filename || '').toLowerCase());
+  DESIGN_EXTENSIONS.has(path.extname(filename || '').toLowerCase());
+const isPsdFile = (filename) => PSD_EXTENSIONS.has(path.extname(filename || '').toLowerCase());
+const isThreeDFile = (filename) =>
+  THREE_D_EXTENSIONS.has(path.extname(filename || '').toLowerCase());
 const isArchiveFile = (filename) =>
   ['.rar', '.zip'].includes(path.extname(filename || '').toLowerCase());
 
 const getUploadLimit = (filename) => {
+  if (isPsdFile(filename)) {
+    return sails.config.custom.psdAttachmentMaxBytes;
+  }
+  if (isThreeDFile(filename)) {
+    return sails.config.custom.threeDAttachmentMaxBytes;
+  }
   if (isDesignFile(filename)) {
     return sails.config.custom.designAttachmentMaxBytes;
   }
@@ -32,6 +81,12 @@ const getUploadLimit = (filename) => {
 };
 
 const getFileTypeLabel = (filename) => {
+  if (isPsdFile(filename)) {
+    return 'ficheiro PSD/PSB';
+  }
+  if (isThreeDFile(filename)) {
+    return 'ficheiro 3D';
+  }
   if (isDesignFile(filename)) {
     return 'ficheiro de design';
   }
@@ -46,6 +101,22 @@ const getFileTypeLabel = (filename) => {
 };
 
 const discardFiles = (files) => Promise.allSettled(files.map(({ fd }) => rimraf(fd)));
+
+const getHeifUploadErrorMessage = (error) => {
+  if (error.code === 'HEIF_DIMENSIONS_UNSUPPORTED') {
+    return 'A imagem HEIC/HEIF não foi carregada porque tem dimensões inválidas ou excede 80 megapíxeis.';
+  }
+  if (error.code === 'HEIF_CONVERSION_TOO_LARGE') {
+    return `A imagem HEIC/HEIF convertida não pode ter mais de ${bytesToMiB(
+      sails.config.custom.attachmentMaxBytes,
+    )} MB.`;
+  }
+  if (error.code === 'ETIMEDOUT' || error.killed) {
+    return 'A conversão da imagem HEIC/HEIF demorou demasiado tempo.';
+  }
+
+  return 'Não foi possível converter a imagem HEIC/HEIF. O ficheiro pode estar danificado ou usar uma variante não suportada.';
+};
 
 const Errors = {
   NOT_ENOUGH_RIGHTS: {
@@ -142,6 +213,8 @@ module.exports = {
           maxBytes: Math.max(
             sails.config.custom.attachmentMaxBytes,
             sails.config.custom.designAttachmentMaxBytes,
+            sails.config.custom.psdAttachmentMaxBytes,
+            sails.config.custom.threeDAttachmentMaxBytes,
             sails.config.custom.videoAttachmentMaxBytes,
             sails.config.custom.archiveAttachmentMaxBytes,
           ),
@@ -152,6 +225,8 @@ module.exports = {
             `O ficheiro excede o limite máximo de ${bytesToMiB(
               Math.max(
                 sails.config.custom.designAttachmentMaxBytes,
+                sails.config.custom.psdAttachmentMaxBytes,
+                sails.config.custom.threeDAttachmentMaxBytes,
                 sails.config.custom.videoAttachmentMaxBytes,
                 sails.config.custom.archiveAttachmentMaxBytes,
               ),
@@ -166,7 +241,23 @@ module.exports = {
         throw Errors.NO_FILE_WAS_UPLOADED;
       }
 
-      const file = _.last(files);
+      let file = _.last(files);
+      if (Number.isFinite(file.size) && file.size === 0) {
+        await discardFiles(files);
+        return exits.uploadError('O ficheiro está vazio.');
+      }
+
+      if (isHeifFilename(file.filename)) {
+        try {
+          file = await normalizeHeifUpload(file, {
+            maxBytes: sails.config.custom.attachmentMaxBytes,
+          });
+        } catch (error) {
+          await discardFiles(files);
+          return exits.uploadError(getHeifUploadErrorMessage(error));
+        }
+      }
+
       const uploadLimit = getUploadLimit(file.filename);
       if (Number.isFinite(file.size) && file.size > uploadLimit) {
         await discardFiles(files);

@@ -24,7 +24,7 @@ import {
   CardTypes,
   ListTypes,
 } from '../../../constants/Enums';
-import { processSupportedFiles } from '../../../utils/file-helpers';
+import handleAttachmentFiles from '../../../utils/attachment-upload';
 import ProjectContent from './ProjectContent';
 import StoryContent from './StoryContent';
 import InlineContent from './InlineContent';
@@ -121,19 +121,20 @@ const Card = React.memo(({ id, isInline }) => {
       event.stopPropagation();
       setIsFileDragOver(false);
 
-      processSupportedFiles(Array.from(event.dataTransfer.files)).forEach(
-        ({ file }) => {
+      handleAttachmentFiles(event.dataTransfer.files, {
+        onAccepted: (file) => {
           dispatch(
             entryActions.createAttachment(id, {
               file,
               type: AttachmentTypes.FILE,
               name: file.name,
-            })
+            }),
           );
-        }
-      );
+        },
+        t,
+      });
     },
-    [canUseActions, dispatch, id]
+    [canUseActions, dispatch, id, t]
   );
 
   const ActionsPopup = usePopup(ActionsStep, { variantClass: 'notifications' });

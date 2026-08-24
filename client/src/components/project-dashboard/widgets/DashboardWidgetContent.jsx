@@ -7,7 +7,7 @@ import DashboardCodexUsageWidget from './DashboardCodexUsageWidget';
 
 import styles from './DashboardWidgetContent.module.scss';
 
-const DashboardWidgetContent = React.memo(({ widget }) => {
+const DashboardWidgetContent = React.memo(({ isEditing, onProductsChange, widget }) => {
   if (widget.type === 'gantt') {
     return (
       <DashboardGanttWidget
@@ -18,7 +18,13 @@ const DashboardWidgetContent = React.memo(({ widget }) => {
   }
 
   if (widget.type === 'blachereProducts') {
-    return <DashboardBlachereProductsWidget />;
+    return (
+      <DashboardBlachereProductsWidget
+        isEditing={isEditing}
+        tasks={widget.config?.tasks}
+        onTasksChange={onProductsChange}
+      />
+    );
   }
 
   if (widget.type === 'codexUsage') {
@@ -34,11 +40,21 @@ const DashboardWidgetContent = React.memo(({ widget }) => {
 });
 
 DashboardWidgetContent.propTypes = {
+  isEditing: PropTypes.bool.isRequired,
+  onProductsChange: PropTypes.func.isRequired,
   widget: PropTypes.shape({
     id: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     config: PropTypes.shape({
       projectId: PropTypes.string,
+      tasks: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.string.isRequired,
+          title: PropTypes.string.isRequired,
+          twoD: PropTypes.oneOf(['done', 'pending']).isRequired,
+          threeD: PropTypes.oneOf(['done', 'pending']).isRequired,
+        }),
+      ),
       zoomLevel: PropTypes.oneOf(['day', 'week', 'month', 'quarter']),
     }),
   }).isRequired,

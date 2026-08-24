@@ -74,4 +74,38 @@
       border-color: rgba(255, 255, 255, 0.16);
     }
   }
+
+  .tabWithSelect {
+    gap: 8px;
+    min-width: 0;
+    padding-right: 8px;
+  }
+
+  .tabLink {
+    align-items: center;
+    color: inherit;
+    display: flex;
+    min-width: 0;
+
+    &:hover {
+      color: inherit;
+    }
+  }
+
+  .boardSelect {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    color: #fff;
+    font: inherit;
+    height: 28px;
+    max-width: 160px;
+    min-width: 0;
+    padding: 0 24px 0 8px;
+
+    option {
+      background: #20242f;
+      color: #fff;
+    }
+  }
 }

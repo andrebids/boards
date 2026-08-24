@@ -18,6 +18,7 @@ describe('chat attachment policy', () => {
     expect(isChatAttachmentAllowed({ name: 'proposal.docx' })).toBeTruthy();
     expect(isChatAttachmentAllowed({ name: 'screenshot.png' })).toBeTruthy();
     expect(isChatAttachmentAllowed({ name: 'design.psd' })).toBeTruthy();
+    expect(isChatAttachmentAllowed({ name: 'large-design.psb' })).toBeTruthy();
     expect(CHAT_ATTACHMENT_ACCEPT).toContain('.xlsx');
   });
 
@@ -40,22 +41,35 @@ describe('chat attachment policy', () => {
     expect(isChatAttachmentAllowed({ name: 'README' })).toBeFalsy();
   });
 
-  test('rejects regular attachments larger than 25 MiB before upload', () => {
+  test('rejects regular attachments larger than 250 MiB before upload', () => {
     expect(
-      isChatAttachmentTooLarge({ name: 'document.pdf', size: CHAT_ATTACHMENT_MAX_BYTES }),
+      isChatAttachmentTooLarge({
+        name: 'document.pdf',
+        size: CHAT_ATTACHMENT_MAX_BYTES,
+      }),
     ).toBeFalsy();
     expect(
-      isChatAttachmentTooLarge({ name: 'document.pdf', size: CHAT_ATTACHMENT_MAX_BYTES + 1 }),
+      isChatAttachmentTooLarge({
+        name: 'document.pdf',
+        size: CHAT_ATTACHMENT_MAX_BYTES + 1,
+      }),
     ).toBeTruthy();
   });
 
-  test('allows PSD attachments up to 500 MiB before upload', () => {
+  test('allows PSD and PSB attachments up to 1 GiB before upload', () => {
     expect(isChatPsdAttachment({ name: 'design.PSD' })).toBeTruthy();
+    expect(isChatPsdAttachment({ name: 'design.PSB' })).toBeTruthy();
     expect(
-      isChatAttachmentTooLarge({ name: 'design.psd', size: PSD_ATTACHMENT_MAX_BYTES }),
+      isChatAttachmentTooLarge({
+        name: 'design.psd',
+        size: PSD_ATTACHMENT_MAX_BYTES,
+      }),
     ).toBeFalsy();
     expect(
-      isChatAttachmentTooLarge({ name: 'design.psd', size: PSD_ATTACHMENT_MAX_BYTES + 1 }),
+      isChatAttachmentTooLarge({
+        name: 'design.psb',
+        size: PSD_ATTACHMENT_MAX_BYTES + 1,
+      }),
     ).toBeTruthy();
   });
 
@@ -66,7 +80,10 @@ describe('chat attachment policy', () => {
     expect(getChatAttachmentMaxBytes(file)).toBe(VIDEO_ATTACHMENT_MAX_BYTES);
     expect(isChatAttachmentTooLarge(file)).toBeFalsy();
     expect(
-      isChatAttachmentTooLarge({ ...file, size: VIDEO_ATTACHMENT_MAX_BYTES + 1 }),
+      isChatAttachmentTooLarge({
+        ...file,
+        size: VIDEO_ATTACHMENT_MAX_BYTES + 1,
+      }),
     ).toBeTruthy();
   });
 

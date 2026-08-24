@@ -369,6 +369,7 @@ export default {
       cardNotFound_title: 'Cartão não encontrado',
       cardCreatedButAttachmentUploadFailed:
         'O cartão foi criado, mas não foi possível carregar o anexo.',
+      emptyAttachmentFile: '{{name}} não foi carregado porque o ficheiro está vazio.',
       cardsOnThisListAreAvailableToAllBoardMembers:
         'Os cartões nesta lista estão disponíveis para todos os membros do quadro.',
       cardsOnThisListAreCompleteAndReadyToBeArchived:
@@ -423,6 +424,10 @@ export default {
       download: 'Descarregar',
       display: 'Exibir',
       dropFileToUpload: 'Solte o ficheiro para enviar',
+      unknownFileType: 'um tipo de ficheiro não reconhecido',
+      unnamedFile: 'Ficheiro sem nome',
+      unsupportedAttachmentFileType:
+        '{{name}} não foi carregado porque o formato {{extension}} não é suportado.',
       dueDate_title: 'Data Limite',
       dynamicAndUnevenlySpacedLayout: 'Layout dinâmico e espaçado irregularmente.',
       editAttachment_title: 'Editar Anexo',

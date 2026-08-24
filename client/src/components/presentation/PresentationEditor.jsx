@@ -89,13 +89,16 @@ const PresentationEditor = React.memo(({ presentation }) => {
               fileType: 'pptx',
               title: initialPresentation.title,
               key: initialPresentation.cryptpadSessionKey,
-              permissions: { chat: false },
+              permissions: { chat: false, download: true },
             },
             documentType: 'presentation',
             mode: initialPresentation.cryptpadMode,
             editorConfig: {
               lang: 'pt',
               customization: {
+                about: false,
+                help: false,
+                loaderName: 'none',
                 logo: {
                   visible: false,
                 },

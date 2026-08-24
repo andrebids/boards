@@ -55,12 +55,52 @@ describe('file helpers', () => {
     expect(processSupportedFiles(files).map(({ file }) => file)).toEqual([files[0], files[2]]);
   });
 
-  test('accepts Photoshop, Illustrator and EPS design files by extension', () => {
-    const files = [
-      createFile(1, 'application/octet-stream', 'psd'),
-      createFile(2, 'application/octet-stream', 'ai'),
-      createFile(3, 'application/octet-stream', 'eps'),
+  test('accepts common design and 3D files by extension', () => {
+    const extensions = [
+      'avif',
+      'heic',
+      'heif',
+      'tif',
+      'tiff',
+      'psd',
+      'psb',
+      'ai',
+      'eps',
+      'indd',
+      'idml',
+      'xd',
+      'sketch',
+      'fig',
+      'afdesign',
+      'afphoto',
+      'afpub',
+      'obj',
+      'mtl',
+      'fbx',
+      'stl',
+      'glb',
+      'gltf',
+      'blend',
+      '3ds',
+      'max',
+      'dae',
+      'c4d',
+      'skp',
+      '3dm',
+      'step',
+      'stp',
+      'iges',
+      'igs',
+      'usd',
+      'usda',
+      'usdc',
+      'usdz',
+      'dwg',
+      'dxf',
     ];
+    const files = extensions.map((extension, index) =>
+      createFile(index + 1, 'application/octet-stream', extension),
+    );
 
     expect(validateSupportedFiles(files)).toEqual(files);
   });

@@ -26,6 +26,10 @@ module.exports = {
 
     sails.helpers.attachments.removeUnreferencedFiles(chatFileReferences);
 
+    const presentations = await ProjectPresentation.find({
+      projectId: Array.isArray(projectIdOrIds) ? { in: projectIdOrIds } : projectIdOrIds,
+    });
+
     await ProjectFavorite.qm.delete({
       projectId: projectIdOrIds,
     });
@@ -51,6 +55,7 @@ module.exports = {
     });
 
     await sails.helpers.boards.deleteRelated(boards);
+    await sails.helpers.projectPresentations.removeRelatedFiles(presentations);
 
     return { projectManagers };
   },
