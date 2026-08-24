@@ -298,21 +298,26 @@ module.exports = {
     const payload = { item, messageId: message.id };
 
     setImmediate(() => {
-      try {
-        sails.sockets.broadcast(
-          `chatConversation:${message.conversationId}`,
-          'chatMessageAttachmentCreate',
-          payload,
-          this.req,
-        );
-      } catch (error) {
-        sails.log.error('[CHAT_UPLOAD][PUBLISH_ERROR]', {
-          ...logContext,
-          attachmentId: attachment.id,
-          errorType: error.name,
-          errorCode: error.code || 'PUBLISH_ERROR',
-        });
-      }
+      const publish = (room, requestToOmit) => {
+        try {
+          if (requestToOmit) {
+            sails.sockets.broadcast(room, 'chatMessageAttachmentCreate', payload, requestToOmit);
+          } else {
+            sails.sockets.broadcast(room, 'chatMessageAttachmentCreate', payload);
+          }
+        } catch (error) {
+          sails.log.error('[CHAT_UPLOAD][PUBLISH_ERROR]', {
+            ...logContext,
+            attachmentId: attachment.id,
+            room,
+            errorType: error.name,
+            errorCode: error.code || 'PUBLISH_ERROR',
+          });
+        }
+      };
+
+      publish(`chatConversation:${message.conversationId}`, this.req);
+      publish(`@user:${currentUser.id}`);
     });
 
     sails.log.info('[CHAT_UPLOAD][REQUEST_DONE]', {

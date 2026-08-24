@@ -186,6 +186,7 @@ describe('Chat message attachment controller', () => {
         messageId: 'message-1',
       },
     ]);
+    expect(broadcasts[1]).to.have.length(3);
   });
 
   it('keeps the successful response when publishing fails', async () => {
