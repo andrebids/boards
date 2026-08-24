@@ -29,13 +29,15 @@ export const ProjectPresentationProvider = React.memo(({ projectId, children }) 
     isLoading: Boolean(projectId),
   });
 
-  const load = useCallback(async () => {
+  const load = useCallback(async ({ silent = false } = {}) => {
     if (!projectId) {
       dispatch({ type: 'loaded', payload: initialPresentationState });
       return;
     }
 
-    dispatch({ type: 'loadStarted' });
+    if (!silent) {
+      dispatch({ type: 'loadStarted' });
+    }
     try {
       const body = await api.getProjectPresentations(projectId);
       dispatch({
@@ -57,7 +59,7 @@ export const ProjectPresentationProvider = React.memo(({ projectId, children }) 
   useEffect(() => {
     const handleUpdate = ({ item }) => {
       if (item?.projectId === projectId) {
-        load();
+        load({ silent: true });
       }
     };
 
