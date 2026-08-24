@@ -9,6 +9,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 /* eslint-disable import/no-unresolved */
 import { MediaPlayer, MediaProvider, useMediaRemote, useMediaState } from '@vidstack/react';
+import { RepeatIcon, RepeatOnIcon } from '@vidstack/react/icons';
 import {
   DefaultTooltip,
   DefaultVideoLayout,
@@ -23,13 +24,13 @@ import styles from './VideoPlayer.module.scss';
 
 const STAGE_ASPECT_RATIO = 16 / 9;
 const CONTROLS_HIDE_DELAY = 1000;
-const LoopIcon = defaultLayoutIcons.PlayButton.Replay;
 
 const LoopButton = React.memo(() => {
   const [t] = useTranslation();
   const isLooping = useMediaState('loop');
   const remote = useMediaRemote();
   const label = isLooping ? t('action.disableVideoLoop') : t('action.enableVideoLoop');
+  const LoopIcon = isLooping ? RepeatOnIcon : RepeatIcon;
 
   const handleClick = useCallback(
     (event) => {
