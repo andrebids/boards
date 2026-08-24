@@ -75,9 +75,10 @@ describe('chat attachment policy', () => {
     ).toBeTruthy();
   });
 
-  test('allows MP4 attachments up to 250 MiB before upload', () => {
+  test('allows MP4 attachments up to 500 MiB before upload', () => {
     const file = { name: 'video.MP4', size: VIDEO_ATTACHMENT_MAX_BYTES };
 
+    expect(VIDEO_ATTACHMENT_MAX_BYTES).toBe(500 * 1024 * 1024);
     expect(isChatVideoAttachment(file)).toBeTruthy();
     expect(getChatAttachmentMaxBytes(file)).toBe(VIDEO_ATTACHMENT_MAX_BYTES);
     expect(isChatAttachmentTooLarge(file)).toBeFalsy();

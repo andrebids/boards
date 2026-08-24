@@ -110,7 +110,7 @@ const MAX_ZIP_CENTRAL_DIRECTORY_BYTES = 4 * 1024 * 1024;
 const MAX_TEXT_SAMPLE_BYTES = 64 * 1024;
 const CHAT_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
 const PSD_ATTACHMENT_MAX_BYTES = 1024 * 1024 * 1024;
-const VIDEO_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
+const VIDEO_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
 const UNSAFE_OOXML_ENTRY_PARTS = ['/activex/', '/vbadata.xml', '/vbaproject.bin'];
 
 const startsWith = (buffer, signature) =>

@@ -100,8 +100,8 @@ describe('attachment upload limit', () => {
     expect(custom.threeDAttachmentMaxBytes).to.equal(1024 * 1024 * 1024);
   });
 
-  it('accepts video attachments up to 250 MiB by default', () => {
-    expect(custom.videoAttachmentMaxBytes).to.equal(250 * 1024 * 1024);
+  it('accepts video attachments up to 500 MiB by default', () => {
+    expect(custom.videoAttachmentMaxBytes).to.equal(500 * 1024 * 1024);
   });
 
   it('accepts ZIP and RAR attachments up to 500 MiB by default', () => {

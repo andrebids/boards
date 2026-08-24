@@ -229,6 +229,18 @@ const Task = React.memo(({ id, index, isSubtask }) => {
                       {isEditable || canUseGantt ? (
                         <>
                           {assigneeControl}
+                          {!isSubtask && isEditable && (
+                            <Button
+                              variant="secondary"
+                              type="button"
+                              aria-label={t('action.addSubtask')}
+                              title={t('action.addSubtask')}
+                              className={styles.button}
+                              onClick={handleAddSubtask}
+                            >
+                              <Icon fitted name="add" size="small" />
+                            </Button>
+                          )}
                           <ActionsPopup
                             taskId={id}
                             canEditTask={isEditable}
@@ -263,17 +275,15 @@ const Task = React.memo(({ id, index, isSubtask }) => {
           return isDragging ? ReactDOM.createPortal(contentNode, document.body) : contentNode;
         }}
       </Draggable>
-      {!isSubtask && (
+      {!isSubtask && isAddSubtaskOpened && (
         <AddTask
           taskListId={task.taskListId}
           parentTaskId={id}
+          isChild
           isOpened={isAddSubtaskOpened}
           onClose={handleAddSubtaskClose}
         >
-          <button type="button" className={styles.addSubtaskButton} onClick={handleAddSubtask}>
-            <Icon fitted name="add" size="small" />
-            <span>{t('action.addSubtask')}</span>
-          </button>
+          <span />
         </AddTask>
       )}
     </>

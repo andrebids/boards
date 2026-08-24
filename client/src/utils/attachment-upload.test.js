@@ -51,7 +51,7 @@ describe('attachment upload validation', () => {
       { name: 'large-photo.jpg', size: 500 * 1024 * 1024 + 1, type: 'image/jpeg' },
       { name: 'large-design.psd', size: 1024 * 1024 * 1024 + 1, type: 'application/octet-stream' },
       { name: 'large-scene.obj', size: 1024 * 1024 * 1024 + 1, type: 'application/octet-stream' },
-      { name: 'large-video.mp4', size: 250 * 1024 * 1024 + 1, type: 'video/mp4' },
+      { name: 'large-video.mp4', size: 500 * 1024 * 1024 + 1, type: 'video/mp4' },
     ];
 
     expect(
@@ -75,7 +75,7 @@ describe('attachment upload validation', () => {
     );
     expect(toast.error).toHaveBeenNthCalledWith(
       4,
-      'common.attachmentFileTooLarge:large-video.mp4:250',
+      'common.attachmentFileTooLarge:large-video.mp4:500',
     );
   });
 });

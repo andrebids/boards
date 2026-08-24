@@ -160,9 +160,10 @@ describe('Chat attachment policy', () => {
     });
   });
 
-  it('allows MP4 attachments up to 250 MiB and rejects larger ones', async () => {
+  it('allows MP4 attachments up to 500 MiB and rejects larger ones', async () => {
     const mp4 = Buffer.concat([Buffer.alloc(4), Buffer.from('ftypisom'), Buffer.from('content')]);
 
+    expect(VIDEO_ATTACHMENT_MAX_BYTES).to.equal(500 * 1024 * 1024);
     expect(await validateBuffer('video.mp4', mp4, VIDEO_ATTACHMENT_MAX_BYTES)).to.include({
       extension: 'mp4',
       isValid: true,

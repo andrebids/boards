@@ -5,6 +5,7 @@
 
 import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -25,7 +26,7 @@ const DEFAULT_DATA = {
 
 const MULTIPLE_REGEX = /\s*\r?\n\s*/;
 
-const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onClose }) => {
+const AddTask = React.memo(({ children, taskListId, parentTaskId, isChild, isOpened, onClose }) => {
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [data, handleFieldChange, setData] = useForm(DEFAULT_DATA);
@@ -107,7 +108,10 @@ const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onCl
   }
 
   return (
-    <Form className={styles.wrapper} onSubmit={handleSubmit}>
+    <Form
+      className={classNames(styles.wrapper, isChild && styles.wrapperSubtask)}
+      onSubmit={handleSubmit}
+    >
       <TextArea
         {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
         ref={handleNameFieldRef}
@@ -127,7 +131,7 @@ const AddTask = React.memo(({ children, taskListId, parentTaskId, isOpened, onCl
           {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
           variant="primary"
           ref={handleButtonRef}
-          content={t('action.addTask')}
+          content={t(isChild ? 'action.addSubtask' : 'action.addTask')}
           className={styles.submitButton}
         />
       </div>
@@ -139,12 +143,14 @@ AddTask.propTypes = {
   children: PropTypes.element.isRequired,
   taskListId: PropTypes.string.isRequired,
   parentTaskId: PropTypes.string,
+  isChild: PropTypes.bool,
   isOpened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
 };
 
 AddTask.defaultProps = {
   parentTaskId: undefined,
+  isChild: false,
 };
 
 export default AddTask;

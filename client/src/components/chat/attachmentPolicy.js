@@ -32,7 +32,7 @@ export const CHAT_ATTACHMENT_ALLOWED_EXTENSIONS = Object.freeze([
 
 export const CHAT_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
 export const PSD_ATTACHMENT_MAX_BYTES = 1024 * 1024 * 1024;
-export const VIDEO_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
+export const VIDEO_ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
 
 const VIDEO_EXTENSIONS = new Set(['3g2', '3gp', 'm4v', 'mov', 'mp4', 'ogg', 'webm']);
 

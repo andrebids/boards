@@ -84,7 +84,7 @@ module.exports.custom = {
 
   videoAttachmentMaxBytes: envToPositiveNumber(
     process.env.VIDEO_ATTACHMENT_MAX_BYTES,
-    250 * 1024 * 1024,
+    500 * 1024 * 1024,
   ),
 
   archiveAttachmentMaxBytes: envToPositiveNumber(
