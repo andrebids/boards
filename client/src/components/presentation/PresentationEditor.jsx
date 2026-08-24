@@ -177,10 +177,11 @@ const PresentationEditor = React.memo(({ presentation, onSessionUpdate }) => {
               },
               onNewKey: async (data, callback) => {
                 try {
+                  const currentPresentation = presentationRef.current;
                   const result = await api.updateProjectPresentationCryptPadKey(
                     initialPresentation.id,
                     {
-                      keyVersion: initialPresentation.cryptpadKeyVersion,
+                      keyVersion: currentPresentation.cryptpadKeyVersion,
                       editKey: data.new,
                       viewKey: data.view,
                     },
