@@ -50,6 +50,9 @@ const Static = React.memo(() => {
   const [searchParams] = useSearchParams();
   const isDashboardTv =
     pathsMatch?.pattern.path === Paths.DASHBOARD && searchParams.get('tv') === '1';
+  const isPresentationRoute = pathsMatch?.pattern.path === Paths.PRESENTATION;
+  const isPresentationVisible =
+    isPresentationRoute && !isFetching && typeof projectId === 'string';
 
   const [t] = useTranslation();
 
@@ -136,14 +139,14 @@ const Static = React.memo(() => {
       styles.wrapperFlex,
     ];
     contentNode = <GanttWorkspace />;
-  } else if (pathsMatch?.pattern.path === Paths.PRESENTATION) {
+  } else if (isPresentationRoute) {
     wrapperClassNames = [
       isFavoritesActive
         ? styles.wrapperPresentationWithFavorites
         : styles.wrapperPresentation,
       styles.wrapperFlex,
     ];
-    contentNode = <PresentationWorkspace />;
+    contentNode = null;
   } else if (board === undefined) {
     wrapperClassNames = [
       isFavoritesActive
@@ -200,7 +203,17 @@ const Static = React.memo(() => {
       })}
       onTransitionEnd={handleTransitionEnd}
     >
-      {contentNode}
+      {typeof projectId === 'string' && (
+        <div
+          className={classNames(styles.presentationHost, {
+            [styles.presentationHostHidden]: !isPresentationVisible,
+          })}
+          aria-hidden={!isPresentationVisible}
+        >
+          <PresentationWorkspace key={projectId} isActive={isPresentationVisible} />
+        </div>
+      )}
+      {!isPresentationVisible && contentNode}
     </div>
   );
 });
