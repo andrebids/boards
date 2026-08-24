@@ -26,6 +26,7 @@ import {
   Paperclip,
   Pencil,
   Quote,
+  RefreshCw,
   SmilePlus,
   Trash2,
   X,
@@ -79,6 +80,13 @@ const getDeliveryErrorMessage = (error, t) => {
 
   return t('chat.uploadFailed');
 };
+
+const renderSendingStatus = (label) => (
+  <span className={styles.sendingStatus}>
+    <RefreshCw aria-hidden="true" className={styles.sendingSpinner} size={11} strokeWidth={2} />
+    {label}
+  </span>
+);
 
 const isSameDay = (first, second) => {
   const firstDate = new Date(first);
@@ -992,7 +1000,13 @@ const MessageList = React.memo(
                               <Paperclip aria-hidden="true" size={14} />
                               <span>
                                 <strong>{name}</strong>
-                                {copy && <small>{t(copy)}</small>}
+                                {copy && (
+                                  <small>
+                                    {status === 'uploading'
+                                      ? renderSendingStatus(t(copy))
+                                      : t(copy)}
+                                  </small>
+                                )}
                               </span>
                               {isRetryable && (
                                 <button
@@ -1053,7 +1067,7 @@ const MessageList = React.memo(
                         className={`${styles.meta} ${message.isPending || message.isFailed || message.id === lastReadOwnMessageId ? styles.metaImportant : ''}`}
                       >
                         {message.editedAt && t('chat.edited')}
-                        {message.isPending && t('chat.sending')}
+                        {message.isPending && renderSendingStatus(t('chat.sending'))}
                         {message.id === lastReadOwnMessageId && (
                           <span
                             className={styles.seenIcon}

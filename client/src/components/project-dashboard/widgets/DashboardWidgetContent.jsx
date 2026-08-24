@@ -7,7 +7,7 @@ import DashboardCodexUsageWidget from './DashboardCodexUsageWidget';
 
 import styles from './DashboardWidgetContent.module.scss';
 
-const DashboardWidgetContent = React.memo(({ isEditing, onProductsChange, widget }) => {
+const DashboardWidgetContent = React.memo(({ isEditable, onToggleTask, widget }) => {
   if (widget.type === 'gantt') {
     return (
       <DashboardGanttWidget
@@ -18,11 +18,16 @@ const DashboardWidgetContent = React.memo(({ isEditing, onProductsChange, widget
   }
 
   if (widget.type === 'blachereProducts') {
+    return <DashboardBlachereProductsWidget />;
+  }
+
+  if (widget.type === 'blachereStatic' || widget.type === 'blachereAnimated') {
     return (
       <DashboardBlachereProductsWidget
-        isEditing={isEditing}
-        tasks={widget.config?.tasks}
-        onTasksChange={onProductsChange}
+        group={widget.type === 'blachereStatic' ? 'static' : 'animated'}
+        isEditable={isEditable}
+        taskStates={widget.config?.taskStates}
+        onToggleTask={(taskId, column) => onToggleTask(widget.id, taskId, column)}
       />
     );
   }
@@ -40,24 +45,27 @@ const DashboardWidgetContent = React.memo(({ isEditing, onProductsChange, widget
 });
 
 DashboardWidgetContent.propTypes = {
-  isEditing: PropTypes.bool.isRequired,
-  onProductsChange: PropTypes.func.isRequired,
+  isEditable: PropTypes.bool,
+  onToggleTask: PropTypes.func,
   widget: PropTypes.shape({
     id: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     config: PropTypes.shape({
       projectId: PropTypes.string,
-      tasks: PropTypes.arrayOf(
+      taskStates: PropTypes.objectOf(
         PropTypes.shape({
-          id: PropTypes.string.isRequired,
-          title: PropTypes.string.isRequired,
-          twoD: PropTypes.oneOf(['done', 'pending']).isRequired,
-          threeD: PropTypes.oneOf(['done', 'pending']).isRequired,
+          twoD: PropTypes.oneOf(['done', 'pending']),
+          threeD: PropTypes.oneOf(['done', 'pending']),
         }),
       ),
       zoomLevel: PropTypes.oneOf(['day', 'week', 'month', 'quarter']),
     }),
   }).isRequired,
+};
+
+DashboardWidgetContent.defaultProps = {
+  isEditable: false,
+  onToggleTask: () => {},
 };
 
 export default DashboardWidgetContent;

@@ -48,6 +48,51 @@
     }
   }
 
+  .widgetFrame {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+  }
+
+  .dragHandle {
+    align-items: center;
+    background: color-mix(in oklab, var(--app-dark-canvas) 72%, var(--app-dark-surface));
+    border-bottom: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text-muted);
+    cursor: grab;
+    display: flex;
+    flex: 0 0 28px;
+    font-size: 10px;
+    font-weight: 700;
+    gap: 6px;
+    letter-spacing: 0.04em;
+    padding: 0 42px 0 10px;
+    text-transform: uppercase;
+    user-select: none;
+
+    span {
+      font-size: 15px;
+      letter-spacing: 0;
+      line-height: 1;
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  .widgetContent {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+
+    > * {
+      height: 100%;
+    }
+  }
+
   .removeWidget {
     align-items: center;
     background: color-mix(in oklab, var(--app-dark-canvas) 82%, transparent);
@@ -65,7 +110,7 @@
     padding: 0 0 2px;
     position: absolute;
     right: 8px;
-    top: 8px;
+    top: 2px;
     transition:
       background-color 120ms ease,
       border-color 120ms ease,

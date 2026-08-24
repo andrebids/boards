@@ -21,28 +21,46 @@ const WIDGET_LABELS = {
   status: 'Estado',
   upcoming: 'Próximas tarefas',
   blachereProducts: 'Blachere Products',
+  blachereStatic: 'Static',
+  blachereAnimated: 'Animated',
   codexUsage: 'Uso do Codex',
 };
 
 const DashboardWidgetActionsContext = React.createContext({
   canEdit: false,
   canRemove: false,
-  onProductsChange: () => {},
+  isEditor: false,
   onRemove: () => {},
+  onToggleTask: () => {},
+  taskStatesByWidget: {},
 });
 
 const DashboardWidget = React.memo(({ widget }) => {
-  const { canEdit, canRemove, onProductsChange, onRemove } = React.useContext(
-    DashboardWidgetActionsContext,
-  );
+  const { canEdit, canRemove, isEditor, onRemove, onToggleTask, taskStatesByWidget } =
+    React.useContext(DashboardWidgetActionsContext);
+  const taskStates = taskStatesByWidget[widget.id];
+  const widgetWithCurrentTaskStates = taskStates
+    ? {
+        ...widget,
+        config: { ...widget.config, taskStates },
+      }
+    : widget;
 
   return (
-    <>
-      <DashboardWidgetContent
-        isEditing={canEdit}
-        widget={widget}
-        onProductsChange={(tasks) => onProductsChange(widget.id, tasks)}
-      />
+    <div className={styles.widgetFrame}>
+      {isEditor && (
+        <div aria-hidden="true" className={styles.dragHandle}>
+          <span>⠿</span>
+          Arrastar
+        </div>
+      )}
+      <div className={styles.widgetContent}>
+        <DashboardWidgetContent
+          isEditable={canEdit}
+          widget={widgetWithCurrentTaskStates}
+          onToggleTask={onToggleTask}
+        />
+      </div>
       {canRemove && (
         <button
           aria-label={`Remover widget ${WIDGET_LABELS[widget.type] || 'Gantt'}`}
@@ -57,12 +75,20 @@ const DashboardWidget = React.memo(({ widget }) => {
           ×
         </button>
       )}
-    </>
+    </div>
   );
 });
 
 DashboardWidget.propTypes = {
   widget: PropTypes.shape({
+    config: PropTypes.shape({
+      taskStates: PropTypes.objectOf(
+        PropTypes.shape({
+          twoD: PropTypes.oneOf(['done', 'pending']),
+          threeD: PropTypes.oneOf(['done', 'pending']),
+        }),
+      ),
+    }),
     id: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
   }).isRequired,
@@ -74,6 +100,9 @@ const DashboardWorkspace = React.memo(() => {
   const gridComponentRef = useRef(null);
   const saveTimerRef = useRef(null);
   const layoutVersionRef = useRef(null);
+  const isLoadingGridRef = useRef(false);
+  const gridLoadTimerRef = useRef(null);
+  const loadedGridLayoutRef = useRef(null);
   const [searchParams] = useSearchParams();
   const user = useSelector(selectors.selectCurrentUser);
   const projects = useSelector((state) => {
@@ -88,22 +117,31 @@ const DashboardWorkspace = React.memo(() => {
   const [dashboardLayout, setDashboardLayout] = useState(
     dashboardLayoutHelpers.createDefaultDashboardLayout,
   );
+  const dashboardLayoutRef = useRef(dashboardLayout);
   const [isDashboardLoading, setIsDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState(false);
   const [canEditDashboard, setCanEditDashboard] = useState(false);
 
-  const applyDashboard = useCallback((dashboard) => {
-    const layout = dashboardLayoutHelpers.normalizeDashboardLayout(dashboard.layout || []);
-    const nextLayout =
-      layout.length > 0 || dashboard.version > 1
-        ? layout
-        : dashboardLayoutHelpers.createDefaultDashboardLayout();
-
-    layoutVersionRef.current = dashboard.version;
+  const setCurrentDashboardLayout = useCallback((nextLayout) => {
+    dashboardLayoutRef.current = nextLayout;
     setDashboardLayout(nextLayout);
-
-    return nextLayout;
   }, []);
+
+  const applyDashboard = useCallback(
+    (dashboard) => {
+      const layout = dashboardLayoutHelpers.normalizeDashboardLayout(dashboard.layout || []);
+      const nextLayout =
+        layout.length > 0 || dashboard.version > 1
+          ? layout
+          : dashboardLayoutHelpers.createDefaultDashboardLayout();
+
+      layoutVersionRef.current = dashboard.version;
+      setCurrentDashboardLayout(nextLayout);
+
+      return nextLayout;
+    },
+    [setCurrentDashboardLayout],
+  );
 
   const loadDashboard = useCallback(async () => {
     const body = await api.getDashboard();
@@ -187,16 +225,35 @@ const DashboardWorkspace = React.memo(() => {
     [applyDashboard, canEditDashboard],
   );
 
-  const persistGridLayout = useCallback(() => {
+  const loadGridLayout = useCallback((layout) => {
     const grid = gridComponentRef.current?.getGrid();
 
-    if (!canEditDashboard || !grid || grid.isIgnoreChangeCB()) {
+    if (!grid) {
       return;
     }
 
-    const nextLayout = dashboardLayoutHelpers.fromGridStackDashboardWidgets(grid.save(false));
+    isLoadingGridRef.current = true;
+    window.clearTimeout(gridLoadTimerRef.current);
+    grid.load(layout.map(dashboardLayoutHelpers.toGridStackDashboardWidget));
+    gridLoadTimerRef.current = window.setTimeout(() => {
+      isLoadingGridRef.current = false;
+    });
+  }, []);
+
+  const persistGridLayout = useCallback(() => {
+    const grid = gridComponentRef.current?.getGrid();
+
+    if (!canEditDashboard || !grid || isLoadingGridRef.current || grid.isIgnoreChangeCB()) {
+      return;
+    }
+
+    const nextLayout = dashboardLayoutHelpers.fromGridStackDashboardWidgets(
+      grid.save(false),
+      dashboardLayoutRef.current,
+    );
+    setCurrentDashboardLayout(nextLayout);
     scheduleLayoutSave(nextLayout);
-  }, [canEditDashboard, scheduleLayoutSave]);
+  }, [canEditDashboard, scheduleLayoutSave, setCurrentDashboardLayout]);
 
   // The GridStack React component consumes `options.children` only when it mounts.
   // The dashboard layout arrives asynchronously, so load it explicitly after the
@@ -206,14 +263,19 @@ const DashboardWorkspace = React.memo(() => {
       return undefined;
     }
 
+    if (
+      !dashboardLayoutHelpers.hasDashboardGridChanged(loadedGridLayoutRef.current, dashboardLayout)
+    ) {
+      return undefined;
+    }
+
     const frameId = window.requestAnimationFrame(() => {
-      gridComponentRef.current
-        ?.getGrid()
-        ?.load(dashboardLayout.map(dashboardLayoutHelpers.toGridStackDashboardWidget));
+      loadGridLayout(dashboardLayout);
+      loadedGridLayoutRef.current = dashboardLayout;
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [dashboardLayout, isDashboardLoading]);
+  }, [dashboardLayout, isDashboardLoading, loadGridLayout]);
 
   // GridStack can be mounted while the edit lock is still being acquired. Apply
   // the final interaction state directly once the lock result is known.
@@ -234,12 +296,7 @@ const DashboardWorkspace = React.memo(() => {
         return;
       }
 
-      const layout = applyDashboard(item);
-      window.requestAnimationFrame(() => {
-        gridComponentRef.current
-          ?.getGrid()
-          ?.load(layout.map(dashboardLayoutHelpers.toGridStackDashboardWidget));
-      });
+      applyDashboard(item);
     };
 
     socket.on('dashboardUpdate', handleDashboardUpdate);
@@ -249,6 +306,7 @@ const DashboardWorkspace = React.memo(() => {
   useEffect(
     () => () => {
       window.clearTimeout(saveTimerRef.current);
+      window.clearTimeout(gridLoadTimerRef.current);
     },
     [],
   );
@@ -268,14 +326,15 @@ const DashboardWorkspace = React.memo(() => {
         ...(config && { config }),
       };
 
+      const currentLayout = dashboardLayoutRef.current;
       const nextLayout = [
-        ...dashboardLayout,
-        dashboardLayoutHelpers.placeDashboardWidget(dashboardLayout, widget),
+        ...currentLayout,
+        dashboardLayoutHelpers.placeDashboardWidget(currentLayout, widget),
       ];
-      setDashboardLayout(nextLayout);
+      setCurrentDashboardLayout(nextLayout);
       scheduleLayoutSave(nextLayout);
     },
-    [canEditDashboard, dashboardLayout, scheduleLayoutSave],
+    [canEditDashboard, scheduleLayoutSave, setCurrentDashboardLayout],
   );
 
   const handleAddGantt = useCallback(() => {
@@ -293,36 +352,76 @@ const DashboardWorkspace = React.memo(() => {
         return;
       }
 
-      const nextLayout = dashboardLayoutHelpers.removeDashboardWidget(dashboardLayout, widgetId);
-      setDashboardLayout(nextLayout);
+      const nextLayout = dashboardLayoutHelpers.removeDashboardWidget(
+        dashboardLayoutRef.current,
+        widgetId,
+      );
+      setCurrentDashboardLayout(nextLayout);
       scheduleLayoutSave(nextLayout);
     },
-    [canEditDashboard, dashboardLayout, scheduleLayoutSave],
+    [canEditDashboard, scheduleLayoutSave, setCurrentDashboardLayout],
   );
 
-  const handleProductsChange = useCallback(
-    (widgetId, tasks) => {
+  const handleToggleBlachereTask = useCallback(
+    (widgetId, taskId, column) => {
       if (!canEditDashboard) {
         return;
       }
 
-      const nextLayout = dashboardLayout.map((widget) =>
-        widget.id === widgetId ? { ...widget, config: { tasks } } : widget,
-      );
-      setDashboardLayout(nextLayout);
+      const nextLayout = dashboardLayoutRef.current.map((widget) => {
+        if (
+          widget.id !== widgetId ||
+          (widget.type !== 'blachereStatic' && widget.type !== 'blachereAnimated')
+        ) {
+          return widget;
+        }
+
+        const taskStates = widget.config?.taskStates || {};
+        const currentStatus = taskStates[taskId]?.[column] || 'pending';
+
+        return {
+          ...widget,
+          config: {
+            ...widget.config,
+            taskStates: {
+              ...taskStates,
+              [taskId]: {
+                ...taskStates[taskId],
+                [column]: currentStatus === 'done' ? 'pending' : 'done',
+              },
+            },
+          },
+        };
+      });
+
+      setCurrentDashboardLayout(nextLayout);
       scheduleLayoutSave(nextLayout);
     },
-    [canEditDashboard, dashboardLayout, scheduleLayoutSave],
+    [canEditDashboard, scheduleLayoutSave, setCurrentDashboardLayout],
+  );
+
+  const taskStatesByWidget = useMemo(
+    () =>
+      dashboardLayout.reduce((result, widget) => {
+        if (widget.config?.taskStates) {
+          return { ...result, [widget.id]: widget.config.taskStates };
+        }
+
+        return result;
+      }, {}),
+    [dashboardLayout],
   );
 
   const widgetActions = useMemo(
     () => ({
       canEdit: !isTvMode && canEditDashboard,
       canRemove: !isTvMode && canEditDashboard,
-      onProductsChange: handleProductsChange,
+      isEditor: !isTvMode,
       onRemove: handleRemoveWidget,
+      onToggleTask: handleToggleBlachereTask,
+      taskStatesByWidget,
     }),
-    [canEditDashboard, handleProductsChange, handleRemoveWidget, isTvMode],
+    [canEditDashboard, handleRemoveWidget, handleToggleBlachereTask, isTvMode, taskStatesByWidget],
   );
 
   const gridOptions = useMemo(
@@ -334,6 +433,7 @@ const DashboardWorkspace = React.memo(() => {
       columnOpts: { breakpoints: [{ c: 1, w: 760 }] },
       disableDrag: isTvMode || !canEditDashboard,
       disableResize: isTvMode || !canEditDashboard,
+      draggable: { handle: `.${styles.dragHandle}` },
       float: false,
       margin: 12,
       resizable: { handles: 'se' },

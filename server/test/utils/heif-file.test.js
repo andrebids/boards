@@ -52,6 +52,17 @@ describe('HEIF upload normalization', () => {
     expect(await fileExists(inputPath)).to.equal(false);
   });
 
+  it('leaves other uploaded formats unchanged', async () => {
+    const file = {
+      fd: path.join(tempDirectory, 'upload'),
+      filename: 'photo.jpg',
+      size: 4,
+      type: 'image/jpeg',
+    };
+
+    expect(await normalizeHeifUpload(file)).to.equal(file);
+  });
+
   it('rejects oversized JPEG results and removes the partial conversion', async () => {
     const inputPath = path.join(tempDirectory, 'upload');
     await fs.writeFile(inputPath, Buffer.from('heic'));

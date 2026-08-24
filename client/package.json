@@ -105,7 +105,6 @@
     "@svar-ui/react-gantt": "2.7.1",
     "@vidstack/react": "1.15.6",
     "@vitejs/plugin-react": "^4.5.1",
-    "browserslist-to-esbuild": "^2.1.1",
     "classnames": "^2.5.1",
     "date-fns": "^2.30.0",
     "dequal": "^2.0.3",
@@ -190,6 +189,7 @@
     "@cucumber/cucumber": "^11.3.0",
     "@cucumber/pretty-formatter": "^1.0.1",
     "@playwright/test": "^1.52.0",
+    "@vitejs/plugin-legacy": "^6.1.1",
     "babel-jest": "^29.7.0",
     "babel-preset-airbnb": "^5.0.0",
     "eslint": "^8.57.1",
@@ -203,6 +203,7 @@
     "jest": "^29.7.0",
     "lint": "^0.8.19",
     "playwright": "^1.52.0",
-    "prettier": "3.3.3"
+    "prettier": "3.3.3",
+    "terser": "^5.50.0"
   }
 }

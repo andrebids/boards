@@ -146,7 +146,7 @@ export default {
       attachmentUploading: 'A enviar anexo…',
       attachmentConfirming: 'A confirmar anexo…',
       attachmentFailed: 'Não foi possível enviar o anexo.',
-      psdAttachmentTooLarge: 'O ficheiro PSD/PSB não pode ter mais de {{size}} MB.',
+      psdAttachmentTooLarge: 'O ficheiro PSD não pode ter mais de {{size}} MB.',
       videoAttachmentTooLarge: 'O vídeo não pode ter mais de {{size}} MB.',
       uploadFailed: 'Não foi possível enviar o ficheiro.',
       uploadNetworkError: 'Sem ligação durante o envio do ficheiro.',

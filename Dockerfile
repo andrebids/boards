@@ -31,14 +31,14 @@ ENV VITE_CRYPTPAD_URL=$VITE_CRYPTPAD_URL
 
 COPY client .
 
-RUN npm install --omit=dev
+RUN npm install
 
 RUN DISABLE_ESLINT_PLUGIN=true npm run build
 
 FROM node:22-alpine
 
 RUN apk -U upgrade \
-  && apk add bash python3 ffmpeg build-base --no-cache
+  && apk add bash python3 ffmpeg build-base libheif-libde265 --no-cache
 
 # Configurar variáveis de ambiente para resolver problemas com undici
 ENV NODE_OPTIONS="--no-experimental-fetch"
