@@ -251,6 +251,7 @@ export default merge({}, enUSCore, {
         'Créez un tableau avant d’ajouter sa présentation.',
       presentationLoadFailed: 'Impossible de charger la présentation.',
       presentationLoadStage: 'Étape technique : {{stage}}',
+      presentationLoadTimedOut: 'L’éditeur de présentations n’a pas terminé le chargement. Réessayez.',
       presentationSaveFailed: 'Impossible d’enregistrer la modification de la présentation.',
       presentationPreparingTitle: 'Préparation de l’éditeur de présentations',
       presentationPreparingDescription:

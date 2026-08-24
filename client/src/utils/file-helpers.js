@@ -19,58 +19,6 @@ export const IMAGE_TYPES = [
   'image/tiff',
 ];
 
-export const SUPPORTED_FILE_TYPES = [
-  // Imagens
-  'image/avif',
-  'image/heic',
-  'image/heif',
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/bmp',
-  'image/svg+xml',
-  'image/tiff',
-  // Documentos
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  // Arquivos de design
-  'application/x-photoshop',
-  'image/vnd.adobe.photoshop',
-  'application/illustrator',
-  'image/vnd.adobe.illustrator',
-  'application/postscript',
-  'application/eps',
-  'application/x-illustrator',
-  // Vídeos
-  'video/mp4',
-  'video/webm',
-  'video/ogg',
-  'video/quicktime',
-  'video/x-msvideo',
-  'video/x-ms-wmv',
-  'video/x-flv',
-  'video/x-matroska',
-  'video/x-m4v',
-  'video/mpeg',
-  'video/3gpp',
-  'video/3gpp2',
-  'video/mp2t',
-  'video/x-ms-asf',
-  'application/mxf',
-  // Outros
-  'text/plain',
-  'text/csv',
-  'application/zip',
-  'application/x-rar-compressed',
-];
-
 export const SUPPORTED_FILE_EXTENSIONS = Object.freeze([
   // Imagens
   'avif',
@@ -95,6 +43,10 @@ export const SUPPORTED_FILE_EXTENSIONS = Object.freeze([
   'pptx',
   'txt',
   'csv',
+  'tsv',
+  'odt',
+  'ods',
+  'odp',
   // Design
   'psd',
   'psb',
@@ -185,17 +137,9 @@ export const getFileExtension = filename => {
 };
 
 export const isSupportedFile = file => {
-  // Verificar por MIME type primeiro
-  const isSupportedByMimeType = SUPPORTED_FILE_TYPES.includes(file.type);
+  const extension = getFileExtension(file?.name);
 
-  // Se não for suportado por MIME type, verificar por extensão
-  if (!isSupportedByMimeType) {
-    const extension = getFileExtension(file.name);
-
-    return !!extension && SUPPORTED_FILE_EXTENSIONS.includes(extension);
-  }
-
-  return isSupportedByMimeType;
+  return !!extension && SUPPORTED_FILE_EXTENSIONS.includes(extension);
 };
 
 export const getFileNameWithoutExtension = filename => {

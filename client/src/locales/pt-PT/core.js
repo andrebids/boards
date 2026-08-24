@@ -650,6 +650,7 @@ export default {
         'Crie um quadro antes de adicionar a respetiva apresentação.',
       presentationLoadFailed: 'Não foi possível carregar a apresentação.',
       presentationLoadStage: 'Fase técnica: {{stage}}',
+      presentationLoadTimedOut: 'O editor de apresentações não concluiu o carregamento. Tente novamente.',
       presentationSaveFailed: 'Não foi possível guardar a alteração da apresentação.',
       presentationPreparingTitle: 'Editor de apresentações a preparar',
       presentationPreparingDescription:

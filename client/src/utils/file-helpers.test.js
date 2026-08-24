@@ -55,6 +55,25 @@ describe('file helpers', () => {
     expect(processSupportedFiles(files).map(({ file }) => file)).toEqual([files[0], files[2]]);
   });
 
+  test('accepts portable Office and tabular document formats by extension', () => {
+    const extensions = ['odt', 'ods', 'odp', 'tsv'];
+    const files = extensions.map((extension, index) =>
+      createFile(index + 1, 'application/octet-stream', extension),
+    );
+
+    expect(validateSupportedFiles(files)).toEqual(files);
+  });
+
+  test('rejects macro-enabled Office files even when their MIME type is spoofed', () => {
+    const files = [
+      createFile(1, 'application/msword', 'docm'),
+      createFile(2, 'application/vnd.ms-excel', 'xlsm'),
+      createFile(3, 'application/vnd.ms-powerpoint', 'pptm'),
+    ];
+
+    expect(validateSupportedFiles(files)).toEqual([]);
+  });
+
   test('accepts common design and 3D files by extension', () => {
     const extensions = [
       'avif',
