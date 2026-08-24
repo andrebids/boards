@@ -169,9 +169,17 @@ describe('Chat message attachment controller', () => {
       item: { id: 'attachment-1', name: 'image.png' },
       messageId: 'message-1',
     });
-    expect(broadcasts).to.have.length(1);
+    expect(broadcasts).to.have.length(2);
     expect(broadcasts[0].slice(0, 3)).to.deep.equal([
       'chatConversation:conversation-1',
+      'chatMessageAttachmentCreate',
+      {
+        item: { id: 'attachment-1', name: 'image.png' },
+        messageId: 'message-1',
+      },
+    ]);
+    expect(broadcasts[1].slice(0, 3)).to.deep.equal([
+      '@user:user-1',
       'chatMessageAttachmentCreate',
       {
         item: { id: 'attachment-1', name: 'image.png' },
