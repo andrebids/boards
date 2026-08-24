@@ -251,7 +251,6 @@ export default merge({}, enUSCore, {
         'Créez un tableau avant d’ajouter sa présentation.',
       presentationLoadFailed: 'Impossible de charger la présentation.',
       presentationLoadStage: 'Étape technique : {{stage}}',
-      presentationLoadTimedOut: 'L’éditeur de présentations n’a pas terminé le chargement. Réessayez.',
       presentationSaveFailed: 'Impossible d’enregistrer la modification de la présentation.',
       presentationPreparingTitle: 'Préparation de l’éditeur de présentations',
       presentationPreparingDescription:
@@ -461,6 +460,7 @@ export default merge({}, enUSCore, {
       addMember: 'Ajouter un membre',
       addMoreDetailedDescription: 'Ajouter une description plus détaillée',
       addTask: 'Ajouter une tâche',
+      addSubtask: 'Ajouter une sous-tâche',
       addToCard: 'Ajouter à la carte',
       addUser: 'Ajouter un utilisateur',
       changePassword: 'Modifier le mot de passe',

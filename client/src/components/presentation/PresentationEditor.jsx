@@ -17,7 +17,6 @@ import styles from './PresentationWorkspace.module.scss';
 
 const PRESENTATION_MIME_TYPE =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-const CRYPTPAD_READY_TIMEOUT = 20000;
 
 const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
 
@@ -62,17 +61,8 @@ const PresentationEditor = React.memo(({ presentation }) => {
     let isCancelled = false;
     let script;
     let documentUrl;
-    let readyTimeout;
-    let isDocumentReady = false;
     let currentPhase = 'initializing';
     const startedAt = Date.now();
-
-    const clearReadyTimeout = () => {
-      if (readyTimeout) {
-        window.clearTimeout(readyTimeout);
-        readyTimeout = undefined;
-      }
-    };
 
     const setPhase = (nextPhase) => {
       currentPhase = nextPhase;
@@ -82,7 +72,6 @@ const PresentationEditor = React.memo(({ presentation }) => {
     };
 
     const reportFailure = (phase, nextError) => {
-      clearReadyTimeout();
       const error = normalizePresentationLoadError(nextError);
       const diagnostic = createPresentationLoadDiagnostic({
         presentationId: initialPresentation.id,
@@ -153,18 +142,11 @@ const PresentationEditor = React.memo(({ presentation }) => {
         documentUrl = URL.createObjectURL(documentBlob);
         isEditorInitializedRef.current = true;
         setPhase('cryptpad-init');
-        readyTimeout = window.setTimeout(() => {
-          if (!isDocumentReady) {
-            reportFailure(
-              'cryptpad-ready-timeout',
-              new Error(t('common.presentationLoadTimedOut')),
-            );
-          }
-        }, CRYPTPAD_READY_TIMEOUT);
         window
           .CryptPadAPI(Config.CRYPTPAD_URL, containerId, {
             document: {
               url: documentUrl,
+              blob: documentBlob,
               fileType: 'pptx',
               title: initialPresentation.title,
               key: initialPresentation.cryptpadSessionKey,
@@ -186,8 +168,6 @@ const PresentationEditor = React.memo(({ presentation }) => {
             events: {
               onDocumentReady: () => {
                 if (!isCancelled) {
-                  isDocumentReady = true;
-                  clearReadyTimeout();
                   setPhase('ready');
                   setIsReady(true);
                 }
@@ -245,7 +225,6 @@ const PresentationEditor = React.memo(({ presentation }) => {
 
     return () => {
       isCancelled = true;
-      clearReadyTimeout();
       script?.remove();
       if (documentUrl) {
         URL.revokeObjectURL(documentUrl);
@@ -253,7 +232,7 @@ const PresentationEditor = React.memo(({ presentation }) => {
       isEditorInitializedRef.current = false;
       editorElement.replaceChildren();
     };
-  }, [attempt, containerId, presentation.isEnabled, t]);
+  }, [attempt, containerId, presentation.isEnabled]);
 
   if (editorError) {
     return (

@@ -114,6 +114,59 @@ export const SUPPORTED_FILE_ACCEPT = SUPPORTED_FILE_EXTENSIONS.map(
   (extension) => `.${extension}`,
 ).join(',');
 
+export const ATTACHMENT_MAX_BYTES = 500 * 1024 * 1024;
+export const PSD_ATTACHMENT_MAX_BYTES = 1024 * 1024 * 1024;
+export const THREE_D_ATTACHMENT_MAX_BYTES = 1024 * 1024 * 1024;
+export const VIDEO_ATTACHMENT_MAX_BYTES = 250 * 1024 * 1024;
+
+const ATTACHMENT_MAX_BYTES_BY_EXTENSION = Object.freeze({
+  psb: PSD_ATTACHMENT_MAX_BYTES,
+  psd: PSD_ATTACHMENT_MAX_BYTES,
+  obj: THREE_D_ATTACHMENT_MAX_BYTES,
+  mtl: THREE_D_ATTACHMENT_MAX_BYTES,
+  fbx: THREE_D_ATTACHMENT_MAX_BYTES,
+  stl: THREE_D_ATTACHMENT_MAX_BYTES,
+  glb: THREE_D_ATTACHMENT_MAX_BYTES,
+  gltf: THREE_D_ATTACHMENT_MAX_BYTES,
+  blend: THREE_D_ATTACHMENT_MAX_BYTES,
+  '3ds': THREE_D_ATTACHMENT_MAX_BYTES,
+  max: THREE_D_ATTACHMENT_MAX_BYTES,
+  dae: THREE_D_ATTACHMENT_MAX_BYTES,
+  c4d: THREE_D_ATTACHMENT_MAX_BYTES,
+  skp: THREE_D_ATTACHMENT_MAX_BYTES,
+  '3dm': THREE_D_ATTACHMENT_MAX_BYTES,
+  step: THREE_D_ATTACHMENT_MAX_BYTES,
+  stp: THREE_D_ATTACHMENT_MAX_BYTES,
+  iges: THREE_D_ATTACHMENT_MAX_BYTES,
+  igs: THREE_D_ATTACHMENT_MAX_BYTES,
+  usd: THREE_D_ATTACHMENT_MAX_BYTES,
+  usda: THREE_D_ATTACHMENT_MAX_BYTES,
+  usdc: THREE_D_ATTACHMENT_MAX_BYTES,
+  usdz: THREE_D_ATTACHMENT_MAX_BYTES,
+  dwg: THREE_D_ATTACHMENT_MAX_BYTES,
+  dxf: THREE_D_ATTACHMENT_MAX_BYTES,
+  mp4: VIDEO_ATTACHMENT_MAX_BYTES,
+  webm: VIDEO_ATTACHMENT_MAX_BYTES,
+  ogv: VIDEO_ATTACHMENT_MAX_BYTES,
+  mov: VIDEO_ATTACHMENT_MAX_BYTES,
+  avi: VIDEO_ATTACHMENT_MAX_BYTES,
+  wmv: VIDEO_ATTACHMENT_MAX_BYTES,
+  flv: VIDEO_ATTACHMENT_MAX_BYTES,
+  mkv: VIDEO_ATTACHMENT_MAX_BYTES,
+  m4v: VIDEO_ATTACHMENT_MAX_BYTES,
+  '3gp': VIDEO_ATTACHMENT_MAX_BYTES,
+  '3g2': VIDEO_ATTACHMENT_MAX_BYTES,
+  mpeg: VIDEO_ATTACHMENT_MAX_BYTES,
+  mpg: VIDEO_ATTACHMENT_MAX_BYTES,
+  mpe: VIDEO_ATTACHMENT_MAX_BYTES,
+  ts: VIDEO_ATTACHMENT_MAX_BYTES,
+  mts: VIDEO_ATTACHMENT_MAX_BYTES,
+  m2ts: VIDEO_ATTACHMENT_MAX_BYTES,
+  vob: VIDEO_ATTACHMENT_MAX_BYTES,
+  asf: VIDEO_ATTACHMENT_MAX_BYTES,
+  mxf: VIDEO_ATTACHMENT_MAX_BYTES,
+});
+
 const fileNameCollator = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: 'base',
@@ -141,6 +194,15 @@ export const isSupportedFile = file => {
 
   return !!extension && SUPPORTED_FILE_EXTENSIONS.includes(extension);
 };
+
+export const getAttachmentMaxBytes = (file) => {
+  const extension = getFileExtension(file?.name);
+
+  return ATTACHMENT_MAX_BYTES_BY_EXTENSION[extension] || ATTACHMENT_MAX_BYTES;
+};
+
+export const isAttachmentTooLarge = (file) =>
+  Number.isFinite(file?.size) && file.size > getAttachmentMaxBytes(file);
 
 export const getFileNameWithoutExtension = filename => {
   return filename.replace(/\.[^/.]+$/, '');

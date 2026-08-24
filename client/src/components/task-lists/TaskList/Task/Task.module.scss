@@ -190,6 +190,17 @@
       border-color: var(--card-modal-accent, #bfdbfe);
     }
 
+    &:hover + .addSubtaskButton,
+    &:focus-within + .addSubtaskButton {
+      height: 30px;
+      margin: 2px 0 2px 24px;
+      max-height: 30px;
+      min-height: 30px;
+      opacity: 1;
+      padding: 4px 8px;
+      pointer-events: auto;
+    }
+
     &:hover,
     &:focus-within {
       :global(.ui.checkbox).checkbox input:not(:checked) ~ label:before {
@@ -229,5 +240,54 @@
     line-height: 20px;
     margin-left: 8px;
     white-space: nowrap;
+  }
+
+  .addSubtaskButton {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    color: var(--card-modal-muted, #667085);
+    cursor: pointer;
+    display: flex;
+    font-size: 13px;
+    font-weight: 500;
+    gap: 6px;
+    height: 0;
+    margin: 0 0 0 24px;
+    max-height: 0;
+    min-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 8px;
+    pointer-events: none;
+    transition:
+      height 120ms ease,
+      margin 120ms ease,
+      opacity 120ms ease,
+      padding 120ms ease;
+
+    &:hover,
+    &:focus-visible {
+      height: 30px;
+      margin: 2px 0 2px 24px;
+      max-height: 30px;
+      min-height: 30px;
+      opacity: 1;
+      padding: 4px 8px;
+      pointer-events: auto;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: var(--card-modal-surface-hover, #eef1f4);
+      color: var(--card-modal-text, #1f2937);
+      outline: none;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px
+        var(--card-modal-accent-soft, rgba(37, 99, 235, 0.2));
+    }
   }
 }

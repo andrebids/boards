@@ -43,6 +43,41 @@ describe('attachment upload validation', () => {
 
     expect(handleAttachmentFiles(files, { t: (key) => key })).toEqual(files);
   });
+
+  test('rejects files above their category limit before starting an upload', () => {
+    const acceptedFiles = [];
+    const t = (key, values = {}) => `${key}:${values.name || ''}:${values.size || ''}`;
+    const files = [
+      { name: 'large-photo.jpg', size: 500 * 1024 * 1024 + 1, type: 'image/jpeg' },
+      { name: 'large-design.psd', size: 1024 * 1024 * 1024 + 1, type: 'application/octet-stream' },
+      { name: 'large-scene.obj', size: 1024 * 1024 * 1024 + 1, type: 'application/octet-stream' },
+      { name: 'large-video.mp4', size: 250 * 1024 * 1024 + 1, type: 'video/mp4' },
+    ];
+
+    expect(
+      handleAttachmentFiles(files, {
+        onAccepted: (file) => acceptedFiles.push(file),
+        t,
+      }),
+    ).toEqual([]);
+    expect(acceptedFiles).toEqual([]);
+    expect(toast.error).toHaveBeenNthCalledWith(
+      1,
+      'common.attachmentFileTooLarge:large-photo.jpg:500',
+    );
+    expect(toast.error).toHaveBeenNthCalledWith(
+      2,
+      'common.attachmentFileTooLarge:large-design.psd:1024',
+    );
+    expect(toast.error).toHaveBeenNthCalledWith(
+      3,
+      'common.attachmentFileTooLarge:large-scene.obj:1024',
+    );
+    expect(toast.error).toHaveBeenNthCalledWith(
+      4,
+      'common.attachmentFileTooLarge:large-video.mp4:250',
+    );
+  });
 });
 
 describe('attachment upload state', () => {

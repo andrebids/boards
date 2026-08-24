@@ -1,6 +1,11 @@
 import { toast } from 'react-hot-toast';
 
-import { getFileExtension, isSupportedFile } from './file-helpers';
+import {
+  getAttachmentMaxBytes,
+  getFileExtension,
+  isAttachmentTooLarge,
+  isSupportedFile,
+} from './file-helpers';
 import { isLocalId } from './local-id';
 
 export const hasPendingAttachment = (attachments) =>
@@ -27,6 +32,16 @@ const handleAttachmentFiles = (files, { onAccepted, t }) => {
         t('common.unsupportedAttachmentFileType', {
           extension: extension ? `.${extension.toUpperCase()}` : t('common.unknownFileType'),
           name: file?.name || t('common.unnamedFile'),
+        }),
+      );
+      return;
+    }
+
+    if (isAttachmentTooLarge(file)) {
+      toast.error(
+        t('common.attachmentFileTooLarge', {
+          name: file.name,
+          size: Math.floor(getAttachmentMaxBytes(file) / (1024 * 1024)),
         }),
       );
       return;

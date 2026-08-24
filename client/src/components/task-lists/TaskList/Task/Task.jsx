@@ -270,7 +270,10 @@ const Task = React.memo(({ id, index, isSubtask }) => {
           isOpened={isAddSubtaskOpened}
           onClose={handleAddSubtaskClose}
         >
-          <span />
+          <button type="button" className={styles.addSubtaskButton} onClick={handleAddSubtask}>
+            <Icon fitted name="add" size="small" />
+            <span>{t('action.addSubtask')}</span>
+          </button>
         </AddTask>
       )}
     </>

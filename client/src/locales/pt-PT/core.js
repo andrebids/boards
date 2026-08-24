@@ -369,6 +369,8 @@ export default {
       cardNotFound_title: 'Cartão não encontrado',
       cardCreatedButAttachmentUploadFailed:
         'O cartão foi criado, mas não foi possível carregar o anexo.',
+      attachmentFileTooLarge:
+        '{{name}} não foi carregado porque excede o limite de {{size}} MB para este tipo de ficheiro.',
       emptyAttachmentFile: '{{name}} não foi carregado porque o ficheiro está vazio.',
       cardsOnThisListAreAvailableToAllBoardMembers:
         'Os cartões nesta lista estão disponíveis para todos os membros do quadro.',
@@ -650,7 +652,6 @@ export default {
         'Crie um quadro antes de adicionar a respetiva apresentação.',
       presentationLoadFailed: 'Não foi possível carregar a apresentação.',
       presentationLoadStage: 'Fase técnica: {{stage}}',
-      presentationLoadTimedOut: 'O editor de apresentações não concluiu o carregamento. Tente novamente.',
       presentationSaveFailed: 'Não foi possível guardar a alteração da apresentação.',
       presentationPreparingTitle: 'Editor de apresentações a preparar',
       presentationPreparingDescription:
@@ -953,6 +954,7 @@ export default {
       addMember: 'Adicionar membro',
       addMoreDetailedDescription: 'Adicionar descrição mais detalhada',
       addTask: 'Adicionar tarefa',
+      addSubtask: 'Adicionar subtarefa',
       addTaskList: 'Adicionar lista de tarefas',
       addToCard: 'Adicionar ao cartão',
       addUser: 'Adicionar utilizador',

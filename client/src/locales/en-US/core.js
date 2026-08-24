@@ -111,6 +111,8 @@ export default {
       cardNotFound_title: 'Card Not Found',
       cardCreatedButAttachmentUploadFailed:
         'The card was created, but its attachment could not be uploaded.',
+      attachmentFileTooLarge:
+        '{{name}} was not uploaded because it exceeds the {{size}} MB limit for this file type.',
       emptyAttachmentFile: '{{name}} was not uploaded because the file is empty.',
       cardsOnThisListAreAvailableToAllBoardMembers:
         'Cards on this list are available to all board members.',
@@ -376,7 +378,6 @@ export default {
       presentationNoBoardsDescription: 'Create a board before adding its presentation.',
       presentationLoadFailed: 'Presentation could not be loaded.',
       presentationLoadStage: 'Technical stage: {{stage}}',
-      presentationLoadTimedOut: 'The presentation editor did not finish loading. Try again.',
       presentationSaveFailed: 'Presentation change could not be saved.',
       presentationPreparingTitle: 'Presentation editor is being prepared',
       presentationPreparingDescription:
@@ -668,6 +669,7 @@ export default {
       addMember: 'Add member',
       addMoreDetailedDescription: 'Add more detailed description',
       addTask: 'Add task',
+      addSubtask: 'Add subtask',
       addTaskList: 'Add task list',
       addToCard: 'Add to card',
       addUser: 'Add user',

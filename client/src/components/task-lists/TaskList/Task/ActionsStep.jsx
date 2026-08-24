@@ -103,7 +103,7 @@ const ActionsStep = React.memo(({ taskId, canEditTask, onNameEdit, onAddSubtask,
           )}
           {canEditTask && onAddSubtask && (
             <Menu.Item className={styles.menuItem} onClick={handleAddSubtaskClick}>
-              {t('common.ganttAddSubtask')}
+              {t('action.addSubtask')}
             </Menu.Item>
           )}
           {canUseGantt && (
