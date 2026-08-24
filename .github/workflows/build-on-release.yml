@@ -10,6 +10,10 @@ on:
         description: 'Tag do release (ex: 1.6) – para atualizar o package no GHCR'
         required: true
         default: ''
+      cryptpad_url:
+        description: 'URL pública do CryptPad incorporado na imagem manual'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -44,9 +48,9 @@ jobs:
           push: ${{ github.event_name == 'release' || inputs.release_tag != '' }}
           tags: |
             ${{ (github.event_name == 'release' && format('ghcr.io/{0}/boards:{1}', github.repository_owner, github.event.release.tag_name)) || (inputs.release_tag != '' && format('ghcr.io/{0}/boards:{1}', github.repository_owner, inputs.release_tag)) }}
-            ${{ (github.event_name == 'release' || inputs.release_tag != '') && format('ghcr.io/{0}/boards:latest', github.repository_owner) }}
+            ${{ github.event_name == 'release' && format('ghcr.io/{0}/boards:latest', github.repository_owner) || '' }}
           build-args: |
-            VITE_CRYPTPAD_URL=${{ vars.VITE_CRYPTPAD_URL }}
+            VITE_CRYPTPAD_URL=${{ inputs.cryptpad_url || vars.VITE_CRYPTPAD_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -54,4 +58,4 @@ jobs:
         if: github.event_name == 'release' || inputs.release_tag != ''
         run: |
           TAG="${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}"
-          echo "Image built and pushed to ghcr.io/${{ github.repository_owner }}/boards:$TAG and :latest"
+          echo "Image built and pushed to ghcr.io/${{ github.repository_owner }}/boards:$TAG"
