@@ -15,7 +15,8 @@ module.exports = {
 
   fn(inputs) {
     const { record } = inputs;
-    const baseUrl = `${sails.config.custom.baseUrl}/api/chat-message-attachments/${record.id}`;
+    const basePath = sails.config.custom.baseUrlPath.replace(/\/$/, '');
+    const baseUrl = `${basePath}/api/chat-message-attachments/${record.id}`;
     let thumbnailUrls = null;
 
     if (record.data && record.data.image && record.data.image.thumbnailsExtension) {

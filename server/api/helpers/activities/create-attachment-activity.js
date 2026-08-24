@@ -34,6 +34,7 @@ module.exports = {
 
   async fn(inputs) {
     const { attachment, card, user, board, action } = inputs;
+    const basePath = sails.config.custom.baseUrlPath.replace(/\/$/, '');
 
     // Mapear ação para tipo de atividade (seguindo padrão do projeto)
 const getActivityType = (action) => {
@@ -66,8 +67,8 @@ const getActivityType = (action) => {
         // CORRIGIR: Usar estrutura que o frontend espera (igual ao present-one.js)
         thumbnailUrls: isVideoFile && attachment.data && attachment.data.video && attachment.data.video.thumbnails && attachment.data.video.thumbnails.length > 0 ? {
           // Usar o mesmo formato que o present-one.js para consistência
-          outside360: `${sails.config.custom.baseUrl}/attachments/${attachment.id}/download/video-thumbnails/frame-0-360.png`,
-          outside720: `${sails.config.custom.baseUrl}/attachments/${attachment.id}/download/video-thumbnails/frame-0-720.png`
+          outside360: `${basePath}/attachments/${attachment.id}/download/video-thumbnails/frame-0-360.png`,
+          outside720: `${basePath}/attachments/${attachment.id}/download/video-thumbnails/frame-0-720.png`
         } : null,
         action: action
       };

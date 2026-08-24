@@ -14,6 +14,7 @@ module.exports = {
   },
 
   fn(inputs) {
+    const basePath = sails.config.custom.baseUrlPath.replace(/\/$/, '');
     let data;
     if (inputs.record.type === Attachment.Types.FILE) {
       let thumbnailUrls = null;
@@ -23,8 +24,8 @@ module.exports = {
         inputs.record.data.image.thumbnailsExtension
       ) {
         thumbnailUrls = {
-          outside360: `${sails.config.custom.baseUrl}/attachments/${inputs.record.id}/download/thumbnails/outside-360.${inputs.record.data.image.thumbnailsExtension}`,
-          outside720: `${sails.config.custom.baseUrl}/attachments/${inputs.record.id}/download/thumbnails/outside-720.${inputs.record.data.image.thumbnailsExtension}`,
+          outside360: `${basePath}/attachments/${inputs.record.id}/download/thumbnails/outside-360.${inputs.record.data.image.thumbnailsExtension}`,
+          outside720: `${basePath}/attachments/${inputs.record.id}/download/thumbnails/outside-720.${inputs.record.data.image.thumbnailsExtension}`,
         };
       } else if (
         inputs.record.data &&
@@ -33,8 +34,8 @@ module.exports = {
         inputs.record.data.video.thumbnails.length > 0
       ) {
         thumbnailUrls = {
-          outside360: `${sails.config.custom.baseUrl}/attachments/${inputs.record.id}/download/video-thumbnails/frame-0-360.png`,
-          outside720: `${sails.config.custom.baseUrl}/attachments/${inputs.record.id}/download/video-thumbnails/frame-0-720.png`,
+          outside360: `${basePath}/attachments/${inputs.record.id}/download/video-thumbnails/frame-0-360.png`,
+          outside720: `${basePath}/attachments/${inputs.record.id}/download/video-thumbnails/frame-0-720.png`,
         };
       }
 
@@ -46,12 +47,12 @@ module.exports = {
             'filename',
             'image.thumbnailsExtension',
           ]),
-          url: `${sails.config.custom.baseUrl}/attachments/${inputs.record.id}/download/${inputs.record.data.filename}`,
+          url: `${basePath}/attachments/${inputs.record.id}/download/${inputs.record.data.filename}`,
           playbackUrl:
             inputs.record.data.video &&
             inputs.record.data.video.status === 'ready' &&
             inputs.record.data.video.playback
-              ? `${sails.config.custom.baseUrl}/attachments/${inputs.record.id}/stream`
+              ? `${basePath}/attachments/${inputs.record.id}/stream`
               : null,
           thumbnailUrls,
         },
