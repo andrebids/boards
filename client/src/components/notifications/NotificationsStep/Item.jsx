@@ -210,6 +210,25 @@ const Item = React.memo(({ id, onClose }) => {
 
       break;
     }
+    case NotificationTypes.REACT_TO_COMMENT:
+      contentNode = (
+        <Trans
+          i18nKey="common.userReactedToYourCommentOnCard"
+          values={{
+            user: creatorUserName,
+            emoji: notification.data.emoji,
+            card: cardName,
+          }}
+        >
+          <span className={styles.author}>{creatorUserName}</span>
+          {` reacted ${notification.data.emoji} to your comment on `}
+          <Link to={Paths.CARDS.replace(':id', notification.cardId)} onClick={handleOpenClick}>
+            {cardName}
+          </Link>
+        </Trans>
+      );
+
+      break;
     case ActivityTypes.CREATE_CARD: {
       const list = notification.data?.list;
       const listName = list?.name || t(`common.${list?.type || 'list'}`);

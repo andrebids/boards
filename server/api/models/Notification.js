@@ -18,6 +18,7 @@ const Types = {
   ADD_MEMBER_TO_CARD: 'addMemberToCard',
   REMOVE_MEMBER_FROM_CARD: 'removeMemberFromCard',
   MENTION_IN_COMMENT: 'mentionInComment',
+  REACT_TO_COMMENT: 'reactToComment',
   COMPLETE_TASK: 'completeTask',
   UNCOMPLETE_TASK: 'uncompleteTask',
   CREATE_TASK: 'createTask',

@@ -855,6 +855,8 @@ export default {
         '<0>{{user}}</0> removeu vídeo <2>{{attachment}}</2> deste cartão',
       userMentionedYouInCommentOnCard:
         '<0>{{user}}</0> mencionou-o num comentário «{{comment}}» no cartão <2>{{card}}</2>',
+      userReactedToYourCommentOnCard:
+        '<0>{{user}}</0> reagiu {{emoji}} ao seu comentário no cartão <2>{{card}}</2>',
       userMovedCardFromListToList:
         '<0>{{user}}</0> moveu um cartão <2>{{card}}</2> de {{fromList}} para {{toList}}',
       userMovedThisCardFromListToList:

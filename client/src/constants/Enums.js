@@ -134,6 +134,7 @@ export const NotificationTypes = {
   ADD_MEMBER_TO_BOARD: 'addMemberToBoard',
   ADD_MEMBER_TO_CARD: 'addMemberToCard',
   MENTION_IN_COMMENT: 'mentionInComment',
+  REACT_TO_COMMENT: 'reactToComment',
 };
 
 export const NotificationServiceFormats = {

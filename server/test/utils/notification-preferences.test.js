@@ -200,6 +200,47 @@ describe('Personal notification preferences', () => {
     assert.equal(broadcasts.length, 0);
   });
 
+  it('keeps comment reaction notifications in the bell without sending email', async () => {
+    global.sails.config.custom.globalNotifications.enabled = true;
+    global.sails.helpers.utils.sendGlobalNotification = {
+      with: () => {
+        throw new Error('Comment reactions must not send email');
+      },
+    };
+
+    const result = await createNotification.fn({
+      values: {
+        type: Notification.Types.REACT_TO_COMMENT,
+        data: { emoji: '👍' },
+        user: {
+          id: 'recipient',
+          notificationLevel: User.NotificationLevels.ALL,
+        },
+        creatorUser: {
+          id: 'actor',
+          name: 'Actor',
+        },
+        card: {
+          id: 'card-1',
+          name: 'Card',
+          boardId: 'board-1',
+        },
+        comment: {
+          id: 'comment-1',
+        },
+      },
+      project: {
+        id: 'project-1',
+      },
+      board: {
+        id: 'board-1',
+      },
+    });
+
+    assert.equal(result.type, Notification.Types.REACT_TO_COMMENT);
+    assert.equal(result.commentId, 'comment-1');
+  });
+
   it('does not send a second mailto notification when central email is enabled', async () => {
     const centralEmails = [];
     const personalServiceBatches = [];

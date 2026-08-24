@@ -566,7 +566,8 @@ module.exports = {
 
     const isCommentRelated =
       values.type === Notification.Types.COMMENT_CARD ||
-      values.type === Notification.Types.MENTION_IN_COMMENT;
+      values.type === Notification.Types.MENTION_IN_COMMENT ||
+      values.type === Notification.Types.REACT_TO_COMMENT;
 
     const notificationData = {
       ...values.data,

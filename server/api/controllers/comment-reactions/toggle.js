@@ -31,7 +31,7 @@ module.exports = {
 
   async fn(inputs) {
     const { currentUser } = this.req;
-    const { comment, board } = await sails.helpers.comments
+    const { comment, card, list, board, project } = await sails.helpers.comments
       .getPathToProjectById(inputs.commentId)
       .intercept('pathNotFound', () => Errors.COMMENT_NOT_FOUND);
 
@@ -47,13 +47,13 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
-    const commentExists = await sails.getDatastore().transaction(async (db) => {
+    const reactionResult = await sails.getDatastore().transaction(async (db) => {
       const lockResult = await sails
         .sendNativeQuery('SELECT id FROM comment WHERE id = $1 FOR UPDATE', [comment.id])
         .usingConnection(db);
 
       if (lockResult.rows.length === 0) {
-        return false;
+        return { commentExists: false, reactionAdded: false };
       }
 
       const existing = await CommentReaction.findOne({
@@ -64,19 +64,37 @@ module.exports = {
 
       if (existing) {
         await CommentReaction.destroyOne(existing.id).usingConnection(db);
-      } else {
-        await CommentReaction.create({
-          commentId: comment.id,
-          userId: currentUser.id,
-          emoji: inputs.emoji,
-        }).usingConnection(db);
+        return { commentExists: true, reactionAdded: false };
       }
 
-      return true;
+      await CommentReaction.create({
+        commentId: comment.id,
+        userId: currentUser.id,
+        emoji: inputs.emoji,
+      }).usingConnection(db);
+      return { commentExists: true, reactionAdded: true };
     });
 
-    if (!commentExists) {
+    if (!reactionResult.commentExists) {
       throw Errors.COMMENT_NOT_FOUND;
+    }
+
+    if (reactionResult.reactionAdded && comment.userId !== currentUser.id) {
+      await sails.helpers.notifications.createOne.with({
+        values: {
+          userId: comment.userId,
+          comment,
+          type: Notification.Types.REACT_TO_COMMENT,
+          data: {
+            emoji: inputs.emoji,
+          },
+          creatorUser: currentUser,
+          card,
+        },
+        project,
+        board,
+        list,
+      });
     }
 
     const reactionsByCommentId = await sails.helpers.comments.getReactions.with({
