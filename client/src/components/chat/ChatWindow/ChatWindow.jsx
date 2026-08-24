@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft, AtSign, Bell, BellOff, LogOut, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useDropzone } from 'react-dropzone';
 
 import { CloseButton } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
@@ -65,9 +66,24 @@ const ChatWindow = React.memo(({ id }) => {
   const { closeConversation, openConversationList, toggleConversationMinimized } = useChat();
   const fetchedConversationIdRef = useRef(null);
   const initialReadStateRef = useRef(null);
+  const filesDropHandlerRef = useRef(null);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isGroupEditorOpen, setIsGroupEditorOpen] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
+
+  const handleFilesDrop = useCallback((acceptedFiles) => {
+    filesDropHandlerRef.current?.(acceptedFiles);
+  }, []);
+  const handleFilesDropHandlerChange = useCallback((handler) => {
+    filesDropHandlerRef.current = handler;
+  }, []);
+  const { getRootProps, isDragActive } = useDropzone({
+    disabled: !conversation || conversation.isBlocked,
+    multiple: true,
+    noClick: true,
+    noKeyboard: true,
+    onDrop: handleFilesDrop,
+  });
 
   useEffect(() => {
     if (!conversation) {
@@ -195,7 +211,14 @@ const ChatWindow = React.memo(({ id }) => {
   };
 
   return (
-    <section aria-label={title} className={styles.window}>
+    // React Dropzone exposes the accessible drag-and-drop handlers as root props.
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <section {...getRootProps({ className: styles.window })} aria-label={title}>
+      {isDragActive && (
+        <div aria-live="polite" className={styles.dropOverlay} role="status">
+          {t('chat.dropFilesHere')}
+        </div>
+      )}
       <header className={styles.header}>
         <button
           type="button"
@@ -361,7 +384,11 @@ const ChatWindow = React.memo(({ id }) => {
         projectName={project.name}
         typingUserIds={typingUserIds}
       />
-      <MessageComposer conversationId={id} isDisabled={conversation.isBlocked} />
+      <MessageComposer
+        conversationId={id}
+        isDisabled={conversation.isBlocked}
+        onFilesDropHandlerChange={handleFilesDropHandlerChange}
+      />
     </section>
   );
 });

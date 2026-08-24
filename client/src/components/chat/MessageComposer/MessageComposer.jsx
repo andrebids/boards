@@ -2,7 +2,6 @@ import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } fr
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { Mention, MentionsInput } from 'react-mentions';
-import { useDropzone } from 'react-dropzone';
 import { Paperclip, Send, Smile, Upload, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -98,7 +97,7 @@ const mentionsInputStyle = {
   },
 };
 
-const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
+const MessageComposer = React.memo(({ conversationId, isDisabled, onFilesDropHandlerChange }) => {
   const [t] = useTranslation();
   const [files, setFiles] = useState([]);
   const [attachmentError, setAttachmentError] = useState(null);
@@ -279,17 +278,14 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
   );
   const handleEmojiClick = useCallback((emojiData) => addEmoji(emojiData.emoji), [addEmoji]);
 
-  const handleFilesDrop = useCallback(
-    (acceptedFiles) => handleFilesSelect(acceptedFiles),
-    [handleFilesSelect],
-  );
-  const { getRootProps, isDragActive } = useDropzone({
-    disabled: isDisabled,
-    multiple: true,
-    noClick: true,
-    noKeyboard: true,
-    onDrop: handleFilesDrop,
-  });
+  useEffect(() => {
+    if (!onFilesDropHandlerChange) {
+      return undefined;
+    }
+
+    onFilesDropHandlerChange(handleFilesSelect);
+    return () => onFilesDropHandlerChange(null);
+  }, [handleFilesSelect, onFilesDropHandlerChange]);
 
   useEffect(
     () => () => {
@@ -321,10 +317,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
     members.find(({ id }) => id === replyTarget?.userId)?.name || t('chat.conversation');
 
   return (
-    // React Dropzone exposes the accessible drag-and-drop handlers as root props.
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <div {...getRootProps()} className={styles.wrapper}>
-      {isDragActive && <div className={styles.dropOverlay}>{t('chat.dropFilesHere')}</div>}
+    <div className={styles.wrapper}>
       {replyTarget && (
         <div className={styles.replyBar}>
           <span>
@@ -453,10 +446,12 @@ const MessageComposer = React.memo(({ conversationId, isDisabled }) => {
 MessageComposer.propTypes = {
   conversationId: PropTypes.string.isRequired,
   isDisabled: PropTypes.bool,
+  onFilesDropHandlerChange: PropTypes.func,
 };
 
 MessageComposer.defaultProps = {
   isDisabled: false,
+  onFilesDropHandlerChange: undefined,
 };
 
 export default MessageComposer;

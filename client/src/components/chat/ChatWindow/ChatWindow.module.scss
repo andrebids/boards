@@ -11,6 +11,22 @@
     height: 500px;
     min-width: 0;
     overflow: hidden;
+    position: relative;
+  }
+
+  .dropOverlay {
+    align-items: center;
+    background: rgba(14, 19, 27, 0.88);
+    border: 1px dashed var(--chat-accent);
+    border-radius: calc(var(--chat-radius-panel) - 4px);
+    color: var(--chat-foreground);
+    display: flex;
+    font-size: var(--chat-font-body);
+    inset: 4px;
+    justify-content: center;
+    pointer-events: none;
+    position: absolute;
+    z-index: 10;
   }
 
   @keyframes chatWindowEnter {

@@ -6,20 +6,6 @@
     position: relative;
   }
 
-  .dropOverlay {
-    align-items: center;
-    background: var(--chat-surface-secondary);
-    border: 1px dashed var(--chat-accent);
-    border-radius: var(--chat-radius-control);
-    color: var(--chat-foreground);
-    display: flex;
-    font-size: var(--chat-font-body);
-    inset: 4px;
-    justify-content: center;
-    position: absolute;
-    z-index: 12;
-  }
-
   .replyBar {
     align-items: center;
     border-left: 2px solid var(--chat-accent);
