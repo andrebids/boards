@@ -521,7 +521,7 @@ const Item = React.memo(({ id, onClose }) => {
 
   return (
     <div className={styles.wrapper}>
-      <UserAvatar id={notification.creatorUserId} size="large" />
+      <UserAvatar id={notification.creatorUserId} size="medium" />
       <span className={styles.content}>
         <div>{contentNode}</div>
         <span className={styles.date}>
