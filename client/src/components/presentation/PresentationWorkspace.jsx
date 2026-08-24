@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { Icon, Loader } from 'semantic-ui-react';
@@ -11,19 +12,43 @@ import PresentationEditor from './PresentationEditor';
 
 import styles from './PresentationWorkspace.module.scss';
 
-const PresentationWorkspace = React.memo(() => {
+const PresentationWorkspace = React.memo(({ isActive }) => {
   const [t] = useTranslation();
   const [searchParams] = useSearchParams();
   const boards = useSelector(selectors.selectBoardsForCurrentProject) || [];
-  const { presentations, canEdit, isLoading, error, activate, reload } = usePresentation();
+  const {
+    presentations,
+    selectedBoardId: retainedBoardId,
+    canEdit,
+    isLoading,
+    error,
+    activate,
+    selectBoard,
+    updateSession,
+    reload,
+  } = usePresentation();
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState(null);
 
-  const selectedBoardId = searchParams.get('board');
+  const routeBoardId = searchParams.get('board');
+  const selectedBoardId = isActive ? routeBoardId : retainedBoardId;
   const selectedBoard = boards.find(({ id }) => id === selectedBoardId) || null;
   const selectedPresentation = selectedBoard
     ? presentations.find(({ boardId }) => boardId === selectedBoard.id) || null
     : null;
+
+  useEffect(() => {
+    if (!isActive) {
+      return undefined;
+    }
+
+    selectBoard(routeBoardId);
+    const animationFrame = window.requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [isActive, routeBoardId, selectBoard]);
 
   const handleCreate = useCallback(async () => {
     if (!selectedBoard) {
@@ -76,7 +101,11 @@ const PresentationWorkspace = React.memo(() => {
     );
   } else if (selectedPresentation?.isEnabled) {
     contentNode = (
-      <PresentationEditor key={selectedPresentation.id} presentation={selectedPresentation} />
+      <PresentationEditor
+        key={selectedPresentation.id}
+        presentation={selectedPresentation}
+        onSessionUpdate={updateSession}
+      />
     );
   } else {
     contentNode = (
@@ -111,5 +140,9 @@ const PresentationWorkspace = React.memo(() => {
     </main>
   );
 });
+
+PresentationWorkspace.propTypes = {
+  isActive: PropTypes.bool.isRequired,
+};
 
 export default PresentationWorkspace;

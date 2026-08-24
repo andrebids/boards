@@ -83,9 +83,17 @@ export const ProjectPresentationProvider = React.memo(({ projectId, children }) 
     [projectId],
   );
 
+  const selectBoard = useCallback((boardId) => {
+    dispatch({ type: 'presentationBoardSelected', boardId });
+  }, []);
+
+  const updateSession = useCallback((presentationId, key, keyVersion) => {
+    dispatch({ type: 'presentationSessionUpdated', presentationId, key, keyVersion });
+  }, []);
+
   const value = useMemo(
-    () => ({ ...state, activate, disable, reload: load }),
-    [activate, disable, load, state],
+    () => ({ ...state, activate, disable, selectBoard, updateSession, reload: load }),
+    [activate, disable, load, selectBoard, state, updateSession],
   );
 
   return <PresentationContext.Provider value={value}>{children}</PresentationContext.Provider>;

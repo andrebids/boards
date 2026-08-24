@@ -20,7 +20,7 @@ const PRESENTATION_MIME_TYPE =
 
 const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
 
-const PresentationEditor = React.memo(({ presentation }) => {
+const PresentationEditor = React.memo(({ presentation, onSessionUpdate }) => {
   const [t, i18n] = useTranslation();
   const editorRef = useRef(null);
   const isEditorInitializedRef = useRef(false);
@@ -185,6 +185,7 @@ const PresentationEditor = React.memo(({ presentation }) => {
                       viewKey: data.view,
                     },
                   );
+                  onSessionUpdate(initialPresentation.id, result.key, result.keyVersion);
                   callback(result.key);
                 } catch (nextError) {
                   reportFailure('cryptpad-key-update', nextError);
@@ -232,7 +233,7 @@ const PresentationEditor = React.memo(({ presentation }) => {
       isEditorInitializedRef.current = false;
       editorElement.replaceChildren();
     };
-  }, [attempt, containerId, presentation.isEnabled]);
+  }, [attempt, containerId, onSessionUpdate, presentation.isEnabled]);
 
   if (editorError) {
     return (
@@ -272,6 +273,7 @@ PresentationEditor.propTypes = {
     cryptpadKeyVersion: PropTypes.number.isRequired,
     cryptpadMode: PropTypes.string.isRequired,
   }).isRequired,
+  onSessionUpdate: PropTypes.func.isRequired,
 };
 
 export default PresentationEditor;

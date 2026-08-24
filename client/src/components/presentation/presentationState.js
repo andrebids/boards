@@ -1,5 +1,6 @@
 export const initialPresentationState = {
   presentations: [],
+  selectedBoardId: null,
   canEdit: false,
   isLoading: false,
   error: null,
@@ -25,6 +26,21 @@ export const presentationStateReducer = (state, action) => {
               presentation.id === action.presentation.id ? action.presentation : presentation,
             )
           : [...state.presentations, action.presentation],
+      };
+    case 'presentationBoardSelected':
+      return { ...state, selectedBoardId: action.boardId || null };
+    case 'presentationSessionUpdated':
+      return {
+        ...state,
+        presentations: state.presentations.map((presentation) =>
+          presentation.id === action.presentationId
+            ? {
+                ...presentation,
+                cryptpadSessionKey: action.key,
+                cryptpadKeyVersion: action.keyVersion,
+              }
+            : presentation,
+        ),
       };
     default:
       return state;

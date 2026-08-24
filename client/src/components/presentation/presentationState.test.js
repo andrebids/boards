@@ -69,4 +69,45 @@ describe('presentationStateReducer', () => {
       }),
     ).toBe(state);
   });
+
+  test('retains the selected presentation board while navigating outside the presentation tab', () => {
+    expect(
+      presentationStateReducer(initialPresentationState, {
+        type: 'presentationBoardSelected',
+        boardId: 'board-1',
+      }),
+    ).toMatchObject({ selectedBoardId: 'board-1' });
+  });
+
+  test('keeps the session key returned by CryptPad for the next editor mount', () => {
+    const state = {
+      ...initialPresentationState,
+      presentations: [
+        {
+          id: 'presentation-1',
+          projectId: 'project-1',
+          boardId: 'board-1',
+          cryptpadSessionKey: 'old-key',
+          cryptpadKeyVersion: 1,
+        },
+      ],
+    };
+
+    expect(
+      presentationStateReducer(state, {
+        type: 'presentationSessionUpdated',
+        presentationId: 'presentation-1',
+        key: 'new-key',
+        keyVersion: 2,
+      }),
+    ).toMatchObject({
+      presentations: [
+        {
+          id: 'presentation-1',
+          cryptpadSessionKey: 'new-key',
+          cryptpadKeyVersion: 2,
+        },
+      ],
+    });
+  });
 });
