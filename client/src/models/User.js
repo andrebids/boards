@@ -394,6 +394,7 @@ export default class extends BaseModel {
       case ActionTypes.ACTIVITIES_IN_BOARD_FETCH__SUCCESS:
       case ActionTypes.ACTIVITIES_IN_CARD_FETCH__SUCCESS:
       case ActionTypes.NOTIFICATION_CREATE_HANDLE:
+      case ActionTypes.NOTIFICATION_HISTORY_FETCH__SUCCESS:
         payload.users.forEach((user) => {
           User.upsert(user);
         });

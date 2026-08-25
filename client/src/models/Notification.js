@@ -106,6 +106,12 @@ export default class extends BaseModel {
         Notification.upsert(payload.notification);
 
         break;
+      case ActionTypes.NOTIFICATION_HISTORY_FETCH__SUCCESS:
+        payload.notifications.forEach((notification) => {
+          Notification.upsert(notification);
+        });
+
+        break;
       case ActionTypes.NOTIFICATION_DELETE: {
         const notificationModel = Notification.withId(payload.id);
 

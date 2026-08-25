@@ -29,6 +29,12 @@ const getNotifications = headers =>
     items: body.items.map(transformNotification),
   }));
 
+const getReadNotifications = (data, headers) =>
+  socket.get('/notifications', { ...data, isRead: true }, headers).then(body => ({
+    ...body,
+    items: body.items.map(transformNotification),
+  }));
+
 /* const getNotification = (id, headers) =>
   socket.get(`/notifications/${id}`, undefined, headers).then((body) => ({
     ...body,
@@ -63,6 +69,7 @@ const makeHandleNotificationUpdate = makeHandleNotificationCreate;
 
 export default {
   getNotifications,
+  getReadNotifications,
   // getNotification,
   updateNotification,
   readAllNotifications,

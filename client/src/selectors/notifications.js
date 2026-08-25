@@ -90,6 +90,8 @@ export const selectReadNotificationIdsForCurrentUser = createSelector(
   },
 );
 
+export const selectNotificationHistoryState = (state) => state.notificationHistory;
+
 export default {
   makeSelectNotificationById,
   selectNotificationById,
@@ -98,4 +100,5 @@ export default {
   makeSelectNotificationIdsByProjectId,
   selectNotificationIdsByProjectId,
   selectReadNotificationIdsForCurrentUser,
+  selectNotificationHistoryState,
 };

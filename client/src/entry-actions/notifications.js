@@ -18,6 +18,13 @@ const handleNotificationCreate = (notification, users) => ({
   },
 });
 
+const fetchNotificationHistory = beforeId => ({
+  type: EntryActionTypes.NOTIFICATION_HISTORY_FETCH,
+  payload: {
+    beforeId,
+  },
+});
+
 const deleteNotification = id => ({
   type: EntryActionTypes.NOTIFICATION_DELETE,
   payload: {
@@ -35,6 +42,7 @@ const handleNotificationDelete = notification => ({
 export default {
   deleteAllNotifications,
   handleNotificationCreate,
+  fetchNotificationHistory,
   deleteNotification,
   handleNotificationDelete,
 };

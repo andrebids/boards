@@ -40,6 +40,28 @@ export function* handleNotificationCreate(notification, users) {
   }
 }
 
+export function* fetchNotificationHistory(beforeId) {
+  yield put(actions.fetchNotificationHistory(beforeId));
+
+  let notifications;
+  let users;
+  let hasMore;
+  try {
+    ({
+      items: notifications,
+      included: { users },
+      meta: { hasMore },
+    } = yield call(request, api.getReadNotifications, {
+      beforeId,
+    }));
+  } catch (error) {
+    yield put(actions.fetchNotificationHistory.failure(error));
+    return;
+  }
+
+  yield put(actions.fetchNotificationHistory.success(notifications, users, hasMore));
+}
+
 export function* deleteNotification(id) {
   yield put(actions.deleteNotification(id));
 
@@ -63,6 +85,7 @@ export function* handleNotificationDelete(notification) {
 export default {
   deleteAllNotifications,
   handleNotificationCreate,
+  fetchNotificationHistory,
   deleteNotification,
   handleNotificationDelete,
 };
