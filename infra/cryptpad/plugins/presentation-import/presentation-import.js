@@ -25,8 +25,7 @@
         guid: window.Asc.plugin.guid,
         tabs: [
           {
-            id: 'planka',
-            text: 'Planka',
+            id: 'ins',
             items: [
               {
                 id: importButtonId,

@@ -5,14 +5,15 @@ const assert = require('node:assert/strict');
 
 const pluginRoot = path.join(__dirname, 'presentation-import');
 
-test('registers a Planka tab for presentations, including view-only members', () => {
+test('adds the import action to the Insert tab for presentations, including view-only members', () => {
   const config = JSON.parse(fs.readFileSync(path.join(pluginRoot, 'config.json'), 'utf8'));
   const plugin = fs.readFileSync(path.join(pluginRoot, 'presentation-import.js'), 'utf8');
 
   assert.equal(config.variations[0].isDisplayedInViewer, true);
   assert.equal(config.variations[0].isViewer, true);
   assert.deepEqual(config.variations[0].EditorsSupport, ['slide']);
-  assert.match(plugin, /id: 'planka'/);
+  assert.match(plugin, /id: 'ins'/);
+  assert.doesNotMatch(plugin, /text: 'Planka'/);
   assert.match(plugin, /lockInViewMode: false/);
 });
 
