@@ -29,6 +29,7 @@ const presentationImportToolbarSlot = 'id="slot-btn-planka-presentation-import"'
 
 const presentationImportRuntimeMarker = 'const plankaPresentationImportButtonId';
 const presentationImportFileMenuMarker = 'const plankaPresentationImportFileMenuId';
+const presentationImportVerticalLayoutMarker = 'const plankaPresentationImportVerticalLayout = true';
 
 const legacyPresentationImportIcon = `        const icon = document.createElement('i');
         const caption = document.createElement('span');
@@ -40,7 +41,7 @@ const legacyPresentationImportIcon = `        const icon = document.createElemen
         icon.className = 'icon toolbar__icon btn-ic-insertimage';
         icon.innerHTML = '&nbsp;';`;
 
-const presentationImportIcon = `        const icon = document.createElement('span');
+const legacyPresentationImportHorizontalIcon = `        const icon = document.createElement('span');
         const caption = document.createElement('span');
 
         button.id = plankaPresentationImportButtonId;
@@ -49,6 +50,24 @@ const presentationImportIcon = `        const icon = document.createElement('spa
         button.setAttribute('aria-label', label);
         icon.className = 'toolbar__icon';
         icon.setAttribute('aria-hidden', 'true');
+        icon.style.backgroundImage = 'none';
+        icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';`;
+
+const presentationImportIcon = `        const plankaPresentationImportVerticalLayout = true;
+        const icon = document.createElement('span');
+        const caption = document.createElement('span');
+
+        button.id = plankaPresentationImportButtonId;
+        button.type = 'button';
+        button.className = 'btn large';
+        button.style.display = 'inline-flex';
+        button.style.flexDirection = 'column';
+        button.style.alignItems = 'center';
+        button.style.justifyContent = 'center';
+        button.setAttribute('aria-label', label);
+        icon.className = 'toolbar__icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.style.display = 'block';
         icon.style.backgroundImage = 'none';
         icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';`;
 
@@ -100,18 +119,11 @@ const presentationImportRuntime = `
         const language = (navigator.language || 'en').toLowerCase();
         const label = language.indexOf('pt') === 0 ? 'Importar PowerPoint' : 'Import PowerPoint';
         const button = document.createElement('button');
-        const icon = document.createElement('span');
-        const caption = document.createElement('span');
-
-        button.id = plankaPresentationImportButtonId;
-        button.type = 'button';
-        button.className = 'btn large btn-toolbar';
-        button.setAttribute('aria-label', label);
-        icon.className = 'toolbar__icon';
-        icon.setAttribute('aria-hidden', 'true');
-        icon.style.backgroundImage = 'none';
-        icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+${presentationImportIcon}
         caption.className = 'caption';
+        caption.style.display = 'block';
+        caption.style.marginTop = '3px';
+        caption.style.whiteSpace = 'nowrap';
         caption.textContent = label;
         button.appendChild(icon);
         button.appendChild(caption);
@@ -349,6 +361,13 @@ function patchPresentationImportToolbar(source) {
     patched += presentationImportRuntime;
   } else if (patched.includes(legacyPresentationImportIcon)) {
     patched = patched.replace(legacyPresentationImportIcon, presentationImportIcon);
+  }
+
+  if (!patched.includes(presentationImportVerticalLayoutMarker)) {
+    if (!patched.includes(legacyPresentationImportHorizontalIcon)) {
+      throw new Error('OnlyOffice presentation import button layout no longer applies');
+    }
+    patched = patched.replace(legacyPresentationImportHorizontalIcon, presentationImportIcon);
   }
 
   if (patched.includes(presentationImportFileMenuMarker)) {
