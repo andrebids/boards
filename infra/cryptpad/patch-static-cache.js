@@ -6,8 +6,8 @@ const { pipeline } = require('node:stream/promises');
 const fsp = fs.promises;
 
 const marker = 'ONLYOFFICE_LOCAL_NO_CACHE';
-const serviceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_2_';
-const previousServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_';
+const serviceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_3_';
+const previousServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_2_';
 const originalCachePolicy = `    if (/[\\?\\&]ver=[^\\/]+$/.test(req.url)) { res.setHeader("Cache-Control", "max-age=31536000"); }
     else { res.setHeader("Cache-Control", "no-cache"); }`;
 const legacyLocalCachePolicy = `    // ONLYOFFICE_LOCAL_CACHE: let the browser reuse the versioned editor bundle in dev.

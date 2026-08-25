@@ -52,7 +52,7 @@ const presentationImportIcon = `        const icon = document.createElement('spa
         icon.style.backgroundImage = 'none';
         icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';`;
 
-const presentationImportFileMenuRuntime = `
+const legacyPresentationImportFileMenuRuntime = `
     const plankaPresentationImportFileMenuId = 'fm-btn-planka-presentation-import';
 
     const installPlankaPresentationImportFileMenu = function () {
@@ -129,13 +129,15 @@ const presentationImportRuntime = `
         slot.appendChild(button);
     };
 
-${presentationImportFileMenuRuntime}
+    window.setInterval(installPlankaPresentationImportButton, 100);
+}());
+`;
+
+const legacyPresentationImportFileMenuSuffix = `${legacyPresentationImportFileMenuRuntime}
     window.setInterval(function () {
         installPlankaPresentationImportButton();
         installPlankaPresentationImportFileMenu();
-    }, 100);
-}());
-`;
+    }, 100);`;
 
 const projectImagePickerReplacement = `            const openProjectImagePicker = function(editor, options) {
                 var sframeChan = common.getSframeChannel();
@@ -349,18 +351,13 @@ function patchPresentationImportToolbar(source) {
     patched = patched.replace(legacyPresentationImportIcon, presentationImportIcon);
   }
 
-  if (!patched.includes(presentationImportFileMenuMarker)) {
-    const legacyInterval = '    window.setInterval(installPlankaPresentationImportButton, 100);';
-    if (!patched.includes(legacyInterval)) {
-      throw new Error('OnlyOffice presentation import runtime no longer applies');
+  if (patched.includes(presentationImportFileMenuMarker)) {
+    if (!patched.includes(legacyPresentationImportFileMenuSuffix)) {
+      throw new Error('OnlyOffice presentation file-menu import runtime no longer applies');
     }
     patched = patched.replace(
-      legacyInterval,
-      `${presentationImportFileMenuRuntime}
-    window.setInterval(function () {
-        installPlankaPresentationImportButton();
-        installPlankaPresentationImportFileMenu();
-    }, 100);`,
+      legacyPresentationImportFileMenuSuffix,
+      '    window.setInterval(installPlankaPresentationImportButton, 100);',
     );
   }
 

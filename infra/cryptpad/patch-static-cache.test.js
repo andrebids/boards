@@ -58,7 +58,7 @@ test('exposes the OnlyOffice service worker at the version root', async (t) => {
 
   assert.equal(
     fs.readFileSync(path.join(root, 'v9', 'document_editor_service_worker.js'), 'utf8'),
-    'var g_cacheNamePrefix="document_editor_static_planka_import_20260825_2_";',
+    'var g_cacheNamePrefix="document_editor_static_planka_import_20260825_3_";',
   );
   assert.equal(
     zlib
@@ -66,7 +66,7 @@ test('exposes the OnlyOffice service worker at the version root', async (t) => {
         fs.readFileSync(path.join(root, 'v9', 'document_editor_service_worker.js.br')),
       )
       .toString('utf8'),
-    'var g_cacheNamePrefix="document_editor_static_planka_import_20260825_2_";',
+    'var g_cacheNamePrefix="document_editor_static_planka_import_20260825_3_";',
   );
   assert.equal(result.serviceWorkerLinked, true);
 });
@@ -75,14 +75,14 @@ test('uses a new service-worker cache namespace when the native import action ch
   const worker = 'var g_cacheNamePrefix="document_editor_static_";';
   const patched = patchServiceWorkerCache(worker);
 
-  assert.match(patched, /document_editor_static_planka_import_20260825_2_/);
+  assert.match(patched, /document_editor_static_planka_import_20260825_3_/);
   assert.equal(patchServiceWorkerCache(patched), patched);
 });
 
 test('upgrades the prior presentation-import service-worker cache namespace', () => {
-  const worker = 'var g_cacheNamePrefix="document_editor_static_planka_import_20260825_";';
+  const worker = 'var g_cacheNamePrefix="document_editor_static_planka_import_20260825_2_";';
 
-  assert.match(patchServiceWorkerCache(worker), /document_editor_static_planka_import_20260825_2_/);
+  assert.match(patchServiceWorkerCache(worker), /document_editor_static_planka_import_20260825_3_/);
 });
 
 test('preserves CryptPad cache behavior for every other resource', () => {
