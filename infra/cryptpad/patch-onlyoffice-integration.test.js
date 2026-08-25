@@ -24,6 +24,13 @@ test('does not apply the image picker patch twice', () => {
   assert.equal(patchOnlyOfficeIntegration(patched), patched);
 });
 
+test('retries until the OnlyOffice image API is available after document ready', () => {
+  const patched = patchOnlyOfficeIntegration(fixture);
+
+  assert.match(patched, /window\.setTimeout\(installImagePicker, 50\)/);
+  assert.match(patched, /attempt < 200/);
+});
+
 test('fails the image build if the CryptPad hook changes upstream', () => {
   assert.throws(
     () => patchOnlyOfficeIntegration('const onDocumentReady = function() {};'),

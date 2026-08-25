@@ -6,16 +6,29 @@ const documentReadyMarker = `const onDocumentReady = function(lock, lang, fromCo
 const documentReadyReplacement = `const redirectPresentationImageUpload = function() {
             if (APP.ooconfig.documentType !== 'presentation') { return; }
 
-            var editor = getEditor();
-            if (!editor || !editor.asc_addImage || editor.__cryptpadImagePicker) { return; }
+            var attempt = 0;
+            const installImagePicker = function() {
+                var editor = getEditor();
+                if (!editor || !editor.asc_addImage) {
+                    attempt++;
+                    if (attempt < 200) {
+                        window.setTimeout(installImagePicker, 50);
+                    }
+                    return;
+                }
 
-            editor.__cryptpadImagePicker = true;
-            editor.asc_addImage = function() {
-                APP.AddImage(function(image) {
-                    if (!image || !image.name) { return; }
-                    editor.AddImageUrl([image.name]);
-                }, function() {});
+                if (editor.__cryptpadImagePicker) { return; }
+
+                editor.__cryptpadImagePicker = true;
+                editor.asc_addImage = function() {
+                    APP.AddImage(function(image) {
+                        if (!image || !image.name) { return; }
+                        editor.AddImageUrl([image.name]);
+                    }, function() {});
+                };
             };
+
+            installImagePicker();
         };
 
         const onDocumentReady = function(lock, lang, fromContent, file, force) {
