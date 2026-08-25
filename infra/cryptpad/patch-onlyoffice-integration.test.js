@@ -20,6 +20,7 @@ test('routes Presentation image requests through the host integration callback',
 
   assert.match(patched, /APP\.ooconfig\.documentType !== 'presentation'/);
   assert.match(patched, /Q_INTEGRATION_ON_INSERT_IMAGE/);
+  assert.match(patched, /\}, \{ raw: true \}\);/);
   assert.match(patched, /image\.blob/);
   assert.match(patched, /URL\.createObjectURL\(image\.blob\)/);
   assert.match(patched, /editor\.asc_addImageCallback\(\{ name: image\.name, url: imageUrl \}\)/);

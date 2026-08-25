@@ -18,11 +18,12 @@ const documentReadyReplacement = `const redirectPresentationImageUpload = functi
                 sframeChan.query('Q_INTEGRATION_ON_INSERT_IMAGE', {}, function(image) {
                     if (!image || !image.blob) { return; }
                     var imageUrl = window.URL.createObjectURL(image.blob);
-                    editor.AddImageUrl([imageUrl]);
+                    editor.asc_addImageCallback({ name: image.name, url: imageUrl });
+                    editor._addImageUrl([imageUrl]);
                     window.setTimeout(function() {
                         window.URL.revokeObjectURL(imageUrl);
                     }, 60000);
-                });
+                }, { raw: true });
             };
             const installImagePicker = function() {
                 var editor = getEditor();
