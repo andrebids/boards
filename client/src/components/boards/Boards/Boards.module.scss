@@ -30,6 +30,10 @@
     overflow-x: auto;
     overflow-y: hidden;
 
+    &:has(:global(.ui.dropdown.visible)) {
+      overflow: visible;
+    }
+
     @supports (-moz-appearance: none) {
       scrollbar-color: rgba(0, 0, 0, 0.32) transparent;
       scrollbar-width: thin;

@@ -217,9 +217,13 @@
   }
 
   .wrapperSubtask {
-    background: var(--card-modal-surface-hover, #f7f8fa);
     margin-left: 40px;
     width: calc(100% - 40px);
+
+    &:hover,
+    &:focus-within {
+      background: transparent;
+    }
 
     &:before {
       border-left: 1px solid var(--card-modal-border, #e3e7ec);

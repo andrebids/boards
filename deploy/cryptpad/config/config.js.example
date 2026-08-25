@@ -1,0 +1,14 @@
+/*
+ * Copy to config.js on the production host and replace both origins.
+ * Keep the resulting file outside Git: it stores the CryptPad administrator
+ * public key after the initial /checkup/ setup.
+ */
+module.exports = {
+  httpUnsafeOrigin: 'https://slides.example.com',
+  httpSafeOrigin: 'https://slides-sandbox.example.com',
+  httpAddress: '0.0.0.0',
+  websocketPort: 3012,
+  enableEmbedding: true,
+  removeDonateButton: true,
+  adminKeys: [],
+};

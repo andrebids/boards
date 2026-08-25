@@ -1,0 +1,47 @@
+services:
+  cryptpad:
+    build:
+      context: ../../infra/cryptpad
+      dockerfile: Dockerfile
+    image: ${CRYPTPAD_IMAGE:-planka-cryptpad:2026.5.1}
+    restart: unless-stopped
+    environment:
+      CPAD_MAIN_DOMAIN: ${CPAD_MAIN_DOMAIN:?Set CPAD_MAIN_DOMAIN to the public HTTPS origin}
+      CPAD_SANDBOX_DOMAIN: ${CPAD_SANDBOX_DOMAIN:?Set CPAD_SANDBOX_DOMAIN to the public HTTPS sandbox origin}
+      CPAD_CONF: /cryptpad/config/config.js
+      CPAD_INSTALL_ONLYOFFICE: 'yes'
+    ports:
+      - 127.0.0.1:${CPAD_HTTP_PORT:-3010}:3000
+      - 127.0.0.1:${CPAD_WS_PORT:-3012}:3012
+    volumes:
+      - ./config/config.js:/cryptpad/config/config.js:ro
+      - cryptpad-blob:/cryptpad/blob
+      - cryptpad-block:/cryptpad/block
+      - cryptpad-data:/cryptpad/data
+      - cryptpad-files:/cryptpad/datastore
+      - cryptpad-onlyoffice-dist:/cryptpad/www/common/onlyoffice/dist
+      - cryptpad-onlyoffice-conf:/cryptpad/onlyoffice-conf
+      - ./overrides/pre-loading.js:/cryptpad/customize/pre-loading.js:ro
+      - ./overrides/loading.js:/cryptpad/customize/loading.js:ro
+      - ./overrides/integration/index.html:/cryptpad/www/integration/index.html:ro
+      - ./overrides/presentation/inner.html:/cryptpad/www/presentation/inner.html:ro
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
+
+  theme-sync:
+    image: alpine:3.21
+    profiles: [tools]
+    volumes:
+      - cryptpad-onlyoffice-dist:/onlyoffice-dist
+      - ./themes:/themes:ro
+    entrypoint: [/bin/sh, /themes/sync-themes.sh]
+
+volumes:
+  cryptpad-blob:
+  cryptpad-block:
+  cryptpad-data:
+  cryptpad-files:
+  cryptpad-onlyoffice-dist:
+  cryptpad-onlyoffice-conf:

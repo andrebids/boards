@@ -20,4 +20,16 @@ const getDefaultMedia = (attachments, coverAttachmentId) => {
   );
 };
 
+export const getNewlyAddedMedia = (attachments, previousAttachmentIds, currentUserId) => {
+  const previousIds = new Set(previousAttachmentIds);
+
+  return attachments.reduce(
+    (newlyAddedMedia, attachment) =>
+      attachment.creatorUserId === currentUserId && !previousIds.has(attachment.id)
+        ? attachment
+        : newlyAddedMedia,
+    null,
+  );
+};
+
 export default getDefaultMedia;

@@ -17,7 +17,7 @@ import { isListArchiveOrTrash } from '../../../../utils/record-helpers';
 import { BoardMembershipRoles } from '../../../../constants/Enums';
 import VideoPlayer from '../../../common/VideoPlayer';
 import TimeAgo from '../../../common/TimeAgo';
-import getDefaultMedia from './selection';
+import getDefaultMedia, { getNewlyAddedMedia } from './selection';
 
 import styles from './CardImageCarousel.module.scss';
 
@@ -53,6 +53,7 @@ const CardImageCarousel = React.memo(() => {
 
   const card = useSelector(selectors.selectCurrentCard);
   const attachments = useSelector(selectors.selectAttachmentsForCurrentCard);
+  const currentUserId = useSelector(selectors.selectCurrentUserId);
   const canEdit = useSelector((state) => {
     const list = selectListById(state, card.listId);
 
@@ -111,6 +112,8 @@ const CardImageCarousel = React.memo(() => {
   const actionsMenuRef = useRef(null);
   const pointerStartXRef = useRef(null);
   const didSwipeRef = useRef(false);
+  const previousImageIdsRef = useRef(null);
+  const previousCardIdRef = useRef(card.id);
 
   const defaultImage = useMemo(
     () => getDefaultMedia(images, card.coverAttachmentId),
@@ -222,6 +225,28 @@ const CardImageCarousel = React.memo(() => {
       setSelectedId(defaultImage.id);
     }
   }, [defaultImage, images, selectedId]);
+
+  useEffect(() => {
+    if (previousCardIdRef.current !== card.id) {
+      previousCardIdRef.current = card.id;
+      previousImageIdsRef.current = images.map((image) => image.id);
+      return;
+    }
+
+    const previousImageIds = previousImageIdsRef.current;
+
+    previousImageIdsRef.current = images.map((image) => image.id);
+
+    if (!previousImageIds) {
+      return;
+    }
+
+    const newlyAddedMedia = getNewlyAddedMedia(images, previousImageIds, currentUserId);
+
+    if (newlyAddedMedia) {
+      setSelectedId(newlyAddedMedia.id);
+    }
+  }, [card.id, currentUserId, images]);
 
   useEffect(() => {
     setIsActionsMenuOpen(false);
