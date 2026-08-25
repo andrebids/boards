@@ -7,29 +7,39 @@ const uploadImageFilesMarker = `APP.UploadImageFiles = function (files, type, id
                 return void cb();
             };`;
 
-const documentReadyReplacement = `const redirectPresentationImageUpload = function() {
-            if (APP.ooconfig.documentType !== 'presentation') { return; }
+const presentationToolbarMarker =
+  'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.setMenu(new Common.UI.Menu({items:[{caption:e.mniImageFromFile,value:"file"},{cls:"cp-from-url",caption:e.mniImageFromUrl,value:"url"},{caption:e.mniImageFromStorage,value:"storage"}]}).on("item:click",(function(t,i,n){e.fireEvent("insert:image",[i.value])}))),i.menu.items[2].setVisible(t.canRequestInsertImage||t.fileChoiceUrl&&t.fileChoiceUrl.indexOf("{documentType}")>-1)}))';
 
-            var attempt = 0;
-            const openProjectImagePicker = function(editor) {
+const presentationToolbarReplacement =
+  'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.on("click",(function(){e.fireEvent("insert:image",["file"])}))}))';
+
+const projectImagePickerReplacement = `            const openProjectImagePicker = function(editor, options) {
                 var sframeChan = common.getSframeChannel();
                 if (!sframeChan) { return; }
 
                 sframeChan.query('Q_INTEGRATION_ON_INSERT_IMAGE', {}, function(image) {
                     if (!image || !image.blob) { return; }
-                    var imageUrl = window.URL.createObjectURL(image.blob);
-                    editor.asc_addImageCallback({ name: image.name, url: imageUrl });
-                    editor._addImageUrl([imageUrl]);
-                    window.setTimeout(function() {
-                        window.URL.revokeObjectURL(imageUrl);
-                    }, 60000);
+                    var name = image.name || ('image-' + Util.uid() + '.png');
+                    var file = new File([image.blob], image.name || name, {
+                        type: image.blob.type || 'application/octet-stream'
+                    });
+                    uploadDroppedPresentationImages([file], function(error, urls) {
+                        if (error || !urls || !urls.length) { return; }
+                        editor._addImageUrl(urls, options);
+                    });
                 }, { raw: true });
-            };
+            };`;
+
+const documentReadyReplacement = `const redirectPresentationImageUpload = function() {
+            if (APP.ooconfig.documentType !== 'presentation') { return; }
+
+            var attempt = 0;
+${projectImagePickerReplacement}
             const installImagePicker = function() {
                 var editor = getEditor();
                 if (editor && editor.asc_addImage && editor.asc_addImage !== openProjectImagePicker) {
-                    editor.asc_addImage = function() {
-                        openProjectImagePicker(editor);
+                    editor.asc_addImage = function(options) {
+                        openProjectImagePicker(editor, options);
                     };
                 }
 
@@ -47,16 +57,32 @@ const documentReadyReplacement = `const redirectPresentationImageUpload = functi
             evOnSync.fire();`;
 
 function patchOnlyOfficeIntegration(source) {
-  const hasPickerPatch = source.includes('const redirectPresentationImageUpload = function()');
-  const hasDropPatch = source.includes('const uploadDroppedPresentationImages = function(files, cb)');
+  let patched = source;
+  const hasLegacyImagePicker =
+    patched.includes('const redirectPresentationImageUpload = function()') &&
+    !patched.includes('uploadDroppedPresentationImages([file], function(error, urls)');
+
+  if (hasLegacyImagePicker) {
+    patched = patched.replace(
+      /            const openProjectImagePicker = function\(editor(?:, options)?\) \{[\s\S]*?\n            \};\n            const installImagePicker/,
+      `${projectImagePickerReplacement}\n            const installImagePicker`,
+    )
+      .replace('editor.asc_addImage = function()', 'editor.asc_addImage = function(options)')
+      .replace('openProjectImagePicker(editor)', 'openProjectImagePicker(editor, options)');
+  }
+
+  const hasPickerPatch =
+    patched.includes('const redirectPresentationImageUpload = function()') &&
+    patched.includes('uploadDroppedPresentationImages([file], function(error, urls)');
+  const hasDropPatch = patched.includes('const uploadDroppedPresentationImages = function(files, cb)');
 
   if (hasPickerPatch && hasDropPatch) {
-    return source;
+    return patched;
   }
 
   if (
-    (!hasPickerPatch && !source.includes(documentReadyMarker)) ||
-    (!hasDropPatch && !source.includes(uploadImageFilesMarker))
+    (!hasPickerPatch && !patched.includes(documentReadyMarker)) ||
+    (!hasDropPatch && !patched.includes(uploadImageFilesMarker))
   ) {
     throw new Error('OnlyOffice image picker patch no longer applies');
   }
@@ -120,7 +146,6 @@ function patchOnlyOfficeIntegration(source) {
                 uploadDroppedPresentationImages(files, cb);
             };`;
 
-  let patched = source;
   if (!hasPickerPatch) {
     patched = patched.replace(documentReadyMarker, documentReadyReplacement);
   }
@@ -130,9 +155,30 @@ function patchOnlyOfficeIntegration(source) {
   return patched;
 }
 
+function patchPresentationToolbar(source) {
+  if (source.includes(presentationToolbarReplacement)) {
+    return source;
+  }
+
+  if (!source.includes(presentationToolbarMarker)) {
+    throw new Error('OnlyOffice presentation toolbar patch no longer applies');
+  }
+
+  return source.replace(presentationToolbarMarker, presentationToolbarReplacement);
+}
+
 function patchFile(filePath) {
   const source = fs.readFileSync(filePath, 'utf8');
   const patched = patchOnlyOfficeIntegration(source);
+
+  if (patched !== source) {
+    fs.writeFileSync(filePath, patched);
+  }
+}
+
+function patchPresentationToolbarFile(filePath) {
+  const source = fs.readFileSync(filePath, 'utf8');
+  const patched = patchPresentationToolbar(source);
 
   if (patched !== source) {
     fs.writeFileSync(filePath, patched);
@@ -147,9 +193,18 @@ if (require.main === module) {
     patchOnlyOfficeIntegration(fs.readFileSync(filePath, 'utf8'));
   } else {
     patchFile(filePath);
+    for (const toolbarPath of [
+      '/cryptpad/www/common/onlyoffice/dist/v9/web-apps/apps/presentationeditor/main/app.js',
+      '/cryptpad/www/common/onlyoffice/dist/v9/web-apps/apps/presentationeditor/main/ie/app.js',
+    ]) {
+      if (fs.existsSync(toolbarPath)) {
+        patchPresentationToolbarFile(toolbarPath);
+      }
+    }
   }
 }
 
 module.exports = {
   patchOnlyOfficeIntegration,
+  patchPresentationToolbar,
 };

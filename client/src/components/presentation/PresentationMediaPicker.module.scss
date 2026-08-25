@@ -46,40 +46,48 @@
 
   .search {
     align-items: center;
+    background: var(--app-dark-canvas);
+    border: 1px solid var(--app-dark-border);
+    border-radius: var(--app-radius);
     color: var(--app-dark-text-muted);
-    display: flex;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
     min-width: 0;
     position: relative;
 
     > svg {
-      left: 10px;
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: center;
       pointer-events: none;
-      position: absolute;
-      z-index: 1;
     }
 
     :global(.ui.input) {
-      display: flex;
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
       width: 100%;
 
       input {
-        background: var(--app-dark-canvas);
-        border: 1px solid var(--app-dark-border);
-        border-radius: var(--app-radius);
+        background: transparent;
+        border: 0;
+        box-shadow: none;
         color: var(--app-dark-text);
         min-height: 38px;
-        padding: 0 36px 0 34px;
+        outline: none;
+        padding: 0 36px 0 0;
         width: 100%;
 
         &::placeholder {
           color: var(--app-dark-text-muted);
         }
 
-        &:focus {
-          border-color: var(--app-accent);
-          box-shadow: 0 0 0 2px var(--app-accent-soft);
-        }
       }
+    }
+
+    &:focus-within {
+      border-color: var(--app-accent);
+      box-shadow: 0 0 0 2px var(--app-accent-soft);
     }
   }
 

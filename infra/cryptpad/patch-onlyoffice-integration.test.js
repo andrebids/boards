@@ -1,7 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { patchOnlyOfficeIntegration } = require('./patch-onlyoffice-integration');
+const {
+  patchOnlyOfficeIntegration,
+  patchPresentationToolbar,
+} = require('./patch-onlyoffice-integration');
 
 const uploadImageFilesFixture = `            APP.UploadImageFiles = function (files, type, id, jwt, cb) {
                 return void cb();
@@ -22,10 +25,10 @@ test('routes Presentation image requests through the host integration callback',
   assert.match(patched, /Q_INTEGRATION_ON_INSERT_IMAGE/);
   assert.match(patched, /\}, \{ raw: true \}\);/);
   assert.match(patched, /image\.blob/);
-  assert.match(patched, /URL\.createObjectURL\(image\.blob\)/);
-  assert.match(patched, /editor\.asc_addImageCallback\(\{ name: image\.name, url: imageUrl \}\)/);
-  assert.match(patched, /editor\._addImageUrl\(\[imageUrl\]\)/);
-  assert.doesNotMatch(patched, /editor\.AddImageUrl\(\[imageUrl\]\)/);
+  assert.match(patched, /new File\(\[image\.blob\], image\.name/);
+  assert.match(patched, /uploadDroppedPresentationImages\(\[file\], function\(error, urls\)/);
+  assert.match(patched, /editor\._addImageUrl\(urls, options\)/);
+  assert.doesNotMatch(patched, /URL\.createObjectURL\(image\.blob\)/);
   assert.match(patched, /redirectPresentationImageUpload\(\);/);
 });
 
@@ -33,6 +36,36 @@ test('does not apply the image picker patch twice', () => {
   const patched = patchOnlyOfficeIntegration(fixture);
 
   assert.equal(patchOnlyOfficeIntegration(patched), patched);
+});
+
+test('upgrades the previously installed temporary-URL image picker', () => {
+  const current = patchOnlyOfficeIntegration(fixture);
+  const legacy = current
+    .replace('const openProjectImagePicker = function(editor, options)', 'const openProjectImagePicker = function(editor)')
+    .replace(
+      `                    var name = image.name || ('image-' + Util.uid() + '.png');
+                    var file = new File([image.blob], image.name || name, {
+                        type: image.blob.type || 'application/octet-stream'
+                    });
+                    uploadDroppedPresentationImages([file], function(error, urls) {
+                        if (error || !urls || !urls.length) { return; }
+                        editor._addImageUrl(urls, options);
+                    });`,
+      `                    var imageUrl = window.URL.createObjectURL(image.blob);
+                    editor.asc_addImageCallback({ name: image.name, url: imageUrl });
+                    editor._addImageUrl([imageUrl]);
+                    window.setTimeout(function() {
+                        window.URL.revokeObjectURL(imageUrl);
+                    }, 60000);`,
+    )
+    .replace('editor.asc_addImage = function(options)', 'editor.asc_addImage = function()')
+    .replace('openProjectImagePicker(editor, options)', 'openProjectImagePicker(editor)');
+
+  const upgraded = patchOnlyOfficeIntegration(legacy);
+
+  assert.match(upgraded, /uploadDroppedPresentationImages\(\[file\]/);
+  assert.match(upgraded, /editor\._addImageUrl\(urls, options\)/);
+  assert.doesNotMatch(upgraded, /URL\.createObjectURL\(image\.blob\)/);
 });
 
 test('adds drag-and-drop support to an image-picker patch already installed in production', () => {
@@ -52,11 +85,13 @@ test('retries until the OnlyOffice image API is available after document ready',
   assert.match(patched, /attempt < 1200/);
 });
 
-test('restores the host image picker when OnlyOffice reassigns its image method during startup', () => {
+test('restores the host image picker and preserves OnlyOffice insertion options during startup', () => {
   const patched = patchOnlyOfficeIntegration(fixture);
 
-  assert.match(patched, /const openProjectImagePicker = function\(editor\)/);
+  assert.match(patched, /const openProjectImagePicker = function\(editor, options\)/);
   assert.match(patched, /editor\.asc_addImage !== openProjectImagePicker/);
+  assert.match(patched, /editor\.asc_addImage = function\(options\)/);
+  assert.match(patched, /openProjectImagePicker\(editor, options\)/);
 });
 
 test('uploads dropped presentation images through CryptPad before returning their URLs to OnlyOffice', () => {
@@ -73,4 +108,15 @@ test('fails the image build if the CryptPad hook changes upstream', () => {
     () => patchOnlyOfficeIntegration('const onDocumentReady = function() {};'),
     /OnlyOffice image picker patch no longer applies/,
   );
+});
+
+test('turns the presentation image toolbar control into a single picker action', () => {
+  const source =
+    'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.setMenu(new Common.UI.Menu({items:[{caption:e.mniImageFromFile,value:"file"},{cls:"cp-from-url",caption:e.mniImageFromUrl,value:"url"},{caption:e.mniImageFromStorage,value:"storage"}]}).on("item:click",(function(t,i,n){e.fireEvent("insert:image",[i.value])}))),i.menu.items[2].setVisible(t.canRequestInsertImage||t.fileChoiceUrl&&t.fileChoiceUrl.indexOf("{documentType}")>-1)}))';
+  const patched = patchPresentationToolbar(source);
+
+  assert.match(patched, /i\.on\("click"/);
+  assert.match(patched, /insert:image/);
+  assert.doesNotMatch(patched, /setMenu/);
+  assert.equal(patchPresentationToolbar(patched), patched);
 });
