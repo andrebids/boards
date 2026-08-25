@@ -40,11 +40,6 @@ const createOne = (values) => {
 
 const getByIds = (ids) => defaultFind(ids);
 
-const getUnreadByUserId = (userId) =>
-  getByUserId(userId, {
-    isRead: false,
-  });
-
 const getByUserId = (userId, { isRead, beforeId, limit } = {}) => {
   const criteria = {
     userId,
@@ -64,6 +59,11 @@ const getByUserId = (userId, { isRead, beforeId, limit } = {}) => {
 
   return limit ? query.limit(limit) : query;
 };
+
+const getUnreadByUserId = (userId) =>
+  getByUserId(userId, {
+    isRead: false,
+  });
 
 const getOneById = (id, { userId } = {}) => {
   const criteria = {
