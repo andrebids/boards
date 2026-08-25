@@ -6,7 +6,7 @@
 :global(#app) {
   .actions {
     display: flex;
-    gap: 2px;
+    gap: 4px;
     position: absolute;
     right: 4px;
     top: 3px;
@@ -179,7 +179,7 @@
 
   .textEditable {
     cursor: pointer;
-    padding-right: 68px;
+    padding-right: 100px;
   }
 
   .wrapper {

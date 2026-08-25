@@ -31,14 +31,18 @@
 
   .context {
     align-items: center;
-    color: var(--card-modal-muted, #8a94a3);
+    background: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.12));
+    border-left: 2px solid var(--card-modal-accent, #2563eb);
+    border-radius: 6px;
+    color: var(--card-modal-text, #344054);
     display: flex;
     font-size: 12px;
     font-weight: 600;
     gap: 6px;
     line-height: 16px;
-    margin: 0 2px 6px;
+    margin: 0 0 6px;
     min-width: 0;
+    padding: 6px 8px;
   }
 
   .contextIcon {
@@ -67,7 +71,28 @@
   }
 
   .wrapper {
+    box-sizing: border-box;
     margin-top: 6px;
     padding-bottom: 8px;
+    position: relative;
+  }
+
+  .wrapperNested {
+    --task-indent: min(calc(var(--task-depth) * 32px), 160px);
+
+    margin-left: var(--task-indent);
+    width: calc(100% - var(--task-indent));
+
+    &:before {
+      border-bottom: 1px solid var(--card-modal-border, #e3e7ec);
+      border-left: 1px solid var(--card-modal-border, #e3e7ec);
+      content: '';
+      height: 18px;
+      left: -21px;
+      pointer-events: none;
+      position: absolute;
+      top: -7px;
+      width: 12px;
+    }
   }
 }

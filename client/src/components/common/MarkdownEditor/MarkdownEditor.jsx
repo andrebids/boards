@@ -3,30 +3,30 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
-import PropTypes from "prop-types";
-import classNames from "classnames";
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import {
   useMarkdownEditor,
   wysiwygToolbarConfigs,
   MarkdownEditorView,
-} from "@gravity-ui/markdown-editor";
-import { ThemeProvider } from "@gravity-ui/uikit";
+} from '@gravity-ui/markdown-editor';
+import { ThemeProvider } from '@gravity-ui/uikit';
 /* eslint-disable import/no-unresolved */
-import { full as toolbarsPreset } from "@gravity-ui/markdown-editor/_/modules/toolbars/presets";
-import { ActionName } from "@gravity-ui/markdown-editor/_/bundle/config/action-names";
-import { ToolbarDataType } from "@gravity-ui/markdown-editor/_/toolbar/types";
+import { full as toolbarsPreset } from '@gravity-ui/markdown-editor/_/modules/toolbars/presets';
+import { ActionName } from '@gravity-ui/markdown-editor/_/bundle/config/action-names';
+import { ToolbarDataType } from '@gravity-ui/markdown-editor/_/toolbar/types';
 /* eslint-enable import/no-unresolved */
 
-import { EditorModes } from "../../../constants/Enums";
-import { createMentionMarkupLanguageData } from "./mention-utils";
-import createUserMentionExtension from "./mentions";
-import EmojiToolbarButton from "./EmojiToolbarButton";
+import { EditorModes } from '../../../constants/Enums';
+import { createMentionMarkupLanguageData } from './mention-utils';
+import createUserMentionExtension from './mentions';
+import EmojiToolbarButton from './EmojiToolbarButton';
 
-import styles from "./MarkdownEditor.module.scss";
+import styles from './MarkdownEditor.module.scss';
 
 const EMPTY_MENTION_USERS = [];
-const CUSTOM_EMOJI_ACTION = "commentEmoji";
+const CUSTOM_EMOJI_ACTION = 'commentEmoji';
 
 const removedActionNamesSet = new Set([
   ActionName.checkbox,
@@ -52,7 +52,7 @@ const commandMenuActions = wysiwygToolbarConfigs.wCommandMenuConfig.filter(
 );
 
 const cloneToolbarOrderItem = (item) =>
-  typeof item === "string"
+  typeof item === 'string'
     ? item
     : {
         ...item,
@@ -115,6 +115,7 @@ const MarkdownEditor = React.forwardRef(
       mentionUsers,
       withEmoji,
       fileUploadHandler: customFileUploadHandler,
+      compact,
       isError,
       onChange,
       onSubmit,
@@ -213,16 +214,16 @@ const MarkdownEditor = React.forwardRef(
         }
       };
 
-      editor.on("change", handleChange);
-      editor.on("submit", handleSubmit);
-      editor.on("cancel", handleCancel);
-      editor.on("change-editor-mode", handleModeChange);
+      editor.on('change', handleChange);
+      editor.on('submit', handleSubmit);
+      editor.on('cancel', handleCancel);
+      editor.on('change-editor-mode', handleModeChange);
 
       return () => {
-        editor.off("change", handleChange);
-        editor.off("submit", handleSubmit);
-        editor.off("cancel", handleCancel);
-        editor.off("change-editor-mode", handleModeChange);
+        editor.off('change', handleChange);
+        editor.off('submit', handleSubmit);
+        editor.off('cancel', handleCancel);
+        editor.off('change-editor-mode', handleModeChange);
       };
     }, [onChange, onSubmit, onCancel, onModeChange, editor]);
 
@@ -233,10 +234,10 @@ const MarkdownEditor = React.forwardRef(
         event.stopPropagation();
       };
 
-      wrapperElement.addEventListener("paste", handlePaste);
+      wrapperElement.addEventListener('paste', handlePaste);
 
       return () => {
-        wrapperElement.removeEventListener("paste", handlePaste);
+        wrapperElement.removeEventListener('paste', handlePaste);
       };
     }, []);
 
@@ -244,7 +245,11 @@ const MarkdownEditor = React.forwardRef(
       <div
         {...props} // eslint-disable-line react/jsx-props-no-spreading
         ref={wrapperRef}
-        className={classNames(styles.wrapper, isError && styles.wrapperError)}
+        className={classNames(
+          styles.wrapper,
+          compact && styles.wrapperCompact,
+          isError && styles.wrapperError,
+        )}
       >
         <ThemeProvider theme="dark" rootClassName={styles.theme}>
           <MarkdownEditorView
@@ -252,7 +257,7 @@ const MarkdownEditor = React.forwardRef(
             stickyToolbar
             editor={editor}
             toolbarsPreset={configuredToolbarsPreset}
-            className={styles.editor}
+            className={classNames(styles.editor, compact && styles.editorCompact)}
           />
         </ThemeProvider>
       </div>
@@ -272,6 +277,7 @@ MarkdownEditor.propTypes = {
   ),
   withEmoji: PropTypes.bool,
   fileUploadHandler: PropTypes.func,
+  compact: PropTypes.bool,
   isError: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
@@ -284,6 +290,7 @@ MarkdownEditor.defaultProps = {
   mentionUsers: EMPTY_MENTION_USERS,
   withEmoji: false,
   fileUploadHandler,
+  compact: false,
   isError: false,
   onModeChange: undefined,
 };

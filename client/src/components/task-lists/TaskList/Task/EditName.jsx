@@ -68,6 +68,7 @@ const EditName = React.memo(({ taskId, onClose }) => {
   return (
     <div className={styles.wrapper}>
       <EditMarkdown
+        compact
         defaultValue={task.content || task.name}
         mentionUsers={mentionUsers}
         withEmoji

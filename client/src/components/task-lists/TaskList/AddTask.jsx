@@ -5,6 +5,7 @@
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Form, Icon } from 'semantic-ui-react';
@@ -26,7 +27,7 @@ const DEFAULT_DATA = {
 const MAX_LENGTH = 1048576;
 
 const AddTask = React.memo((props) => {
-  const { children, taskListId, parentTaskId, parentTaskName, isOpened, onClose } = props;
+  const { children, taskListId, parentTaskId, parentTaskName, depth, isOpened, onClose } = props;
   const defaultMode = useSelector((state) => selectors.selectCurrentUser(state).defaultEditorMode);
   const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
   const accessToken = useSelector(selectors.selectAccessToken);
@@ -123,7 +124,11 @@ const AddTask = React.memo((props) => {
   }
 
   return (
-    <Form className={styles.wrapper} onSubmit={handleSubmit}>
+    <Form
+      className={classNames(styles.wrapper, parentTaskId && styles.wrapperNested)}
+      style={parentTaskId ? { '--task-depth': depth } : undefined}
+      onSubmit={handleSubmit}
+    >
       {parentTaskId && (
         <div className={styles.context} title={parentTaskName}>
           <Icon fitted name="level down alternate" className={styles.contextIcon} />
@@ -139,6 +144,7 @@ const AddTask = React.memo((props) => {
       >
         <MarkdownEditor
           key={editorKey}
+          compact
           defaultValue={data.content}
           defaultMode={defaultMode}
           mentionUsers={mentionUsers}
@@ -185,6 +191,7 @@ AddTask.propTypes = {
   taskListId: PropTypes.string.isRequired,
   parentTaskId: PropTypes.string,
   parentTaskName: PropTypes.string,
+  depth: PropTypes.number,
   isOpened: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
 };
@@ -192,6 +199,7 @@ AddTask.propTypes = {
 AddTask.defaultProps = {
   parentTaskId: undefined,
   parentTaskName: undefined,
+  depth: 0,
 };
 
 export default AddTask;

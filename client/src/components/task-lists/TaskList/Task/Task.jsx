@@ -166,7 +166,7 @@ const Task = React.memo(({ id, index, depth }) => {
                     title={t('action.addMember')}
                     className={styles.button}
                   >
-                    <Icon fitted name="add user" size="small" />
+                    <Icon fitted name="user" size="small" />
                   </Button>
                 )}
               </SelectAssigneePopup>
@@ -293,6 +293,7 @@ const Task = React.memo(({ id, index, depth }) => {
           taskListId={task.taskListId}
           parentTaskId={id}
           parentTaskName={task.name}
+          depth={depth + 1}
           isOpened={isAddSubtaskOpened}
           onClose={handleAddSubtaskClose}
         >

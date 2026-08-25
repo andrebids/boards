@@ -21,7 +21,16 @@ import styles from './EditMarkdown.module.scss';
 const MAX_LENGTH = 1048576;
 
 const EditMarkdown = React.memo(
-  ({ defaultValue, draftValue, mentionUsers, withEmoji, fileUploadHandler, onUpdate, onClose }) => {
+  ({
+    defaultValue,
+    draftValue,
+    mentionUsers,
+    withEmoji,
+    fileUploadHandler,
+    compact,
+    onUpdate,
+    onClose,
+  }) => {
     const defaultMode = useSelector(
       (state) => selectors.selectCurrentUser(state).defaultEditorMode,
     );
@@ -93,6 +102,7 @@ const EditMarkdown = React.memo(
           mentionUsers={mentionUsers}
           withEmoji={withEmoji}
           fileUploadHandler={fileUploadHandler}
+          compact={compact}
           isError={isExceeded}
           onChange={handleChange}
           onSubmit={handleSubmit}
@@ -143,6 +153,7 @@ EditMarkdown.propTypes = {
   ),
   withEmoji: PropTypes.bool,
   fileUploadHandler: PropTypes.func,
+  compact: PropTypes.bool,
   // placeholder: PropTypes.string.isRequired, // TODO: remove?
   onUpdate: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
@@ -154,6 +165,7 @@ EditMarkdown.defaultProps = {
   mentionUsers: undefined,
   withEmoji: false,
   fileUploadHandler: undefined,
+  compact: false,
 };
 
 export default EditMarkdown;

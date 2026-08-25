@@ -57,9 +57,9 @@ export default merge({}, enUSCore, {
       areYouSureYouWantToDeleteThisTask:
         'Êtes-vous sûr de vouloir supprimer cette tâche ?',
       areYouSureYouWantToDeleteThisTaskWithSubtasks_one:
-        'Cette tâche contient {{count}} sous-tâche. Supprimer la tâche parente ? La sous-tâche sera conservée comme tâche normale.',
+        'Cette tâche contient {{count}} sous-tâche. Supprimer cette tâche ? La sous-tâche remontera d’un niveau.',
       areYouSureYouWantToDeleteThisTaskWithSubtasks_other:
-        'Cette tâche contient {{count}} sous-tâches. Supprimer la tâche parente ? Les sous-tâches seront conservées comme tâches normales.',
+        'Cette tâche contient {{count}} sous-tâches. Supprimer cette tâche ? Les sous-tâches remonteront d’un niveau.',
       areYouSureYouWantToDeleteThisUser:
         'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
       areYouSureYouWantToLeaveProject:

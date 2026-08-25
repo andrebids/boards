@@ -53,9 +53,9 @@ export default {
       areYouSureYouWantToDeleteThisTask:
         'Tem certeza de que deseja excluir esta tarefa?',
       areYouSureYouWantToDeleteThisTaskWithSubtasks_one:
-        'Esta tarefa tem {{count}} subtarefa. Excluir a tarefa principal? A subtarefa será mantida como tarefa normal.',
+        'Esta tarefa tem {{count}} subtarefa. Excluir esta tarefa? A subtarefa subirá um nível.',
       areYouSureYouWantToDeleteThisTaskWithSubtasks_other:
-        'Esta tarefa tem {{count}} subtarefas. Excluir a tarefa principal? As subtarefas serão mantidas como tarefas normais.',
+        'Esta tarefa tem {{count}} subtarefas. Excluir esta tarefa? As subtarefas subirão um nível.',
       areYouSureYouWantToDeleteThisUser:
         'Tem certeza de que deseja excluir este usuário?',
       areYouSureYouWantToLeaveBoard:

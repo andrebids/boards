@@ -72,9 +72,9 @@ export default {
       areYouSureYouWantToDeleteThisProject: 'Are you sure you want to delete this project?',
       areYouSureYouWantToDeleteThisTask: 'Are you sure you want to delete this task?',
       areYouSureYouWantToDeleteThisTaskWithSubtasks_one:
-        'This task has {{count}} subtask. Delete the parent task? The subtask will be kept as a regular task.',
+        'This task has {{count}} subtask. Delete this task? The subtask will move up one level.',
       areYouSureYouWantToDeleteThisTaskWithSubtasks_other:
-        'This task has {{count}} subtasks. Delete the parent task? The subtasks will be kept as regular tasks.',
+        'This task has {{count}} subtasks. Delete this task? The subtasks will move up one level.',
       areYouSureYouWantToDeleteThisTaskList: 'Are you sure you want to delete this task list?',
       areYouSureYouWantToDeleteThisUser: 'Are you sure you want to delete this user?',
       areYouSureYouWantToEmptyTrash: 'Are you sure you want to empty the trash?',

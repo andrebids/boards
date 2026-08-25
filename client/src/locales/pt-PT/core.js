@@ -329,9 +329,9 @@ export default {
       areYouSureYouWantToDeleteThisProject: 'Tem certeza de que deseja apagar este projeto?',
       areYouSureYouWantToDeleteThisTask: 'Tem certeza de que deseja excluir esta tarefa?',
       areYouSureYouWantToDeleteThisTaskWithSubtasks_one:
-        'Esta tarefa tem {{count}} subtarefa. Eliminar a tarefa principal? A subtarefa será mantida como tarefa normal.',
+        'Esta tarefa tem {{count}} subtarefa. Eliminar esta tarefa? A subtarefa subirá um nível.',
       areYouSureYouWantToDeleteThisTaskWithSubtasks_other:
-        'Esta tarefa tem {{count}} subtarefas. Eliminar a tarefa principal? As subtarefas serão mantidas como tarefas normais.',
+        'Esta tarefa tem {{count}} subtarefas. Eliminar esta tarefa? As subtarefas subirão um nível.',
       areYouSureYouWantToDeleteThisTaskList:
         'Tem certeza de que deseja excluir esta lista de tarefas?',
       areYouSureYouWantToDeleteThisUser: 'Tem a certeza de que deseja eliminar este utilizador?',
