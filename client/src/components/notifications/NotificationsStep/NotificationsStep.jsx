@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -30,15 +30,40 @@ const NotificationsStep = React.memo(({ projectId, onClose }) => {
       ? selectNotificationIdsByProjectId(state, projectId)
       : selectors.selectNotificationIdsForCurrentUser(state),
   );
+  const readNotificationIds = useSelector((state) =>
+    projectId ? [] : selectors.selectReadNotificationIdsForCurrentUser(state),
+  );
+  const notificationHistory = useSelector(selectors.selectNotificationHistoryState);
   const unreadChatConversationTotal =
     useSelector(selectors.selectChatInboxUnreadConversationTotal) || 0;
   const chatNotificationItems = useSelector(selectors.selectChatInboxNotificationItems);
   const hasUnreadChatConversations = !projectId && unreadChatConversationTotal > 0;
   const hasUnreadContent = notificationIds.length > 0 || hasUnreadChatConversations;
+  const hasHistoryContent = !projectId && readNotificationIds.length > 0;
+  const hasContent = hasUnreadContent || hasHistoryContent;
+  const isHistoryPendingOrFailed =
+    !projectId && (notificationHistory.isFetching || notificationHistory.error);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const { openConversationList, openGlobalConversation, setInboxScope } = useChat();
+
+  useEffect(() => {
+    if (
+      !projectId &&
+      !notificationHistory.isLoaded &&
+      !notificationHistory.isFetching &&
+      !notificationHistory.error
+    ) {
+      dispatch(entryActions.fetchNotificationHistory());
+    }
+  }, [
+    dispatch,
+    projectId,
+    notificationHistory.error,
+    notificationHistory.isFetching,
+    notificationHistory.isLoaded,
+  ]);
 
   const handleDeleteAllClick = useCallback(() => {
     dispatch(entryActions.deleteAllNotifications());
@@ -58,6 +83,18 @@ const NotificationsStep = React.memo(({ projectId, onClose }) => {
     openConversationList();
   }, [onClose, openConversationList, setInboxScope]);
 
+  const handleLoadMoreClick = useCallback(() => {
+    const lastNotificationId = readNotificationIds[readNotificationIds.length - 1];
+
+    if (lastNotificationId) {
+      dispatch(entryActions.fetchNotificationHistory(lastNotificationId));
+    }
+  }, [dispatch, readNotificationIds]);
+
+  const handleRetryHistoryClick = useCallback(() => {
+    dispatch(entryActions.fetchNotificationHistory());
+  }, [dispatch]);
+
   return (
     <Popup.Content>
       <div className={styles.container}>
@@ -69,13 +106,13 @@ const NotificationsStep = React.memo(({ projectId, onClose }) => {
                   context: 'title',
                 })}
           </div>
-          {!projectId && notificationIds.length > 1 && (
+          {!projectId && notificationIds.length > 0 && (
             <button type="button" className={styles.headerAction} onClick={handleDeleteAllClick}>
-              {t('action.dismissAll')}
+              {t('common.markAllNotificationsAsRead')}
             </button>
           )}
         </div>
-        {hasUnreadContent ? (
+        {hasContent && (
           <div className={styles.items}>
             {hasUnreadChatConversations && (
               <section className={styles.chatSection} aria-labelledby="chat-notifications-title">
@@ -104,9 +141,69 @@ const NotificationsStep = React.memo(({ projectId, onClose }) => {
             {notificationIds.map((notificationId) => (
               <Item key={notificationId} id={notificationId} onClose={onClose} />
             ))}
+            {!projectId &&
+              (hasHistoryContent ||
+                notificationHistory.isFetching ||
+                notificationHistory.error) && (
+                <section
+                  className={styles.historySection}
+                  aria-labelledby="notification-history-title"
+                >
+                  <div className={styles.sectionTitle} id="notification-history-title">
+                    {t('common.earlierNotifications')}
+                  </div>
+                  {readNotificationIds.map((notificationId) => (
+                    <Item key={notificationId} id={notificationId} onClose={onClose} />
+                  ))}
+                  {notificationHistory.isFetching && (
+                    <div className={styles.historyStatus} role="status">
+                      {t('common.loading')}
+                    </div>
+                  )}
+                  {notificationHistory.error && (
+                    <div className={styles.historyStatus} role="alert">
+                      <span>{t('common.notificationHistoryLoadFailed')}</span>
+                      <button
+                        type="button"
+                        className={styles.retryButton}
+                        onClick={handleRetryHistoryClick}
+                      >
+                        {t('action.retry')}
+                      </button>
+                    </div>
+                  )}
+                  {!notificationHistory.isFetching &&
+                    !notificationHistory.error &&
+                    notificationHistory.hasMore && (
+                      <button
+                        type="button"
+                        className={styles.loadMoreButton}
+                        onClick={handleLoadMoreClick}
+                      >
+                        {t('common.showMore')}
+                      </button>
+                    )}
+                </section>
+              )}
           </div>
-        ) : (
-          t(projectId ? 'common.noUnreadProjectNotifications' : 'common.noUnreadNotifications')
+        )}
+        {!hasContent && !projectId && notificationHistory.isFetching && (
+          <div className={styles.emptyState} role="status">
+            {t('common.loading')}
+          </div>
+        )}
+        {!hasContent && !projectId && notificationHistory.error && (
+          <div className={styles.emptyState} role="alert">
+            <span>{t('common.notificationHistoryLoadFailed')}</span>
+            <button type="button" className={styles.retryButton} onClick={handleRetryHistoryClick}>
+              {t('action.retry')}
+            </button>
+          </div>
+        )}
+        {!hasContent && !isHistoryPendingOrFailed && (
+          <div className={styles.emptyState}>
+            {t(projectId ? 'common.noUnreadProjectNotifications' : 'common.noUnreadNotifications')}
+          </div>
         )}
       </div>
     </Popup.Content>

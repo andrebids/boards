@@ -296,6 +296,9 @@ export default {
       noUnreadProjectNotifications:
         "There are no unread notifications in this project.",
       noUnreadNotifications: "No unread notifications.",
+      earlierNotifications: "Earlier",
+      markAllNotificationsAsRead: "Mark all as read",
+      notificationHistoryLoadFailed: "Could not load notification history.",
       newSubtaskOf: "New subtask of “{{task}}”",
       notifications: "Notifications",
       personalNotifications: "Personal notifications",

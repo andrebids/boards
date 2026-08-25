@@ -5,6 +5,7 @@
 
 import truncate from 'lodash/truncate';
 import React, { useCallback, useMemo } from 'react';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation, Trans } from 'react-i18next';
@@ -44,9 +45,12 @@ const Item = React.memo(({ id, onClose }) => {
   }, [id, dispatch]);
 
   const handleOpenClick = useCallback(() => {
-    dispatch(entryActions.deleteNotification(id));
+    if (!notification.isRead) {
+      dispatch(entryActions.deleteNotification(id));
+    }
+
     onClose();
-  }, [id, dispatch, onClose]);
+  }, [id, notification.isRead, dispatch, onClose]);
 
   const creatorUserName =
     creatorUser.id === StaticUserIds.DELETED
@@ -520,7 +524,7 @@ const Item = React.memo(({ id, onClose }) => {
   }
 
   return (
-    <div className={styles.wrapper}>
+    <div className={classNames(styles.wrapper, notification.isRead && styles.isRead)}>
       <UserAvatar id={notification.creatorUserId} size="small" />
       <span className={styles.content}>
         <div>{contentNode}</div>
@@ -528,16 +532,18 @@ const Item = React.memo(({ id, onClose }) => {
           <TimeAgo date={notification.createdAt} />
         </span>
       </span>
-      <Button
-        variant="secondary"
-        type="button"
-        icon="check"
-        isIconOnly
-        aria-label={t('action.markAsRead')}
-        title={t('action.markAsRead')}
-        className={styles.button}
-        onClick={handleMarkAsReadClick}
-      />
+      {!notification.isRead && (
+        <Button
+          variant="secondary"
+          type="button"
+          icon="check"
+          isIconOnly
+          aria-label={t('action.markAsRead')}
+          title={t('action.markAsRead')}
+          className={styles.button}
+          onClick={handleMarkAsReadClick}
+        />
+      )}
     </div>
   );
 });
