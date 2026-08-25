@@ -4,6 +4,17 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const pluginRoot = path.join(__dirname, 'presentation-import');
+const onlyOfficePluginRegistryPath = path.join(__dirname, '..', 'plugins.json');
+const presentationImportGuid = 'asc.{6B4D3E90-6A1B-4E92-BD0E-1DA8E51F1F40}';
+
+test('registers the import plugin in CryptPad before ONLYOFFICE opens a document', () => {
+  const registry = JSON.parse(fs.readFileSync(onlyOfficePluginRegistryPath, 'utf8'));
+
+  assert.deepEqual(registry.pluginsData, [
+    '/customize/planka-plugins/presentation-import/config.json',
+  ]);
+  assert.deepEqual(registry.autostart, [presentationImportGuid]);
+});
 
 test('adds the import action to the Insert tab for presentations, including view-only members', () => {
   const config = JSON.parse(fs.readFileSync(path.join(pluginRoot, 'config.json'), 'utf8'));
