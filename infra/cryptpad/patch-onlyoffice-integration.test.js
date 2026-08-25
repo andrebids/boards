@@ -23,12 +23,14 @@ test('routes Presentation image requests through the host integration callback',
 
   assert.match(patched, /APP\.ooconfig\.documentType !== 'presentation'/);
   assert.match(patched, /Q_INTEGRATION_ON_INSERT_IMAGE/);
+  assert.match(patched, /function\(queryError, image\)/);
+  assert.match(patched, /if \(queryError \|\| !image \|\| !image\.blob\)/);
   assert.match(patched, /\}, \{ raw: true \}\);/);
   assert.match(patched, /image\.blob/);
   assert.match(patched, /var file = image\.blob;/);
   assert.match(patched, /file\.name = name;/);
   assert.doesNotMatch(patched, /new File\(/);
-  assert.match(patched, /uploadDroppedPresentationImages\(\[file\], function\(error, urls\)/);
+  assert.match(patched, /APP\.UploadImageFiles\(\[file\], null, null, null, function\(error, urls\)/);
   assert.match(patched, /editor\._addImageUrl\(urls, options\)/);
   assert.doesNotMatch(patched, /URL\.createObjectURL\(image\.blob\)/);
   assert.match(patched, /redirectPresentationImageUpload\(\);/);
@@ -48,7 +50,7 @@ test('upgrades the previously installed temporary-URL image picker', () => {
       `                    var name = image.name || ('image-' + Util.uid() + '.png');
                     var file = image.blob;
                     file.name = name;
-                    uploadDroppedPresentationImages([file], function(error, urls) {
+                    APP.UploadImageFiles([file], null, null, null, function(error, urls) {
                         if (error || !urls || !urls.length) { return; }
                         editor._addImageUrl(urls, options);
                     });`,
@@ -64,7 +66,7 @@ test('upgrades the previously installed temporary-URL image picker', () => {
 
   const upgraded = patchOnlyOfficeIntegration(legacy);
 
-  assert.match(upgraded, /uploadDroppedPresentationImages\(\[file\]/);
+  assert.match(upgraded, /APP\.UploadImageFiles\(\[file\]/);
   assert.match(upgraded, /editor\._addImageUrl\(urls, options\)/);
   assert.doesNotMatch(upgraded, /URL\.createObjectURL\(image\.blob\)/);
 });

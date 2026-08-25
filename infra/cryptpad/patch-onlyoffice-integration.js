@@ -17,12 +17,12 @@ const projectImagePickerReplacement = `            const openProjectImagePicker 
                 var sframeChan = common.getSframeChannel();
                 if (!sframeChan) { return; }
 
-                sframeChan.query('Q_INTEGRATION_ON_INSERT_IMAGE', {}, function(image) {
-                    if (!image || !image.blob) { return; }
+                sframeChan.query('Q_INTEGRATION_ON_INSERT_IMAGE', {}, function(queryError, image) {
+                    if (queryError || !image || !image.blob) { return; }
                     var name = image.name || ('image-' + Util.uid() + '.png');
                     var file = image.blob;
                     file.name = name;
-                    uploadDroppedPresentationImages([file], function(error, urls) {
+                    APP.UploadImageFiles([file], null, null, null, function(error, urls) {
                         if (error || !urls || !urls.length) { return; }
                         editor._addImageUrl(urls, options);
                     });
@@ -59,7 +59,11 @@ function patchOnlyOfficeIntegration(source) {
   let patched = source;
   const hasLegacyImagePicker =
     patched.includes('const redirectPresentationImageUpload = function()') &&
-    !patched.includes('var file = image.blob;');
+    (
+      !patched.includes('function(queryError, image)') ||
+      !patched.includes('var file = image.blob;') ||
+      !patched.includes('APP.UploadImageFiles([file], null, null, null, function(error, urls)')
+    );
 
   if (hasLegacyImagePicker) {
     patched = patched.replace(
@@ -95,8 +99,9 @@ function patchOnlyOfficeIntegration(source) {
 
   const hasPickerPatch =
     patched.includes('const redirectPresentationImageUpload = function()') &&
+    patched.includes('function(queryError, image)') &&
     patched.includes('var file = image.blob;') &&
-    patched.includes('uploadDroppedPresentationImages([file], function(error, urls)');
+    patched.includes('APP.UploadImageFiles([file], null, null, null, function(error, urls)');
   const hasDropPatch = dropPatchSource.includes('getImageURL(ev.name).then(function(url)');
 
   if (hasPickerPatch && hasDropPatch) {
