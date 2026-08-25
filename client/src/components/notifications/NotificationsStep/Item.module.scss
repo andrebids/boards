@@ -12,9 +12,9 @@
   .button {
     align-self: start;
     align-items: center;
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.09) !important;
-    border-radius: 7px;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 4px;
     box-shadow: none !important;
     color: rgba(230, 237, 243, 0.7) !important;
     display: inline-flex !important;
@@ -26,7 +26,6 @@
     padding: 0;
     pointer-events: none;
     transition:
-      background-color 0.15s ease,
       color 0.15s ease,
       opacity 0.15s ease,
       transform 0.15s ease;
@@ -52,7 +51,7 @@
     }
 
     &:hover {
-      background: rgba(147, 197, 253, 0.16) !important;
+      background: transparent !important;
       box-shadow: none !important;
       color: #dbeafe !important;
     }
@@ -62,7 +61,7 @@
     }
 
     &:focus-visible {
-      background: rgba(147, 197, 253, 0.16) !important;
+      background: transparent !important;
       color: #dbeafe !important;
       opacity: 1;
       outline: 2px solid #93c5fd;
