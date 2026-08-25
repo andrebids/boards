@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import Config from '../../constants/Config';
 import api from '../../api';
-import { Button } from '../../lib/custom-ui';
+import { Button, FilePicker } from '../../lib/custom-ui';
 
 import {
   createPresentationLoadDiagnostic,
@@ -13,15 +13,13 @@ import {
 } from './presentationEditorDiagnostics';
 import getPresentationEditorLanguage from './presentationLocale';
 import PresentationMediaPicker from './PresentationMediaPicker';
+import { isPptxFile, PRESENTATION_FILE_ACCEPT, PRESENTATION_MIME_TYPE } from './presentationImport';
 
 import styles from './PresentationWorkspace.module.scss';
 
-const PRESENTATION_MIME_TYPE =
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-
 const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
 
-const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate }) => {
+const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSessionUpdate }) => {
   const [t, i18n] = useTranslation();
   const editorRef = useRef(null);
   const isEditorInitializedRef = useRef(false);
@@ -31,6 +29,8 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   );
   const [editorError, setEditorError] = useState(null);
   const [imageInsertCallback, setImageInsertCallback] = useState(null);
+  const [importError, setImportError] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [loadPhase, setLoadPhase] = useState('initializing');
   const [attempt, setAttempt] = useState(1);
@@ -48,6 +48,27 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
     setLoadPhase('initializing');
     setAttempt((previousAttempt) => previousAttempt + 1);
   }, []);
+
+  const handlePresentationFileSelect = useCallback(
+    async (file) => {
+      if (!isPptxFile(file)) {
+        setImportError('invalid');
+        return;
+      }
+
+      setImportError(null);
+      setIsImporting(true);
+      try {
+        await api.saveProjectPresentationFile(presentation.id, file);
+        handleRetry();
+      } catch (nextError) {
+        setImportError('upload');
+      } finally {
+        setIsImporting(false);
+      }
+    },
+    [handleRetry, presentation.id],
+  );
 
   const handleImageInsertRequest = useCallback((data, callback) => {
     if (!data || typeof callback !== 'function') {
@@ -265,7 +286,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
       <section className={styles.emptyState} role="alert">
         <Icon name="warning circle" size="huge" />
         <h2>{t('common.presentationLoadFailed')}</h2>
-        <p>{editorError.message}</p>
+        <p>{t('common.presentationLoadErrorDescription')}</p>
         <p className={styles.diagnostic}>
           {t('common.presentationLoadStage', { stage: loadPhase })}
         </p>
@@ -278,8 +299,33 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
 
   return (
     <>
-      <section className={styles.editor} aria-busy={!isReady}>
-        <div ref={editorRef} className={styles.editorMount} />
+      <section className={styles.editorSection}>
+        {canEdit && (
+          <div className={styles.editorToolbar}>
+            <FilePicker accept={PRESENTATION_FILE_ACCEPT} onSelect={handlePresentationFileSelect}>
+              <Button
+                variant="secondary"
+                icon="upload"
+                loading={isImporting}
+                disabled={isImporting}
+              >
+                {t('common.presentationImport')}
+              </Button>
+            </FilePicker>
+            {importError && (
+              <p className={styles.importError} role="alert">
+                {t(
+                  importError === 'invalid'
+                    ? 'common.presentationImportInvalidFile'
+                    : 'common.presentationImportFailed',
+                )}
+              </p>
+            )}
+          </div>
+        )}
+        <section className={styles.editor} aria-busy={!isReady}>
+          <div ref={editorRef} className={styles.editorMount} />
+        </section>
       </section>
       <PresentationMediaPicker
         boardIds={boardIds}
@@ -293,6 +339,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
 
 PresentationEditor.propTypes = {
   boardIds: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+  canEdit: PropTypes.bool.isRequired,
   presentation: PropTypes.shape({
     id: PropTypes.string.isRequired,
     isEnabled: PropTypes.bool.isRequired,

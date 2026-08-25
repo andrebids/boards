@@ -262,8 +262,17 @@ export default merge({}, enUSCore, {
         "Créez un tableau avant d’ajouter sa présentation.",
       presentationLoadFailed: "Impossible de charger la présentation.",
       presentationLoadStage: "Étape technique : {{stage}}",
+      presentationLoadErrorDescription:
+        "Réessayez. Si le problème persiste, contactez un administrateur du projet.",
       presentationSaveFailed:
         "Impossible d’enregistrer la modification de la présentation.",
+      presentationImport: "Importer PowerPoint",
+      presentationImportInvalidFile: "Sélectionnez un fichier PowerPoint (.pptx).",
+      presentationImportFailed:
+        "Impossible d’importer le PowerPoint. Réessayez.",
+      presentationImport: "Importer un PowerPoint",
+      presentationImportInvalidFile: "Sélectionnez un fichier PowerPoint (.pptx).",
+      presentationImportFailed: "Impossible d’importer le PowerPoint. Réessayez.",
       presentationPreparingTitle: "Préparation de l’éditeur de présentations",
       presentationPreparingDescription:
         "L’éditeur collaboratif sera connecté une fois le service CryptPad configuré.",

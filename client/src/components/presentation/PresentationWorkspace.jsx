@@ -104,6 +104,7 @@ const PresentationWorkspace = React.memo(({ isActive }) => {
       <PresentationEditor
         key={selectedPresentation.id}
         boardIds={boards.map(({ id }) => id)}
+        canEdit={canEdit}
         presentation={selectedPresentation}
         onSessionUpdate={updateSession}
       />

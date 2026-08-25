@@ -695,8 +695,13 @@ export default {
         "Crie um quadro antes de adicionar a respetiva apresentação.",
       presentationLoadFailed: "Não foi possível carregar a apresentação.",
       presentationLoadStage: "Fase técnica: {{stage}}",
+      presentationLoadErrorDescription:
+        "Tente novamente. Se o problema continuar, contacte um administrador do projeto.",
       presentationSaveFailed:
         "Não foi possível guardar a alteração da apresentação.",
+      presentationImport: "Importar PowerPoint",
+      presentationImportInvalidFile: "Selecione um ficheiro PowerPoint (.pptx).",
+      presentationImportFailed: "Não foi possível importar o PowerPoint. Tente novamente.",
       presentationPreparingTitle: "Editor de apresentações a preparar",
       presentationPreparingDescription:
         "O editor colaborativo será ligado assim que o serviço CryptPad estiver configurado.",

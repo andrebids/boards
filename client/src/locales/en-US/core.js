@@ -424,7 +424,12 @@ export default {
         "Create a board before adding its presentation.",
       presentationLoadFailed: "Presentation could not be loaded.",
       presentationLoadStage: "Technical stage: {{stage}}",
+      presentationLoadErrorDescription:
+        "Try again. If the problem continues, contact a project administrator.",
       presentationSaveFailed: "Presentation change could not be saved.",
+      presentationImport: "Import PowerPoint",
+      presentationImportInvalidFile: "Select a PowerPoint (.pptx) file.",
+      presentationImportFailed: "PowerPoint could not be imported. Try again.",
       presentationPreparingTitle: "Presentation editor is being prepared",
       presentationPreparingDescription:
         "The collaborative editor will be connected once the CryptPad service is configured.",
