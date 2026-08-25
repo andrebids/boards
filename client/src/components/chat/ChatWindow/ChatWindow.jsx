@@ -212,7 +212,7 @@ const ChatWindow = React.memo(({ id }) => {
     notificationStateLabel = t('chat.notifyMentions');
   }
 
-  if (!conversation) {
+  if (!conversation || !project) {
     return null;
   }
 
