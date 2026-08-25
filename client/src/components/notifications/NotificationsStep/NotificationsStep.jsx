@@ -107,8 +107,14 @@ const NotificationsStep = React.memo(({ projectId, onClose }) => {
                 })}
           </div>
           {!projectId && notificationIds.length > 0 && (
-            <button type="button" className={styles.headerAction} onClick={handleDeleteAllClick}>
-              {t('common.markAllNotificationsAsRead')}
+            <button
+              type="button"
+              className={styles.headerAction}
+              aria-label={t('common.markAllNotificationsAsRead')}
+              title={t('common.markAllNotificationsAsRead')}
+              onClick={handleDeleteAllClick}
+            >
+              <Icon fitted name="check" aria-hidden="true" />
             </button>
           )}
         </div>
