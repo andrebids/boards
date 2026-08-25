@@ -150,10 +150,7 @@ module.exports = {
 
       const nextTasksValues = tasks.map((task) => ({
         ..._.pick(task, ['assigneeUserId', 'position', 'name', 'isCompleted']),
-        content: remapTaskAttachmentUrls(
-          task.content || task.name,
-          nextAttachmentIdByAttachmentId,
-        ),
+        content: remapTaskAttachmentUrls(task.content || task.name, nextAttachmentIdByAttachmentId),
         id: nextTaskIdByTaskId[task.id],
         taskListId: nextTaskListIdByTaskListId[task.taskListId],
         parentTaskId: task.parentTaskId ? nextTaskIdByTaskId[task.parentTaskId] : null,
@@ -161,11 +158,11 @@ module.exports = {
       const nextTasks = await Task.qm.create(nextTasksValues).usingConnection(db);
 
       const nextAttachmentsValues = attachments.map((attachment) => ({
-          ..._.pick(attachment, ['type', 'data', 'name']),
-          id: nextAttachmentIdByAttachmentId[attachment.id],
-          cardId: card.id,
-          creatorUserId: card.creatorUserId,
-        }));
+        ..._.pick(attachment, ['type', 'data', 'name']),
+        id: nextAttachmentIdByAttachmentId[attachment.id],
+        cardId: card.id,
+        creatorUserId: card.creatorUserId,
+      }));
       const nextAttachments = await sails.models.attachment.qm.create(nextAttachmentsValues, {
         connection: db,
       });

@@ -3,7 +3,9 @@ exports.up = async (knex) => {
     table.text('content');
   });
 
-  await knex('task').whereNull('content').update({ content: knex.ref('name') });
+  await knex('task')
+    .whereNull('content')
+    .update({ content: knex.ref('name') });
 
   await knex.schema.alterTable('task', (table) => {
     table.text('content').notNullable().alter();

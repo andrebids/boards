@@ -15,7 +15,8 @@ const getTaskNameFromContent = (content) =>
     .slice(0, MAX_TASK_NAME_LENGTH);
 
 const getTaskContentValues = ({ content, name }) => {
-  const normalizedContent = String(content ?? name ?? '').trim();
+  const sourceContent = content === undefined || content === null ? name : content;
+  const normalizedContent = String(sourceContent || '').trim();
   const normalizedName = getTaskNameFromContent(normalizedContent);
 
   return normalizedName

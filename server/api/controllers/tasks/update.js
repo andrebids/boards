@@ -136,12 +136,7 @@ module.exports = {
       }
     }
 
-    const values = _.pick(inputs, [
-      'assigneeUserId',
-      'position',
-      'isCompleted',
-      'parentTaskId',
-    ]);
+    const values = _.pick(inputs, ['assigneeUserId', 'position', 'isCompleted', 'parentTaskId']);
 
     if (!_.isUndefined(inputs.content) || !_.isUndefined(inputs.name)) {
       const taskContentValues = getTaskContentValues(inputs);
