@@ -5,6 +5,7 @@ import {
   getMessageIdentities,
   getMessageIdentity,
   isNearBottom,
+  shouldScrollToNewestMessage,
 } from './scroll';
 
 describe('chat message list scroll helpers', () => {
@@ -21,6 +22,26 @@ describe('chat message list scroll helpers', () => {
         clientHeight: 400,
         scrollHeight: 1000,
         scrollTop: 1000 - 400 - BOTTOM_PROXIMITY_THRESHOLD - 1,
+      }),
+    ).toBe(false);
+  });
+
+  test('keeps the newest message in view after the current user sends it', () => {
+    expect(
+      shouldScrollToNewestMessage({
+        isAtBottom: false,
+        message: { userId: 'user-1' },
+        currentUserId: 'user-1',
+      }),
+    ).toBe(true);
+  });
+
+  test('preserves the reader position for messages from another user', () => {
+    expect(
+      shouldScrollToNewestMessage({
+        isAtBottom: false,
+        message: { userId: 'user-2' },
+        currentUserId: 'user-1',
       }),
     ).toBe(false);
   });

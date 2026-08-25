@@ -48,7 +48,7 @@ import { getReactionEmojiPickerPosition, QUICK_REACTION_EMOJIS } from '../reacti
 import { getConversationTitle, getParticipantUserIds, isDirectConversation } from '../utils';
 import { compareIds } from '../../../utils/id-helpers';
 import { getPendingAttachmentCopy, isPendingAttachmentRetryable } from './attachment-state';
-import { getReadHorizonMessageId } from './scroll';
+import { getReadHorizonMessageId, getScrollBehavior, shouldScrollToNewestMessage } from './scroll';
 
 import styles from './MessageList.module.scss';
 
@@ -335,7 +335,10 @@ const MessageList = React.memo(
     const scrollToBottom = useCallback(() => {
       const list = listRef.current;
       if (list) {
-        list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+        list.scrollTo({
+          top: list.scrollHeight,
+          behavior: getScrollBehavior(),
+        });
         isAtBottomRef.current = true;
         setNewMessageCount(0);
       }
@@ -383,15 +386,24 @@ const MessageList = React.memo(
       } else if (previousLastIdRef.current === null && list) {
         list.scrollTop = list.scrollHeight;
       } else if (previousLastIdRef.current !== lastMessage.id && list) {
-        if (isAtBottomRef.current) {
-          list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+        if (
+          shouldScrollToNewestMessage({
+            isAtBottom: isAtBottomRef.current,
+            message: lastMessage,
+            currentUserId,
+          })
+        ) {
+          list.scrollTo({
+            top: list.scrollHeight,
+            behavior: getScrollBehavior(),
+          });
         } else {
           setNewMessageCount((count) => count + 1);
         }
       }
       previousLastIdRef.current = lastMessage.id;
       reportReadHorizon();
-    }, [focusedMessageId, messages, reportReadHorizon]);
+    }, [currentUserId, focusedMessageId, messages, reportReadHorizon]);
 
     const handleScroll = useCallback(
       (event) => {

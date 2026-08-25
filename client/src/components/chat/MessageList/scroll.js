@@ -5,6 +5,9 @@ export const isNearBottom = (
   threshold = BOTTOM_PROXIMITY_THRESHOLD,
 ) => scrollHeight - scrollTop - clientHeight <= threshold;
 
+export const shouldScrollToNewestMessage = ({ isAtBottom, message, currentUserId }) =>
+  isAtBottom || message.userId === currentUserId;
+
 export const getMessageIdentity = ({ clientMessageId, id, localId }) =>
   clientMessageId || id || localId;
 
