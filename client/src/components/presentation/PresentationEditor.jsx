@@ -16,6 +16,7 @@ import PresentationMediaPicker from './PresentationMediaPicker';
 import {
   isPresentationImportRequest,
   isPptxFile,
+  getPresentationImportOrigins,
   PRESENTATION_MIME_TYPE,
 } from './presentationImport';
 
@@ -75,10 +76,13 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   );
 
   useEffect(() => {
-    const cryptPadOrigin = new URL(Config.CRYPTPAD_URL).origin;
+    const cryptPadOrigins = getPresentationImportOrigins(
+      Config.CRYPTPAD_URL,
+      Config.CRYPTPAD_SANDBOX_URL,
+    );
     const handlePresentationImportMessage = (event) => {
       if (
-        event.origin !== cryptPadOrigin ||
+        !cryptPadOrigins.has(event.origin) ||
         !isPresentationImportRequest(event.data) ||
         isImporting
       ) {

@@ -1,4 +1,5 @@
 import {
+  getPresentationImportOrigins,
   isPresentationImportRequest,
   isPptxFile,
   PRESENTATION_FILE_ACCEPT,
@@ -24,5 +25,17 @@ describe('presentation import', () => {
     expect(isPresentationImportRequest({ type: 'planka:presentation-import', file })).toBe(true);
     expect(isPresentationImportRequest({ type: 'planka:presentation-import' })).toBe(false);
     expect(isPresentationImportRequest({ type: 'planka:other-action', file })).toBe(false);
+  });
+
+  test('accepts the configured CryptPad sandbox origin used by ONLYOFFICE', () => {
+    expect(
+      getPresentationImportOrigins('https://cryptpad.example.com', 'https://sandbox.example.com'),
+    ).toEqual(new Set(['https://cryptpad.example.com', 'https://sandbox.example.com']));
+  });
+
+  test('accepts the local CryptPad sandbox origin by default', () => {
+    expect(getPresentationImportOrigins('http://localhost:3010')).toEqual(
+      new Set(['http://localhost:3010', 'http://localhost:3013']),
+    );
   });
 });
