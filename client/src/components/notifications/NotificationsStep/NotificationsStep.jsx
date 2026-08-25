@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useInView } from 'react-intersection-observer';
 import { Icon } from 'semantic-ui-react';
 import { CheckCheck } from 'lucide-react';
 
@@ -84,13 +85,27 @@ const NotificationsStep = React.memo(({ projectId, onClose }) => {
     openConversationList();
   }, [onClose, openConversationList, setInboxScope]);
 
-  const handleLoadMoreClick = useCallback(() => {
+  const handleFetchMoreHistory = useCallback(() => {
     const lastNotificationId = readNotificationIds[readNotificationIds.length - 1];
 
     if (lastNotificationId) {
       dispatch(entryActions.fetchNotificationHistory(lastNotificationId));
     }
   }, [dispatch, readNotificationIds]);
+
+  const [historyEndRef] = useInView({
+    rootMargin: '160px 0px',
+    onChange: (inView) => {
+      if (
+        inView &&
+        !notificationHistory.isFetching &&
+        !notificationHistory.error &&
+        notificationHistory.hasMore
+      ) {
+        handleFetchMoreHistory();
+      }
+    },
+  });
 
   const handleRetryHistoryClick = useCallback(() => {
     dispatch(entryActions.fetchNotificationHistory());
@@ -182,13 +197,7 @@ const NotificationsStep = React.memo(({ projectId, onClose }) => {
                   {!notificationHistory.isFetching &&
                     !notificationHistory.error &&
                     notificationHistory.hasMore && (
-                      <button
-                        type="button"
-                        className={styles.loadMoreButton}
-                        onClick={handleLoadMoreClick}
-                      >
-                        {t('common.showMore')}
-                      </button>
+                      <div ref={historyEndRef} className={styles.historyEnd} aria-hidden="true" />
                     )}
                 </section>
               )}
