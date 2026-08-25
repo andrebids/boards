@@ -60,6 +60,7 @@ test('uploads dropped presentation images through CryptPad before returning thei
 
   assert.match(patched, /APP\.UploadImageFiles = function \(files, type, id, jwt, cb\)/);
   assert.match(patched, /APP\.FMImages\.handleFile\(file, handleFileData\)/);
+  assert.match(patched, /getImageURL\(ev\.name\)\.then\(function\(url\)/);
   assert.match(patched, /cb\(0, urls\)/);
 });
 

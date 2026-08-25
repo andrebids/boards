@@ -89,7 +89,9 @@ function patchOnlyOfficeIntegration(source) {
                                 src: fileHost + Hash.getBlobPathFromHex(secret.channel),
                                 key: Hash.encodeBase64(secret.keys.cryptKey)
                             };
-                            ev.callback(ev.name);
+                            getImageURL(ev.name).then(function(url) {
+                                ev.callback(url);
+                            });
                         }
                     });
                 }
