@@ -21,9 +21,13 @@ os temas instalados e evita o arranque lento causado pela indexação de milhare
 de ficheiros no sistema de ficheiros do host.
 
 O compose de desenvolvimento também aplica, apenas no contentor local, uma
-cache de uma hora aos recursos versionados em `/common/onlyoffice/dist/v*/`.
+cache de uma hora aos recursos em `/common/onlyoffice/dist/v*/` e ao conversor
+em `/common/onlyoffice/dist/x2t/`.
 Os bundles Brotli fornecidos pelo OnlyOffice já são usados automaticamente; a
 cache evita voltar a validar e transferir os mesmos recursos em aberturas repetidas.
+O conversor `x2t.wasm`, que não traz uma variante comprimida, é preparado em
+Brotli no primeiro arranque e fica abrangido pela mesma cache. O service worker
+do OnlyOffice também é exposto no caminho de raiz esperado pelo editor.
 Depois de atualizar a distribuição OnlyOffice, usar um recarregamento forçado
 no browser para ignorar a cache local ainda válida.
 
