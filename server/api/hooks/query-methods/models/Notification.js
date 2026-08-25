@@ -41,10 +41,29 @@ const createOne = (values) => {
 const getByIds = (ids) => defaultFind(ids);
 
 const getUnreadByUserId = (userId) =>
-  defaultFind({
-    userId,
+  getByUserId(userId, {
     isRead: false,
   });
+
+const getByUserId = (userId, { isRead, beforeId, limit } = {}) => {
+  const criteria = {
+    userId,
+  };
+
+  if (isRead !== undefined) {
+    criteria.isRead = isRead;
+  }
+
+  if (beforeId) {
+    criteria.id = {
+      '<': beforeId,
+    };
+  }
+
+  const query = defaultFind(criteria);
+
+  return limit ? query.limit(limit) : query;
+};
 
 const getOneById = (id, { userId } = {}) => {
   const criteria = {
@@ -69,6 +88,7 @@ module.exports = {
   createOne,
   getByIds,
   getUnreadByUserId,
+  getByUserId,
   getOneById,
   update,
   updateOne,
