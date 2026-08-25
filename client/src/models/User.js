@@ -429,6 +429,14 @@ export default class extends BaseModel {
       .orderBy(['id.length', 'id'], ['desc', 'desc']);
   }
 
+  getReadNotificationsQuerySet() {
+    return this.notifications
+      .filter({
+        isRead: true,
+      })
+      .orderBy(['id.length', 'id'], ['desc', 'desc']);
+  }
+
   getNotificationServicesQuerySet() {
     return this.notificationServices.orderBy(['id.length', 'id']);
   }
