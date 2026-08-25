@@ -148,19 +148,41 @@ test('turns the presentation image toolbar control into a single picker action',
 
 test('adds the PowerPoint import action directly to the native Insert toolbar', () => {
   const source =
-    String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator media long"></div>`;
+    String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
   const patched = patchPresentationImportToolbar(source);
 
   assert.match(patched, /slot-btn-planka-presentation-import/);
+  assert.ok(patched.indexOf('slot-btn-planka-presentation-import') < patched.indexOf('slot-insertimg'));
   assert.match(patched, /window\.top\.postMessage\(\{ type: 'planka:presentation-import', file: file \}, '\*'\)/);
   assert.match(patched, /input\.accept = '\.pptx,application\/vnd\.openxmlformats-officedocument\.presentationml\.presentation'/);
+  assert.match(patched, /viewBox="0 0 32 32"/);
   assert.equal(patchPresentationImportToolbar(patched), patched);
+});
+
+test('upgrades an existing import action to the position and icon beside Image', () => {
+  const source = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-planka-presentation-import"></span>\n                </div>\n                <div class="separator media long"></div>` + `
+const plankaPresentationImportButtonId
+        const icon = document.createElement('i');
+        const caption = document.createElement('span');
+
+        button.id = plankaPresentationImportButtonId;
+        button.type = 'button';
+        button.className = 'btn large btn-toolbar';
+        button.setAttribute('aria-label', label);
+        icon.className = 'icon toolbar__icon btn-ic-insertimage';
+        icon.innerHTML = '&nbsp;';`;
+  const patched = patchPresentationImportToolbar(source);
+
+  assert.ok(patched.indexOf('slot-btn-planka-presentation-import') < patched.indexOf('slot-insertimg'));
+  assert.match(patched, /id="slot-btn-planka-presentation-import"/);
+  assert.doesNotMatch(patched, /btn-ic-insertimage/);
+  assert.match(patched, /viewBox="0 0 32 32"/);
 });
 
 test('patches the Brotli presentation bundle served to browsers', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'onlyoffice-toolbar-'));
   const filePath = path.join(directory, 'app.js.br');
-  const source = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator media long"></div>`;
+  const source = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
 
   try {
     fs.writeFileSync(filePath, zlib.brotliCompressSync(Buffer.from(source)));

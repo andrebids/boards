@@ -15,11 +15,39 @@ const presentationToolbarMarker =
 const presentationToolbarReplacement =
   'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.on("click",(function(){e.fireEvent("insert:image",["file"])}))}))';
 
-const presentationImportToolbarMarker = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator media long"></div>`;
+const presentationImportToolbarMarker = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
 
-const presentationImportToolbarReplacement = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-planka-presentation-import"></span>\n                </div>\n                <div class="separator media long"></div>`;
+const presentationImportToolbarReplacement = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-planka-presentation-import"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
+
+const legacyPresentationImportToolbarMarker = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator media long"></div>`;
+
+const legacyPresentationImportToolbarReplacement = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-planka-presentation-import"></span>\n                </div>\n                <div class="separator media long"></div>`;
+
+const presentationImportToolbarSlot = 'id="slot-btn-planka-presentation-import"';
 
 const presentationImportRuntimeMarker = 'const plankaPresentationImportButtonId';
+
+const legacyPresentationImportIcon = `        const icon = document.createElement('i');
+        const caption = document.createElement('span');
+
+        button.id = plankaPresentationImportButtonId;
+        button.type = 'button';
+        button.className = 'btn large btn-toolbar';
+        button.setAttribute('aria-label', label);
+        icon.className = 'icon toolbar__icon btn-ic-insertimage';
+        icon.innerHTML = '&nbsp;';`;
+
+const presentationImportIcon = `        const icon = document.createElement('span');
+        const caption = document.createElement('span');
+
+        button.id = plankaPresentationImportButtonId;
+        button.type = 'button';
+        button.className = 'btn large btn-toolbar';
+        button.setAttribute('aria-label', label);
+        icon.className = 'toolbar__icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.style.backgroundImage = 'none';
+        icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';`;
 
 const presentationImportRuntime = `
 ;(function () {
@@ -34,15 +62,17 @@ const presentationImportRuntime = `
         const language = (navigator.language || 'en').toLowerCase();
         const label = language.indexOf('pt') === 0 ? 'Importar PowerPoint' : 'Import PowerPoint';
         const button = document.createElement('button');
-        const icon = document.createElement('i');
+        const icon = document.createElement('span');
         const caption = document.createElement('span');
 
         button.id = plankaPresentationImportButtonId;
         button.type = 'button';
         button.className = 'btn large btn-toolbar';
         button.setAttribute('aria-label', label);
-        icon.className = 'icon toolbar__icon btn-ic-insertimage';
-        icon.innerHTML = '&nbsp;';
+        icon.className = 'toolbar__icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.style.backgroundImage = 'none';
+        icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         caption.className = 'caption';
         caption.textContent = label;
         button.appendChild(icon);
@@ -250,7 +280,14 @@ function patchPresentationToolbar(source) {
 function patchPresentationImportToolbar(source) {
   let patched = source;
 
-  if (!patched.includes('slot-btn-planka-presentation-import')) {
+  if (patched.includes(legacyPresentationImportToolbarReplacement)) {
+    patched = patched.replace(
+      legacyPresentationImportToolbarReplacement,
+      legacyPresentationImportToolbarMarker,
+    );
+  }
+
+  if (!patched.includes(presentationImportToolbarSlot)) {
     if (!patched.includes(presentationImportToolbarMarker)) {
       throw new Error('OnlyOffice presentation import toolbar patch no longer applies');
     }
@@ -259,6 +296,8 @@ function patchPresentationImportToolbar(source) {
 
   if (!patched.includes(presentationImportRuntimeMarker)) {
     patched += presentationImportRuntime;
+  } else if (patched.includes(legacyPresentationImportIcon)) {
+    patched = patched.replace(legacyPresentationImportIcon, presentationImportIcon);
   }
 
   return patched;
