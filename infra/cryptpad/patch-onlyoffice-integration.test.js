@@ -3,22 +3,25 @@ const assert = require('node:assert/strict');
 
 const { patchOnlyOfficeIntegration } = require('./patch-onlyoffice-integration');
 
+const uploadImageFilesFixture = `            APP.UploadImageFiles = function (files, type, id, jwt, cb) {
+                return void cb();
+            };`;
+
 const fixture = `
         const onDocumentReady = function(lock, lang, fromContent, file, force) {
             evOnSync.fire();
 };
 
-            APP.UploadImageFiles = function (files, type, id, jwt, cb) {
-                return void cb();
-            };
+${uploadImageFilesFixture}
 `;
 
-test('routes Presentation local-image requests through the CryptPad picker', () => {
+test('routes Presentation image requests through the host integration callback', () => {
   const patched = patchOnlyOfficeIntegration(fixture);
 
   assert.match(patched, /APP\.ooconfig\.documentType !== 'presentation'/);
-  assert.match(patched, /APP\.AddImage/);
-  assert.match(patched, /editor\.AddImageUrl\(\[image\.name\]\)/);
+  assert.match(patched, /Q_INTEGRATION_ON_INSERT_IMAGE/);
+  assert.match(patched, /image\.blob/);
+  assert.match(patched, /URL\.createObjectURL\(image\.blob\)/);
   assert.match(patched, /redirectPresentationImageUpload\(\);/);
 });
 
@@ -45,11 +48,11 @@ test('retries until the OnlyOffice image API is available after document ready',
   assert.match(patched, /attempt < 1200/);
 });
 
-test('restores the CryptPad picker when OnlyOffice reassigns its image method during startup', () => {
+test('restores the host image picker when OnlyOffice reassigns its image method during startup', () => {
   const patched = patchOnlyOfficeIntegration(fixture);
 
-  assert.match(patched, /const openCryptPadImagePicker = function\(\)/);
-  assert.match(patched, /editor\.asc_addImage !== openCryptPadImagePicker/);
+  assert.match(patched, /const openProjectImagePicker = function\(editor\)/);
+  assert.match(patched, /editor\.asc_addImage !== openProjectImagePicker/);
 });
 
 test('uploads dropped presentation images through CryptPad before returning their URLs to OnlyOffice', () => {

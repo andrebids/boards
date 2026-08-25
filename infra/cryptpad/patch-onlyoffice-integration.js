@@ -11,17 +11,25 @@ const documentReadyReplacement = `const redirectPresentationImageUpload = functi
             if (APP.ooconfig.documentType !== 'presentation') { return; }
 
             var attempt = 0;
-            const openCryptPadImagePicker = function() {
-                APP.AddImage(function(image) {
-                    var editor = getEditor();
-                    if (!image || !image.name || !editor) { return; }
-                    editor.AddImageUrl([image.name]);
-                }, function() {});
+            const openProjectImagePicker = function(editor) {
+                var sframeChan = common.getSframeChannel();
+                if (!sframeChan) { return; }
+
+                sframeChan.query('Q_INTEGRATION_ON_INSERT_IMAGE', {}, function(image) {
+                    if (!image || !image.blob) { return; }
+                    var imageUrl = window.URL.createObjectURL(image.blob);
+                    editor.AddImageUrl([imageUrl]);
+                    window.setTimeout(function() {
+                        window.URL.revokeObjectURL(imageUrl);
+                    }, 60000);
+                });
             };
             const installImagePicker = function() {
                 var editor = getEditor();
-                if (editor && editor.asc_addImage && editor.asc_addImage !== openCryptPadImagePicker) {
-                    editor.asc_addImage = openCryptPadImagePicker;
+                if (editor && editor.asc_addImage && editor.asc_addImage !== openProjectImagePicker) {
+                    editor.asc_addImage = function() {
+                        openProjectImagePicker(editor);
+                    };
                 }
 
                 attempt++;
