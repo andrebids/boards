@@ -99,16 +99,7 @@ async function compressBrotli(sourcePath, targetPath) {
   return true;
 }
 
-async function exposeServiceWorker(versionRoot, fileName) {
-  const sourcePath = path.join(
-    versionRoot,
-    'sdkjs',
-    'common',
-    'serviceworker',
-    fileName,
-  );
-  const targetPath = path.join(versionRoot, fileName);
-
+async function exposeFile(sourcePath, targetPath) {
   if (!fs.existsSync(sourcePath)) {
     return false;
   }
@@ -124,6 +115,29 @@ async function exposeServiceWorker(versionRoot, fileName) {
       throw error;
     }
     await fsp.copyFile(sourcePath, targetPath);
+  }
+  return true;
+}
+
+async function exposeServiceWorker(versionRoot, fileName) {
+  return exposeFile(
+    path.join(versionRoot, 'sdkjs', 'common', 'serviceworker', fileName),
+    path.join(versionRoot, fileName),
+  );
+}
+
+async function exposeOnlyOfficeMetadata(distRoot, versionRoot) {
+  const files = [
+    [path.join(distRoot, '..', 'plugins.json'), path.join(versionRoot, 'plugins.json')],
+    [
+      path.join(versionRoot, 'web-apps', 'apps', 'common', 'main', 'resources', 'themes', 'themes.json'),
+      path.join(versionRoot, 'themes.json'),
+    ],
+  ];
+
+  for (const [sourcePath, targetPath] of files) {
+    JSON.parse(await fsp.readFile(sourcePath, 'utf8'));
+    await exposeFile(sourcePath, targetPath);
   }
   return true;
 }
@@ -173,8 +187,12 @@ async function prepareOnlyOfficeStaticAssets(distRoot) {
       })(),
     ]),
   );
+  const metadataResults = await Promise.all(
+    versionRoots.map((versionRoot) => exposeOnlyOfficeMetadata(distRoot, versionRoot)),
+  );
 
   return {
+    metadataLinked: metadataResults.every(Boolean),
     x2tCompressed,
     serviceWorkerLinked: serviceWorkerResults.some(Boolean),
   };

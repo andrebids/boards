@@ -45,29 +45,50 @@ test('precompresses the x2t WebAssembly converter with Brotli', async (t) => {
 test('exposes the OnlyOffice service worker at the version root', async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'onlyoffice-static-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const sourceDir = path.join(root, 'v9', 'sdkjs', 'common', 'serviceworker');
+  const onlyOfficeRoot = path.join(root, 'onlyoffice');
+  const distRoot = path.join(onlyOfficeRoot, 'dist');
+  const versionRoot = path.join(distRoot, 'v9');
+  const sourceDir = path.join(versionRoot, 'sdkjs', 'common', 'serviceworker');
+  const themesDir = path.join(
+    versionRoot,
+    'web-apps',
+    'apps',
+    'common',
+    'main',
+    'resources',
+    'themes',
+  );
   fs.mkdirSync(sourceDir, { recursive: true });
+  fs.mkdirSync(themesDir, { recursive: true });
   const worker = 'var g_cacheNamePrefix="document_editor_static_";';
+  fs.writeFileSync(path.join(onlyOfficeRoot, 'plugins.json'), '{}');
+  fs.writeFileSync(path.join(themesDir, 'themes.json'), '{"themes":[]}');
   fs.writeFileSync(path.join(sourceDir, 'document_editor_service_worker.js'), worker);
   fs.writeFileSync(
     path.join(sourceDir, 'document_editor_service_worker.js.br'),
     zlib.brotliCompressSync(Buffer.from(worker)),
   );
 
-  const result = await prepareOnlyOfficeStaticAssets(root);
+  const result = await prepareOnlyOfficeStaticAssets(distRoot);
 
   assert.equal(
-    fs.readFileSync(path.join(root, 'v9', 'document_editor_service_worker.js'), 'utf8'),
+    fs.readFileSync(path.join(versionRoot, 'document_editor_service_worker.js'), 'utf8'),
     'var g_cacheNamePrefix="document_editor_static_planka_import_20260825_9_";',
   );
   assert.equal(
     zlib
       .brotliDecompressSync(
-        fs.readFileSync(path.join(root, 'v9', 'document_editor_service_worker.js.br')),
+        fs.readFileSync(path.join(versionRoot, 'document_editor_service_worker.js.br')),
       )
       .toString('utf8'),
     'var g_cacheNamePrefix="document_editor_static_planka_import_20260825_9_";',
   );
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(versionRoot, 'plugins.json'), 'utf8')), {});
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(versionRoot, 'themes.json'), 'utf8')),
+    { themes: [] },
+  );
+  assert.equal(result.metadataLinked, true);
   assert.equal(result.serviceWorkerLinked, true);
 });
 
