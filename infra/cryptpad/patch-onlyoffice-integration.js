@@ -46,6 +46,31 @@ const corePropsReplacement = `        const fixProps = (title) => {
             } catch {}
         };`;
 
+const onlyOfficeConfigLogMarker = `            console.error('updated config', ooconfig);`;
+const onlyOfficeConfigLogReplacement = `            // PLANKA_ONLYOFFICE_CONFIG_LOG_DISABLED`;
+
+const x2tRequestLogMarker = `        var convert = function (obj, cb) {
+            console.error(obj);`;
+const x2tRequestLogReplacement = `        var convert = function (obj, cb) {
+            // PLANKA_X2T_REQUEST_LOG_DISABLED`;
+
+const integrationDebugLogMarker = `        var debug = console.warn;
+        //debug = function () {};`;
+const integrationDebugLogReplacement = `        var debug = function () {};`;
+
+const unsafeIframeResultLogMarker = `                UnsafeObject.modal.refresh(cfg, function (data) {
+                    console.error(data);
+                    cb(data);`;
+const unsafeIframeResultLogReplacement = `                UnsafeObject.modal.refresh(cfg, function (data) {
+                    cb(data);`;
+
+const sframeBootReplyMarker = `    var onReply = function (msg) {
+        var data = JSON.parse(msg.data);
+        if (data.txid !== txid) { return; }`;
+const sframeBootReplyReplacement = `    var onReply = function (msg) {
+        var data = typeof(msg.data) === "string" ? JSON.parse(msg.data) : msg.data;
+        if (!data || data.txid !== txid) { return; }`;
+
 const presentationToolbarMarker =
   'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.setMenu(new Common.UI.Menu({items:[{caption:e.mniImageFromFile,value:"file"},{cls:"cp-from-url",caption:e.mniImageFromUrl,value:"url"},{caption:e.mniImageFromStorage,value:"storage"}]}).on("item:click",(function(t,i,n){e.fireEvent("insert:image",[i.value])}))),i.menu.items[2].setVisible(t.canRequestInsertImage||t.fileChoiceUrl&&t.fileChoiceUrl.indexOf("{documentType}")>-1)}))';
 
@@ -309,6 +334,12 @@ ${projectImagePickerReplacement}
 function patchOnlyOfficeIntegration(source) {
   let patched = source;
 
+  if (!patched.includes(onlyOfficeConfigLogReplacement)) {
+    if (patched.includes(onlyOfficeConfigLogMarker)) {
+      patched = patched.replace(onlyOfficeConfigLogMarker, onlyOfficeConfigLogReplacement);
+    }
+  }
+
   if (!patched.includes(onlyOfficeDocumentTypeReplacement)) {
     if (!patched.includes(onlyOfficeDocumentTypeMarker)) {
       throw new Error('OnlyOffice document type patch no longer applies');
@@ -451,6 +482,55 @@ function patchOnlyOfficeIntegration(source) {
     patched = patched.replace(uploadImageFilesMarker, uploadImageFilesReplacement);
   }
   return patched;
+}
+
+function patchX2TLogging(source) {
+  if (source.includes(x2tRequestLogReplacement)) {
+    return source;
+  }
+  if (!source.includes(x2tRequestLogMarker)) {
+    throw new Error('CryptPad x2t request log patch no longer applies');
+  }
+  return source.replace(x2tRequestLogMarker, x2tRequestLogReplacement);
+}
+
+function patchIntegrationLogging(source) {
+  if (source.includes(integrationDebugLogReplacement)) {
+    return source;
+  }
+  if (!source.includes(integrationDebugLogMarker)) {
+    throw new Error('CryptPad integration debug log patch no longer applies');
+  }
+  return source.replace(integrationDebugLogMarker, integrationDebugLogReplacement);
+}
+
+function patchSframeOuterLogging(source) {
+  if (!source.includes(unsafeIframeResultLogMarker)) {
+    if (source.includes(unsafeIframeResultLogReplacement)) {
+      return source;
+    }
+    throw new Error('CryptPad unsafe iframe result log patch no longer applies');
+  }
+  return source.replace(unsafeIframeResultLogMarker, unsafeIframeResultLogReplacement);
+}
+
+function patchSframeBootReply(source) {
+  if (source.includes(sframeBootReplyReplacement)) {
+    return source;
+  }
+  if (!source.includes(sframeBootReplyMarker)) {
+    throw new Error('CryptPad sframe bootstrap reply patch no longer applies');
+  }
+  return source.replace(sframeBootReplyMarker, sframeBootReplyReplacement);
+}
+
+function patchSourceFile(filePath, patchSource) {
+  const source = fs.readFileSync(filePath, 'utf8');
+  const patched = patchSource(source);
+
+  if (patched !== source) {
+    fs.writeFileSync(filePath, patched);
+  }
 }
 
 function patchPresentationToolbar(source) {
@@ -604,6 +684,14 @@ if (require.main === module) {
     patchOnlyOfficeIntegration(fs.readFileSync(filePath, 'utf8'));
   } else {
     patchFile(filePath);
+    for (const [sourcePath, patchSource] of [
+      ['/cryptpad/www/common/outer/x2t.js', patchX2TLogging],
+      ['/cryptpad/www/common/sframe-common-integration.js', patchIntegrationLogging],
+      ['/cryptpad/www/common/sframe-common-outer.js', patchSframeOuterLogging],
+      ['/cryptpad/www/common/sframe-boot.js', patchSframeBootReply],
+    ]) {
+      patchSourceFile(sourcePath, patchSource);
+    }
     for (const toolbarPath of [
       '/cryptpad/www/common/onlyoffice/dist/v9/web-apps/apps/presentationeditor/main/app.js',
       '/cryptpad/www/common/onlyoffice/dist/v9/web-apps/apps/presentationeditor/main/ie/app.js',
@@ -618,8 +706,12 @@ if (require.main === module) {
 }
 
 module.exports = {
+  patchIntegrationLogging,
   patchOnlyOfficeIntegration,
   patchPresentationImportToolbar,
   patchPresentationToolbarFile,
   patchPresentationToolbar,
+  patchSframeOuterLogging,
+  patchSframeBootReply,
+  patchX2TLogging,
 };

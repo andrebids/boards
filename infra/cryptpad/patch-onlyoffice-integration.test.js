@@ -6,10 +6,14 @@ const path = require('node:path');
 const zlib = require('node:zlib');
 
 const {
+  patchIntegrationLogging,
   patchOnlyOfficeIntegration,
   patchPresentationImportToolbar,
   patchPresentationToolbarFile,
   patchPresentationToolbar,
+  patchSframeOuterLogging,
+  patchSframeBootReply,
+  patchX2TLogging,
 } = require('./patch-onlyoffice-integration');
 
 const uploadImageFilesFixture = `            APP.UploadImageFiles = function (files, type, id, jwt, cb) {
@@ -43,6 +47,65 @@ ${corePropsFixture}
 
 ${uploadImageFilesFixture}
 `;
+
+test('removes normal OnlyOffice config logging without hiding runtime errors', () => {
+  const source = `${fixture}\n            console.error('updated config', ooconfig);\n            console.error(error);`;
+  const patched = patchOnlyOfficeIntegration(source);
+
+  assert.doesNotMatch(patched, /console\.error\('updated config'/);
+  assert.match(patched, /console\.error\(error\)/);
+  assert.equal(patchOnlyOfficeIntegration(patched), patched);
+});
+
+test('removes normal conversion request logging without hiding x2t exceptions', () => {
+  const source = `        var convert = function (obj, cb) {
+            console.error(obj);
+            try {} catch (error) { console.error(error); }
+        };`;
+  const patched = patchX2TLogging(source);
+
+  assert.doesNotMatch(patched, /console\.error\(obj\)/);
+  assert.match(patched, /console\.error\(error\)/);
+  assert.equal(patchX2TLogging(patched), patched);
+});
+
+test('disables integration protocol chatter without hiding save failures', () => {
+  const source = `        var debug = console.warn;
+        //debug = function () {};
+        if (err) { console.error(err); }`;
+  const patched = patchIntegrationLogging(source);
+
+  assert.match(patched, /var debug = function \(\) \{\};/);
+  assert.doesNotMatch(patched, /debug = console\.warn/);
+  assert.match(patched, /console\.error\(err\)/);
+  assert.equal(patchIntegrationLogging(patched), patched);
+});
+
+test('removes normal unsafe iframe results without hiding surrounding failures', () => {
+  const source = `                UnsafeObject.modal.refresh(cfg, function (data) {
+                    console.error(data);
+                    cb(data);
+                });
+                console.error(err);`;
+  const patched = patchSframeOuterLogging(source);
+
+  assert.doesNotMatch(patched, /console\.error\(data\)/);
+  assert.match(patched, /cb\(data\)/);
+  assert.match(patched, /console\.error\(err\)/);
+  assert.equal(patchSframeOuterLogging(patched), patched);
+});
+
+test('accepts structured bootstrap messages before matching the sframe reply', () => {
+  const source = `    var onReply = function (msg) {
+        var data = JSON.parse(msg.data);
+        if (data.txid !== txid) { return; }
+    };`;
+  const patched = patchSframeBootReply(source);
+
+  assert.match(patched, /typeof\(msg\.data\) === "string" \? JSON\.parse\(msg\.data\) : msg\.data/);
+  assert.match(patched, /if \(!data \|\| data\.txid !== txid\)/);
+  assert.equal(patchSframeBootReply(patched), patched);
+});
 
 test('routes Presentation image requests through the host integration callback', () => {
   const patched = patchOnlyOfficeIntegration(fixture);
