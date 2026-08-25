@@ -1,0 +1,239 @@
+:global(#app) {
+  .modal {
+    max-width: 760px;
+
+    :global(.content) {
+      background: var(--app-dark-surface);
+      padding: 0;
+    }
+  }
+
+  .content {
+    color: var(--app-dark-text);
+  }
+
+  .header {
+    align-items: flex-start;
+    border-bottom: 1px solid var(--app-dark-border);
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 24px;
+
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--app-dark-text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+  }
+
+  .actions {
+    align-items: center;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 16px 24px;
+  }
+
+  .search {
+    align-items: center;
+    color: var(--app-dark-text-muted);
+    display: flex;
+    min-width: 0;
+    position: relative;
+
+    > svg {
+      left: 10px;
+      pointer-events: none;
+      position: absolute;
+      z-index: 1;
+    }
+
+    :global(.ui.input) {
+      display: flex;
+      width: 100%;
+
+      input {
+        background: var(--app-dark-canvas);
+        border: 1px solid var(--app-dark-border);
+        border-radius: var(--app-radius);
+        color: var(--app-dark-text);
+        min-height: 38px;
+        padding: 0 36px 0 34px;
+        width: 100%;
+
+        &::placeholder {
+          color: var(--app-dark-text-muted);
+        }
+
+        &:focus {
+          border-color: var(--app-accent);
+          box-shadow: 0 0 0 2px var(--app-accent-soft);
+        }
+      }
+    }
+  }
+
+  .clearSearchButton {
+    position: absolute;
+    right: 6px;
+    z-index: 1;
+  }
+
+  .uploadButton {
+    align-items: center;
+    background: var(--app-accent);
+    border: 0;
+    border-radius: 3px;
+    color: var(--app-accent-foreground);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 12px;
+
+    &:focus-visible {
+      outline: 2px solid var(--app-focus);
+      outline-offset: 2px;
+    }
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+  }
+
+  .grid {
+    border-top: 1px solid var(--app-dark-border);
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 432px;
+    overflow-y: auto;
+    padding: 16px 24px 24px;
+  }
+
+  .item {
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--app-dark-border);
+    border-radius: 4px;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    min-width: 0;
+    padding: 8px;
+    position: relative;
+    text-align: left;
+
+    &:hover:not(:disabled) {
+      background: var(--app-dark-surface-hover);
+      border-color: var(--app-accent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--app-focus);
+      outline-offset: 1px;
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.64;
+    }
+  }
+
+  .thumbnail {
+    background: var(--app-dark-surface-hover);
+    flex: 0 0 auto;
+    height: 64px;
+    object-fit: cover;
+    width: 76px;
+  }
+
+  .itemContent {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+
+    strong,
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    strong {
+      font-size: 14px;
+    }
+
+    span {
+      color: var(--app-dark-text-muted);
+      font-size: 12px;
+    }
+  }
+
+  .loading {
+    background: var(--app-accent);
+    bottom: 8px;
+    color: var(--app-accent-foreground);
+    font-size: 12px;
+    padding: 2px 5px;
+    position: absolute;
+    right: 8px;
+  }
+
+  .error {
+    color: var(--app-danger);
+    font-size: 14px;
+    margin: 0 24px 12px;
+  }
+
+  .emptyState {
+    align-items: center;
+    border-top: 1px solid var(--app-dark-border);
+    color: var(--app-dark-text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 48px 24px;
+    text-align: center;
+
+    strong {
+      color: var(--app-dark-text);
+      font-size: 14px;
+    }
+
+    span {
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .actions {
+      align-items: stretch;
+      grid-template-columns: 1fr;
+    }
+
+    .uploadButton {
+      justify-content: center;
+      width: 100%;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

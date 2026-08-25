@@ -33,19 +33,6 @@
       width: 100%;
     }
 
-    .editorStatus {
-      align-items: center;
-      background: var(--app-background-color);
-      color: var(--app-secondary-text-color);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      inset: 0;
-      justify-content: center;
-      position: absolute;
-      z-index: 1;
-    }
-
     :global(iframe) {
       border: 0;
     }

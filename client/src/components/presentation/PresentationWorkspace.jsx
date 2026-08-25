@@ -103,6 +103,7 @@ const PresentationWorkspace = React.memo(({ isActive }) => {
     contentNode = (
       <PresentationEditor
         key={selectedPresentation.id}
+        boardIds={boards.map(({ id }) => id)}
         presentation={selectedPresentation}
         onSessionUpdate={updateSession}
       />
@@ -111,7 +112,11 @@ const PresentationWorkspace = React.memo(({ isActive }) => {
     contentNode = (
       <section className={styles.emptyState}>
         <Icon name="file powerpoint outline" size="huge" />
-        <h2>{t('common.presentationNotCreatedForBoard', { board: selectedBoard.name })}</h2>
+        <h2>
+          {t('common.presentationNotCreatedForBoard', {
+            board: selectedBoard.name,
+          })}
+        </h2>
         <p>{t('common.presentationCreateDescription')}</p>
         {canEdit ? (
           <Button
@@ -134,11 +139,7 @@ const PresentationWorkspace = React.memo(({ isActive }) => {
     );
   }
 
-  return (
-    <main className={styles.workspace}>
-      {contentNode}
-    </main>
-  );
+  return <main className={styles.workspace}>{contentNode}</main>;
 });
 
 PresentationWorkspace.propTypes = {

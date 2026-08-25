@@ -20,6 +20,13 @@ A distribuição regenerável do ONLYOFFICE usa o volume Docker
 os temas instalados e evita o arranque lento causado pela indexação de milhares
 de ficheiros no sistema de ficheiros do host.
 
+O compose de desenvolvimento também aplica, apenas no contentor local, uma
+cache de uma hora aos recursos versionados em `/common/onlyoffice/dist/v*/`.
+Os bundles Brotli fornecidos pelo OnlyOffice já são usados automaticamente; a
+cache evita voltar a validar e transferir os mesmos recursos em aberturas repetidas.
+Depois de atualizar a distribuição OnlyOffice, usar um recarregamento forçado
+no browser para ignorar a cache local ainda válida.
+
 ## Preparação de produção
 
 - A imagem customizada é construída apenas manualmente pelo workflow `Build CryptPad image` e deve ser usada por digest, nunca por `latest`.

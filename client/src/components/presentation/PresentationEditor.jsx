@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Icon, Loader } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 
 import Config from '../../constants/Config';
@@ -12,6 +12,7 @@ import {
   normalizePresentationLoadError,
 } from './presentationEditorDiagnostics';
 import getPresentationEditorLanguage from './presentationLocale';
+import PresentationMediaPicker from './PresentationMediaPicker';
 
 import styles from './PresentationWorkspace.module.scss';
 
@@ -20,7 +21,7 @@ const PRESENTATION_MIME_TYPE =
 
 const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
 
-const PresentationEditor = React.memo(({ presentation, onSessionUpdate }) => {
+const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate }) => {
   const [t, i18n] = useTranslation();
   const editorRef = useRef(null);
   const isEditorInitializedRef = useRef(false);
@@ -29,6 +30,7 @@ const PresentationEditor = React.memo(({ presentation, onSessionUpdate }) => {
     getPresentationEditorLanguage(i18n.resolvedLanguage || i18n.language),
   );
   const [editorError, setEditorError] = useState(null);
+  const [imageInsertCallback, setImageInsertCallback] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [loadPhase, setLoadPhase] = useState('initializing');
   const [attempt, setAttempt] = useState(1);
@@ -46,6 +48,27 @@ const PresentationEditor = React.memo(({ presentation, onSessionUpdate }) => {
     setLoadPhase('initializing');
     setAttempt((previousAttempt) => previousAttempt + 1);
   }, []);
+
+  const handleImageInsertRequest = useCallback((data, callback) => {
+    if (!data || typeof callback !== 'function') {
+      return;
+    }
+
+    setImageInsertCallback(() => callback);
+  }, []);
+
+  const handleImagePickerClose = useCallback(() => {
+    imageInsertCallback?.();
+    setImageInsertCallback(null);
+  }, [imageInsertCallback]);
+
+  const handleImageSelect = useCallback(
+    (image) => {
+      imageInsertCallback?.(image);
+      setImageInsertCallback(null);
+    },
+    [imageInsertCallback],
+  );
 
   useEffect(() => {
     const initialPresentation = presentationRef.current;
@@ -205,6 +228,7 @@ const PresentationEditor = React.memo(({ presentation, onSessionUpdate }) => {
                     callback({ error: error.message });
                   });
               },
+              onInsertImage: handleImageInsertRequest,
             },
           })
           .catch((nextError) => reportFailure('cryptpad-init', nextError));
@@ -234,7 +258,7 @@ const PresentationEditor = React.memo(({ presentation, onSessionUpdate }) => {
       isEditorInitializedRef.current = false;
       editorElement.replaceChildren();
     };
-  }, [attempt, containerId, onSessionUpdate, presentation.isEnabled]);
+  }, [attempt, containerId, handleImageInsertRequest, onSessionUpdate, presentation.isEnabled]);
 
   if (editorError) {
     return (
@@ -253,19 +277,22 @@ const PresentationEditor = React.memo(({ presentation, onSessionUpdate }) => {
   }
 
   return (
-    <section className={styles.editor} aria-busy={!isReady}>
-      {!isReady && (
-        <div className={styles.editorStatus} role="status">
-          <Loader active inline />
-          <span>{t('common.presentationPreparingTitle')}</span>
-        </div>
-      )}
-      <div ref={editorRef} className={styles.editorMount} />
-    </section>
+    <>
+      <section className={styles.editor} aria-busy={!isReady}>
+        <div ref={editorRef} className={styles.editorMount} />
+      </section>
+      <PresentationMediaPicker
+        boardIds={boardIds}
+        open={imageInsertCallback !== null}
+        onClose={handleImagePickerClose}
+        onSelect={handleImageSelect}
+      />
+    </>
   );
 });
 
 PresentationEditor.propTypes = {
+  boardIds: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
   presentation: PropTypes.shape({
     id: PropTypes.string.isRequired,
     isEnabled: PropTypes.bool.isRequired,
