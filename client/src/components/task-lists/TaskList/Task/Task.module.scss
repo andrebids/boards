@@ -236,7 +236,12 @@
   }
 
   .wrapperNested {
-    --task-indent: min(calc(var(--task-depth) * 32px), 160px);
+    --task-indent: min(calc(var(--task-depth) * 24px), 120px);
+    --task-tree-line: color-mix(
+      in srgb,
+      var(--card-modal-muted, #8a94a3) 48%,
+      transparent
+    );
 
     margin-left: var(--task-indent);
     width: calc(100% - var(--task-indent));
@@ -247,21 +252,15 @@
     }
 
     &:before {
-      border-left: 1px solid var(--card-modal-border, #e3e7ec);
-      bottom: -5px;
+      border-bottom: 1px solid var(--task-tree-line);
+      border-bottom-left-radius: 6px;
+      border-left: 1px solid var(--task-tree-line);
+      bottom: 50%;
       content: '';
-      left: -21px;
+      left: -16px;
       position: absolute;
-      top: -5px;
-    }
-
-    &:after {
-      border-top: 1px solid var(--card-modal-border, #e3e7ec);
-      content: '';
-      left: -21px;
-      position: absolute;
-      top: 16px;
-      width: 12px;
+      top: -18px;
+      width: 10px;
     }
   }
 
