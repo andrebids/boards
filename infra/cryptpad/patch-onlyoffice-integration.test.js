@@ -160,9 +160,16 @@ test('adds the PowerPoint import action directly to the native Insert toolbar', 
   assert.match(patched, /plankaPresentationImportVerticalLayout = true/);
   assert.match(patched, /button\.style\.flexDirection = 'column'/);
   assert.match(patched, /plankaPresentationImportTransparentButton = true/);
+  assert.match(patched, /plankaPresentationImportCompactIcon = true/);
   assert.match(patched, /button\.style\.background = 'transparent'/);
+  assert.match(patched, /viewBox="0 0 32 32" width="20" height="20"/);
+  assert.match(patched, /const captionLabel = 'Import PPTX'/);
+  assert.match(patched, /button\.title = label/);
+  assert.match(patched, /caption\.textContent = captionLabel/);
   assert.doesNotMatch(patched, /button\.className = 'btn large btn-toolbar'/);
-  assert.doesNotMatch(patched, /fm-btn-planka-presentation-import/);
+  assert.match(patched, /fm-btn-planka-presentation-import/);
+  assert.match(patched, /saveItem\.insertAdjacentElement\('afterend', menuItem\)/);
+  assert.match(patched, /icon\.classList\.add\('btn-open'\)/);
   assert.equal(patchPresentationImportToolbar(patched), patched);
 });
 
@@ -185,7 +192,33 @@ const plankaPresentationImportButtonId
   assert.match(patched, /id="slot-btn-planka-presentation-import"/);
   assert.doesNotMatch(patched, /btn-ic-insertimage/);
   assert.match(patched, /viewBox="0 0 32 32"/);
-  assert.doesNotMatch(patched, /fm-btn-planka-presentation-import/);
+  assert.match(patched, /fm-btn-planka-presentation-import/);
+});
+
+test('updates the visible caption in an existing import action without losing its full label', () => {
+  const source =
+    String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
+  const legacy = patchPresentationImportToolbar(source)
+    .replace("        const captionLabel = 'Import PPTX';\n", "        const captionLabel = language.indexOf('pt') === 0 ? 'Importar' : 'Import';\n")
+    .replace('        button.title = label;\n', '')
+    .replace('caption.textContent = captionLabel;', 'caption.textContent = label;');
+  const patched = patchPresentationImportToolbar(legacy);
+
+  assert.match(patched, /const captionLabel = 'Import PPTX'/);
+  assert.match(patched, /button\.title = label/);
+  assert.match(patched, /caption\.textContent = captionLabel/);
+});
+
+test('reduces the imported action icon in an existing toolbar bundle', () => {
+  const source =
+    String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
+  const legacy = patchPresentationImportToolbar(source)
+    .replace('        const plankaPresentationImportCompactIcon = true;\n', '')
+    .replace('viewBox="0 0 32 32" width="20" height="20"', 'viewBox="0 0 32 32" width="32" height="32"');
+  const patched = patchPresentationImportToolbar(legacy);
+
+  assert.match(patched, /plankaPresentationImportCompactIcon = true/);
+  assert.match(patched, /viewBox="0 0 32 32" width="20" height="20"/);
 });
 
 test('patches the Brotli presentation bundle served to browsers', () => {
