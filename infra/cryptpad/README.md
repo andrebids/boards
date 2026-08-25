@@ -15,6 +15,11 @@ Este compose é deliberadamente separado de `boards-dev-*`: não tem `DATABASE_U
 
 O compose fixa `cryptpad/cryptpad:version-2026.5.1`; não usar `latest`. A imagem e volumes CryptPad pertencem apenas ao editor colaborativo. Projetos, utilizadores, permissões, chat e ficheiros permanentes continuam no Planka. O ficheiro `config/config.js` mantém a chave pública do administrador entre recriações do contentor e não é versionado.
 
+A distribuição regenerável do ONLYOFFICE usa o volume Docker
+`cryptpad_onlyoffice_dist`, em vez de um bind mount do Windows. Isto preserva
+os temas instalados e evita o arranque lento causado pela indexação de milhares
+de ficheiros no sistema de ficheiros do host.
+
 ## Preparação de produção
 
 - A imagem customizada é construída apenas manualmente pelo workflow `Build CryptPad image` e deve ser usada por digest, nunca por `latest`.

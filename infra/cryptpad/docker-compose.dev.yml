@@ -26,9 +26,15 @@ services:
       - ./customize:/cryptpad/customize
       - ./customize/integration/index.html:/cryptpad/www/integration/index.html
       - ./customize/presentation/inner.html:/cryptpad/www/presentation/inner.html
-      - ./onlyoffice-dist:/cryptpad/www/common/onlyoffice/dist
+      # A distribuição ONLYOFFICE contém milhares de ficheiros. Um volume
+      # Docker evita o rdfind ficar bloqueado no bind mount do Windows.
+      - cryptpad-onlyoffice-dist:/cryptpad/www/common/onlyoffice/dist
       - ./onlyoffice-conf:/cryptpad/onlyoffice-conf
     ulimits:
       nofile:
         soft: 1000000
         hard: 1000000
+
+volumes:
+  cryptpad-onlyoffice-dist:
+    name: cryptpad_onlyoffice_dist
