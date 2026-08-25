@@ -14,6 +14,10 @@ on:
         description: 'URL pública do CryptPad incorporado na imagem manual'
         required: false
         default: ''
+      cryptpad_sandbox_url:
+        description: 'URL pública do sandbox CryptPad incorporado na imagem manual'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -51,6 +55,7 @@ jobs:
             ${{ github.event_name == 'release' && format('ghcr.io/{0}/boards:latest', github.repository_owner) || '' }}
           build-args: |
             VITE_CRYPTPAD_URL=${{ inputs.cryptpad_url || vars.VITE_CRYPTPAD_URL }}
+            VITE_CRYPTPAD_SANDBOX_URL=${{ inputs.cryptpad_sandbox_url || vars.VITE_CRYPTPAD_SANDBOX_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
