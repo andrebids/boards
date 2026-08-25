@@ -173,3 +173,15 @@ test('patches the Brotli presentation bundle served to browsers', () => {
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('keeps CryptPad native bootload scripts in the presentation iframe', () => {
+  const innerHtml = fs.readFileSync(
+    path.join(__dirname, 'customize', 'presentation', 'inner.html'),
+    'utf8',
+  );
+
+  assert.match(
+    innerHtml,
+    /<script async data-bootload="\/common\/onlyoffice\/inner\.js" data-main="\/common\/sframe-boot\.js\?ver=1\.11" src="\/components\/requirejs\/require\.js\?ver=2\.3\.7"><\/script>/,
+  );
+});
