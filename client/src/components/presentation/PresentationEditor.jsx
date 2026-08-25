@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import Config from '../../constants/Config';
 import api from '../../api';
-import { Button, FilePicker } from '../../lib/custom-ui';
+import { Button } from '../../lib/custom-ui';
 
 import {
   createPresentationLoadDiagnostic,
@@ -13,7 +13,12 @@ import {
 } from './presentationEditorDiagnostics';
 import getPresentationEditorLanguage from './presentationLocale';
 import PresentationMediaPicker from './PresentationMediaPicker';
-import { isPptxFile, PRESENTATION_FILE_ACCEPT, PRESENTATION_MIME_TYPE } from './presentationImport';
+import {
+  getPresentationImportPluginUrl,
+  isPresentationImportRequest,
+  isPptxFile,
+  PRESENTATION_MIME_TYPE,
+} from './presentationImport';
 
 import styles from './PresentationWorkspace.module.scss';
 
@@ -69,6 +74,27 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
     },
     [handleRetry, presentation.id],
   );
+
+  useEffect(() => {
+    const cryptPadOrigin = new URL(Config.CRYPTPAD_URL).origin;
+    const handlePresentationImportMessage = (event) => {
+      if (
+        event.origin !== cryptPadOrigin ||
+        !isPresentationImportRequest(event.data) ||
+        isImporting
+      ) {
+        return;
+      }
+
+      handlePresentationFileSelect(event.data.file);
+    };
+
+    window.addEventListener('message', handlePresentationImportMessage);
+
+    return () => {
+      window.removeEventListener('message', handlePresentationImportMessage);
+    };
+  }, [handlePresentationFileSelect, isImporting]);
 
   const handleImageInsertRequest = useCallback((data, callback) => {
     if (!data || typeof callback !== 'function') {
@@ -200,6 +226,10 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
             mode: initialPresentation.cryptpadMode,
             editorConfig: {
               lang: editorLanguageRef.current,
+              plugins: {
+                autostart: ['asc.{6B4D3E90-6A1B-4E92-BD0E-1DA8E51F1F40}'],
+                pluginsData: [getPresentationImportPluginUrl(Config.CRYPTPAD_URL)],
+              },
               customization: {
                 about: false,
                 help: false,
@@ -299,31 +329,17 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
 
   return (
     <>
-      <section className={styles.editorSection}>
-        <div className={styles.editorToolbar}>
-          <FilePicker accept={PRESENTATION_FILE_ACCEPT} onSelect={handlePresentationFileSelect}>
-            <Button
-              variant="secondary"
-              icon="upload"
-              loading={isImporting}
-              disabled={isImporting}
-            >
-              {t('common.presentationImport')}
-            </Button>
-          </FilePicker>
-          {importError && (
-            <p className={styles.importError} role="alert">
-              {t(
-                importError === 'invalid'
-                  ? 'common.presentationImportInvalidFile'
-                  : 'common.presentationImportFailed',
-              )}
-            </p>
-          )}
-        </div>
-        <section className={styles.editor} aria-busy={!isReady}>
-          <div ref={editorRef} className={styles.editorMount} />
-        </section>
+      <section className={styles.editor} aria-busy={!isReady || isImporting}>
+        <div ref={editorRef} className={styles.editorMount} />
+        {importError && (
+          <p className={styles.importError} role="alert">
+            {t(
+              importError === 'invalid'
+                ? 'common.presentationImportInvalidFile'
+                : 'common.presentationImportFailed',
+            )}
+          </p>
+        )}
       </section>
       <PresentationMediaPicker
         boardIds={boardIds}

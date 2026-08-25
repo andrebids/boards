@@ -16,4 +16,12 @@ describe('Presentation editor permissions', () => {
       /permissions:\s*\{\s*chat: false,\s*download: true,\s*print: false\s*\}/,
     );
   });
+
+  test('loads the Planka import plugin inside ONLYOFFICE instead of an external toolbar', () => {
+    expect(source).toMatch(
+      /pluginsData:\s*\[getPresentationImportPluginUrl\(Config\.CRYPTPAD_URL\)\]/,
+    );
+    expect(source).toMatch(/addEventListener\('message', handlePresentationImportMessage\)/);
+    expect(source).not.toMatch(/className=\{styles\.editorToolbar\}/);
+  });
 });

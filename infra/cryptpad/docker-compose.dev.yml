@@ -28,6 +28,7 @@ services:
       - ./data/data:/cryptpad/data
       - ./data/files:/cryptpad/datastore
       - ./customize:/cryptpad/customize
+      - ./plugins:/cryptpad/customize/planka-plugins:ro
       - ./customize/integration/index.html:/cryptpad/www/integration/index.html
       - ./customize/presentation/inner.html:/cryptpad/www/presentation/inner.html
       - ./patch-static-cache.js:/opt/planka-local/patch-static-cache.js:ro
