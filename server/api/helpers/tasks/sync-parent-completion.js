@@ -6,27 +6,40 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const parentTask = await Task.qm.getOneById(inputs.parentTaskId);
-    if (!parentTask) {
-      return null;
+    const visitedTaskIds = new Set();
+    let { parentTaskId } = inputs;
+    let lastParentTask = null;
+
+    while (parentTaskId && !visitedTaskIds.has(parentTaskId)) {
+      visitedTaskIds.add(parentTaskId);
+
+      // eslint-disable-next-line no-await-in-loop
+      let parentTask = await Task.qm.getOneById(parentTaskId);
+      if (!parentTask) {
+        break;
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      const children = await Task.qm.getByTaskListId(parentTask.taskListId, {
+        parentTaskId: parentTask.id,
+      });
+      const isCompleted = children.length > 0 && children.every((child) => child.isCompleted);
+
+      if (parentTask.isCompleted !== isCompleted) {
+        // eslint-disable-next-line no-await-in-loop
+        parentTask = await Task.qm.updateOne(parentTask.id, { isCompleted });
+        sails.sockets.broadcast(
+          `board:${inputs.board.id}`,
+          'taskUpdate',
+          { item: parentTask },
+          inputs.request,
+        );
+      }
+
+      lastParentTask = parentTask;
+      parentTaskId = parentTask.parentTaskId;
     }
 
-    const children = await Task.qm.getByTaskListId(parentTask.taskListId, {
-      parentTaskId: parentTask.id,
-    });
-    const isCompleted = children.length > 0 && children.every((child) => child.isCompleted);
-
-    if (parentTask.isCompleted === isCompleted) {
-      return parentTask;
-    }
-
-    const task = await Task.qm.updateOne(parentTask.id, { isCompleted });
-    sails.sockets.broadcast(
-      `board:${inputs.board.id}`,
-      'taskUpdate',
-      { item: task },
-      inputs.request,
-    );
-    return task;
+    return lastParentTask;
   },
 };

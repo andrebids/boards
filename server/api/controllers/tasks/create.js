@@ -83,7 +83,7 @@ module.exports = {
       parentTask = await Task.qm.getOneById(inputs.parentTaskId, {
         taskListId: taskList.id,
       });
-      if (!parentTask || parentTask.parentTaskId) {
+      if (!parentTask) {
         throw Errors.TASK_LIST_NOT_FOUND;
       }
     }

@@ -18,6 +18,7 @@ import { BoardMembershipRoles } from '../../../constants/Enums';
 import { ClosableContext } from '../../../contexts';
 import Task from './Task';
 import AddTask from './AddTask';
+import { buildTaskRows } from './task-tree';
 
 import styles from './TaskList.module.scss';
 
@@ -25,14 +26,9 @@ const TaskList = React.memo(({ id }) => {
   const selectTaskListById = useMemo(() => selectors.makeSelectTaskListById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
   const selectTasksByTaskListId = useMemo(() => selectors.makeSelectTasksByTaskListId(), []);
-  const selectRootTasksByTaskListId = useMemo(
-    () => selectors.makeSelectRootTasksByTaskListId(),
-    [],
-  );
 
   const taskList = useSelector((state) => selectTaskListById(state, id));
   const tasks = useSelector((state) => selectTasksByTaskListId(state, id));
-  const rootTasks = useSelector((state) => selectRootTasksByTaskListId(state, id));
 
   const canEdit = useSelector((state) => {
     const { listId } = selectors.selectCurrentCard(state);
@@ -54,6 +50,7 @@ const TaskList = React.memo(({ id }) => {
     () => tasks.filter((task) => !tasks.some((childTask) => childTask.parentTaskId === task.id)),
     [tasks],
   );
+  const taskRows = useMemo(() => buildTaskRows(tasks), [tasks]);
 
   // TODO: move to selector?
   const completedTasksTotal = useMemo(
@@ -101,7 +98,6 @@ const TaskList = React.memo(({ id }) => {
         isDropDisabled={!taskList.isPersisted || !canEdit}
       >
         {({ innerRef, droppableProps, placeholder }) => (
-          // eslint-disable-next-line react/jsx-props-no-spreading
           <div
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...droppableProps}
@@ -110,19 +106,9 @@ const TaskList = React.memo(({ id }) => {
             aria-label={taskList.name}
             className={styles.tasks}
           >
-            {rootTasks
-              .flatMap((task) => [
-                task,
-                ...tasks.filter((childTask) => childTask.parentTaskId === task.id),
-              ])
-              .map((task, index) => (
-                <Task
-                  key={task.id}
-                  id={task.id}
-                  index={index}
-                  isSubtask={Boolean(task.parentTaskId)}
-                />
-              ))}
+            {taskRows.map(({ task, depth }, index) => (
+              <Task key={task.id} id={task.id} index={index} depth={depth} />
+            ))}
             {placeholder}
           </div>
         )}

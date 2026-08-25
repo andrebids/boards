@@ -9,7 +9,7 @@ describe('Task parent deletion', () => {
     id: 'parent-1',
     name: 'Parent',
     position: 200,
-    parentTaskId: null,
+    parentTaskId: 'grandparent-1',
   };
   const children = [
     { id: 'child-1', name: 'First child', position: 100, parentTaskId: parent.id },
@@ -64,6 +64,11 @@ describe('Task parent deletion', () => {
         broadcast: () => {},
       },
       helpers: {
+        tasks: {
+          syncParentCompletion: {
+            with: async () => {},
+          },
+        },
         utils: {
           insertToPositionables: (position, records) =>
             insertToPositionables.fn({ position, records }),
@@ -93,7 +98,10 @@ describe('Task parent deletion', () => {
       updates.find((updatedTask) => updatedTask.id === child.id),
     );
 
-    expect(promotedChildren.map((child) => child.parentTaskId)).to.deep.equal([null, null]);
+    expect(promotedChildren.map((child) => child.parentTaskId)).to.deep.equal([
+      parent.parentTaskId,
+      parent.parentTaskId,
+    ]);
     expect(promotedChildren[0].position).to.be.at.least(parent.position);
     expect(promotedChildren[0].position).to.be.below(promotedChildren[1].position);
     expect(promotedChildren[1].position).to.be.below(

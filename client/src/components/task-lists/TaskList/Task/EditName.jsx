@@ -3,105 +3,79 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import TextareaAutosize from 'react-textarea-autosize';
-import { Form, TextArea } from 'semantic-ui-react';
-import { Button } from '../../../../lib/custom-ui';
-import { useClickAwayListener } from '../../../../lib/hooks';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
-import { useField, useNestedRef } from '../../../../hooks';
-import { focusEnd } from '../../../../utils/element-helpers';
+import EditMarkdown from '../../../common/EditMarkdown';
+import { uploadCommentImage } from '../../../comments/Comments/image-upload';
 
 import styles from './EditName.module.scss';
 
 const EditName = React.memo(({ taskId, onClose }) => {
   const selectTaskById = useMemo(() => selectors.makeSelectTaskById(), []);
-
-  const defaultValue = useSelector(state => selectTaskById(state, taskId).name);
+  const task = useSelector((state) => selectTaskById(state, taskId));
+  const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
+  const accessToken = useSelector(selectors.selectAccessToken);
+  const { cardId } = useSelector(selectors.selectPath);
 
   const dispatch = useDispatch();
-  const [t] = useTranslation();
-  const [value, handleFieldChange] = useField(defaultValue);
+  const mentionUsers = useMemo(
+    () =>
+      boardMemberships
+        .filter(({ user }) => user)
+        .map(({ user }) => ({
+          id: user.id,
+          display: user.username || user.name,
+          name: user.name,
+        })),
+    [boardMemberships],
+  );
 
-  const [fieldRef, handleFieldRef] = useNestedRef();
-  const [buttonRef, handleButtonRef] = useNestedRef();
+  const handleUpdate = useCallback(
+    (content) => {
+      if (!content) {
+        return;
+      }
 
-  const submit = useCallback(() => {
-    const cleanValue = value.trim();
-
-    if (cleanValue && cleanValue !== defaultValue) {
       dispatch(
         entryActions.updateTask(taskId, {
-          name: cleanValue,
-        })
+          content,
+          name: content.slice(0, 1024),
+        }),
       );
-    }
-
-    onClose();
-  }, [taskId, onClose, defaultValue, dispatch, value]);
-
-  const handleSubmit = useCallback(() => {
-    submit();
-  }, [submit]);
-
-  const handleFieldKeyDown = useCallback(
-    event => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        submit();
-      } else if (event.key === 'Escape') {
-        onClose();
-      }
     },
-    [onClose, submit]
+    [dispatch, taskId],
   );
 
-  const handleClickAwayCancel = useCallback(() => {
-    fieldRef.current.focus();
-  }, [fieldRef]);
+  const handleFileUpload = useCallback(
+    async (file) => {
+      const { attachment, requestId, url } = await uploadCommentImage({
+        cardId,
+        accessToken,
+        file,
+      });
 
-  const clickAwayProps = useClickAwayListener(
-    [fieldRef, buttonRef],
-    submit,
-    handleClickAwayCancel
+      dispatch(entryActions.handleAttachmentCreate(attachment, requestId));
+
+      return { url };
+    },
+    [accessToken, cardId, dispatch],
   );
-
-  useEffect(() => {
-    focusEnd(fieldRef.current);
-  }, [fieldRef]);
 
   return (
-    <Form onSubmit={handleSubmit} className={styles.wrapper}>
-      <TextArea
-        {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-        ref={handleFieldRef}
-        as={TextareaAutosize}
-        value={value}
-        maxLength={1024}
-        minRows={1}
-        maxRows={6}
-        spellCheck={false}
-        className={styles.field}
-        onKeyDown={handleFieldKeyDown}
-        onChange={handleFieldChange}
+    <div className={styles.wrapper}>
+      <EditMarkdown
+        defaultValue={task.content || task.name}
+        mentionUsers={mentionUsers}
+        withEmoji
+        fileUploadHandler={handleFileUpload}
+        onUpdate={handleUpdate}
+        onClose={onClose}
       />
-      <div className={styles.controls}>
-        <Button
-          {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-          ref={handleButtonRef}
-          type="submit"
-          compact
-          variant="primary"
-          content={t('action.save')}
-          className={styles.saveButton}
-        />
-      </div>
-    </Form>
+    </div>
   );
 });
 

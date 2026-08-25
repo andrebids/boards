@@ -3,106 +3,120 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import TextareaAutosize from 'react-textarea-autosize';
-import { Form, Icon, TextArea } from 'semantic-ui-react';
+import { Form, Icon } from 'semantic-ui-react';
 import { Button } from '../../../lib/custom-ui';
-import { useClickAwayListener, useDidUpdate, useToggle } from '../../../lib/hooks';
+import { useClickAwayListener } from '../../../lib/hooks';
 
+import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
-import { useForm, useNestedRef } from '../../../hooks';
-import { focusEnd } from '../../../utils/element-helpers';
-import { isModifierKeyPressed } from '../../../utils/event-helpers';
+import { useForm } from '../../../hooks';
+import MarkdownEditor from '../../common/MarkdownEditor';
+import { uploadCommentImage } from '../../comments/Comments/image-upload';
 
 import styles from './AddTask.module.scss';
 
 const DEFAULT_DATA = {
-  name: '',
+  content: '',
 };
 
-const MULTIPLE_REGEX = /\s*\r?\n\s*/;
+const MAX_LENGTH = 1048576;
 
 const AddTask = React.memo((props) => {
   const { children, taskListId, parentTaskId, parentTaskName, isOpened, onClose } = props;
+  const defaultMode = useSelector((state) => selectors.selectCurrentUser(state).defaultEditorMode);
+  const boardMemberships = useSelector(selectors.selectMembershipsForCurrentBoard);
+  const accessToken = useSelector(selectors.selectAccessToken);
+  const { cardId } = useSelector(selectors.selectPath);
+
   const dispatch = useDispatch();
   const [t] = useTranslation();
-  const [data, handleFieldChange, setData] = useForm(DEFAULT_DATA);
-  const [focusNameFieldState, focusNameField] = useToggle();
+  const [data, , setData] = useForm(DEFAULT_DATA);
+  const [editorKey, setEditorKey] = useState(0);
 
-  const [nameFieldRef, handleNameFieldRef] = useNestedRef();
-  const [buttonRef, handleButtonRef] = useNestedRef();
-  const [cancelButtonRef, handleCancelButtonRef] = useNestedRef();
+  const editorShellRef = useRef(null);
+  const buttonRef = useRef(null);
+  const cancelButtonRef = useRef(null);
 
-  const submit = useCallback(
-    (isMultiple = false) => {
-      const cleanData = {
-        ...data,
-        name: data.name.trim(),
-      };
-
-      if (!cleanData.name) {
-        nameFieldRef.current.select();
-        return;
-      }
-
-      if (isMultiple) {
-        cleanData.name.split(MULTIPLE_REGEX).forEach((name) => {
-          dispatch(
-            entryActions.createTask(taskListId, {
-              ...cleanData,
-              name,
-              parentTaskId,
-            }),
-          );
-        });
-      } else {
-        dispatch(entryActions.createTask(taskListId, { ...cleanData, parentTaskId }));
-      }
-
-      setData(DEFAULT_DATA);
-      focusNameField();
-    },
-    [taskListId, parentTaskId, dispatch, data, setData, focusNameField, nameFieldRef],
+  const isExceeded = data.content.length > MAX_LENGTH;
+  const mentionUsers = useMemo(
+    () =>
+      boardMemberships
+        .filter(({ user }) => user)
+        .map(({ user }) => ({
+          id: user.id,
+          display: user.username || user.name,
+          name: user.name,
+        })),
+    [boardMemberships],
   );
+
+  const submit = useCallback(() => {
+    const content = data.content.trim();
+
+    if (!content || isExceeded) {
+      return;
+    }
+
+    dispatch(
+      entryActions.createTask(taskListId, {
+        content,
+        name: content.slice(0, 1024),
+        parentTaskId,
+      }),
+    );
+
+    setData(DEFAULT_DATA);
+    setEditorKey((key) => key + 1);
+  }, [data.content, dispatch, isExceeded, parentTaskId, setData, taskListId]);
 
   const handleSubmit = useCallback(() => {
     submit();
   }, [submit]);
 
-  const handleFieldKeyDown = useCallback(
-    (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        submit(isModifierKeyPressed(event));
-      } else if (event.key === 'Escape') {
-        onClose();
-      }
+  const handleEditorChange = useCallback(
+    (content) => {
+      setData({ content });
     },
-    [onClose, submit],
+    [setData],
   );
 
-  const handleClickAwayCancel = useCallback(() => {
-    nameFieldRef.current.focus();
-  }, [nameFieldRef]);
+  const handleModeChange = useCallback(
+    (mode) => {
+      dispatch(
+        entryActions.updateCurrentUser({
+          defaultEditorMode: mode,
+        }),
+      );
+    },
+    [dispatch],
+  );
+
+  const handleFileUpload = useCallback(
+    async (file) => {
+      const { attachment, requestId, url } = await uploadCommentImage({
+        cardId,
+        accessToken,
+        file,
+      });
+
+      dispatch(entryActions.handleAttachmentCreate(attachment, requestId));
+
+      return { url };
+    },
+    [accessToken, cardId, dispatch],
+  );
+
+  const handleClickAwayCancel = useCallback(() => {}, []);
 
   const clickAwayProps = useClickAwayListener(
-    [nameFieldRef, buttonRef, cancelButtonRef],
+    [editorShellRef, buttonRef, cancelButtonRef],
     onClose,
     handleClickAwayCancel,
   );
-
-  useEffect(() => {
-    if (isOpened) {
-      focusEnd(nameFieldRef.current);
-    }
-  }, [isOpened, nameFieldRef]);
-
-  useDidUpdate(() => {
-    nameFieldRef.current.focus();
-  }, [focusNameFieldState]);
 
   if (!isOpened) {
     return children;
@@ -118,28 +132,36 @@ const AddTask = React.memo((props) => {
           </span>
         </div>
       )}
-      <TextArea
+      <div
         {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
-        ref={handleNameFieldRef}
-        as={TextareaAutosize}
-        name="name"
-        value={data.name}
-        placeholder={t(
-          parentTaskId ? 'common.enterSubtaskDescription' : 'common.enterTaskDescription',
-        )}
-        maxLength={1024}
-        minRows={2}
-        spellCheck={false}
-        className={styles.field}
-        onKeyDown={handleFieldKeyDown}
-        onChange={handleFieldChange}
-      />
+        ref={editorShellRef}
+        className={styles.editorShell}
+      >
+        <MarkdownEditor
+          key={editorKey}
+          defaultValue={data.content}
+          defaultMode={defaultMode}
+          mentionUsers={mentionUsers}
+          withEmoji
+          fileUploadHandler={handleFileUpload}
+          isError={isExceeded}
+          onChange={handleEditorChange}
+          onSubmit={handleSubmit}
+          onCancel={onClose}
+          onModeChange={handleModeChange}
+        />
+      </div>
       <div className={styles.controls}>
         <Button
           {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
           variant="primary"
-          ref={handleButtonRef}
-          content={t(parentTaskId ? 'action.addSubtask' : 'action.addTask')}
+          ref={buttonRef}
+          content={
+            isExceeded
+              ? t('common.contentExceedsLimit', { limit: '1MB' })
+              : t(parentTaskId ? 'action.addSubtask' : 'action.addTask')
+          }
+          disabled={!data.content.trim() || isExceeded}
           className={styles.submitButton}
         />
         {parentTaskId && (
@@ -147,7 +169,7 @@ const AddTask = React.memo((props) => {
             {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
             variant="secondary"
             type="button"
-            ref={handleCancelButtonRef}
+            ref={cancelButtonRef}
             content={t('action.cancel')}
             className={styles.cancelButton}
             onClick={onClose}

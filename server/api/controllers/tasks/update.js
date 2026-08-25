@@ -5,6 +5,7 @@
 
 const { idInput } = require('../../../utils/inputs');
 const { getTaskContentValues } = require('../../../utils/task-content');
+const { isTaskInParentChain } = require('../../../utils/task-hierarchy');
 
 const Errors = {
   NOT_ENOUGH_RIGHTS: {
@@ -120,7 +121,20 @@ module.exports = {
         taskListId: (nextTaskList || taskList).id,
       });
 
-      if (!parentTask || parentTask.id === task.id || parentTask.parentTaskId) {
+      if (!parentTask) {
+        throw Errors.PARENT_TASK_NOT_FOUND;
+      }
+
+      const hasParentCycle = await isTaskInParentChain({
+        taskId: task.id,
+        parentTask,
+        getTaskById: (taskId) =>
+          Task.qm.getOneById(taskId, {
+            taskListId: (nextTaskList || taskList).id,
+          }),
+      });
+
+      if (hasParentCycle) {
         throw Errors.PARENT_TASK_NOT_FOUND;
       }
     }

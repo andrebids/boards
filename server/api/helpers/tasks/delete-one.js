@@ -47,10 +47,10 @@ module.exports = {
     const childTasks = await Task.qm.getByTaskListId(inputs.taskList.id, {
       parentTaskId: inputs.record.id,
     });
-    const rootTasks = childTasks.length
+    const siblingTasks = childTasks.length
       ? await Task.qm.getByTaskListId(inputs.taskList.id, {
           exceptIdOrIds: inputs.record.id,
-          parentTaskId: null,
+          parentTaskId: inputs.record.parentTaskId || null,
         })
       : [];
     let insertionPosition = inputs.record.position;
@@ -60,7 +60,7 @@ module.exports = {
     for (const childTask of childTasks) {
       const { position, repositions } = sails.helpers.utils.insertToPositionables(
         insertionPosition,
-        rootTasks,
+        siblingTasks,
       );
 
       // eslint-disable-next-line no-restricted-syntax
@@ -69,8 +69,8 @@ module.exports = {
         const repositionedTask = await Task.qm.updateOne(reposition.record.id, {
           position: reposition.position,
         });
-        const rootTaskIndex = rootTasks.findIndex(({ id }) => id === reposition.record.id);
-        rootTasks[rootTaskIndex] = repositionedTask;
+        const siblingTaskIndex = siblingTasks.findIndex(({ id }) => id === reposition.record.id);
+        siblingTasks[siblingTaskIndex] = repositionedTask;
         sails.sockets.broadcast(`board:${inputs.board.id}`, 'taskUpdate', {
           item: repositionedTask,
         });
@@ -78,19 +78,19 @@ module.exports = {
 
       // eslint-disable-next-line no-await-in-loop
       const promotedTask = await Task.qm.updateOne(childTask.id, {
-        parentTaskId: null,
+        parentTaskId: inputs.record.parentTaskId || null,
         position,
       });
       sails.sockets.broadcast(`board:${inputs.board.id}`, 'taskUpdate', {
         item: promotedTask,
       });
 
-      rootTasks.push(promotedTask);
-      rootTasks.sort(
+      siblingTasks.push(promotedTask);
+      siblingTasks.sort(
         (taskA, taskB) => taskA.position - taskB.position || taskA.id.localeCompare(taskB.id),
       );
-      const promotedTaskIndex = rootTasks.findIndex(({ id }) => id === promotedTask.id);
-      const nextTask = rootTasks[promotedTaskIndex + 1];
+      const promotedTaskIndex = siblingTasks.findIndex(({ id }) => id === promotedTask.id);
+      const nextTask = siblingTasks[promotedTaskIndex + 1];
       insertionPosition = nextTask
         ? position + (nextTask.position - position) / 2
         : position + POSITION_GAP;

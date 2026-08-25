@@ -3,32 +3,32 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useRef, useState } from "react";
-import PropTypes from "prop-types";
-import { useDispatch, useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
+import React, { useCallback, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Form } from 'semantic-ui-react';
 import { Button } from '../../../lib/custom-ui';
-import { useClickAwayListener } from "../../../lib/hooks";
+import { useClickAwayListener } from '../../../lib/hooks';
 
-import selectors from "../../../selectors";
-import entryActions from "../../../entry-actions";
-import { useNestedRef } from "../../../hooks";
-import MarkdownEditor from "../MarkdownEditor";
+import selectors from '../../../selectors';
+import entryActions from '../../../entry-actions';
+import { useNestedRef } from '../../../hooks';
+import MarkdownEditor from '../MarkdownEditor';
 
-import styles from "./EditMarkdown.module.scss";
+import styles from './EditMarkdown.module.scss';
 
 const MAX_LENGTH = 1048576;
 
 const EditMarkdown = React.memo(
-  ({ defaultValue, draftValue, onUpdate, onClose }) => {
+  ({ defaultValue, draftValue, mentionUsers, withEmoji, fileUploadHandler, onUpdate, onClose }) => {
     const defaultMode = useSelector(
       (state) => selectors.selectCurrentUser(state).defaultEditorMode,
     );
 
     const dispatch = useDispatch();
     const [t] = useTranslation();
-    const [value, setValue] = useState(() => draftValue || defaultValue || "");
+    const [value, setValue] = useState(() => draftValue || defaultValue || '');
 
     const fieldRef = useRef(null);
     const [submitButtonRef, handleSubmitButtonRef] = useNestedRef();
@@ -90,6 +90,9 @@ const EditMarkdown = React.memo(
           ref={fieldRef}
           defaultValue={value}
           defaultMode={defaultMode}
+          mentionUsers={mentionUsers}
+          withEmoji={withEmoji}
+          fileUploadHandler={fileUploadHandler}
           isError={isExceeded}
           onChange={handleChange}
           onSubmit={handleSubmit}
@@ -105,19 +108,20 @@ const EditMarkdown = React.memo(
               className={styles.submitButton}
               content={
                 isExceeded
-                  ? t("common.contentExceedsLimit", {
-                      limit: "1MB",
+                  ? t('common.contentExceedsLimit', {
+                      limit: '1MB',
                     })
-                  : t("action.save")
+                  : t('action.save')
               }
               disabled={isExceeded}
             />
-            <Button variant="secondary"
+            <Button
+              variant="secondary"
               {...clickAwayProps} // eslint-disable-line react/jsx-props-no-spreading
               ref={handleCancelButtonRef}
               type="button"
               className={styles.cancelButton}
-              content={t("action.cancel")}
+              content={t('action.cancel')}
               onClick={handleCancelClick}
             />
           </div>
@@ -130,6 +134,15 @@ const EditMarkdown = React.memo(
 EditMarkdown.propTypes = {
   defaultValue: PropTypes.string,
   draftValue: PropTypes.string,
+  mentionUsers: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      display: PropTypes.string.isRequired,
+      name: PropTypes.string,
+    }),
+  ),
+  withEmoji: PropTypes.bool,
+  fileUploadHandler: PropTypes.func,
   // placeholder: PropTypes.string.isRequired, // TODO: remove?
   onUpdate: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
@@ -138,6 +151,9 @@ EditMarkdown.propTypes = {
 EditMarkdown.defaultProps = {
   defaultValue: undefined,
   draftValue: undefined,
+  mentionUsers: undefined,
+  withEmoji: false,
+  fileUploadHandler: undefined,
 };
 
 export default EditMarkdown;

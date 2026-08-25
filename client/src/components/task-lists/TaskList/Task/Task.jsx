@@ -23,14 +23,14 @@ import { ClosableContext } from '../../../../contexts';
 import EditName from './EditName';
 import SelectAssigneeStep from './SelectAssigneeStep';
 import ActionsStep from './ActionsStep';
-import Linkify from '../../../common/Linkify';
+import Markdown from '../../../common/Markdown';
 import UserAvatar from '../../../users/UserAvatar';
 import { useGantt } from '../../../gantt';
 import AddTask from '../AddTask';
 
 import styles from './Task.module.scss';
 
-const Task = React.memo(({ id, index, isSubtask }) => {
+const Task = React.memo(({ id, index, depth }) => {
   const [t] = useTranslation();
   const selectTaskById = useMemo(() => selectors.makeSelectTaskById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
@@ -100,11 +100,18 @@ const Task = React.memo(({ id, index, isSubtask }) => {
   const isEditable = task.isPersisted && canEdit;
   const canUseGantt = task.isPersisted && plan?.isEnabled && canEditGantt && isEditModeEnabled;
 
-  const handleClick = useCallback(() => {
-    if (isEditable) {
-      setIsEditNameOpened(true);
-    }
-  }, [isEditable]);
+  const handleClick = useCallback(
+    (event) => {
+      if (event.target.closest('a')) {
+        return;
+      }
+
+      if (isEditable) {
+        setIsEditNameOpened(true);
+      }
+    },
+    [isEditable],
+  );
 
   const handleNameEdit = useCallback(() => {
     setIsEditNameOpened(true);
@@ -134,7 +141,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
       <Draggable
         draggableId={`task:${id}`}
         index={index}
-        isDragDisabled={isSubtask || isEditNameOpened || !isEditable}
+        isDragDisabled={depth > 0 || isEditNameOpened || !isEditable}
       >
         {({ innerRef, draggableProps, dragHandleProps }, { isDragging }) => {
           let assigneeControl = null;
@@ -179,9 +186,13 @@ const Task = React.memo(({ id, index, isSubtask }) => {
               {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
               {...dragHandleProps} // eslint-disable-line react/jsx-props-no-spreading
               ref={innerRef}
+              style={{
+                ...draggableProps.style,
+                '--task-depth': depth,
+              }}
               className={classNames(
                 styles.wrapper,
-                isSubtask && styles.wrapperSubtask,
+                depth > 0 && styles.wrapperNested,
                 isAddSubtaskOpened && styles.wrapperAddingSubtask,
                 isDragging && styles.wrapperDragging,
               )}
@@ -201,15 +212,15 @@ const Task = React.memo(({ id, index, isSubtask }) => {
                 <div className={classNames(canEdit && styles.contentHoverable)}>
                   {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                              jsx-a11y/no-static-element-interactions */}
-                  <span
+                  <div
                     className={classNames(styles.text, canEdit && styles.textEditable)}
                     onClick={handleClick}
                   >
-                    <span
+                    <div
                       className={classNames(styles.task, task.isCompleted && styles.taskCompleted)}
                     >
-                      <Linkify linkStopPropagation>{task.name}</Linkify>
-                    </span>
+                      <Markdown>{task.content || task.name}</Markdown>
+                    </div>
                     {childTasks.length > 0 && (
                       <span
                         className={styles.subtaskProgress}
@@ -219,7 +230,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
                         {childTasks.length}
                       </span>
                     )}
-                  </span>
+                  </div>
                   {(task.assigneeUserId || isEditable || canUseGantt) && (
                     <div
                       className={classNames(
@@ -230,7 +241,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
                       {isEditable || canUseGantt ? (
                         <>
                           {assigneeControl}
-                          {!isSubtask && isEditable && (
+                          {isEditable && (
                             <Button
                               variant="secondary"
                               type="button"
@@ -247,7 +258,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
                             childTaskCount={childTasks.length}
                             canEditTask={isEditable}
                             onNameEdit={handleNameEdit}
-                            onAddSubtask={isSubtask ? undefined : handleAddSubtask}
+                            onAddSubtask={handleAddSubtask}
                           >
                             <Button
                               variant="secondary"
@@ -277,7 +288,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
           return isDragging ? ReactDOM.createPortal(contentNode, document.body) : contentNode;
         }}
       </Draggable>
-      {!isSubtask && isAddSubtaskOpened && (
+      {isAddSubtaskOpened && (
         <AddTask
           taskListId={task.taskListId}
           parentTaskId={id}
@@ -295,7 +306,7 @@ const Task = React.memo(({ id, index, isSubtask }) => {
 Task.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
-  isSubtask: PropTypes.bool.isRequired,
+  depth: PropTypes.number.isRequired,
 };
 
 export default Task;
