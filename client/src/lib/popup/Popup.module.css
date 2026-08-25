@@ -75,10 +75,18 @@
   overflow: hidden;
 }
 
+.notifications .closeButtonPosition {
+  top: 16px;
+}
+
 @media (max-width: 480px) {
   .notifications {
     border-radius: 12px !important;
     padding: 0 8px 12px !important;
+  }
+
+  .notifications .closeButtonPosition {
+    top: 8px;
   }
 }
 
