@@ -2,7 +2,7 @@
   "baseUrl": "",
   "guid": "asc.{6B4D3E90-6A1B-4E92-BD0E-1DA8E51F1F40}",
   "name": "Planka",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "variations": [
     {
       "description": "Import a PowerPoint presentation into Planka",
@@ -10,7 +10,7 @@
       "initDataType": "none",
       "isDisplayedInViewer": true,
       "isViewer": true,
-      "type": "system",
+      "type": "background",
       "url": "index.html"
     }
   ]

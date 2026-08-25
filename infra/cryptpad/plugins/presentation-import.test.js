@@ -12,6 +12,7 @@ test('adds the import action to the Insert tab for presentations, including view
   assert.equal(config.variations[0].isDisplayedInViewer, true);
   assert.equal(config.variations[0].isViewer, true);
   assert.deepEqual(config.variations[0].EditorsSupport, ['slide']);
+  assert.equal(config.variations[0].type, 'background');
   assert.match(plugin, /id: 'ins'/);
   assert.doesNotMatch(plugin, /text: 'Planka'/);
   assert.match(plugin, /lockInViewMode: false/);
