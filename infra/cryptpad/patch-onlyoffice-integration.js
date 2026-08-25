@@ -13,6 +13,39 @@ const onlyOfficeDocumentTypeMarker = `"documentType": file.doc,`;
 const onlyOfficeDocumentTypeReplacement =
   `"documentType": file.doc === 'presentation' ? 'slide' : file.doc,`;
 
+const corePropsMarker = `        const fixProps = (title) => {
+            try {
+                const props = getEditor().asc_getCoreProps();
+                if (!props) { return; }
+                props.title = title;
+                if (!content.hashes || !Object.keys(content.hashes).length) {
+                    // No CP: document is using our templates
+                    // --> fix the "creator" field
+                    props.creator = "";
+                }
+                getEditor().asc_setCoreProps(props);
+            } catch {}
+        };`;
+
+const corePropsReplacement = `        const fixProps = (title) => {
+            try {
+                const props = getEditor().asc_getCoreProps();
+                if (!props) { return; }
+                var changed = false;
+                if (title !== undefined && props.title !== title) {
+                    props.title = title;
+                    changed = true;
+                }
+                if ((!content.hashes || !Object.keys(content.hashes).length) && props.creator) {
+                    // No CP: document is using our templates
+                    // --> fix the "creator" field
+                    props.creator = "";
+                    changed = true;
+                }
+                if (changed) { getEditor().asc_setCoreProps(props); }
+            } catch {}
+        };`;
+
 const presentationToolbarMarker =
   'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.setMenu(new Common.UI.Menu({items:[{caption:e.mniImageFromFile,value:"file"},{cls:"cp-from-url",caption:e.mniImageFromUrl,value:"url"},{caption:e.mniImageFromStorage,value:"storage"}]}).on("item:click",(function(t,i,n){e.fireEvent("insert:image",[i.value])}))),i.menu.items[2].setVisible(t.canRequestInsertImage||t.fileChoiceUrl&&t.fileChoiceUrl.indexOf("{documentType}")>-1)}))';
 
@@ -281,6 +314,13 @@ function patchOnlyOfficeIntegration(source) {
       throw new Error('OnlyOffice document type patch no longer applies');
     }
     patched = patched.replace(onlyOfficeDocumentTypeMarker, onlyOfficeDocumentTypeReplacement);
+  }
+
+  if (!patched.includes(corePropsReplacement)) {
+    if (!patched.includes(corePropsMarker)) {
+      throw new Error('OnlyOffice core properties patch no longer applies');
+    }
+    patched = patched.replace(corePropsMarker, corePropsReplacement);
   }
 
   patched = patched.replaceAll(

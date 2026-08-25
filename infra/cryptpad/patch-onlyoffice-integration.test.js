@@ -16,10 +16,26 @@ const uploadImageFilesFixture = `            APP.UploadImageFiles = function (fi
                 return void cb();
             };`;
 
+const corePropsFixture = `        const fixProps = (title) => {
+            try {
+                const props = getEditor().asc_getCoreProps();
+                if (!props) { return; }
+                props.title = title;
+                if (!content.hashes || !Object.keys(content.hashes).length) {
+                    // No CP: document is using our templates
+                    // --> fix the "creator" field
+                    props.creator = "";
+                }
+                getEditor().asc_setCoreProps(props);
+            } catch {}
+        };`;
+
 const fixture = `
         const ooconfig = {
             "documentType": file.doc,
         };
+
+${corePropsFixture}
 
         const onDocumentReady = function(lock, lang, fromContent, file, force) {
             evOnSync.fire();
@@ -52,6 +68,15 @@ test('uses the public OnlyOffice slide type without changing the CryptPad applic
   assert.match(patched, /file\.doc === 'presentation' \? 'slide' : file\.doc/);
   assert.doesNotMatch(patched, /APP\.ooconfig\.documentType !== 'presentation'/);
   assert.equal(patchOnlyOfficeIntegration(patched), patched);
+});
+
+test('does not modify core properties while exporting an unchanged presentation', () => {
+  const patched = patchOnlyOfficeIntegration(fixture);
+
+  assert.match(patched, /title !== undefined && props\.title !== title/);
+  assert.match(patched, /&& props\.creator/);
+  assert.match(patched, /if \(changed\) \{ getEditor\(\)\.asc_setCoreProps\(props\); \}/);
+  assert.doesNotMatch(patched, /\n\s*props\.title = title;\n\s*if \(!content\.hashes/);
 });
 
 test('does not apply the image picker patch twice', () => {
@@ -142,7 +167,7 @@ test('uploads dropped presentation images through CryptPad before returning thei
 
 test('fails the image build if the CryptPad hook changes upstream', () => {
   assert.throws(
-    () => patchOnlyOfficeIntegration('"documentType": file.doc,\nconst onDocumentReady = function() {};'),
+    () => patchOnlyOfficeIntegration(`"documentType": file.doc,\n${corePropsFixture}\nconst onDocumentReady = function() {};`),
     /OnlyOffice image picker patch no longer applies/,
   );
 });
