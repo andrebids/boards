@@ -163,9 +163,7 @@ const Item = React.memo(({ id }) => {
         >
           <span className={styles.author}>{userName}</span>
           {' moved '}
-          <Link to={Paths.CARDS.replace(':id', activity.cardId)}>
-            {cardName}
-          </Link>
+          <strong>{cardName}</strong>
           {' from '}
           {fromListName}
           {' to '}
@@ -805,62 +803,75 @@ const Item = React.memo(({ id }) => {
       );
   }
 
-  return (
+  const isMoveCardLink =
+    activity.type === ActivityTypes.MOVE_CARD && Boolean(activity.cardId);
+
+  const activityContentNode = (
     <>
-      <Comment className={styles.commentActivity}>
-        <span className={styles.user}>
-          <UserAvatar id={activity.userId} />
+      <span className={styles.user}>
+        <UserAvatar id={activity.userId} />
+      </span>
+      <div className={styles.content}>
+        <div>{contentNode}</div>
+        {thumbnailAttachments.length > 0 && (
+          <div className={styles.thumbnails}>
+            <Gallery
+              withCaption
+              withDownloadButton
+              options={{
+                wheelToZoom: true,
+                showHideAnimationType: 'none',
+                closeTitle: '',
+                zoomTitle: '',
+                arrowPrevTitle: '',
+                arrowNextTitle: '',
+                errorMsg: '',
+              }}
+              onBeforeOpen={handleBeforeGalleryOpen}
+            >
+              {thumbnailAttachments.map(attachment => (
+                <GalleryItem
+                  key={attachment.id}
+                  src={attachment.data.url}
+                  width={attachment.data.image ? attachment.data.image.width : undefined}
+                  height={attachment.data.image ? attachment.data.image.height : undefined}
+                  original={attachment.data.url}
+                  caption={attachment.name}
+                >
+                  {({ ref, open }) => (
+                    <img
+                      ref={ref}
+                      src={
+                        attachment.data.thumbnailUrls.outside720 ||
+                        attachment.data.thumbnailUrls.outside360
+                      }
+                      alt={attachment.name}
+                      className={styles.thumbnail}
+                      onClick={open}
+                    />
+                  )}
+                </GalleryItem>
+              ))}
+            </Gallery>
+          </div>
+        )}
+        <span className={styles.date}>
+          <TimeAgo date={activity.createdAt} />
         </span>
-        <div className={styles.content}>
-          <div>{contentNode}</div>
-          {thumbnailAttachments.length > 0 && (
-            <div className={styles.thumbnails}>
-              <Gallery
-                withCaption
-                withDownloadButton
-                options={{
-                  wheelToZoom: true,
-                  showHideAnimationType: 'none',
-                  closeTitle: '',
-                  zoomTitle: '',
-                  arrowPrevTitle: '',
-                  arrowNextTitle: '',
-                  errorMsg: '',
-                }}
-                onBeforeOpen={handleBeforeGalleryOpen}
-              >
-                {thumbnailAttachments.map(attachment => (
-                  <GalleryItem
-                    key={attachment.id}
-                    src={attachment.data.url}
-                    width={attachment.data.image ? attachment.data.image.width : undefined}
-                    height={attachment.data.image ? attachment.data.image.height : undefined}
-                    original={attachment.data.url}
-                    caption={attachment.name}
-                  >
-                    {({ ref, open }) => (
-                      <img
-                        ref={ref}
-                        src={
-                          attachment.data.thumbnailUrls.outside720 ||
-                          attachment.data.thumbnailUrls.outside360
-                        }
-                        alt={attachment.name}
-                        className={styles.thumbnail}
-                        onClick={open}
-                      />
-                    )}
-                  </GalleryItem>
-                ))}
-              </Gallery>
-            </div>
-          )}
-          <span className={styles.date}>
-            <TimeAgo date={activity.createdAt} />
-          </span>
-        </div>
-      </Comment>
+      </div>
     </>
+  );
+
+  return (
+    <Comment className={styles.commentActivity}>
+      {isMoveCardLink ? (
+        <Link className={styles.moveCardLink} to={Paths.CARDS.replace(':id', activity.cardId)}>
+          {activityContentNode}
+        </Link>
+      ) : (
+        activityContentNode
+      )}
+    </Comment>
   );
 });
 
