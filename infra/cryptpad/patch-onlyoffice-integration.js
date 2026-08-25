@@ -17,7 +17,9 @@ const presentationToolbarReplacement =
 
 const presentationImportToolbarMarker = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
 
-const presentationImportToolbarReplacement = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-planka-presentation-import"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
+const presentationImportToolbarReplacement = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-planka-presentation-import"></span>\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
+
+const previousPresentationImportToolbarReplacement = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-planka-presentation-import"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
 
 const legacyPresentationImportToolbarMarker = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator media long"></div>`;
 
@@ -319,6 +321,13 @@ function patchPresentationToolbar(source) {
 
 function patchPresentationImportToolbar(source) {
   let patched = source;
+
+  if (patched.includes(previousPresentationImportToolbarReplacement)) {
+    patched = patched.replace(
+      previousPresentationImportToolbarReplacement,
+      presentationImportToolbarMarker,
+    );
+  }
 
   if (patched.includes(legacyPresentationImportToolbarReplacement)) {
     patched = patched.replace(
