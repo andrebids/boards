@@ -131,3 +131,11 @@ test('fails startup visibly if the CryptPad cache hook changes upstream', () => 
     /CryptPad static cache patch no longer applies/,
   );
 });
+
+test('prepares the persisted OnlyOffice distribution when the production image starts', () => {
+  const dockerfile = fs.readFileSync(path.join(__dirname, 'Dockerfile'), 'utf8');
+
+  assert.match(dockerfile, /COPY patch-onlyoffice-integration\.js patch-static-cache\.js/);
+  assert.match(dockerfile, /patch-static-cache\.js --assets-only/);
+  assert.match(dockerfile, /patch-onlyoffice-integration\.js && exec npm start/);
+});

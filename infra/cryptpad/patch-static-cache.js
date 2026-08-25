@@ -200,12 +200,16 @@ async function prepareOnlyOfficeStaticAssets(distRoot) {
 
 if (require.main === module) {
   (async () => {
-    const filePath = process.argv[2] || '/cryptpad/lib/http-worker.js';
-    const distRoot = process.argv[3] || '/cryptpad/www/common/onlyoffice/dist';
-    const source = fs.readFileSync(filePath, 'utf8');
-    fs.writeFileSync(filePath, patchStaticCache(source));
+    const args = process.argv.slice(2);
+    const assetsOnly = args[0] === '--assets-only';
+    const filePath = assetsOnly ? undefined : args[0] || '/cryptpad/lib/http-worker.js';
+    const distRoot = args[1] || '/cryptpad/www/common/onlyoffice/dist';
+    if (filePath) {
+      const source = fs.readFileSync(filePath, 'utf8');
+      fs.writeFileSync(filePath, patchStaticCache(source));
+    }
     const result = await prepareOnlyOfficeStaticAssets(distRoot);
-    console.log(`Prepared local OnlyOffice static assets: ${JSON.stringify(result)}`);
+    console.log(`Prepared OnlyOffice static assets: ${JSON.stringify(result)}`);
   })().catch((error) => {
     console.error(error);
     process.exitCode = 1;

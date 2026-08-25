@@ -20,16 +20,19 @@ A distribuição regenerável do ONLYOFFICE usa o volume Docker
 os temas instalados e evita o arranque lento causado pela indexação de milhares
 de ficheiros no sistema de ficheiros do host.
 
-O compose de desenvolvimento também aplica, apenas no contentor local, uma
-cache de uma hora aos recursos em `/common/onlyoffice/dist/v*/` e ao conversor
-em `/common/onlyoffice/dist/x2t/`.
-Os bundles Brotli fornecidos pelo OnlyOffice já são usados automaticamente; a
-cache evita voltar a validar e transferir os mesmos recursos em aberturas repetidas.
+O compose de desenvolvimento mantém `no-cache` para os recursos sem versão e a
+política imutável nativa para URLs com `?ver=`, permitindo testar patches locais
+sem reutilizar bundles antigos.
+Os bundles Brotli fornecidos pelo OnlyOffice já são usados automaticamente.
 O conversor `x2t.wasm`, que não traz uma variante comprimida, é preparado em
 Brotli no primeiro arranque e fica abrangido pela mesma cache. O service worker
 do OnlyOffice também é exposto no caminho de raiz esperado pelo editor.
 Depois de atualizar a distribuição OnlyOffice, usar um recarregamento forçado
 no browser para ignorar a cache local ainda válida.
+
+A imagem customizada prepara os mesmos recursos depois de o entrypoint instalar
+ou atualizar o OnlyOffice. Em produção este passo usa `--assets-only`, portanto
+não substitui a política HTTP/cache configurada pelo reverse proxy.
 
 ## Preparação de produção
 
