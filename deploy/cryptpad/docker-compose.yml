@@ -11,8 +11,9 @@ services:
       CPAD_CONF: /cryptpad/config/config.js
       CPAD_INSTALL_ONLYOFFICE: 'yes'
     ports:
-      - 127.0.0.1:${CPAD_HTTP_PORT:-3010}:3000
-      - 127.0.0.1:${CPAD_WS_PORT:-3012}:3012
+      - 127.0.0.1:${CPAD_HTTP_PORT:-3020}:3000
+      - 127.0.0.1:${CPAD_WS_PORT:-3022}:3012
+      - 127.0.0.1:${CPAD_SANDBOX_PORT:-3023}:3000
     volumes:
       - ./config/config.js:/cryptpad/config/config.js:ro
       - cryptpad-blob:/cryptpad/blob

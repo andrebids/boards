@@ -12,9 +12,9 @@ Os ficheiros `.env` e `config/config.js` são deliberadamente ignorados.
 
 - Dois nomes DNS públicos, ambos com TLS: um principal e um sandbox. O
   CryptPad não pode ser servido numa subpasta.
-- Um reverse proxy que reencaminhe ambos os nomes para `127.0.0.1:3010` e o
-  WebSocket para `127.0.0.1:3012`, preservando `Host`, `Upgrade` e
-  `Connection`.
+- Um reverse proxy que reencaminhe o domínio principal para `127.0.0.1:3020`,
+  o sandbox para `127.0.0.1:3023` e o WebSocket para `127.0.0.1:3022`,
+  preservando `Host`, `Upgrade` e `Connection`.
 - Um backup inicial dos volumes `cryptpad-*` antes de cada atualização.
 - O frontend Planka publicado com `VITE_CRYPTPAD_URL` igual ao domínio
   principal deste serviço, por exemplo `https://slides.example.com`.
