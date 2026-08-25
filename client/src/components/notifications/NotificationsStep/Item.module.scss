@@ -12,24 +12,26 @@
   .button {
     align-self: start;
     align-items: center;
-    background: transparent !important;
+    background: rgba(100, 116, 139, 0.12) !important;
     border: 0 !important;
-    border-radius: 4px;
+    border-radius: 12px !important;
     box-shadow: none !important;
+    box-sizing: border-box !important;
     color: rgba(230, 237, 243, 0.7) !important;
     display: inline-flex !important;
-    height: 28px;
+    height: 24px !important;
     justify-content: center;
-    line-height: 28px;
-    min-height: auto;
+    line-height: 24px;
+    min-height: 24px !important;
+    min-width: 24px !important;
     opacity: 0;
-    padding: 0;
+    padding: 4px !important;
     pointer-events: none;
     transition:
       color 0.15s ease,
       opacity 0.15s ease,
       transform 0.15s ease;
-    width: 28px;
+    width: 24px !important;
     position: static;
     z-index: 1;
     text-align: center;
@@ -51,7 +53,7 @@
     }
 
     &:hover {
-      background: transparent !important;
+      background: rgba(100, 116, 139, 0.2) !important;
       box-shadow: none !important;
       color: #dbeafe !important;
     }
@@ -61,7 +63,7 @@
     }
 
     &:focus-visible {
-      background: transparent !important;
+      background: rgba(100, 116, 139, 0.2) !important;
       color: #dbeafe !important;
       opacity: 1;
       outline: 2px solid #93c5fd;
