@@ -8,6 +8,7 @@ const zlib = require('node:zlib');
 const {
   patchIntegrationLogging,
   patchOnlyOfficeIntegration,
+  patchPersistentIntegrationSession,
   patchPresentationImportToolbar,
   patchPresentationToolbarFile,
   patchPresentationToolbar,
@@ -105,6 +106,23 @@ test('accepts structured bootstrap messages before matching the sframe reply', (
   assert.match(patched, /typeof\(msg\.data\) === "string" \? JSON\.parse\(msg\.data\) : msg\.data/);
   assert.match(patched, /if \(!data \|\| data\.txid !== txid\)/);
   assert.equal(patchSframeBootReply(patched), patched);
+});
+
+test('keeps opted-in Planka integration sessions after the last browser disconnects', () => {
+  const source = [
+    `                if (cfg.integration) {
+                    rtConfig.metadata = rtConfig.metadata || {};
+                    rtConfig.metadata.selfdestruct = true;
+                }`,
+    '                if (cfg.integration) { rtConfig.metadata.selfdestruct = true; }',
+  ].join('\n');
+  const patched = patchPersistentIntegrationSession(source);
+
+  assert.equal(
+    patched.match(/plankaPersistentSession/g).length,
+    2,
+  );
+  assert.equal(patchPersistentIntegrationSession(patched), patched);
 });
 
 test('routes Presentation image requests through the host integration callback', () => {

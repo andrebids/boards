@@ -37,4 +37,17 @@ describe('Presentation editor permissions', () => {
     expect(source).toMatch(/editorGenerationRef\.current \+= 1/);
     expect(source).toMatch(/editorGeneration !== editorGenerationRef\.current/);
   });
+
+  test('does not bootstrap unrelated ONLYOFFICE editors before the presentation', () => {
+    expect(source).not.toMatch(/getPresentationOnlyOfficePreloadUrl/);
+    expect(source).not.toMatch(/preloadElement/);
+  });
+
+  test('waits thirty seconds before exporting another presentation change', () => {
+    expect(source).toMatch(/autosave:\s*30/);
+  });
+
+  test('keeps the collaborative session available between presentation visits', () => {
+    expect(source).toMatch(/plankaPersistentSession:\s*true/);
+  });
 });

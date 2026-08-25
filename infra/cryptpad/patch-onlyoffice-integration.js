@@ -71,6 +71,19 @@ const sframeBootReplyReplacement = `    var onReply = function (msg) {
         var data = typeof(msg.data) === "string" ? JSON.parse(msg.data) : msg.data;
         if (!data || data.txid !== txid) { return; }`;
 
+const selfDestructIntegrationMarker =
+  '                if (cfg.integration) { rtConfig.metadata.selfdestruct = true; }';
+const persistentIntegrationReplacement =
+  "                if (cfg.integration && !cfg.integrationConfig?._?.editorConfig?.plankaPersistentSession) { rtConfig.metadata.selfdestruct = true; }";
+const selfDestructIntegrationBlockMarker = `                if (cfg.integration) {
+                    rtConfig.metadata = rtConfig.metadata || {};
+                    rtConfig.metadata.selfdestruct = true;
+                }`;
+const persistentIntegrationBlockReplacement = `                if (cfg.integration && !cfg.integrationConfig?._?.editorConfig?.plankaPersistentSession) {
+                    rtConfig.metadata = rtConfig.metadata || {};
+                    rtConfig.metadata.selfdestruct = true;
+                }`;
+
 const presentationToolbarMarker =
   'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.setMenu(new Common.UI.Menu({items:[{caption:e.mniImageFromFile,value:"file"},{cls:"cp-from-url",caption:e.mniImageFromUrl,value:"url"},{caption:e.mniImageFromStorage,value:"storage"}]}).on("item:click",(function(t,i,n){e.fireEvent("insert:image",[i.value])}))),i.menu.items[2].setVisible(t.canRequestInsertImage||t.fileChoiceUrl&&t.fileChoiceUrl.indexOf("{documentType}")>-1)}))';
 
@@ -524,6 +537,19 @@ function patchSframeBootReply(source) {
   return source.replace(sframeBootReplyMarker, sframeBootReplyReplacement);
 }
 
+function patchPersistentIntegrationSession(source) {
+  const patched = source
+    .replaceAll(selfDestructIntegrationBlockMarker, persistentIntegrationBlockReplacement)
+    .replaceAll(selfDestructIntegrationMarker, persistentIntegrationReplacement);
+  if (patched !== source) {
+    return patched;
+  }
+  if ((source.match(/plankaPersistentSession/g) || []).length < 2) {
+    throw new Error('CryptPad persistent integration patch no longer applies');
+  }
+  return source;
+}
+
 function patchSourceFile(filePath, patchSource) {
   const source = fs.readFileSync(filePath, 'utf8');
   const patched = patchSource(source);
@@ -687,7 +713,10 @@ if (require.main === module) {
     for (const [sourcePath, patchSource] of [
       ['/cryptpad/www/common/outer/x2t.js', patchX2TLogging],
       ['/cryptpad/www/common/sframe-common-integration.js', patchIntegrationLogging],
-      ['/cryptpad/www/common/sframe-common-outer.js', patchSframeOuterLogging],
+      [
+        '/cryptpad/www/common/sframe-common-outer.js',
+        (source) => patchPersistentIntegrationSession(patchSframeOuterLogging(source)),
+      ],
       ['/cryptpad/www/common/sframe-boot.js', patchSframeBootReply],
     ]) {
       patchSourceFile(sourcePath, patchSource);
@@ -708,6 +737,7 @@ if (require.main === module) {
 module.exports = {
   patchIntegrationLogging,
   patchOnlyOfficeIntegration,
+  patchPersistentIntegrationSession,
   patchPresentationImportToolbar,
   patchPresentationToolbarFile,
   patchPresentationToolbar,

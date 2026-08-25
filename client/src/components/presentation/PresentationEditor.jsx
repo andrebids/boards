@@ -244,9 +244,11 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
               permissions: { chat: false, download: true, print: false },
             },
             documentType: 'presentation',
+            autosave: 30,
             mode: initialPresentation.cryptpadMode,
             editorConfig: {
               lang: editorLanguageRef.current,
+              plankaPersistentSession: true,
               customization: {
                 about: false,
                 help: false,
