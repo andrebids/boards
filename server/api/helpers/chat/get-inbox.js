@@ -227,6 +227,8 @@ module.exports = {
           firstUnreadMessageId: unreadDetails.firstUnreadMessageId,
           unreadCount: unreadDetails.unreadCount,
           hasUnreadMention: unreadDetails.hasUnreadMention,
+          lastReadMessageId: currentParticipant ? currentParticipant.lastReadMessageId : null,
+          lastReadAt: currentParticipant ? currentParticipant.lastReadAt : null,
           notificationLevel: currentParticipant
             ? currentParticipant.notificationLevel
             : ChatParticipant.NotificationLevels.ALL,

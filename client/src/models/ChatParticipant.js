@@ -7,6 +7,7 @@ import { attr, fk } from 'redux-orm';
 
 import BaseModel from './BaseModel';
 import ActionTypes from '../constants/ActionTypes';
+import { compareIds } from '../utils/id-helpers';
 
 export default class extends BaseModel {
   static modelName = 'ChatParticipant';
@@ -75,7 +76,13 @@ export default class extends BaseModel {
           userId: payload.readState.userId,
         }).first();
 
-        if (participantModel) {
+        if (
+          participantModel &&
+          (!participantModel.lastReadMessageId ||
+            !payload.readState.lastReadMessageId ||
+            compareIds(payload.readState.lastReadMessageId, participantModel.lastReadMessageId) >=
+              0)
+        ) {
           participantModel.update({
             lastReadMessageId: payload.readState.lastReadMessageId,
             lastReadAt: payload.readState.lastReadAt,

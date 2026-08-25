@@ -28,6 +28,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   const [t, i18n] = useTranslation();
   const editorRef = useRef(null);
   const isEditorInitializedRef = useRef(false);
+  const editorGenerationRef = useRef(0);
   const presentationRef = useRef(presentation);
   const editorLanguageRef = useRef(
     getPresentationEditorLanguage(i18n.resolvedLanguage || i18n.language),
@@ -47,6 +48,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   presentationRef.current = presentation;
 
   const handleRetry = useCallback(() => {
+    editorGenerationRef.current += 1;
     isEditorInitializedRef.current = false;
     setEditorError(null);
     setIsReady(false);
@@ -61,10 +63,25 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
         return;
       }
 
+      // eslint-disable-next-line no-alert
+      if (!window.confirm(t('common.presentationImportConfirm'))) {
+        return;
+      }
+
       setImportError(null);
       setIsImporting(true);
       try {
-        await api.saveProjectPresentationFile(presentation.id, file);
+        const result = await api.saveProjectPresentationFile(presentation.id, file);
+        const importedPresentation = result.item;
+
+        // An existing CryptPad key identifies the previous document. Start a fresh
+        // session so CryptPad imports the uploaded PPTX instead of reopening it.
+        presentationRef.current = {
+          ...presentationRef.current,
+          cryptpadSessionKey: null,
+          cryptpadKeyVersion: importedPresentation.cryptpadKeyVersion,
+          cryptpadMode: importedPresentation.cryptpadMode,
+        };
         handleRetry();
       } catch (nextError) {
         setImportError('upload');
@@ -72,7 +89,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
         setIsImporting(false);
       }
     },
-    [handleRetry, presentation.id],
+    [handleRetry, presentation.id, t],
   );
 
   useEffect(() => {
@@ -122,6 +139,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
 
   useEffect(() => {
     const initialPresentation = presentationRef.current;
+    const editorGeneration = editorGenerationRef.current;
     if (!initialPresentation.isEnabled || !editorRef.current || isEditorInitializedRef.current) {
       return undefined;
     }
@@ -266,6 +284,11 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
                 }
               },
               onSave: (file, callback) => {
+                if (editorGeneration !== editorGenerationRef.current) {
+                  callback();
+                  return;
+                }
+
                 const presentationFile = new File([file], 'presentation.pptx', {
                   type: PRESENTATION_MIME_TYPE,
                 });

@@ -1,4 +1,5 @@
 import ChatConversation from './ChatConversation';
+import ChatParticipant from './ChatParticipant';
 import ActionTypes from '../constants/ActionTypes';
 
 const reduceConversation = (conversation, type, readState) => {
@@ -60,5 +61,33 @@ describe('ChatConversation read state', () => {
     });
 
     expect(conversation.unreadCount).toBe(1);
+  });
+});
+
+describe('ChatParticipant read state', () => {
+  test('does not move the participant read cursor backwards on an older response', () => {
+    const participant = {
+      lastReadMessageId: '43',
+      update: jest.fn(),
+    };
+
+    ChatParticipant.reducer(
+      {
+        type: ActionTypes.CHAT_CONVERSATION_READ__SUCCESS,
+        payload: {
+          readState: {
+            conversationId: '10',
+            userId: '1',
+            lastReadMessageId: '42',
+            lastReadAt: '2026-08-25T09:00:00.000Z',
+          },
+        },
+      },
+      {
+        filter: () => ({ first: () => participant }),
+      },
+    );
+
+    expect(participant.update).not.toHaveBeenCalled();
   });
 });

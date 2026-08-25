@@ -73,6 +73,8 @@ describe('Chat inbox', () => {
         conversationId: '200',
         userId: '1',
         notificationLevel: 'mentions',
+        lastReadMessageId: '1900',
+        lastReadAt: '2026-07-15T10:30:00.000Z',
       },
       { id: '2', conversationId: '200', userId: '2', notificationLevel: 'all' },
       { id: '3', conversationId: '201', userId: '3', notificationLevel: 'all' },
@@ -177,6 +179,8 @@ describe('Chat inbox', () => {
         avatarUserId: '2',
         unreadCount: 3,
         notificationLevel: 'mentions',
+        lastReadMessageId: '1900',
+        lastReadAt: '2026-07-15T10:30:00.000Z',
       });
       expect(result.meta).to.deep.equal({
         hasChatAccess: true,

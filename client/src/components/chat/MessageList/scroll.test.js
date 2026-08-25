@@ -1,6 +1,7 @@
 import {
   BOTTOM_PROXIMITY_THRESHOLD,
   getAddedMessages,
+  getReadHorizonMessageId,
   getMessageIdentities,
   getMessageIdentity,
   isNearBottom,
@@ -44,10 +45,7 @@ describe('chat message list scroll helpers', () => {
       { id: '1' },
       { id: 'local:1', localId: 'local:1', clientMessageId: 'client-1' },
     ]);
-    const currentMessages = [
-      { id: '1' },
-      { id: '42', clientMessageId: 'client-1' },
-    ];
+    const currentMessages = [{ id: '1' }, { id: '42', clientMessageId: 'client-1' }];
 
     expect(getAddedMessages(previousIdentities, currentMessages)).toEqual([]);
   });
@@ -64,5 +62,29 @@ describe('chat message list scroll helpers', () => {
       { id: '2', userId: 'user-2' },
       { id: '3', userId: 'user-3' },
     ]);
+  });
+
+  test('uses the last persisted message whose end is visible as the read horizon', () => {
+    const makeRow = (messageId, top, bottom) => ({
+      dataset: { messageId },
+      getBoundingClientRect: () => ({ top, bottom }),
+    });
+    const list = {
+      getBoundingClientRect: () => ({ top: 100, bottom: 500 }),
+      querySelectorAll: () => [
+        makeRow('40', 80, 140),
+        makeRow('41', 140, 480),
+        makeRow('42', 480, 540),
+        makeRow('local:1', 540, 580),
+      ],
+    };
+    const messages = [
+      { id: '40', isPersisted: true },
+      { id: '41', isPersisted: true },
+      { id: '42', isPersisted: true },
+      { id: 'local:1', isPersisted: false },
+    ];
+
+    expect(getReadHorizonMessageId(list, messages)).toBe('41');
   });
 });

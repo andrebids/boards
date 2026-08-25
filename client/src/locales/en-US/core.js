@@ -431,6 +431,8 @@ export default {
         "Try again. If the problem continues, contact a project administrator.",
       presentationSaveFailed: "Presentation change could not be saved.",
       presentationImport: "Import PowerPoint",
+      presentationImportConfirm:
+        "The current PowerPoint will be replaced and this action cannot be undone. Do you want to continue?",
       presentationImportInvalidFile: "Select a PowerPoint (.pptx) file.",
       presentationImportFailed: "PowerPoint could not be imported. Try again.",
       presentationPreparingTitle: "Presentation editor is being prepared",

@@ -13,6 +13,7 @@ import ChatAvatar from '../ChatAvatar';
 import MessageComposer from '../MessageComposer';
 import MessageList from '../MessageList';
 import useChatParticipantMuteState from '../useChatParticipantMuteState';
+import { compareIds } from '../../../utils/id-helpers';
 import {
   getConversationTitle,
   getDirectUser,
@@ -22,6 +23,8 @@ import {
 } from '../utils';
 
 import styles from './ChatWindow.module.scss';
+
+const READ_HORIZON_DEBOUNCE_MS = 500;
 
 const ChatWindow = React.memo(({ id }) => {
   const [t] = useTranslation();
@@ -67,6 +70,10 @@ const ChatWindow = React.memo(({ id }) => {
   const fetchedConversationIdRef = useRef(null);
   const initialReadStateRef = useRef(null);
   const filesDropHandlerRef = useRef(null);
+  const currentVisibleMessageIdRef = useRef(null);
+  const pendingReadMessageIdRef = useRef(null);
+  const readHorizonTimeoutRef = useRef(null);
+  const lastReadMessageIdRef = useRef(null);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isGroupEditorOpen, setIsGroupEditorOpen] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
@@ -107,29 +114,81 @@ const ChatWindow = React.memo(({ id }) => {
     );
   }, [conversation, dispatch, id]);
 
-  useEffect(() => {
-    const markAsReadIfVisible = () => {
+  const currentParticipant = conversation?.participants?.find(
+    ({ userId }) => userId === currentUser.id,
+  );
+  const unreadCountRef = useRef(conversation?.unreadCount || 0);
+  unreadCountRef.current = conversation?.unreadCount || 0;
+  if (
+    currentParticipant?.lastReadMessageId &&
+    (!lastReadMessageIdRef.current ||
+      compareIds(currentParticipant.lastReadMessageId, lastReadMessageIdRef.current) > 0)
+  ) {
+    lastReadMessageIdRef.current = currentParticipant.lastReadMessageId;
+  }
+
+  const flushReadHorizon = useCallback(() => {
+    const messageId = pendingReadMessageIdRef.current;
+    if (!messageId) return;
+
+    pendingReadMessageIdRef.current = null;
+    readHorizonTimeoutRef.current = null;
+    dispatch(entryActions.markChatConversationAsRead(id, messageId));
+  }, [dispatch, id]);
+
+  const scheduleReadHorizon = useCallback(
+    (messageId) => {
+      currentVisibleMessageIdRef.current = messageId;
       if (
-        !conversation ||
-        !conversation.unreadCount ||
+        !messageId ||
+        !unreadCountRef.current ||
         document.visibilityState !== 'visible' ||
-        !document.hasFocus()
+        !document.hasFocus() ||
+        (lastReadMessageIdRef.current && compareIds(messageId, lastReadMessageIdRef.current) <= 0)
       ) {
         return;
       }
 
-      dispatch(entryActions.markChatConversationAsRead(id));
+      if (
+        pendingReadMessageIdRef.current &&
+        compareIds(messageId, pendingReadMessageIdRef.current) <= 0
+      ) {
+        return;
+      }
+
+      pendingReadMessageIdRef.current = messageId;
+      if (readHorizonTimeoutRef.current) {
+        window.clearTimeout(readHorizonTimeoutRef.current);
+      }
+      readHorizonTimeoutRef.current = window.setTimeout(flushReadHorizon, READ_HORIZON_DEBOUNCE_MS);
+    },
+    [flushReadHorizon],
+  );
+
+  useEffect(() => {
+    const handleFocus = () => scheduleReadHorizon(currentVisibleMessageIdRef.current);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        handleFocus();
+      } else {
+        flushReadHorizon();
+      }
     };
 
-    markAsReadIfVisible();
-    window.addEventListener('focus', markAsReadIfVisible);
-    document.addEventListener('visibilitychange', markAsReadIfVisible);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', flushReadHorizon);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('focus', markAsReadIfVisible);
-      document.removeEventListener('visibilitychange', markAsReadIfVisible);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', flushReadHorizon);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (readHorizonTimeoutRef.current) {
+        window.clearTimeout(readHorizonTimeoutRef.current);
+      }
+      flushReadHorizon();
     };
-  }, [conversation, dispatch, id]);
+  }, [flushReadHorizon, scheduleReadHorizon]);
 
   const handleBackClick = useCallback(() => {
     toggleConversationMinimized(id);
@@ -140,9 +199,6 @@ const ChatWindow = React.memo(({ id }) => {
     closeConversation(id);
   }, [closeConversation, id]);
 
-  const currentParticipant = conversation?.participants?.find(
-    ({ userId }) => userId === currentUser.id,
-  );
   const isMuted = useChatParticipantMuteState(currentParticipant);
   const isMentionsOnly = isChatParticipantMentionsOnly(currentParticipant);
   const hasConfiguredNotifications = isMuted || isMentionsOnly;
@@ -379,6 +435,7 @@ const ChatWindow = React.memo(({ id }) => {
         isFetching={isMessagesFetching}
         members={members}
         messages={messages}
+        onReadHorizonChange={scheduleReadHorizon}
         otherReadMessageId={otherParticipant?.lastReadMessageId}
         projectId={project.id}
         projectName={project.name}

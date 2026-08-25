@@ -22,4 +22,19 @@ describe('Presentation editor permissions', () => {
     expect(source).not.toMatch(/pluginsData:/);
     expect(source).not.toMatch(/className=\{styles\.editorToolbar\}/);
   });
+
+  test('starts a fresh CryptPad session for an imported PowerPoint', () => {
+    expect(source).toMatch(/const importedPresentation = result\.item/);
+    expect(source).toMatch(/cryptpadSessionKey:\s*null/);
+    expect(source).toMatch(/cryptpadMode:\s*importedPresentation\.cryptpadMode/);
+  });
+
+  test('asks for confirmation before replacing the current presentation', () => {
+    expect(source).toMatch(/window\.confirm\(t\('common\.presentationImportConfirm'\)\)/);
+  });
+
+  test('does not let the replaced editor save its previous document over the import', () => {
+    expect(source).toMatch(/editorGenerationRef\.current \+= 1/);
+    expect(source).toMatch(/editorGeneration !== editorGenerationRef\.current/);
+  });
 });

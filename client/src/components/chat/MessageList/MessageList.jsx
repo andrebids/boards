@@ -46,7 +46,9 @@ import LazyEmojiPicker, {
 } from '../LazyEmojiPicker';
 import { getReactionEmojiPickerPosition, QUICK_REACTION_EMOJIS } from '../reaction-utils';
 import { getConversationTitle, getParticipantUserIds, isDirectConversation } from '../utils';
+import { compareIds } from '../../../utils/id-helpers';
 import { getPendingAttachmentCopy, isPendingAttachmentRetryable } from './attachment-state';
+import { getReadHorizonMessageId } from './scroll';
 
 import styles from './MessageList.module.scss';
 
@@ -96,16 +98,6 @@ const isSameDay = (first, second) => {
     firstDate.getMonth() === secondDate.getMonth() &&
     firstDate.getDate() === secondDate.getDate()
   );
-};
-
-const compareNumericIds = (left, right) => {
-  if (!left || !right) return 0;
-  const normalizedLeft = String(left).replace(/^0+/, '');
-  const normalizedRight = String(right).replace(/^0+/, '');
-  if (normalizedLeft.length !== normalizedRight.length) {
-    return normalizedLeft.length - normalizedRight.length;
-  }
-  return normalizedLeft.localeCompare(normalizedRight);
 };
 
 const emojiSegmenter =
@@ -247,6 +239,7 @@ const MessageList = React.memo(
     isFetching,
     members,
     messages,
+    onReadHorizonChange,
     otherReadMessageId,
     projectId,
     projectName,
@@ -289,7 +282,7 @@ const MessageList = React.memo(
         (result, message) =>
           message.userId === currentUserId &&
           !message.localId &&
-          compareNumericIds(message.id, otherReadMessageId) <= 0
+          compareIds(message.id, otherReadMessageId) <= 0
             ? message.id
             : result,
         null,
@@ -348,6 +341,11 @@ const MessageList = React.memo(
       }
     }, []);
 
+    const reportReadHorizon = useCallback(() => {
+      const messageId = getReadHorizonMessageId(listRef.current, messages);
+      if (messageId) onReadHorizonChange(messageId);
+    }, [messages, onReadHorizonChange]);
+
     const focusMessage = useCallback(
       (messageId) => {
         const element = listRef.current?.querySelector(`[data-message-id="${messageId}"]`);
@@ -392,11 +390,13 @@ const MessageList = React.memo(
         }
       }
       previousLastIdRef.current = lastMessage.id;
-    }, [focusedMessageId, messages]);
+      reportReadHorizon();
+    }, [focusedMessageId, messages, reportReadHorizon]);
 
     const handleScroll = useCallback(
       (event) => {
         const list = event.currentTarget;
+        reportReadHorizon();
         isAtBottomRef.current = list.scrollHeight - list.scrollTop - list.clientHeight < 48;
         if (isAtBottomRef.current) setNewMessageCount(0);
         if (isAtBottomRef.current && hasMoreAfter && !isFetching) {
@@ -420,7 +420,7 @@ const MessageList = React.memo(
           dispatch(entryActions.fetchChatMessages(conversationId));
         }
       },
-      [conversationId, dispatch, hasMore, hasMoreAfter, isFetching, messages],
+      [conversationId, dispatch, hasMore, hasMoreAfter, isFetching, messages, reportReadHorizon],
     );
 
     const closeMenus = useCallback(() => {
@@ -703,6 +703,7 @@ const MessageList = React.memo(
                   <div className={styles.unreadDivider}>{t('chat.newMessages')}</div>
                 )}
                 <div
+                  data-chat-message-row
                   data-message-id={message.id}
                   className={`${styles.messageRow} ${isOwn ? styles.own : ''} ${
                     continuesPrevious ? styles.continuesPrevious : ''
@@ -1153,6 +1154,7 @@ MessageList.propTypes = {
       userId: PropTypes.string,
     }),
   ).isRequired,
+  onReadHorizonChange: PropTypes.func,
   otherReadMessageId: PropTypes.string,
   projectId: PropTypes.string.isRequired,
   projectName: PropTypes.string.isRequired,
@@ -1166,6 +1168,7 @@ MessageList.defaultProps = {
   initialUnreadCount: 0,
   isDirect: false,
   isFetching: false,
+  onReadHorizonChange: () => {},
   otherReadMessageId: undefined,
   typingUserIds: [],
 };

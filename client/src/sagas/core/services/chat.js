@@ -860,7 +860,7 @@ export function* setChatReplyTarget(conversationId, message) {
   yield put(actions.setChatReplyTarget(conversationId, message));
 }
 
-export function* markChatConversationAsRead(conversationId) {
+export function* markChatConversationAsRead(conversationId, messageId) {
   const conversation = yield select(selectors.selectChatConversationById, conversationId);
   const chatState = yield select(selectors.selectChatState);
   const inboxItem = chatState.inboxItemsByConversationId[conversationId];
@@ -870,15 +870,22 @@ export function* markChatConversationAsRead(conversationId) {
   const previousUnreadCount = conversation
     ? conversation.unreadCount || 0
     : inboxItem?.unreadCount || 0;
-  yield put(actions.markChatConversationAsRead(conversationId, inboxItem));
+  if (!messageId) {
+    yield put(actions.markChatConversationAsRead(conversationId, inboxItem));
+  }
 
   let readState;
   try {
-    ({ item: readState } = yield call(request, api.markChatConversationAsRead, conversationId, {}));
+    ({ item: readState } = yield call(request, api.markChatConversationAsRead, conversationId, {
+      ...(messageId && { messageId }),
+    }));
   } catch (error) {
     const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
     const currentChatState = yield select(selectors.selectChatState);
-    if (currentConversation || currentChatState.inboxItemsByConversationId[conversationId]) {
+    if (
+      !messageId &&
+      (currentConversation || currentChatState.inboxItemsByConversationId[conversationId])
+    ) {
       yield put(
         actions.markChatConversationAsRead.failure(
           conversationId,

@@ -226,6 +226,8 @@ export default {
       presentationSaveFailed:
         "Não foi possível salvar a alteração da apresentação.",
       presentationImport: "Importar PowerPoint",
+      presentationImportConfirm:
+        "O PowerPoint atual será substituído e esta ação não poderá ser desfeita. Deseja continuar?",
       presentationImportInvalidFile:
         "Selecione um arquivo PowerPoint (.pptx).",
       presentationImportFailed:

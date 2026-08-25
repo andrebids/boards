@@ -4,9 +4,13 @@
  */
 
 import ActionTypes from '../constants/ActionTypes';
+import { compareIds, isIdAtOrBefore } from '../utils/id-helpers';
 
 const getInboxConversationId = (item) => item?.conversationId || item?.id;
 const getInboxUnreadCount = (item) => Math.max(Number(item?.unreadCount) || 0, 0);
+const isAlertCoveredByReadState = (alert, readState) =>
+  alert?.conversationId === getInboxConversationId(readState) &&
+  isIdAtOrBefore(alert?.messageId, readState?.lastReadMessageId);
 
 const restoreInboxItemAfterReadFailure = (currentItem, previousItem) => ({
   ...previousItem,
@@ -473,16 +477,23 @@ export default (state = initialState, { type, payload }) => {
       const conversationId = getInboxConversationId(readState);
       const previousItem = state.inboxItemsByConversationId[conversationId];
       if (!previousItem) {
-        return state;
+        return isAlertCoveredByReadState(state.lastMessageAlert, readState)
+          ? { ...state, lastMessageAlert: null }
+          : state;
       }
+      const isOlderReadState =
+        previousItem.lastReadMessageId &&
+        readState.lastReadMessageId &&
+        compareIds(readState.lastReadMessageId, previousItem.lastReadMessageId) < 0;
       const nextItem = {
         ...previousItem,
-        ...readState,
+        ...(!isOlderReadState && readState),
         conversationId,
-        ...(getInboxUnreadCount(readState) === 0 && {
-          hasUnreadMention: false,
-          firstUnreadMessageId: null,
-        }),
+        ...(!isOlderReadState &&
+          getInboxUnreadCount(readState) === 0 && {
+            hasUnreadMention: false,
+            firstUnreadMessageId: null,
+          }),
       };
       return {
         ...state,
@@ -491,6 +502,9 @@ export default (state = initialState, { type, payload }) => {
           [conversationId]: nextItem,
         },
         inboxMeta: updateInboxMetaForItemChange(state.inboxMeta, previousItem, nextItem),
+        lastMessageAlert: isAlertCoveredByReadState(state.lastMessageAlert, nextItem)
+          ? null
+          : state.lastMessageAlert,
       };
     }
     case ActionTypes.CHAT_CONVERSATION_READ__FAILURE: {
@@ -633,7 +647,11 @@ export default (state = initialState, { type, payload }) => {
         },
       };
     }
-    case ActionTypes.CHAT_MESSAGE_ALERT_HANDLE:
+    case ActionTypes.CHAT_MESSAGE_ALERT_HANDLE: {
+      const inboxItem = state.inboxItemsByConversationId[payload.alert.conversationId];
+      if (isAlertCoveredByReadState(payload.alert, inboxItem)) {
+        return state;
+      }
       return {
         ...state,
         lastMessageAlert: {
@@ -641,6 +659,7 @@ export default (state = initialState, { type, payload }) => {
           receivedAt: Date.now(),
         },
       };
+    }
     case ActionTypes.CHAT_CONVERSATION_PREFERENCES_UPDATE: {
       const previousItem = state.inboxItemsByConversationId[payload.conversationId];
       return {
