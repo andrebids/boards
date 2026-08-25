@@ -14,6 +14,7 @@
   .headerRow {
     display: flex;
     align-items: center;
+    gap: 8px;
     justify-content: space-between;
     margin: 4px 0 10px 0;
     padding: 6px 8px 10px 8px;
@@ -28,8 +29,11 @@
   }
 
   .title {
+    flex: 1 1 auto;
     font-size: 16px;
     font-weight: 700;
+    line-height: 20px;
+    min-width: 0;
     color: #e6edf3;
   }
 
@@ -38,9 +42,13 @@
     border: none;
     color: #93c5fd;
     font-size: 12px;
+    line-height: 16px;
+    max-width: 55%;
     padding: 6px 10px;
     border-radius: 10px;
     cursor: pointer;
+    text-align: center;
+    white-space: normal;
     transition:
       background 0.2s ease,
       color 0.2s ease,
@@ -202,5 +210,27 @@
   .retryButton {
     align-self: flex-start;
     margin: 0;
+  }
+
+  @media (max-width: 480px) {
+    .container {
+      padding-top: 4px;
+    }
+
+    .headerRow {
+      margin-top: 0;
+      padding-left: 4px;
+      padding-right: 40px;
+    }
+
+    .headerAction {
+      font-size: 11px;
+      padding: 5px 8px;
+    }
+
+    .historySection {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
   }
 }

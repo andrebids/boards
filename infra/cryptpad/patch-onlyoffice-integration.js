@@ -20,9 +20,8 @@ const projectImagePickerReplacement = `            const openProjectImagePicker 
                 sframeChan.query('Q_INTEGRATION_ON_INSERT_IMAGE', {}, function(image) {
                     if (!image || !image.blob) { return; }
                     var name = image.name || ('image-' + Util.uid() + '.png');
-                    var file = new File([image.blob], image.name || name, {
-                        type: image.blob.type || 'application/octet-stream'
-                    });
+                    var file = image.blob;
+                    file.name = name;
                     uploadDroppedPresentationImages([file], function(error, urls) {
                         if (error || !urls || !urls.length) { return; }
                         editor._addImageUrl(urls, options);
@@ -60,7 +59,7 @@ function patchOnlyOfficeIntegration(source) {
   let patched = source;
   const hasLegacyImagePicker =
     patched.includes('const redirectPresentationImageUpload = function()') &&
-    !patched.includes('uploadDroppedPresentationImages([file], function(error, urls)');
+    !patched.includes('var file = image.blob;');
 
   if (hasLegacyImagePicker) {
     patched = patched.replace(
@@ -71,10 +70,34 @@ function patchOnlyOfficeIntegration(source) {
       .replace('openProjectImagePicker(editor)', 'openProjectImagePicker(editor, options)');
   }
 
+  let dropPatchStart = patched.indexOf('const uploadDroppedPresentationImages = function(files, cb)');
+  let dropPatchEnd = dropPatchStart === -1
+    ? -1
+    : patched.indexOf('APP.UploadImageFiles = function (files, type, id, jwt, cb)', dropPatchStart);
+  let dropPatchSource = dropPatchStart === -1 || dropPatchEnd === -1
+    ? ''
+    : patched.slice(dropPatchStart, dropPatchEnd);
+
+  if (dropPatchSource.includes('ev.callback(ev.name);')) {
+    const upgradedDropPatch = dropPatchSource.replace(
+      '                            ev.callback(ev.name);',
+      `                            getImageURL(ev.name).then(function(url) {
+                                ev.callback(url);
+                            });`,
+    );
+    patched = patched.slice(0, dropPatchStart) + upgradedDropPatch + patched.slice(dropPatchEnd);
+    dropPatchEnd = patched.indexOf(
+      'APP.UploadImageFiles = function (files, type, id, jwt, cb)',
+      dropPatchStart,
+    );
+    dropPatchSource = patched.slice(dropPatchStart, dropPatchEnd);
+  }
+
   const hasPickerPatch =
     patched.includes('const redirectPresentationImageUpload = function()') &&
+    patched.includes('var file = image.blob;') &&
     patched.includes('uploadDroppedPresentationImages([file], function(error, urls)');
-  const hasDropPatch = patched.includes('const uploadDroppedPresentationImages = function(files, cb)');
+  const hasDropPatch = dropPatchSource.includes('getImageURL(ev.name).then(function(url)');
 
   if (hasPickerPatch && hasDropPatch) {
     return patched;

@@ -25,7 +25,9 @@ test('routes Presentation image requests through the host integration callback',
   assert.match(patched, /Q_INTEGRATION_ON_INSERT_IMAGE/);
   assert.match(patched, /\}, \{ raw: true \}\);/);
   assert.match(patched, /image\.blob/);
-  assert.match(patched, /new File\(\[image\.blob\], image\.name/);
+  assert.match(patched, /var file = image\.blob;/);
+  assert.match(patched, /file\.name = name;/);
+  assert.doesNotMatch(patched, /new File\(/);
   assert.match(patched, /uploadDroppedPresentationImages\(\[file\], function\(error, urls\)/);
   assert.match(patched, /editor\._addImageUrl\(urls, options\)/);
   assert.doesNotMatch(patched, /URL\.createObjectURL\(image\.blob\)/);
@@ -44,9 +46,8 @@ test('upgrades the previously installed temporary-URL image picker', () => {
     .replace('const openProjectImagePicker = function(editor, options)', 'const openProjectImagePicker = function(editor)')
     .replace(
       `                    var name = image.name || ('image-' + Util.uid() + '.png');
-                    var file = new File([image.blob], image.name || name, {
-                        type: image.blob.type || 'application/octet-stream'
-                    });
+                    var file = image.blob;
+                    file.name = name;
                     uploadDroppedPresentationImages([file], function(error, urls) {
                         if (error || !urls || !urls.length) { return; }
                         editor._addImageUrl(urls, options);
@@ -66,6 +67,22 @@ test('upgrades the previously installed temporary-URL image picker', () => {
   assert.match(upgraded, /uploadDroppedPresentationImages\(\[file\]/);
   assert.match(upgraded, /editor\._addImageUrl\(urls, options\)/);
   assert.doesNotMatch(upgraded, /URL\.createObjectURL\(image\.blob\)/);
+});
+
+test('upgrades the legacy encrypted-media upload that returned only the image name', () => {
+  const current = patchOnlyOfficeIntegration(fixture);
+  const legacy = current.replace(
+    `                            getImageURL(ev.name).then(function(url) {
+                                ev.callback(url);
+                            });`,
+    '                            ev.callback(ev.name);',
+  );
+
+  const upgraded = patchOnlyOfficeIntegration(legacy);
+
+  assert.match(upgraded, /getImageURL\(ev\.name\)\.then\(function\(url\)/);
+  assert.match(upgraded, /ev\.callback\(url\)/);
+  assert.doesNotMatch(upgraded, /ev\.callback\(ev\.name\)/);
 });
 
 test('adds drag-and-drop support to an image-picker patch already installed in production', () => {
