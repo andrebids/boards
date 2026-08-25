@@ -7,25 +7,23 @@ const documentReadyReplacement = `const redirectPresentationImageUpload = functi
             if (APP.ooconfig.documentType !== 'presentation') { return; }
 
             var attempt = 0;
+            const openCryptPadImagePicker = function() {
+                APP.AddImage(function(image) {
+                    var editor = getEditor();
+                    if (!image || !image.name || !editor) { return; }
+                    editor.AddImageUrl([image.name]);
+                }, function() {});
+            };
             const installImagePicker = function() {
                 var editor = getEditor();
-                if (!editor || !editor.asc_addImage) {
-                    attempt++;
-                    if (attempt < 200) {
-                        window.setTimeout(installImagePicker, 50);
-                    }
-                    return;
+                if (editor && editor.asc_addImage && editor.asc_addImage !== openCryptPadImagePicker) {
+                    editor.asc_addImage = openCryptPadImagePicker;
                 }
 
-                if (editor.__cryptpadImagePicker) { return; }
-
-                editor.__cryptpadImagePicker = true;
-                editor.asc_addImage = function() {
-                    APP.AddImage(function(image) {
-                        if (!image || !image.name) { return; }
-                        editor.AddImageUrl([image.name]);
-                    }, function() {});
-                };
+                attempt++;
+                if (attempt < 1200) {
+                    window.setTimeout(installImagePicker, 50);
+                }
             };
 
             installImagePicker();
