@@ -61,6 +61,8 @@
 
 /* Variante azul-escuro exclusiva para o popup de notificações */
 .notifications {
+  box-sizing: border-box;
+  max-width: calc(100vw - 16px);
   width: 392px;
   border-radius: 16px !important;
   background: rgba(14, 17, 23, 0.45) !important; /* fundo escuro mais transparente */
@@ -71,6 +73,21 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+}
+
+.notifications .closeButtonPosition {
+  top: 16px;
+}
+
+@media (max-width: 480px) {
+  .notifications {
+    border-radius: 12px !important;
+    padding: 0 8px 12px !important;
+  }
+
+  .notifications .closeButtonPosition {
+    top: 8px;
+  }
 }
 
 .notifications::before {

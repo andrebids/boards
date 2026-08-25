@@ -15,6 +15,16 @@ const Errors = {
   },
 };
 
+const getAvailableUsername = async (name, suffix = 0) => {
+  const username = sails.helpers.users.generateUsername(name, suffix);
+
+  if (!(await User.findOne({ username }))) {
+    return username;
+  }
+
+  return getAvailableUsername(name, suffix + 1);
+};
+
 module.exports = {
   inputs: {
     email: {
@@ -55,11 +65,13 @@ module.exports = {
     }
 
     const temporaryPassword = sails.helpers.users.generateTemporaryPassword();
+    const username = await getAvailableUsername(inputs.name);
+
     const values = {
       ..._.pick(inputs, ['email', 'name', 'language']),
       password: temporaryPassword,
       role: User.Roles.BOARD_USER,
-      username: null,
+      username,
       mustChangePassword: true,
       welcomeEmailSentAt: null,
     };

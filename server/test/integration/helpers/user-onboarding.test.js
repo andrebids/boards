@@ -2,6 +2,7 @@ const { expect } = require('chai');
 
 const { isPassword } = require('../../../utils/validators');
 const generateTemporaryPassword = require('../../../api/helpers/users/generate-temporary-password');
+const generateUsername = require('../../../api/helpers/users/generate-username');
 
 describe('User onboarding helpers', () => {
   describe('users.generateTemporaryPassword', () => {
@@ -18,6 +19,22 @@ describe('User onboarding helpers', () => {
       });
 
       expect(new Set(passwords).size).to.equal(passwords.length);
+    });
+  });
+
+  describe('users.generateUsername', () => {
+    it('normalizes a person name into a valid username', () => {
+      expect(generateUsername.fn({ name: 'João da Silva' })).to.equal('joao.da.silva');
+    });
+
+    it('adds a suffix while keeping the username within its limit', () => {
+      const username = generateUsername.fn({
+        name: 'Alexandre Pessoa Muito Conhecida',
+        suffix: 2,
+      });
+
+      expect(username).to.equal('alexandre.pess.2');
+      expect(username).to.have.lengthOf.at.most(16);
     });
   });
 

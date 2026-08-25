@@ -18,6 +18,9 @@ export default function* notificationsWatchers() {
       ({ payload: { notification, users } }) =>
         services.handleNotificationCreate(notification, users)
     ),
+    takeEvery(EntryActionTypes.NOTIFICATION_HISTORY_FETCH, ({ payload: { beforeId } }) =>
+      services.fetchNotificationHistory(beforeId)
+    ),
     takeEvery(EntryActionTypes.NOTIFICATION_DELETE, ({ payload: { id } }) =>
       services.deleteNotification(id)
     ),

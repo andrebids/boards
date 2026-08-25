@@ -12,20 +12,26 @@
   .button {
     align-self: start;
     align-items: center;
-    background: rgba(147, 197, 253, 0.12);
-    box-shadow: none;
-    color: #93c5fd;
+    background: rgba(100, 116, 139, 0.12) !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    color: rgba(230, 237, 243, 0.7) !important;
     display: inline-flex !important;
-    height: 24px;
+    height: 24px !important;
     justify-content: center;
     line-height: 24px;
-    min-height: auto;
-    padding: 0;
+    min-height: 24px !important;
+    min-width: 24px !important;
+    opacity: 0;
+    padding: 4px !important;
+    pointer-events: none;
     transition:
-      background-color 0.15s ease,
-      color 0.15s ease;
-    width: 24px;
-    border-radius: 6px;
+      color 0.15s ease,
+      opacity 0.15s ease,
+      transform 0.15s ease;
+    width: 24px !important;
     position: static;
     z-index: 1;
     text-align: center;
@@ -47,14 +53,22 @@
     }
 
     &:hover {
-      background: rgba(147, 197, 253, 0.2) !important;
+      background: rgba(100, 116, 139, 0.2) !important;
       box-shadow: none !important;
-      color: #dbeafe;
+      color: #dbeafe !important;
+    }
+
+    &:active {
+      transform: scale(0.94);
     }
 
     &:focus-visible {
+      background: rgba(100, 116, 139, 0.2) !important;
+      color: #dbeafe !important;
+      opacity: 1;
       outline: 2px solid #93c5fd;
       outline-offset: 1px;
+      pointer-events: auto;
     }
 
     &::before,
@@ -66,12 +80,13 @@
   .content {
     display: flex;
     flex-direction: column;
-    font-size: 13px;
-    line-height: 18px;
+    font-size: 12px;
+    line-height: 16px;
     min-height: 0;
     overflow: hidden;
     padding: 0;
     vertical-align: top;
+    overflow-wrap: anywhere;
     word-break: break-word;
     color: rgba(230, 237, 243, 0.9);
     flex: 1 1 auto;
@@ -92,8 +107,8 @@
 
   .date {
     color: rgba(230, 237, 243, 0.65);
-    font-size: 11px;
-    line-height: 16px;
+    font-size: 10px;
+    line-height: 14px;
   }
 
   .wrapper {
@@ -102,16 +117,24 @@
     border: 0;
     border-radius: 8px;
     box-shadow: none;
-    column-gap: 8px;
+    column-gap: 6px;
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr) 24px;
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
     margin: 2px 0 0;
-    padding: 8px 8px 8px 10px;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    padding: 7px 8px 7px 10px;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
     overflow: hidden;
 
     &:hover {
       background: rgba(255, 255, 255, 0.09);
+    }
+
+    &:hover .button,
+    &:focus-within .button {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     /* avatar (primeiro filho) */
@@ -121,5 +144,32 @@
     }
 
     /* Efeitos visuais simplificados removidos */
+  }
+
+  .isRead {
+    background: rgba(255, 255, 255, 0.025);
+    grid-template-columns: 28px minmax(0, 1fr);
+
+    .content {
+      color: rgba(230, 237, 243, 0.68);
+    }
+
+    .author {
+      color: rgba(230, 237, 243, 0.78);
+    }
+  }
+
+  @media (hover: none) {
+    .button {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button,
+    .wrapper {
+      transition: none;
+    }
   }
 }

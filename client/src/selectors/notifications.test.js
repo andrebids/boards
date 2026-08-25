@@ -1,5 +1,8 @@
 import orm from '../orm';
-import { makeSelectNotificationIdsByProjectId } from './notifications';
+import {
+  makeSelectNotificationIdsByProjectId,
+  selectReadNotificationIdsForCurrentUser,
+} from './notifications';
 
 jest.mock('../constants/Config', () => ({
   __esModule: true,
@@ -61,5 +64,36 @@ describe('project notification selectors', () => {
     };
 
     expect(selectNotificationIdsByProjectId(state, 'project-1')).toEqual(['notification-1']);
+  });
+
+  test('returns read notifications for the current user newest first', () => {
+    const session = orm.mutableSession(orm.getEmptyState());
+
+    session.User.create({ id: 'user-1', name: 'Current user' });
+    session.Notification.create({
+      id: 'notification-1',
+      userId: 'user-1',
+      boardId: 'board-1',
+      isRead: true,
+    });
+    session.Notification.create({
+      id: 'notification-2',
+      userId: 'user-1',
+      boardId: 'board-1',
+      isRead: false,
+    });
+    session.Notification.create({
+      id: 'notification-3',
+      userId: 'user-1',
+      boardId: 'board-1',
+      isRead: true,
+    });
+
+    expect(
+      selectReadNotificationIdsForCurrentUser({
+        auth: { userId: 'user-1' },
+        orm: session.state,
+      }),
+    ).toEqual(['notification-3', 'notification-1']);
   });
 });

@@ -106,8 +106,8 @@ export default function* chatWatchers() {
     takeEvery(EntryActionTypes.CHAT_MESSAGE_REACTION_TOGGLE, ({ payload: { id, emoji } }) =>
       services.toggleChatMessageReaction(id, emoji),
     ),
-    takeEvery(EntryActionTypes.CHAT_CONVERSATION_READ, ({ payload: { id } }) =>
-      services.markChatConversationAsRead(id),
+    takeEvery(EntryActionTypes.CHAT_CONVERSATION_READ, ({ payload: { id, messageId } }) =>
+      services.markChatConversationAsRead(id, messageId),
     ),
     takeEvery(EntryActionTypes.CHAT_CONVERSATION_READ_HANDLE, ({ payload: { readState } }) =>
       services.handleChatConversationRead(readState),

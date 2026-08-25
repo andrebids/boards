@@ -54,36 +54,50 @@ export default class extends BaseModel {
       case ActionTypes.PROJECT_MANAGER_CREATE_HANDLE:
       case ActionTypes.BOARD_MEMBERSHIP_CREATE_HANDLE:
         if (payload.notificationsToDelete) {
-          payload.notificationsToDelete.forEach(notification => {
+          payload.notificationsToDelete.forEach((notification) => {
             Notification.withId(notification.id).delete();
           });
         }
 
         break;
       case ActionTypes.SOCKET_RECONNECT_HANDLE:
-        Notification.all().delete();
+        Notification.filter({
+          isRead: false,
+        })
+          .toModelArray()
+          .forEach((notificationModel) => {
+            notificationModel.delete();
+          });
 
-        payload.notifications.forEach(notification => {
+        payload.notifications.forEach((notification) => {
           Notification.upsert(notification);
         });
 
         break;
       case ActionTypes.CORE_INITIALIZE:
-        payload.notifications.forEach(notification => {
+        payload.notifications.forEach((notification) => {
           Notification.upsert(notification);
         });
 
         break;
       case ActionTypes.ALL_NOTIFICATIONS_DELETE:
-        Notification.all().delete();
+        Notification.filter({
+          isRead: false,
+        })
+          .toModelArray()
+          .forEach((notificationModel) => {
+            notificationModel.update({
+              isRead: true,
+            });
+          });
 
         break;
       case ActionTypes.ALL_NOTIFICATIONS_DELETE__SUCCESS:
-        payload.notifications.forEach(notification => {
+        payload.notifications.forEach((notification) => {
           const notificationModel = Notification.withId(notification.id);
 
           if (notificationModel) {
-            notificationModel.delete();
+            notificationModel.update(notification);
           }
         });
 
@@ -92,16 +106,40 @@ export default class extends BaseModel {
         Notification.upsert(payload.notification);
 
         break;
-      case ActionTypes.NOTIFICATION_DELETE:
-        Notification.withId(payload.id).delete();
+      case ActionTypes.NOTIFICATION_HISTORY_FETCH__SUCCESS:
+        payload.notifications.forEach((notification) => {
+          Notification.upsert(notification);
+        });
 
         break;
+      case ActionTypes.NOTIFICATION_DELETE: {
+        const notificationModel = Notification.withId(payload.id);
+
+        if (notificationModel) {
+          notificationModel.update({
+            isRead: true,
+          });
+        }
+
+        break;
+      }
+      case ActionTypes.NOTIFICATION_DELETE__FAILURE: {
+        const notificationModel = Notification.withId(payload.id);
+
+        if (notificationModel) {
+          notificationModel.update({
+            isRead: false,
+          });
+        }
+
+        break;
+      }
       case ActionTypes.NOTIFICATION_DELETE__SUCCESS:
       case ActionTypes.NOTIFICATION_DELETE_HANDLE: {
         const notificationModel = Notification.withId(payload.notification.id);
 
         if (notificationModel) {
-          notificationModel.delete();
+          notificationModel.update(payload.notification);
         }
 
         break;

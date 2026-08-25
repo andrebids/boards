@@ -306,7 +306,7 @@ const ChatLauncher = React.memo(() => {
         aria-expanded={isConversationListOpen}
         aria-label={launcherLabel}
         title={launcherLabel}
-        className={`${styles.launcher} ${isPanelExpanded ? styles.expanded : ''} ${isAlerting ? styles.alerting : ''}`}
+        className={`${styles.launcher} ${isPanelExpanded ? styles.expanded : ''} ${unreadTotal > 0 ? styles.hasUnread : ''} ${isAlerting ? styles.alerting : ''}`}
         onClick={handleToggle}
       >
         <span className={styles.iconStack} aria-hidden="true">

@@ -14,6 +14,7 @@ import core from './core';
 import ui from './ui';
 import sidebar from './sidebarReducer';
 import timelinePanel from './timelinePanelReducer';
+import notificationHistory from './notification-history';
 import chat from './chat';
 
 export default combineReducers({
@@ -26,5 +27,6 @@ export default combineReducers({
   ui,
   sidebar,
   timelinePanel,
+  notificationHistory,
   chat,
 });

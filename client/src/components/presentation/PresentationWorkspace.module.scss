@@ -38,23 +38,6 @@
     }
   }
 
-  .editorSection {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  .editorToolbar {
-    align-items: center;
-    display: flex;
-    flex: 0 0 auto;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: flex-end;
-    padding: 8px 12px;
-  }
-
   .emptyState {
     background: rgba(20, 24, 34, 0.5);
     color: rgba(255, 255, 255, 0.82);
@@ -71,8 +54,15 @@
   }
 
   .importError {
+    background: rgba(80, 20, 20, 0.94);
     color: #ffb4b4;
-    margin: 0;
+    margin: 12px;
+    max-width: calc(100% - 24px);
+    padding: 8px 12px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
   }
 
   .diagnostic {

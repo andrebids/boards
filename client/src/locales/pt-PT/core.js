@@ -566,6 +566,9 @@ export default {
       noUnreadProjectNotifications:
         "Não há notificações por ler neste projeto.",
       noUnreadNotifications: "Nenhuma notificação não lida.",
+      earlierNotifications: "Anteriores",
+      markAllNotificationsAsRead: "Marcar todas como lidas",
+      notificationHistoryLoadFailed: "Não foi possível carregar o histórico de notificações.",
       newSubtaskOf: "Nova subtarefa de “{{task}}”",
       notifications: "Notificações",
       personalNotifications: "Notificações pessoais",
@@ -700,6 +703,8 @@ export default {
       presentationSaveFailed:
         "Não foi possível guardar a alteração da apresentação.",
       presentationImport: "Importar PowerPoint",
+      presentationImportConfirm:
+        "O PowerPoint atual será substituído e esta ação não pode ser anulada. Pretende continuar?",
       presentationImportInvalidFile: "Selecione um ficheiro PowerPoint (.pptx).",
       presentationImportFailed: "Não foi possível importar o PowerPoint. Tente novamente.",
       presentationPreparingTitle: "Editor de apresentações a preparar",

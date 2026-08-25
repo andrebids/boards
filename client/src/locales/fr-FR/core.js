@@ -271,6 +271,8 @@ export default merge({}, enUSCore, {
       presentationImportFailed:
         "Impossible d’importer le PowerPoint. Réessayez.",
       presentationImport: "Importer un PowerPoint",
+      presentationImportConfirm:
+        "Le PowerPoint actuel sera remplacé et cette action est irréversible. Voulez-vous continuer ?",
       presentationImportInvalidFile: "Sélectionnez un fichier PowerPoint (.pptx).",
       presentationImportFailed: "Impossible d’importer le PowerPoint. Réessayez.",
       presentationPreparingTitle: "Préparation de l’éditeur de présentations",

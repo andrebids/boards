@@ -6,6 +6,7 @@
 const path = require('path');
 
 const { prepareEmailLogo } = require('../../../utils/email-logo');
+const { getEmailCopyright } = require('../../../utils/email-branding');
 
 const generatePlainText = (data) => {
   return `${data.actor_name} ${data.action_verb} ${data.action_object}
@@ -19,7 +20,7 @@ ID: ${data.card_id}
 
 ${data.card_url}
 
-© ${data.current_year} Planka.`;
+${getEmailCopyright(data.current_year)}`;
 };
 
 module.exports = {

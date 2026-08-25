@@ -14,7 +14,6 @@ const PRESENTATION_MIME_TYPE =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 const Errors = {
-  NOT_ENOUGH_RIGHTS: { notEnoughRights: 'Not enough rights' },
   PRESENTATION_NOT_FOUND: { presentationNotFound: 'Presentation not found' },
   NO_FILE_WAS_UPLOADED: { noFileWasUploaded: 'No file was uploaded' },
   INVALID_PRESENTATION_FILE: { invalidPresentationFile: 'Invalid presentation file' },
@@ -26,7 +25,6 @@ module.exports = {
   },
 
   exits: {
-    notEnoughRights: { responseType: 'forbidden' },
     presentationNotFound: { responseType: 'notFound' },
     noFileWasUploaded: { responseType: 'unprocessableEntity' },
     invalidPresentationFile: { responseType: 'unprocessableEntity' },
@@ -43,10 +41,6 @@ module.exports = {
     if (!presentation || !access || !access.accessibleBoardIds.includes(presentation.boardId)) {
       throw Errors.PRESENTATION_NOT_FOUND;
     }
-    if (!access.canEdit) {
-      throw Errors.NOT_ENOUGH_RIGHTS;
-    }
-
     let files;
     try {
       files = await sails.helpers.utils.receiveFile.with({

@@ -6,6 +6,7 @@
 // Em desenvolvimento, preferir base relativa para permitir envio de cookies e Authorization via proxy do Vite
 const SERVER_BASE_URL = import.meta.env.VITE_SERVER_BASE_URL || (import.meta.env.DEV ? '' : '');
 const CRYPTPAD_URL = import.meta.env.VITE_CRYPTPAD_URL || 'http://localhost:3010';
+const CRYPTPAD_SANDBOX_URL = import.meta.env.VITE_CRYPTPAD_SANDBOX_URL || '';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const ACCESS_TOKEN_VERSION_KEY = 'accessTokenVersion';
@@ -23,6 +24,7 @@ const IS_MAC = navigator.platform.startsWith('Mac');
 export default {
   SERVER_BASE_URL,
   CRYPTPAD_URL,
+  CRYPTPAD_SANDBOX_URL,
   ACCESS_TOKEN_KEY,
   ACCESS_TOKEN_VERSION_KEY,
   ACCESS_TOKEN_VERSION,

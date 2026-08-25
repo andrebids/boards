@@ -203,6 +203,38 @@ export default {
       users: "Usuários",
       viewer: "Visualizador",
       writeComment: "Escreva um comentário...",
+      presentations: "Apresentações",
+      presentationsDescription:
+        "Uma apresentação colaborativa independente para cada quadro.",
+      presentationsByBoard: "Apresentações por quadro",
+      presentationsLoadFailed: "Não foi possível carregar as apresentações.",
+      presentationCreated: "Apresentação criada",
+      presentationNotCreated: "Apresentação ainda não criada",
+      presentationNotCreatedForBoard:
+        "Ainda não existe uma apresentação para {{board}}",
+      presentationCreateDescription:
+        "Crie um PowerPoint colaborativo ligado exclusivamente a este quadro.",
+      presentationManagerRequired:
+        "A apresentação deve ser criada por um gerente do projeto.",
+      presentationNoBoards: "Este projeto ainda não tem quadros",
+      presentationNoBoardsDescription:
+        "Crie um quadro antes de adicionar sua apresentação.",
+      presentationLoadFailed: "Não foi possível carregar a apresentação.",
+      presentationLoadStage: "Etapa técnica: {{stage}}",
+      presentationLoadErrorDescription:
+        "Tente novamente. Se o problema continuar, entre em contato com um administrador do projeto.",
+      presentationSaveFailed:
+        "Não foi possível salvar a alteração da apresentação.",
+      presentationImport: "Importar PowerPoint",
+      presentationImportConfirm:
+        "O PowerPoint atual será substituído e esta ação não poderá ser desfeita. Deseja continuar?",
+      presentationImportInvalidFile:
+        "Selecione um arquivo PowerPoint (.pptx).",
+      presentationImportFailed:
+        "Não foi possível importar o PowerPoint. Tente novamente.",
+      presentationPreparingTitle: "Editor de apresentações sendo preparado",
+      presentationPreparingDescription:
+        "O editor colaborativo será conectado assim que o serviço CryptPad estiver configurado.",
       presentationMediaTitle: "Imagens dos cartões",
       presentationMediaDescription:
         "Escolha uma imagem dos quadros aos quais você tem acesso.",
@@ -277,6 +309,7 @@ export default {
       removeFromProject: "Remover do projeto",
       removeManager: "Remover gerente",
       removeMember: "Remover membro",
+      retry: "Tentar novamente",
       save: "Salvar",
       showAllAttachments: "Mostrar todos os anexos ({{hidden}} ocultos)",
       showFewerAttachments: "Mostrar menos anexos",
@@ -286,6 +319,7 @@ export default {
       unsubscribe: "Cancelar inscrição",
       uploadNewAvatar: "Enviar novo avatar",
       uploadNewImage: "Enviar nova imagem",
+      createPresentation: "Criar apresentação",
     },
   },
 };

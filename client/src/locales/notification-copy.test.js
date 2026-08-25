@@ -8,6 +8,50 @@ describe('project notification translations', () => {
     [
       'pt-PT',
       ptPT.translation.common,
+      {
+        earlierNotifications: 'Anteriores',
+        markAllNotificationsAsRead: 'Marcar todas como lidas',
+        notifications: 'Notificações',
+        unknownCard: 'Cartão desconhecido',
+        unknownLabel: 'Etiqueta desconhecida',
+        unknownTask: 'Tarefa desconhecida',
+        unknownTaskList: 'Lista de tarefas desconhecida',
+      },
+    ],
+    [
+      'en-US',
+      enUS.translation.common,
+      {
+        earlierNotifications: 'Earlier',
+        markAllNotificationsAsRead: 'Mark all as read',
+        notifications: 'Notifications',
+        unknownCard: 'Unknown card',
+        unknownLabel: 'Unknown label',
+        unknownTask: 'Unknown task',
+        unknownTaskList: 'Unknown task list',
+      },
+    ],
+  ])('uses translated panel copy for %s', async (language, common, expectedCopy) => {
+    const i18n = i18next.createInstance();
+
+    await i18n.init({
+      lng: language,
+      resources: {
+        [language]: {
+          translation: common,
+        },
+      },
+    });
+
+    Object.entries(expectedCopy).forEach(([key, value]) => {
+      expect(i18n.t(key)).toBe(value);
+    });
+  });
+
+  test.each([
+    [
+      'pt-PT',
+      ptPT.translation.common,
       '1 notificação por ler neste projeto',
       '2 notificações por ler neste projeto',
     ],

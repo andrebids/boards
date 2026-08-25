@@ -259,6 +259,77 @@ describe('chat reducer', () => {
     expect(state.lastMessageAlert.text).toBeUndefined();
   });
 
+  test('ignores an alert already covered by the conversation read cursor', () => {
+    const state = {
+      ...reducer(undefined, { type: '@@INIT' }),
+      inboxItemsByConversationId: {
+        'conversation-1': {
+          conversationId: 'conversation-1',
+          lastReadMessageId: '42',
+          unreadCount: 0,
+        },
+      },
+    };
+
+    const nextState = reducer(state, {
+      type: ActionTypes.CHAT_MESSAGE_ALERT_HANDLE,
+      payload: {
+        alert: { conversationId: 'conversation-1', messageId: '42' },
+      },
+    });
+
+    expect(nextState.lastMessageAlert).toBeNull();
+  });
+
+  test('clears the active alert when another session reads its message', () => {
+    const state = {
+      ...reducer(undefined, { type: '@@INIT' }),
+      inboxItemsByConversationId: {
+        'conversation-1': { conversationId: 'conversation-1', unreadCount: 1 },
+      },
+      lastMessageAlert: { conversationId: 'conversation-1', messageId: '42' },
+    };
+
+    const nextState = reducer(state, {
+      type: ActionTypes.CHAT_CONVERSATION_READ_HANDLE,
+      payload: {
+        readState: {
+          conversationId: 'conversation-1',
+          lastReadMessageId: '42',
+          unreadCount: 0,
+        },
+      },
+    });
+
+    expect(nextState.lastMessageAlert).toBeNull();
+  });
+
+  test('does not move an inbox read cursor backwards on an older response', () => {
+    const state = {
+      ...reducer(undefined, { type: '@@INIT' }),
+      inboxItemsByConversationId: {
+        'conversation-1': {
+          conversationId: 'conversation-1',
+          lastReadMessageId: '43',
+          unreadCount: 0,
+        },
+      },
+    };
+
+    const nextState = reducer(state, {
+      type: ActionTypes.CHAT_CONVERSATION_READ__SUCCESS,
+      payload: {
+        readState: {
+          conversationId: 'conversation-1',
+          lastReadMessageId: '42',
+          unreadCount: 1,
+        },
+      },
+    });
+
+    expect(nextState.inboxItemsByConversationId['conversation-1'].lastReadMessageId).toBe('43');
+  });
+
   test('purges revoked conversations from window and pagination state', () => {
     const state = {
       ...reducer(undefined, { type: '@@INIT' }),

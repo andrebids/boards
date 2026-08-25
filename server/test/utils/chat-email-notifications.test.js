@@ -107,6 +107,7 @@ describe('Chat email notifications', () => {
     );
     expect(email.templateData).to.include({
       email_language: 'fr-FR',
+      email_copyright: `© ${new Date().getFullYear()} Blachere boards.`,
       is_chat_notification: true,
       notification_title: 'Mention non lue dans le chat',
       project_name: '<2027 Collections>',
@@ -146,6 +147,7 @@ describe('Chat email notifications', () => {
     const html = renderSharedEmailTemplate(email.templateData);
 
     expect(html).to.include('Blachere boards');
+    expect(html).to.include(`© ${new Date().getFullYear()} Blachere boards.`);
     expect(html).to.match(/background-color:\s*#171a21/);
     expect(html).to.include('OPEN CONVERSATION');
     expect(html).to.include('&lt;André&gt;');

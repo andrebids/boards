@@ -5,6 +5,7 @@
 
 import truncate from 'lodash/truncate';
 import React, { useCallback, useMemo } from 'react';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation, Trans } from 'react-i18next';
@@ -44,9 +45,12 @@ const Item = React.memo(({ id, onClose }) => {
   }, [id, dispatch]);
 
   const handleOpenClick = useCallback(() => {
-    dispatch(entryActions.deleteNotification(id));
+    if (!notification.isRead) {
+      dispatch(entryActions.deleteNotification(id));
+    }
+
     onClose();
-  }, [id, dispatch, onClose]);
+  }, [id, notification.isRead, dispatch, onClose]);
 
   const creatorUserName =
     creatorUser.id === StaticUserIds.DELETED
@@ -55,7 +59,7 @@ const Item = React.memo(({ id, onClose }) => {
         })
       : creatorUser.name;
 
-  const cardName = card?.name || notification.data?.card?.name || 'Card';
+  const cardName = card?.name || notification.data?.card?.name || t('common.unknownCard');
 
   const renderDetailNotification = ({
     i18nKey,
@@ -94,11 +98,7 @@ const Item = React.memo(({ id, onClose }) => {
   let contentNode;
   switch (notification.type) {
     case NotificationTypes.ADD_MEMBER_TO_BOARD: {
-      const boardName =
-        notification.data?.board?.name ||
-        t('common.board', {
-          defaultValue: 'Board',
-        });
+      const boardName = notification.data?.board?.name || t('common.board');
 
       contentNode = (
         <Trans
@@ -255,11 +255,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.REMOVE_MEMBER_FROM_CARD: {
-      const removedUserName =
-        notification.data?.user?.name ||
-        t('common.unknownUser', {
-          defaultValue: 'Unknown user',
-        });
+      const removedUserName = notification.data?.user?.name || t('common.unknownUser');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userRemovedUserFromCard',
@@ -275,11 +271,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.CREATE_TASK: {
-      const taskName =
-        notification.data?.task?.name ||
-        t('common.task', {
-          defaultValue: 'task',
-        });
+      const taskName = notification.data?.task?.name || t('common.unknownTask');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userCreatedTaskOnCard',
@@ -294,11 +286,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.DELETE_TASK: {
-      const taskName =
-        notification.data?.task?.name ||
-        t('common.task', {
-          defaultValue: 'task',
-        });
+      const taskName = notification.data?.task?.name || t('common.unknownTask');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userDeletedTaskOnCard',
@@ -313,11 +301,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.UPDATE_TASK: {
-      const taskName =
-        notification.data?.task?.name ||
-        t('common.task', {
-          defaultValue: 'task',
-        });
+      const taskName = notification.data?.task?.name || t('common.unknownTask');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userUpdatedTaskOnCard',
@@ -332,11 +316,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.COMPLETE_TASK: {
-      const taskName =
-        notification.data?.task?.name ||
-        t('common.task', {
-          defaultValue: 'task',
-        });
+      const taskName = notification.data?.task?.name || t('common.unknownTask');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userCompletedTaskOnCard',
@@ -351,11 +331,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.UNCOMPLETE_TASK: {
-      const taskName =
-        notification.data?.task?.name ||
-        t('common.task', {
-          defaultValue: 'task',
-        });
+      const taskName = notification.data?.task?.name || t('common.unknownTask');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userUncompletedTaskOnCard',
@@ -370,11 +346,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.CREATE_TASK_LIST: {
-      const taskListName =
-        notification.data?.taskList?.name ||
-        t('common.taskList', {
-          defaultValue: 'task list',
-        });
+      const taskListName = notification.data?.taskList?.name || t('common.unknownTaskList');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userCreatedTaskListOnCard',
@@ -389,11 +361,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.DELETE_TASK_LIST: {
-      const taskListName =
-        notification.data?.taskList?.name ||
-        t('common.taskList', {
-          defaultValue: 'task list',
-        });
+      const taskListName = notification.data?.taskList?.name || t('common.unknownTaskList');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userDeletedTaskListOnCard',
@@ -408,11 +376,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.ADD_LABEL_TO_CARD: {
-      const labelName =
-        notification.data?.labelName ||
-        t('common.label', {
-          defaultValue: 'label',
-        });
+      const labelName = notification.data?.labelName || t('common.unknownLabel');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userAddedLabelToCard',
@@ -427,11 +391,7 @@ const Item = React.memo(({ id, onClose }) => {
       break;
     }
     case ActivityTypes.REMOVE_LABEL_FROM_CARD: {
-      const labelName =
-        notification.data?.labelName ||
-        t('common.label', {
-          defaultValue: 'label',
-        });
+      const labelName = notification.data?.labelName || t('common.unknownLabel');
 
       contentNode = renderDetailNotification({
         i18nKey: 'common.userRemovedLabelFromCard',
@@ -520,7 +480,7 @@ const Item = React.memo(({ id, onClose }) => {
   }
 
   return (
-    <div className={styles.wrapper}>
+    <div className={classNames(styles.wrapper, notification.isRead && styles.isRead)}>
       <UserAvatar id={notification.creatorUserId} size="small" />
       <span className={styles.content}>
         <div>{contentNode}</div>
@@ -528,16 +488,18 @@ const Item = React.memo(({ id, onClose }) => {
           <TimeAgo date={notification.createdAt} />
         </span>
       </span>
-      <Button
-        variant="secondary"
-        type="button"
-        icon="check"
-        isIconOnly
-        aria-label={t('action.markAsRead')}
-        title={t('action.markAsRead')}
-        className={styles.button}
-        onClick={handleMarkAsReadClick}
-      />
+      {!notification.isRead && (
+        <Button
+          variant="secondary"
+          type="button"
+          icon="check circle outline"
+          isIconOnly
+          aria-label={t('action.markAsRead')}
+          title={t('action.markAsRead')}
+          className={styles.button}
+          onClick={handleMarkAsReadClick}
+        />
+      )}
     </div>
   );
 });

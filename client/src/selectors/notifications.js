@@ -73,6 +73,25 @@ export const makeSelectNotificationIdsByProjectId = () =>
 
 export const selectNotificationIdsByProjectId = makeSelectNotificationIdsByProjectId();
 
+export const selectReadNotificationIdsForCurrentUser = createSelector(
+  orm,
+  (state) => selectCurrentUserId(state),
+  ({ User }, currentUserId) => {
+    const currentUserModel = User.withId(currentUserId);
+
+    if (!currentUserModel) {
+      return [];
+    }
+
+    return currentUserModel
+      .getReadNotificationsQuerySet()
+      .toRefArray()
+      .map((notification) => notification.id);
+  },
+);
+
+export const selectNotificationHistoryState = (state) => state.notificationHistory;
+
 export default {
   makeSelectNotificationById,
   selectNotificationById,
@@ -80,4 +99,6 @@ export default {
   selectNotificationIdsByCardId,
   makeSelectNotificationIdsByProjectId,
   selectNotificationIdsByProjectId,
+  selectReadNotificationIdsForCurrentUser,
+  selectNotificationHistoryState,
 };

@@ -32,6 +32,29 @@ const handleNotificationCreate = (notification, users) => ({
   },
 });
 
+const fetchNotificationHistory = beforeId => ({
+  type: ActionTypes.NOTIFICATION_HISTORY_FETCH,
+  payload: {
+    beforeId,
+  },
+});
+
+fetchNotificationHistory.success = (notifications, users, hasMore) => ({
+  type: ActionTypes.NOTIFICATION_HISTORY_FETCH__SUCCESS,
+  payload: {
+    notifications,
+    users,
+    hasMore,
+  },
+});
+
+fetchNotificationHistory.failure = error => ({
+  type: ActionTypes.NOTIFICATION_HISTORY_FETCH__FAILURE,
+  payload: {
+    error,
+  },
+});
+
 const deleteNotification = id => ({
   type: ActionTypes.NOTIFICATION_DELETE,
   payload: {
@@ -64,6 +87,7 @@ const handleNotificationDelete = notification => ({
 export default {
   deleteAllNotifications,
   handleNotificationCreate,
+  fetchNotificationHistory,
   deleteNotification,
   handleNotificationDelete,
 };

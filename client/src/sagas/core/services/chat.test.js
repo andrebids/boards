@@ -142,6 +142,31 @@ describe('chat inbox services', () => {
     expect(generator.next().done).toBe(true);
   });
 
+  test('advances the read cursor only to the visible message', () => {
+    const conversationId = 'conversation-1';
+    const messageId = '42';
+    const conversation = { id: conversationId, unreadCount: 3 };
+    const readState = {
+      conversationId,
+      lastReadMessageId: messageId,
+      unreadCount: 1,
+    };
+    const generator = markChatConversationAsRead(conversationId, messageId);
+
+    expect(generator.next().value).toEqual(
+      select(selectors.selectChatConversationById, conversationId),
+    );
+    expect(generator.next(conversation).value).toEqual(select(selectors.selectChatState));
+    expect(generator.next({ inboxItemsByConversationId: {} }).value).toEqual(
+      call(request, api.markChatConversationAsRead, conversationId, {
+        messageId,
+      }),
+    );
+    expect(generator.next({ item: readState }).value).toEqual(
+      select(selectors.selectChatConversationById, conversationId),
+    );
+  });
+
   test('plays a sound for a received message in an unopened conversation', () => {
     const message = {
       id: 'message-1',

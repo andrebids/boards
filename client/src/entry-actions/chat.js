@@ -114,9 +114,9 @@ const toggleChatMessageReaction = (id, emoji) => ({
   type: EntryActionTypes.CHAT_MESSAGE_REACTION_TOGGLE,
   payload: { id, emoji },
 });
-const markChatConversationAsRead = (id) => ({
+const markChatConversationAsRead = (id, messageId) => ({
   type: EntryActionTypes.CHAT_CONVERSATION_READ,
-  payload: { id },
+  payload: { id, messageId },
 });
 const handleChatConversationRead = (readState) => ({
   type: EntryActionTypes.CHAT_CONVERSATION_READ_HANDLE,

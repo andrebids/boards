@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import Config from '../../constants/Config';
 import api from '../../api';
-import { Button, FilePicker } from '../../lib/custom-ui';
+import { Button } from '../../lib/custom-ui';
 
 import {
   createPresentationLoadDiagnostic,
@@ -13,16 +13,22 @@ import {
 } from './presentationEditorDiagnostics';
 import getPresentationEditorLanguage from './presentationLocale';
 import PresentationMediaPicker from './PresentationMediaPicker';
-import { isPptxFile, PRESENTATION_FILE_ACCEPT, PRESENTATION_MIME_TYPE } from './presentationImport';
+import {
+  isPresentationImportRequest,
+  isPptxFile,
+  getPresentationImportOrigins,
+  PRESENTATION_MIME_TYPE,
+} from './presentationImport';
 
 import styles from './PresentationWorkspace.module.scss';
 
 const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
 
-const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSessionUpdate }) => {
+const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate }) => {
   const [t, i18n] = useTranslation();
   const editorRef = useRef(null);
   const isEditorInitializedRef = useRef(false);
+  const editorGenerationRef = useRef(0);
   const presentationRef = useRef(presentation);
   const editorLanguageRef = useRef(
     getPresentationEditorLanguage(i18n.resolvedLanguage || i18n.language),
@@ -42,6 +48,7 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
   presentationRef.current = presentation;
 
   const handleRetry = useCallback(() => {
+    editorGenerationRef.current += 1;
     isEditorInitializedRef.current = false;
     setEditorError(null);
     setIsReady(false);
@@ -56,10 +63,25 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
         return;
       }
 
+      // eslint-disable-next-line no-alert
+      if (!window.confirm(t('common.presentationImportConfirm'))) {
+        return;
+      }
+
       setImportError(null);
       setIsImporting(true);
       try {
-        await api.saveProjectPresentationFile(presentation.id, file);
+        const result = await api.saveProjectPresentationFile(presentation.id, file);
+        const importedPresentation = result.item;
+
+        // An existing CryptPad key identifies the previous document. Start a fresh
+        // session so CryptPad imports the uploaded PPTX instead of reopening it.
+        presentationRef.current = {
+          ...presentationRef.current,
+          cryptpadSessionKey: null,
+          cryptpadKeyVersion: importedPresentation.cryptpadKeyVersion,
+          cryptpadMode: importedPresentation.cryptpadMode,
+        };
         handleRetry();
       } catch (nextError) {
         setImportError('upload');
@@ -67,8 +89,32 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
         setIsImporting(false);
       }
     },
-    [handleRetry, presentation.id],
+    [handleRetry, presentation.id, t],
   );
+
+  useEffect(() => {
+    const cryptPadOrigins = getPresentationImportOrigins(
+      Config.CRYPTPAD_URL,
+      Config.CRYPTPAD_SANDBOX_URL,
+    );
+    const handlePresentationImportMessage = (event) => {
+      if (
+        !cryptPadOrigins.has(event.origin) ||
+        !isPresentationImportRequest(event.data) ||
+        isImporting
+      ) {
+        return;
+      }
+
+      handlePresentationFileSelect(event.data.file);
+    };
+
+    window.addEventListener('message', handlePresentationImportMessage);
+
+    return () => {
+      window.removeEventListener('message', handlePresentationImportMessage);
+    };
+  }, [handlePresentationFileSelect, isImporting]);
 
   const handleImageInsertRequest = useCallback((data, callback) => {
     if (!data || typeof callback !== 'function') {
@@ -93,6 +139,7 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
 
   useEffect(() => {
     const initialPresentation = presentationRef.current;
+    const editorGeneration = editorGenerationRef.current;
     if (!initialPresentation.isEnabled || !editorRef.current || isEditorInitializedRef.current) {
       return undefined;
     }
@@ -237,6 +284,11 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
                 }
               },
               onSave: (file, callback) => {
+                if (editorGeneration !== editorGenerationRef.current) {
+                  callback();
+                  return;
+                }
+
                 const presentationFile = new File([file], 'presentation.pptx', {
                   type: PRESENTATION_MIME_TYPE,
                 });
@@ -299,33 +351,17 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
 
   return (
     <>
-      <section className={styles.editorSection}>
-        {canEdit && (
-          <div className={styles.editorToolbar}>
-            <FilePicker accept={PRESENTATION_FILE_ACCEPT} onSelect={handlePresentationFileSelect}>
-              <Button
-                variant="secondary"
-                icon="upload"
-                loading={isImporting}
-                disabled={isImporting}
-              >
-                {t('common.presentationImport')}
-              </Button>
-            </FilePicker>
-            {importError && (
-              <p className={styles.importError} role="alert">
-                {t(
-                  importError === 'invalid'
-                    ? 'common.presentationImportInvalidFile'
-                    : 'common.presentationImportFailed',
-                )}
-              </p>
+      <section className={styles.editor} aria-busy={!isReady || isImporting}>
+        <div ref={editorRef} className={styles.editorMount} />
+        {importError && (
+          <p className={styles.importError} role="alert">
+            {t(
+              importError === 'invalid'
+                ? 'common.presentationImportInvalidFile'
+                : 'common.presentationImportFailed',
             )}
-          </div>
+          </p>
         )}
-        <section className={styles.editor} aria-busy={!isReady}>
-          <div ref={editorRef} className={styles.editorMount} />
-        </section>
       </section>
       <PresentationMediaPicker
         boardIds={boardIds}
@@ -339,7 +375,6 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
 
 PresentationEditor.propTypes = {
   boardIds: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
-  canEdit: PropTypes.bool.isRequired,
   presentation: PropTypes.shape({
     id: PropTypes.string.isRequired,
     isEnabled: PropTypes.bool.isRequired,
