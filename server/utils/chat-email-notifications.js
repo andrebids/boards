@@ -4,6 +4,7 @@
  */
 
 const { extractMentionIds, formatTextWithMentions } = require('./mentions');
+const { getEmailCopyright } = require('./email-branding');
 
 const DIRECT_CONVERSATION_TYPE = 'projectDirect';
 const PROJECT_GROUP_CONVERSATION_TYPE = 'projectGroup';
@@ -164,7 +165,7 @@ ${copy.footer}`,
         sender_name: sender.name,
       })),
       cta_button_text: copy.openConversation,
-      email_copyright: `© ${currentYear} Planka.`,
+      email_copyright: getEmailCopyright(currentYear),
       email_language: language,
       is_chat_notification: true,
       notification_title: subjectLabel,
