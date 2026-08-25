@@ -12,20 +12,25 @@
   .button {
     align-self: start;
     align-items: center;
-    background: rgba(147, 197, 253, 0.12);
-    box-shadow: none;
-    color: #93c5fd;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+    border-radius: 7px;
+    box-shadow: none !important;
+    color: rgba(230, 237, 243, 0.7) !important;
     display: inline-flex !important;
-    height: 24px;
+    height: 28px;
     justify-content: center;
-    line-height: 24px;
+    line-height: 28px;
     min-height: auto;
+    opacity: 0;
     padding: 0;
+    pointer-events: none;
     transition:
       background-color 0.15s ease,
-      color 0.15s ease;
-    width: 24px;
-    border-radius: 6px;
+      color 0.15s ease,
+      opacity 0.15s ease,
+      transform 0.15s ease;
+    width: 28px;
     position: static;
     z-index: 1;
     text-align: center;
@@ -34,7 +39,7 @@
       margin: 0 !important;
       position: static !important;
       transform: none !important;
-      font-size: 13px;
+      font-size: 14px;
       line-height: 1 !important;
       text-align: center;
     }
@@ -47,14 +52,22 @@
     }
 
     &:hover {
-      background: rgba(147, 197, 253, 0.2) !important;
+      background: rgba(147, 197, 253, 0.16) !important;
       box-shadow: none !important;
-      color: #dbeafe;
+      color: #dbeafe !important;
+    }
+
+    &:active {
+      transform: scale(0.94);
     }
 
     &:focus-visible {
+      background: rgba(147, 197, 253, 0.16) !important;
+      color: #dbeafe !important;
+      opacity: 1;
       outline: 2px solid #93c5fd;
       outline-offset: 1px;
+      pointer-events: auto;
     }
 
     &::before,
@@ -104,7 +117,7 @@
     box-shadow: none;
     column-gap: 8px;
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr) 24px;
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
     margin: 2px 0 0;
     padding: 8px 8px 8px 10px;
     transition:
@@ -114,6 +127,12 @@
 
     &:hover {
       background: rgba(255, 255, 255, 0.09);
+    }
+
+    &:hover .button,
+    &:focus-within .button {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     /* avatar (primeiro filho) */
@@ -135,6 +154,20 @@
 
     .author {
       color: rgba(230, 237, 243, 0.78);
+    }
+  }
+
+  @media (hover: none) {
+    .button {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button,
+    .wrapper {
+      transition: none;
     }
   }
 }
