@@ -194,7 +194,7 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
               fileType: 'pptx',
               title: initialPresentation.title,
               key: initialPresentation.cryptpadSessionKey,
-              permissions: { chat: false, download: true },
+              permissions: { chat: false, download: true, print: false },
             },
             documentType: 'presentation',
             mode: initialPresentation.cryptpadMode,
