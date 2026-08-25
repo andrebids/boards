@@ -159,6 +159,8 @@ test('adds the PowerPoint import action directly to the native Insert toolbar', 
   assert.match(patched, /viewBox="0 0 32 32"/);
   assert.match(patched, /plankaPresentationImportVerticalLayout = true/);
   assert.match(patched, /button\.style\.flexDirection = 'column'/);
+  assert.match(patched, /plankaPresentationImportTransparentButton = true/);
+  assert.match(patched, /button\.style\.background = 'transparent'/);
   assert.doesNotMatch(patched, /button\.className = 'btn large btn-toolbar'/);
   assert.doesNotMatch(patched, /fm-btn-planka-presentation-import/);
   assert.equal(patchPresentationImportToolbar(patched), patched);

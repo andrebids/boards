@@ -30,6 +30,7 @@ const presentationImportToolbarSlot = 'id="slot-btn-planka-presentation-import"'
 const presentationImportRuntimeMarker = 'const plankaPresentationImportButtonId';
 const presentationImportFileMenuMarker = 'const plankaPresentationImportFileMenuId';
 const presentationImportVerticalLayoutMarker = 'const plankaPresentationImportVerticalLayout = true';
+const presentationImportTransparentButtonMarker = 'const plankaPresentationImportTransparentButton = true';
 
 const legacyPresentationImportIcon = `        const icon = document.createElement('i');
         const caption = document.createElement('span');
@@ -53,7 +54,7 @@ const legacyPresentationImportHorizontalIcon = `        const icon = document.cr
         icon.style.backgroundImage = 'none';
         icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';`;
 
-const presentationImportIcon = `        const plankaPresentationImportVerticalLayout = true;
+const legacyPresentationImportVerticalIcon = `        const plankaPresentationImportVerticalLayout = true;
         const icon = document.createElement('span');
         const caption = document.createElement('span');
 
@@ -64,6 +65,28 @@ const presentationImportIcon = `        const plankaPresentationImportVerticalLa
         button.style.flexDirection = 'column';
         button.style.alignItems = 'center';
         button.style.justifyContent = 'center';
+        button.setAttribute('aria-label', label);
+        icon.className = 'toolbar__icon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.style.display = 'block';
+        icon.style.backgroundImage = 'none';
+        icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';`;
+
+const presentationImportIcon = `        const plankaPresentationImportVerticalLayout = true;
+        const plankaPresentationImportTransparentButton = true;
+        const icon = document.createElement('span');
+        const caption = document.createElement('span');
+
+        button.id = plankaPresentationImportButtonId;
+        button.type = 'button';
+        button.className = 'btn large';
+        button.style.display = 'inline-flex';
+        button.style.flexDirection = 'column';
+        button.style.alignItems = 'center';
+        button.style.justifyContent = 'center';
+        button.style.background = 'transparent';
+        button.style.border = '0';
+        button.style.boxShadow = 'none';
         button.setAttribute('aria-label', label);
         icon.className = 'toolbar__icon';
         icon.setAttribute('aria-hidden', 'true');
@@ -368,6 +391,13 @@ function patchPresentationImportToolbar(source) {
       throw new Error('OnlyOffice presentation import button layout no longer applies');
     }
     patched = patched.replace(legacyPresentationImportHorizontalIcon, presentationImportIcon);
+  }
+
+  if (!patched.includes(presentationImportTransparentButtonMarker)) {
+    if (!patched.includes(legacyPresentationImportVerticalIcon)) {
+      throw new Error('OnlyOffice presentation import button appearance no longer applies');
+    }
+    patched = patched.replace(legacyPresentationImportVerticalIcon, presentationImportIcon);
   }
 
   if (patched.includes(presentationImportFileMenuMarker)) {
