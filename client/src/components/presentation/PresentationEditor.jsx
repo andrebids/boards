@@ -19,7 +19,7 @@ import styles from './PresentationWorkspace.module.scss';
 
 const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
 
-const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSessionUpdate }) => {
+const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate }) => {
   const [t, i18n] = useTranslation();
   const editorRef = useRef(null);
   const isEditorInitializedRef = useRef(false);
@@ -300,29 +300,27 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
   return (
     <>
       <section className={styles.editorSection}>
-        {canEdit && (
-          <div className={styles.editorToolbar}>
-            <FilePicker accept={PRESENTATION_FILE_ACCEPT} onSelect={handlePresentationFileSelect}>
-              <Button
-                variant="secondary"
-                icon="upload"
-                loading={isImporting}
-                disabled={isImporting}
-              >
-                {t('common.presentationImport')}
-              </Button>
-            </FilePicker>
-            {importError && (
-              <p className={styles.importError} role="alert">
-                {t(
-                  importError === 'invalid'
-                    ? 'common.presentationImportInvalidFile'
-                    : 'common.presentationImportFailed',
-                )}
-              </p>
-            )}
-          </div>
-        )}
+        <div className={styles.editorToolbar}>
+          <FilePicker accept={PRESENTATION_FILE_ACCEPT} onSelect={handlePresentationFileSelect}>
+            <Button
+              variant="secondary"
+              icon="upload"
+              loading={isImporting}
+              disabled={isImporting}
+            >
+              {t('common.presentationImport')}
+            </Button>
+          </FilePicker>
+          {importError && (
+            <p className={styles.importError} role="alert">
+              {t(
+                importError === 'invalid'
+                  ? 'common.presentationImportInvalidFile'
+                  : 'common.presentationImportFailed',
+              )}
+            </p>
+          )}
+        </div>
         <section className={styles.editor} aria-busy={!isReady}>
           <div ref={editorRef} className={styles.editorMount} />
         </section>
@@ -339,7 +337,6 @@ const PresentationEditor = React.memo(({ boardIds, canEdit, presentation, onSess
 
 PresentationEditor.propTypes = {
   boardIds: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
-  canEdit: PropTypes.bool.isRequired,
   presentation: PropTypes.shape({
     id: PropTypes.string.isRequired,
     isEnabled: PropTypes.bool.isRequired,

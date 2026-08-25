@@ -7,6 +7,10 @@ const source = fs.readFileSync(
 );
 
 describe('Presentation editor permissions', () => {
+  test('shows PowerPoint import to every board member with access', () => {
+    expect(source).not.toMatch(/\{canEdit && \(/);
+  });
+
   test('disables printing while keeping presentation downloads available', () => {
     expect(source).toMatch(
       /permissions:\s*\{\s*chat: false,\s*download: true,\s*print: false\s*\}/,

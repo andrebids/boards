@@ -94,7 +94,7 @@ describe('Project presentation controllers', () => {
       },
       helpers: {
         presentations: {
-          getProjectAccess: async () => ({ canEdit: true, accessibleBoardIds: ['board-1'] }),
+          getProjectAccess: async () => ({ canEdit: false, accessibleBoardIds: ['board-1'] }),
         },
         utils: {
           receiveFile: {
