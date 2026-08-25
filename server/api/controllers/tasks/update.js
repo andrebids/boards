@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { getTaskContentValues } = require('../../../utils/task-content');
 
 const Errors = {
   NOT_ENOUGH_RIGHTS: {
@@ -20,6 +21,9 @@ const Errors = {
   },
   PARENT_TASK_NOT_FOUND: {
     parentTaskNotFound: 'Parent task not found',
+  },
+  CONTENT_MUST_NOT_BE_EMPTY: {
+    contentMustNotBeEmpty: 'Content must not be empty',
   },
 };
 
@@ -42,6 +46,10 @@ module.exports = {
       type: 'string',
       isNotEmptyString: true,
       maxLength: 1024,
+    },
+    content: {
+      type: 'string',
+      maxLength: 1048576,
     },
     isCompleted: {
       type: 'boolean',
@@ -67,6 +75,9 @@ module.exports = {
     },
     parentTaskNotFound: {
       responseType: 'notFound',
+    },
+    contentMustNotBeEmpty: {
+      responseType: 'unprocessableEntity',
     },
   },
 
@@ -128,10 +139,18 @@ module.exports = {
     const values = _.pick(inputs, [
       'assigneeUserId',
       'position',
-      'name',
       'isCompleted',
       'parentTaskId',
     ]);
+
+    if (!_.isUndefined(inputs.content) || !_.isUndefined(inputs.name)) {
+      const taskContentValues = getTaskContentValues(inputs);
+      if (!taskContentValues) {
+        throw Errors.CONTENT_MUST_NOT_BE_EMPTY;
+      }
+
+      Object.assign(values, taskContentValues);
+    }
 
     task = await sails.helpers.tasks.updateOne.with({
       project,

@@ -24,6 +24,10 @@ module.exports = {
       type: 'string',
       required: true,
     },
+    content: {
+      type: 'string',
+      required: true,
+    },
     isCompleted: {
       type: 'boolean',
       defaultsTo: false,

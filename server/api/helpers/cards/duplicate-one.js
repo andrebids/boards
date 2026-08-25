@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const { remapTaskAttachmentUrls } = require('../../../utils/task-content');
+
 module.exports = {
   inputs: {
     record: {
@@ -140,26 +142,30 @@ module.exports = {
       tasks.forEach((task) => {
         nextTaskIdByTaskId[task.id] = ids.shift();
       });
+
+      const nextAttachmentIdByAttachmentId = {};
+      attachments.forEach((attachment) => {
+        nextAttachmentIdByAttachmentId[attachment.id] = ids.shift();
+      });
+
       const nextTasksValues = tasks.map((task) => ({
         ..._.pick(task, ['assigneeUserId', 'position', 'name', 'isCompleted']),
+        content: remapTaskAttachmentUrls(
+          task.content || task.name,
+          nextAttachmentIdByAttachmentId,
+        ),
         id: nextTaskIdByTaskId[task.id],
         taskListId: nextTaskListIdByTaskListId[task.taskListId],
         parentTaskId: task.parentTaskId ? nextTaskIdByTaskId[task.parentTaskId] : null,
       }));
       const nextTasks = await Task.qm.create(nextTasksValues).usingConnection(db);
 
-      const nextAttachmentIdByAttachmentId = {};
-      const nextAttachmentsValues = attachments.map((attachment) => {
-        const id = ids.shift();
-        nextAttachmentIdByAttachmentId[attachment.id] = id;
-
-        return {
+      const nextAttachmentsValues = attachments.map((attachment) => ({
           ..._.pick(attachment, ['type', 'data', 'name']),
-          id,
+          id: nextAttachmentIdByAttachmentId[attachment.id],
           cardId: card.id,
           creatorUserId: card.creatorUserId,
-        };
-      });
+        }));
       const nextAttachments = await sails.models.attachment.qm.create(nextAttachmentsValues, {
         connection: db,
       });
