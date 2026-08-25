@@ -17,6 +17,10 @@ const uploadImageFilesFixture = `            APP.UploadImageFiles = function (fi
             };`;
 
 const fixture = `
+        const ooconfig = {
+            "documentType": file.doc,
+        };
+
         const onDocumentReady = function(lock, lang, fromContent, file, force) {
             evOnSync.fire();
 };
@@ -27,7 +31,7 @@ ${uploadImageFilesFixture}
 test('routes Presentation image requests through the host integration callback', () => {
   const patched = patchOnlyOfficeIntegration(fixture);
 
-  assert.match(patched, /APP\.ooconfig\.documentType !== 'presentation'/);
+  assert.match(patched, /APP\.ooconfig\.documentType !== 'slide'/);
   assert.match(patched, /Q_INTEGRATION_ON_INSERT_IMAGE/);
   assert.match(patched, /function\(queryError, image\)/);
   assert.match(patched, /if \(queryError \|\| !image \|\| !image\.blob\)/);
@@ -40,6 +44,14 @@ test('routes Presentation image requests through the host integration callback',
   assert.match(patched, /editor\._addImageUrl\(urls, options\)/);
   assert.doesNotMatch(patched, /URL\.createObjectURL\(image\.blob\)/);
   assert.match(patched, /redirectPresentationImageUpload\(\);/);
+});
+
+test('uses the public OnlyOffice slide type without changing the CryptPad application type', () => {
+  const patched = patchOnlyOfficeIntegration(fixture);
+
+  assert.match(patched, /file\.doc === 'presentation' \? 'slide' : file\.doc/);
+  assert.doesNotMatch(patched, /APP\.ooconfig\.documentType !== 'presentation'/);
+  assert.equal(patchOnlyOfficeIntegration(patched), patched);
 });
 
 test('does not apply the image picker patch twice', () => {
@@ -130,7 +142,7 @@ test('uploads dropped presentation images through CryptPad before returning thei
 
 test('fails the image build if the CryptPad hook changes upstream', () => {
   assert.throws(
-    () => patchOnlyOfficeIntegration('const onDocumentReady = function() {};'),
+    () => patchOnlyOfficeIntegration('"documentType": file.doc,\nconst onDocumentReady = function() {};'),
     /OnlyOffice image picker patch no longer applies/,
   );
 });

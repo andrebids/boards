@@ -9,6 +9,10 @@ const uploadImageFilesMarker = `APP.UploadImageFiles = function (files, type, id
                 return void cb();
             };`;
 
+const onlyOfficeDocumentTypeMarker = `"documentType": file.doc,`;
+const onlyOfficeDocumentTypeReplacement =
+  `"documentType": file.doc === 'presentation' ? 'slide' : file.doc,`;
+
 const presentationToolbarMarker =
   'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.setMenu(new Common.UI.Menu({items:[{caption:e.mniImageFromFile,value:"file"},{cls:"cp-from-url",caption:e.mniImageFromUrl,value:"url"},{caption:e.mniImageFromStorage,value:"storage"}]}).on("item:click",(function(t,i,n){e.fireEvent("insert:image",[i.value])}))),i.menu.items[2].setVisible(t.canRequestInsertImage||t.fileChoiceUrl&&t.fileChoiceUrl.indexOf("{documentType}")>-1)}))';
 
@@ -244,7 +248,7 @@ const projectImagePickerReplacement = `            const openProjectImagePicker 
             };`;
 
 const documentReadyReplacement = `const redirectPresentationImageUpload = function() {
-            if (APP.ooconfig.documentType !== 'presentation') { return; }
+            if (APP.ooconfig.documentType !== 'slide') { return; }
 
             var attempt = 0;
 ${projectImagePickerReplacement}
@@ -271,6 +275,18 @@ ${projectImagePickerReplacement}
 
 function patchOnlyOfficeIntegration(source) {
   let patched = source;
+
+  if (!patched.includes(onlyOfficeDocumentTypeReplacement)) {
+    if (!patched.includes(onlyOfficeDocumentTypeMarker)) {
+      throw new Error('OnlyOffice document type patch no longer applies');
+    }
+    patched = patched.replace(onlyOfficeDocumentTypeMarker, onlyOfficeDocumentTypeReplacement);
+  }
+
+  patched = patched.replaceAll(
+    "APP.ooconfig.documentType !== 'presentation'",
+    "APP.ooconfig.documentType !== 'slide'",
+  );
   const hasLegacyImagePicker =
     patched.includes('const redirectPresentationImageUpload = function()') &&
     (
@@ -380,7 +396,7 @@ function patchOnlyOfficeIntegration(source) {
             };
 
             APP.UploadImageFiles = function (files, type, id, jwt, cb) {
-                if (APP.ooconfig.documentType !== 'presentation') { return void cb(); }
+                if (APP.ooconfig.documentType !== 'slide') { return void cb(); }
                 files = Array.prototype.slice.call(files || []).filter(function(file) {
                     return file && /^image\\//.test(file.type || '');
                 });
