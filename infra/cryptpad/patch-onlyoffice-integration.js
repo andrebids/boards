@@ -1,4 +1,6 @@
 const fs = require('node:fs');
+const path = require('node:path');
+const zlib = require('node:zlib');
 
 const documentReadyMarker = `const onDocumentReady = function(lock, lang, fromContent, file, force) {
             evOnSync.fire();`;
@@ -12,6 +14,56 @@ const presentationToolbarMarker =
 
 const presentationToolbarReplacement =
   'e.btnsInsertImage.forEach((function(i){i.updateHint(e.tipInsertImage),i.on("click",(function(){e.fireEvent("insert:image",["file"])}))}))';
+
+const presentationImportToolbarMarker = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator media long"></div>`;
+
+const presentationImportToolbarReplacement = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-planka-presentation-import"></span>\n                </div>\n                <div class="separator media long"></div>`;
+
+const presentationImportRuntimeMarker = 'const plankaPresentationImportButtonId';
+
+const presentationImportRuntime = `
+;(function () {
+    const plankaPresentationImportButtonId = 'planka-presentation-import';
+    const plankaPresentationImportMessageType = 'planka:presentation-import';
+    const plankaPresentationImportAccept = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
+    const installPlankaPresentationImportButton = function () {
+        const slot = document.getElementById('slot-btn-planka-presentation-import');
+        if (!slot || document.getElementById(plankaPresentationImportButtonId)) { return; }
+
+        const language = (navigator.language || 'en').toLowerCase();
+        const label = language.indexOf('pt') === 0 ? 'Importar PowerPoint' : 'Import PowerPoint';
+        const button = document.createElement('button');
+        const icon = document.createElement('i');
+        const caption = document.createElement('span');
+
+        button.id = plankaPresentationImportButtonId;
+        button.type = 'button';
+        button.className = 'btn large btn-toolbar';
+        button.setAttribute('aria-label', label);
+        icon.className = 'icon toolbar__icon btn-ic-insertimage';
+        icon.innerHTML = '&nbsp;';
+        caption.className = 'caption';
+        caption.textContent = label;
+        button.appendChild(icon);
+        button.appendChild(caption);
+        button.addEventListener('click', function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+            input.addEventListener('change', function () {
+                const file = input.files && input.files[0];
+                if (!file) { return; }
+                window.top.postMessage({ type: 'planka:presentation-import', file: file }, '*');
+            });
+            input.click();
+        });
+        slot.appendChild(button);
+    };
+
+    window.setInterval(installPlankaPresentationImportButton, 100);
+}());
+`;
 
 const projectImagePickerReplacement = `            const openProjectImagePicker = function(editor, options) {
                 var sframeChan = common.getSframeChannel();
@@ -195,6 +247,23 @@ function patchPresentationToolbar(source) {
   return source.replace(presentationToolbarMarker, presentationToolbarReplacement);
 }
 
+function patchPresentationImportToolbar(source) {
+  let patched = source;
+
+  if (!patched.includes('slot-btn-planka-presentation-import')) {
+    if (!patched.includes(presentationImportToolbarMarker)) {
+      throw new Error('OnlyOffice presentation import toolbar patch no longer applies');
+    }
+    patched = patched.replace(presentationImportToolbarMarker, presentationImportToolbarReplacement);
+  }
+
+  if (!patched.includes(presentationImportRuntimeMarker)) {
+    patched += presentationImportRuntime;
+  }
+
+  return patched;
+}
+
 function patchFile(filePath) {
   const source = fs.readFileSync(filePath, 'utf8');
   const patched = patchOnlyOfficeIntegration(source);
@@ -205,11 +274,20 @@ function patchFile(filePath) {
 }
 
 function patchPresentationToolbarFile(filePath) {
-  const source = fs.readFileSync(filePath, 'utf8');
-  const patched = patchPresentationToolbar(source);
+  const isBrotliAsset = path.extname(filePath) === '.br';
+  const asset = fs.readFileSync(filePath);
+  const source = isBrotliAsset ? zlib.brotliDecompressSync(asset).toString('utf8') : asset.toString('utf8');
+  const imageToolbarSource =
+    source.includes(presentationToolbarMarker) || source.includes(presentationToolbarReplacement)
+      ? patchPresentationToolbar(source)
+      : source;
+  const patched = patchPresentationImportToolbar(imageToolbarSource);
 
   if (patched !== source) {
-    fs.writeFileSync(filePath, patched);
+    fs.writeFileSync(
+      filePath,
+      isBrotliAsset ? zlib.brotliCompressSync(Buffer.from(patched)) : patched,
+    );
   }
 }
 
@@ -224,6 +302,8 @@ if (require.main === module) {
     for (const toolbarPath of [
       '/cryptpad/www/common/onlyoffice/dist/v9/web-apps/apps/presentationeditor/main/app.js',
       '/cryptpad/www/common/onlyoffice/dist/v9/web-apps/apps/presentationeditor/main/ie/app.js',
+      '/cryptpad/www/common/onlyoffice/dist/v9/web-apps/apps/presentationeditor/main/app.js.br',
+      '/cryptpad/www/common/onlyoffice/dist/v9/web-apps/apps/presentationeditor/main/ie/app.js.br',
     ]) {
       if (fs.existsSync(toolbarPath)) {
         patchPresentationToolbarFile(toolbarPath);
@@ -234,5 +314,7 @@ if (require.main === module) {
 
 module.exports = {
   patchOnlyOfficeIntegration,
+  patchPresentationImportToolbar,
+  patchPresentationToolbarFile,
   patchPresentationToolbar,
 };

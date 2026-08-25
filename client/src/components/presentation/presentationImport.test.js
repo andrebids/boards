@@ -1,5 +1,4 @@
 import {
-  getPresentationImportPluginUrl,
   isPresentationImportRequest,
   isPptxFile,
   PRESENTATION_FILE_ACCEPT,
@@ -19,13 +18,7 @@ describe('presentation import', () => {
     );
   });
 
-  test('builds the CryptPad-hosted ONLYOFFICE plugin URL', () => {
-    expect(getPresentationImportPluginUrl('https://cryptpad.example.com')).toBe(
-      'https://cryptpad.example.com/customize/planka-plugins/presentation-import/config.json',
-    );
-  });
-
-  test('only accepts import messages produced by the presentation plugin', () => {
+  test('only accepts import messages produced by the native ONLYOFFICE action', () => {
     const file = { name: 'campaign.pptx' };
 
     expect(isPresentationImportRequest({ type: 'planka:presentation-import', file })).toBe(true);

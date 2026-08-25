@@ -14,7 +14,6 @@ import {
 import getPresentationEditorLanguage from './presentationLocale';
 import PresentationMediaPicker from './PresentationMediaPicker';
 import {
-  getPresentationImportPluginUrl,
   isPresentationImportRequest,
   isPptxFile,
   PRESENTATION_MIME_TYPE,
@@ -226,10 +225,6 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
             mode: initialPresentation.cryptpadMode,
             editorConfig: {
               lang: editorLanguageRef.current,
-              plugins: {
-                autostart: ['asc.{6B4D3E90-6A1B-4E92-BD0E-1DA8E51F1F40}'],
-                pluginsData: [getPresentationImportPluginUrl(Config.CRYPTPAD_URL)],
-              },
               customization: {
                 about: false,
                 help: false,

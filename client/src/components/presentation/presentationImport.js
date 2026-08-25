@@ -7,9 +7,6 @@ export const PRESENTATION_IMPORT_MESSAGE_TYPE = 'planka:presentation-import';
 
 export const isPptxFile = (file) => Boolean(file && /\.pptx$/i.test(file.name));
 
-export const getPresentationImportPluginUrl = (cryptPadUrl) =>
-  new URL('/customize/planka-plugins/presentation-import/config.json', cryptPadUrl).toString();
-
 export const isPresentationImportRequest = (data) =>
   Boolean(
     data &&

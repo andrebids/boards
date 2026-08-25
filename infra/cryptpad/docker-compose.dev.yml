@@ -9,7 +9,7 @@ services:
     command:
       - bash
       - -lc
-      - node /opt/planka-local/patch-static-cache.js /cryptpad/lib/http-worker.js && exec npm start
+      - node /opt/planka-local/patch-static-cache.js /cryptpad/lib/http-worker.js && node /opt/planka-local/patch-onlyoffice-integration.js && exec npm start
     environment:
       CPAD_MAIN_DOMAIN: ${CPAD_MAIN_DOMAIN:-http://localhost:3010}
       CPAD_SANDBOX_DOMAIN: ${CPAD_SANDBOX_DOMAIN:-http://localhost:3013}
@@ -28,11 +28,10 @@ services:
       - ./data/data:/cryptpad/data
       - ./data/files:/cryptpad/datastore
       - ./customize:/cryptpad/customize
-      - ./plugins:/cryptpad/customize/planka-plugins:ro
-      - ./plugins.json:/cryptpad/www/common/onlyoffice/plugins.json:ro
       - ./customize/integration/index.html:/cryptpad/www/integration/index.html
       - ./customize/presentation/inner.html:/cryptpad/www/presentation/inner.html
       - ./patch-static-cache.js:/opt/planka-local/patch-static-cache.js:ro
+      - ./patch-onlyoffice-integration.js:/opt/planka-local/patch-onlyoffice-integration.js:ro
       # A distribuição ONLYOFFICE contém milhares de ficheiros. Um volume
       # Docker evita o rdfind ficar bloqueado no bind mount do Windows.
       - cryptpad-onlyoffice-dist:/cryptpad/www/common/onlyoffice/dist

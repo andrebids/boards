@@ -1,8 +1,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const zlib = require('node:zlib');
 
 const {
   patchOnlyOfficeIntegration,
+  patchPresentationImportToolbar,
+  patchPresentationToolbarFile,
   patchPresentationToolbar,
 } = require('./patch-onlyoffice-integration');
 
@@ -138,4 +144,32 @@ test('turns the presentation image toolbar control into a single picker action',
   assert.match(patched, /insert:image/);
   assert.doesNotMatch(patched, /setMenu/);
   assert.equal(patchPresentationToolbar(patched), patched);
+});
+
+test('adds the PowerPoint import action directly to the native Insert toolbar', () => {
+  const source =
+    String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator media long"></div>`;
+  const patched = patchPresentationImportToolbar(source);
+
+  assert.match(patched, /slot-btn-planka-presentation-import/);
+  assert.match(patched, /window\.top\.postMessage\(\{ type: 'planka:presentation-import', file: file \}, '\*'\)/);
+  assert.match(patched, /input\.accept = '\.pptx,application\/vnd\.openxmlformats-officedocument\.presentationml\.presentation'/);
+  assert.equal(patchPresentationImportToolbar(patched), patched);
+});
+
+test('patches the Brotli presentation bundle served to browsers', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'onlyoffice-toolbar-'));
+  const filePath = path.join(directory, 'app.js.br');
+  const source = String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-insertequation"></span>\n                    <span class="btn-slot text x-huge" id="slot-btn-inssymbol"></span>\n                </div>\n                <div class="separator media long"></div>`;
+
+  try {
+    fs.writeFileSync(filePath, zlib.brotliCompressSync(Buffer.from(source)));
+    patchPresentationToolbarFile(filePath);
+
+    const patched = zlib.brotliDecompressSync(fs.readFileSync(filePath)).toString('utf8');
+    assert.match(patched, /slot-btn-planka-presentation-import/);
+    assert.match(patched, /planka:presentation-import/);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
 });
