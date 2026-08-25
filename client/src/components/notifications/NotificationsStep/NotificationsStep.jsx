@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Icon } from 'semantic-ui-react';
+import { CheckCheck } from 'lucide-react';
 
 import { Popup } from '../../../lib/custom-ui';
 
@@ -114,7 +115,7 @@ const NotificationsStep = React.memo(({ projectId, onClose }) => {
               title={t('common.markAllNotificationsAsRead')}
               onClick={handleDeleteAllClick}
             >
-              <Icon fitted name="check" aria-hidden="true" />
+              <CheckCheck aria-hidden="true" size={16} strokeWidth={2.25} />
             </button>
           )}
         </div>
