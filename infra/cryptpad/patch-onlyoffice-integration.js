@@ -26,6 +26,7 @@ const legacyPresentationImportToolbarReplacement = String.raw`                <d
 const presentationImportToolbarSlot = 'id="slot-btn-planka-presentation-import"';
 
 const presentationImportRuntimeMarker = 'const plankaPresentationImportButtonId';
+const presentationImportFileMenuMarker = 'const plankaPresentationImportFileMenuId';
 
 const legacyPresentationImportIcon = `        const icon = document.createElement('i');
         const caption = document.createElement('span');
@@ -48,6 +49,41 @@ const presentationImportIcon = `        const icon = document.createElement('spa
         icon.setAttribute('aria-hidden', 'true');
         icon.style.backgroundImage = 'none';
         icon.innerHTML = '<svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M7 3h12l6 6v20H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 3v7h6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 12v10m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';`;
+
+const presentationImportFileMenuRuntime = `
+    const plankaPresentationImportFileMenuId = 'fm-btn-planka-presentation-import';
+
+    const installPlankaPresentationImportFileMenu = function () {
+        const saveItem = document.getElementById('fm-btn-save');
+        if (!saveItem || document.getElementById(plankaPresentationImportFileMenuId)) { return; }
+
+        const language = (navigator.language || 'en').toLowerCase();
+        const label = language.indexOf('pt') === 0 ? 'Abrir PowerPoint' : 'Open PowerPoint';
+        const menuItem = saveItem.cloneNode(true);
+        const caption = menuItem.querySelector('.caption');
+        const icon = menuItem.querySelector('.menu__icon');
+
+        menuItem.id = plankaPresentationImportFileMenuId;
+        menuItem.removeAttribute('data-layout-name');
+        menuItem.setAttribute('aria-label', label);
+        if (caption) { caption.textContent = label; }
+        if (icon) { icon.className = 'menu__icon btn-open'; }
+        menuItem.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = plankaPresentationImportAccept;
+            input.addEventListener('change', function () {
+                const file = input.files && input.files[0];
+                if (!file) { return; }
+                window.top.postMessage({ type: plankaPresentationImportMessageType, file: file }, '*');
+            });
+            input.click();
+        });
+        saveItem.insertAdjacentElement('afterend', menuItem);
+    };
+`;
 
 const presentationImportRuntime = `
 ;(function () {
@@ -91,7 +127,11 @@ const presentationImportRuntime = `
         slot.appendChild(button);
     };
 
-    window.setInterval(installPlankaPresentationImportButton, 100);
+${presentationImportFileMenuRuntime}
+    window.setInterval(function () {
+        installPlankaPresentationImportButton();
+        installPlankaPresentationImportFileMenu();
+    }, 100);
 }());
 `;
 
@@ -298,6 +338,21 @@ function patchPresentationImportToolbar(source) {
     patched += presentationImportRuntime;
   } else if (patched.includes(legacyPresentationImportIcon)) {
     patched = patched.replace(legacyPresentationImportIcon, presentationImportIcon);
+  }
+
+  if (!patched.includes(presentationImportFileMenuMarker)) {
+    const legacyInterval = '    window.setInterval(installPlankaPresentationImportButton, 100);';
+    if (!patched.includes(legacyInterval)) {
+      throw new Error('OnlyOffice presentation import runtime no longer applies');
+    }
+    patched = patched.replace(
+      legacyInterval,
+      `${presentationImportFileMenuRuntime}
+    window.setInterval(function () {
+        installPlankaPresentationImportButton();
+        installPlankaPresentationImportFileMenu();
+    }, 100);`,
+    );
   }
 
   return patched;

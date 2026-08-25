@@ -156,6 +156,8 @@ test('adds the PowerPoint import action directly to the native Insert toolbar', 
   assert.match(patched, /window\.top\.postMessage\(\{ type: 'planka:presentation-import', file: file \}, '\*'\)/);
   assert.match(patched, /input\.accept = '\.pptx,application\/vnd\.openxmlformats-officedocument\.presentationml\.presentation'/);
   assert.match(patched, /viewBox="0 0 32 32"/);
+  assert.match(patched, /fm-btn-planka-presentation-import/);
+  assert.match(patched, /Open PowerPoint/);
   assert.equal(patchPresentationImportToolbar(patched), patched);
 });
 
@@ -170,13 +172,15 @@ const plankaPresentationImportButtonId
         button.className = 'btn large btn-toolbar';
         button.setAttribute('aria-label', label);
         icon.className = 'icon toolbar__icon btn-ic-insertimage';
-        icon.innerHTML = '&nbsp;';`;
+        icon.innerHTML = '&nbsp;';
+    window.setInterval(installPlankaPresentationImportButton, 100);`;
   const patched = patchPresentationImportToolbar(source);
 
   assert.ok(patched.indexOf('slot-btn-planka-presentation-import') < patched.indexOf('slot-insertimg'));
   assert.match(patched, /id="slot-btn-planka-presentation-import"/);
   assert.doesNotMatch(patched, /btn-ic-insertimage/);
   assert.match(patched, /viewBox="0 0 32 32"/);
+  assert.match(patched, /fm-btn-planka-presentation-import/);
 });
 
 test('patches the Brotli presentation bundle served to browsers', () => {
