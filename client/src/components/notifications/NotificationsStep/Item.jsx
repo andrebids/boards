@@ -536,7 +536,7 @@ const Item = React.memo(({ id, onClose }) => {
         <Button
           variant="secondary"
           type="button"
-          icon="check"
+          icon="check circle outline"
           isIconOnly
           aria-label={t('action.markAsRead')}
           title={t('action.markAsRead')}
