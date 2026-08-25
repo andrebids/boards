@@ -168,7 +168,7 @@
   .historySection {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     margin-top: 10px;
-    padding: 10px 8px 0;
+    padding: 10px 0 0;
   }
 
   .sectionTitle {
@@ -235,9 +235,5 @@
       padding: 5px 8px;
     }
 
-    .historySection {
-      padding-left: 4px;
-      padding-right: 4px;
-    }
   }
 }
