@@ -144,6 +144,7 @@
 
     .topScrollbar {
       appearance: none;
+      -webkit-appearance: none;
       background: transparent;
       cursor: pointer;
       display: block;
@@ -162,6 +163,7 @@
 
       &::-webkit-slider-thumb {
         appearance: none;
+        -webkit-appearance: none;
         background: var(--app-dark-surface-hover, #303947);
         background-clip: padding-box;
         border: 1px solid transparent;
