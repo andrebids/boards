@@ -93,28 +93,19 @@
   }
 
   .boardSelect {
-    flex: 0 0 168px;
-    max-width: 168px;
-    min-height: 28px !important;
-    min-width: 168px !important;
-    padding-bottom: 6px !important;
-    padding-top: 6px !important;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    color: #fff;
+    font: inherit;
+    height: 28px;
+    max-width: 160px;
+    min-width: 0;
+    padding: 0 24px 0 8px;
 
-    > :global(.dropdown.icon) {
-      align-items: center;
-      display: flex;
-      height: 100% !important;
-      justify-content: center;
-      line-height: 1;
-      margin: 0 !important;
-      padding: 0 !important;
-      right: 8px;
-      top: 0;
-      width: 16px;
-    }
-
-    :global(.menu) {
-      overflow-y: auto !important;
+    option {
+      background: #20242f;
+      color: #fff;
     }
   }
 }

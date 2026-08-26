@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Dropdown } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
@@ -46,22 +45,19 @@ const PresentationTab = React.memo(() => {
           <Link to={presentationPath} className={styles.tabLink} aria-current="page">
             <span>{t('common.presentations')}</span>
           </Link>
-          <Dropdown
-            compact
-            selection
+          <select
             aria-label={t('common.selectBoard')}
             className={styles.boardSelect}
             value={selectedBoardId || ''}
-            options={[
-              { key: '', text: t('common.selectBoard'), value: '' },
-              ...boards.map((nextBoard) => ({
-                key: nextBoard.id,
-                text: nextBoard.name,
-                value: nextBoard.id,
-              })),
-            ]}
-            onChange={(_, { value }) => handleBoardSelect(value || undefined)}
-          />
+            onChange={({ target: { value } }) => handleBoardSelect(value || undefined)}
+          >
+            <option value="">{t('common.selectBoard')}</option>
+            {boards.map((nextBoard) => (
+              <option key={nextBoard.id} value={nextBoard.id}>
+                {nextBoard.name}
+              </option>
+            ))}
+          </select>
         </div>
       ) : (
         <Link to={presentationPath} className={styles.tab}>
