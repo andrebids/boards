@@ -460,7 +460,6 @@ const KanbanContent = React.memo(() => {
         </div>
       )}
       <div className={styles.content}>
-        <PresentationBoardTile />
         <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <Droppable droppableId="board" type={DroppableTypes.LIST} direction="horizontal">
             {({ innerRef, droppableProps, placeholder }) => (
@@ -506,6 +505,7 @@ const KanbanContent = React.memo(() => {
             )}
           </Droppable>
         </DragDropContext>
+        <PresentationBoardTile />
       </div>
     </div>
   );
