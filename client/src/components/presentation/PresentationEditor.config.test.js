@@ -9,6 +9,20 @@ const apiSource = fs.readFileSync(
   path.join(process.cwd(), 'src', 'api', 'presentations.js'),
   'utf8',
 );
+const modalSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    'src',
+    'components',
+    'presentation',
+    'PresentationImportConfirmModal.jsx',
+  ),
+  'utf8',
+);
+const frenchLocaleSource = fs.readFileSync(
+  path.join(process.cwd(), 'src', 'locales', 'fr-FR', 'core.js'),
+  'utf8',
+);
 
 describe('Presentation editor permissions', () => {
   test('shows PowerPoint import to every board member with access', () => {
@@ -43,6 +57,19 @@ describe('Presentation editor permissions', () => {
   test('asks for confirmation before replacing the current presentation', () => {
     expect(source).toMatch(/PresentationImportConfirmModal/);
     expect(source).not.toMatch(/window\.confirm/);
+  });
+
+  test('does not keep import state on the confirmation modal after it closes', () => {
+    expect(modalSource).not.toMatch(/isImporting/);
+    expect(source).not.toMatch(/<PresentationImportConfirmModal[\s\S]*?isImporting=/);
+  });
+
+  test('defines every French import message only once', () => {
+    ['presentationImport', 'presentationImportInvalidFile', 'presentationImportFailed'].forEach(
+      (key) => {
+        expect(frenchLocaleSource.match(new RegExp(`\\b${key}:`, 'g'))).toHaveLength(1);
+      },
+    );
   });
 
   test('shows loading, success, and error feedback while importing a PowerPoint', () => {

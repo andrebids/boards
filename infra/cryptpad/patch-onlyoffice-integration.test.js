@@ -272,8 +272,11 @@ test('adds the PowerPoint import action directly to the native Insert toolbar', 
   assert.match(patched, /slot-btn-planka-presentation-import/);
   assert.ok(patched.indexOf('slot-btn-planka-presentation-import') < patched.indexOf('slot-insertimg'));
   assert.match(patched, /slot-btn-planka-presentation-import"><\/span>\\n                    <span class="btn-slot text x-huge slot-insertimg/);
-  assert.match(patched, /window\.top\.postMessage\(\{ type: 'planka:presentation-import', file: file \}, '\*'\)/);
-  assert.match(patched, /input\.accept = '\.pptx,application\/vnd\.openxmlformats-officedocument\.presentationml\.presentation'/);
+  assert.equal((patched.match(/input\.accept = plankaPresentationImportAccept/g) || []).length, 2);
+  assert.equal(
+    (patched.match(/type: plankaPresentationImportMessageType, file: file/g) || []).length,
+    2,
+  );
   assert.match(patched, /viewBox="0 0 32 32"/);
   assert.match(patched, /plankaPresentationImportVerticalLayout = true/);
   assert.match(patched, /button\.style\.flexDirection = 'column'/);

@@ -84,10 +84,8 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   );
 
   const handlePresentationImportCancel = useCallback(() => {
-    if (!isImporting) {
-      setPendingImportFile(null);
-    }
-  }, [isImporting]);
+    setPendingImportFile(null);
+  }, []);
 
   const handlePresentationImportConfirm = useCallback(async () => {
     const file = pendingImportFile;
@@ -426,7 +424,6 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
         open={pendingImportFile !== null}
         onCancel={handlePresentationImportCancel}
         onConfirm={handlePresentationImportConfirm}
-        isImporting={isImporting}
       />
     </>
   );

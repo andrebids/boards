@@ -249,11 +249,11 @@ ${presentationImportCaption}
         button.addEventListener('click', function () {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+            input.accept = plankaPresentationImportAccept;
             input.addEventListener('change', function () {
                 const file = input.files && input.files[0];
                 if (!file) { return; }
-                window.top.postMessage({ type: 'planka:presentation-import', file: file }, '*');
+                window.top.postMessage({ type: plankaPresentationImportMessageType, file: file }, '*');
             });
             input.click();
         });
