@@ -44,13 +44,14 @@ const TaskList = React.memo(({ id }) => {
 
   const [t] = useTranslation();
   const [isAddOpened, setIsAddOpened] = useState(false);
+  const [collapsedTaskIds, setCollapsedTaskIds] = useState(() => new Set());
   const [, , setIsClosableActive] = useContext(ClosableContext);
 
   const leafTasks = useMemo(
     () => tasks.filter((task) => !tasks.some((childTask) => childTask.parentTaskId === task.id)),
     [tasks],
   );
-  const taskRows = useMemo(() => buildTaskRows(tasks), [tasks]);
+  const taskRows = useMemo(() => buildTaskRows(tasks, collapsedTaskIds), [collapsedTaskIds, tasks]);
 
   // TODO: move to selector?
   const completedTasksTotal = useMemo(
@@ -64,6 +65,20 @@ const TaskList = React.memo(({ id }) => {
 
   const handleAddClose = useCallback(() => {
     setIsAddOpened(false);
+  }, []);
+
+  const handleCollapseToggle = useCallback((taskId) => {
+    setCollapsedTaskIds((previousTaskIds) => {
+      const nextTaskIds = new Set(previousTaskIds);
+
+      if (nextTaskIds.has(taskId)) {
+        nextTaskIds.delete(taskId);
+      } else {
+        nextTaskIds.add(taskId);
+      }
+
+      return nextTaskIds;
+    });
   }, []);
 
   useDidUpdate(() => {
@@ -107,7 +122,14 @@ const TaskList = React.memo(({ id }) => {
             className={styles.tasks}
           >
             {taskRows.map(({ task, depth }, index) => (
-              <Task key={task.id} id={task.id} index={index} depth={depth} />
+              <Task
+                key={task.id}
+                id={task.id}
+                index={index}
+                depth={depth}
+                isCollapsed={collapsedTaskIds.has(task.id)}
+                onCollapseToggle={handleCollapseToggle}
+              />
             ))}
             {placeholder}
           </div>

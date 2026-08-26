@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation, Trans } from 'react-i18next';
 import { Loader } from 'semantic-ui-react';
@@ -22,6 +22,7 @@ import ProjectBackground from '../../projects/ProjectBackground';
 import AddProjectModal from '../../projects/AddProjectModal';
 import { ProjectGanttProvider } from '../../gantt';
 import { ProjectPresentationProvider } from '../../presentation';
+import TabNotification from './TabNotification';
 
 const Core = React.memo(() => {
   const isInitializing = useSelector(selectors.selectIsInitializing);
@@ -33,6 +34,8 @@ const Core = React.memo(() => {
   const board = useSelector(selectors.selectCurrentBoard);
   const currentUserId = useSelector(selectors.selectCurrentUserId);
   const currentUser = useSelector(selectors.selectCurrentUser);
+  const unreadChatMessageTotal = useSelector(selectors.selectChatInboxUnreadMessageTotal) || 0;
+  const lastChatMessageAlert = useSelector(selectors.selectLastChatMessageAlert);
 
   // TODO: move to selector?
   const isNewVersionAvailable = useSelector(state => {
@@ -48,21 +51,15 @@ const Core = React.memo(() => {
     window.location.reload(true);
   }, []);
 
-  useEffect(() => {
-    const titleParts = [];
-    if (project) {
-      if (board) {
-        titleParts.push(board.name);
-      }
-
-      titleParts.push(project.name);
+  const titleParts = [];
+  if (project) {
+    if (board) {
+      titleParts.push(board.name);
     }
 
-    document.title =
-      titleParts.length === 0
-        ? defaultTitleRef.current
-        : titleParts.join(' | ');
-  }, [project, board]);
+    titleParts.push(project.name);
+  }
+  const title = titleParts.length === 0 ? defaultTitleRef.current : titleParts.join(' | ');
 
   let modalNode = null;
   if (currentUser?.mustChangePassword) {
@@ -125,6 +122,11 @@ const Core = React.memo(() => {
       ) : (
         <>
           <Toaster />
+          <TabNotification
+            title={title}
+            unreadMessageTotal={unreadChatMessageTotal}
+            lastMessageAlert={lastChatMessageAlert}
+          />
           {project && project.backgroundType && <ProjectBackground />}
           <ProjectGanttProvider projectId={project?.id}>
             <ProjectPresentationProvider projectId={project?.id}>

@@ -30,7 +30,7 @@ import AddTask from '../AddTask';
 
 import styles from './Task.module.scss';
 
-const Task = React.memo(({ id, index, depth }) => {
+const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) => {
   const [t] = useTranslation();
   const selectTaskById = useMemo(() => selectors.makeSelectTaskById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
@@ -129,6 +129,14 @@ const Task = React.memo(({ id, index, depth }) => {
     setIsAddSubtaskOpened(false);
   }, []);
 
+  const handleCollapseToggle = useCallback(
+    (event) => {
+      event.stopPropagation();
+      onCollapseToggle(id);
+    },
+    [id, onCollapseToggle],
+  );
+
   useDidUpdate(() => {
     setIsClosableActive(isEditNameOpened);
   }, [isEditNameOpened]);
@@ -198,6 +206,18 @@ const Task = React.memo(({ id, index, depth }) => {
               )}
             >
               <span className={styles.checkboxWrapper}>
+                {childTasks.length > 0 && (
+                  <button
+                    type="button"
+                    aria-expanded={!isCollapsed}
+                    aria-label={t(isCollapsed ? 'common.expandPanel' : 'common.collapsePanel')}
+                    title={t(isCollapsed ? 'common.expandPanel' : 'common.collapsePanel')}
+                    className={styles.collapseButton}
+                    onClick={handleCollapseToggle}
+                  >
+                    <Icon fitted name={isCollapsed ? 'caret right' : 'caret down'} size="small" />
+                  </button>
+                )}
                 <Checkbox
                   aria-label={task.name}
                   checked={task.isCompleted}
@@ -308,6 +328,8 @@ Task.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
   depth: PropTypes.number.isRequired,
+  isCollapsed: PropTypes.bool.isRequired,
+  onCollapseToggle: PropTypes.func.isRequired,
 };
 
 export default Task;

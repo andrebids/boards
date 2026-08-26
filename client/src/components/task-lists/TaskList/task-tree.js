@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-export const buildTaskRows = (tasks) => {
+export const buildTaskRows = (tasks, collapsedTaskIds = new Set()) => {
   const childrenByParentTaskId = new Map();
 
   tasks.forEach((task) => {
@@ -11,6 +11,25 @@ export const buildTaskRows = (tasks) => {
     const children = childrenByParentTaskId.get(parentTaskId) || [];
     children.push(task);
     childrenByParentTaskId.set(parentTaskId, children);
+  });
+
+  const hiddenTaskIds = new Set();
+
+  const hideDescendants = (task) => {
+    (childrenByParentTaskId.get(task.id) || []).forEach((childTask) => {
+      if (hiddenTaskIds.has(childTask.id)) {
+        return;
+      }
+
+      hiddenTaskIds.add(childTask.id);
+      hideDescendants(childTask);
+    });
+  };
+
+  tasks.forEach((task) => {
+    if (collapsedTaskIds.has(task.id)) {
+      hideDescendants(task);
+    }
   });
 
   const rows = [];
@@ -24,9 +43,11 @@ export const buildTaskRows = (tasks) => {
     visitedTaskIds.add(task.id);
     rows.push({ task, depth });
 
-    (childrenByParentTaskId.get(task.id) || []).forEach((childTask) => {
-      appendTask(childTask, depth + 1);
-    });
+    if (!collapsedTaskIds.has(task.id)) {
+      (childrenByParentTaskId.get(task.id) || []).forEach((childTask) => {
+        appendTask(childTask, depth + 1);
+      });
+    }
   };
 
   (childrenByParentTaskId.get(null) || []).forEach((task) => {
@@ -34,7 +55,9 @@ export const buildTaskRows = (tasks) => {
   });
 
   tasks.forEach((task) => {
-    appendTask(task, 0);
+    if (!hiddenTaskIds.has(task.id)) {
+      appendTask(task, 0);
+    }
   });
 
   return rows;

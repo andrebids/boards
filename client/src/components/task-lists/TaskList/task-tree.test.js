@@ -21,4 +21,18 @@ describe('buildTaskRows', () => {
       { task: tasks[3], depth: 0 },
     ]);
   });
+
+  it('omits every descendant of collapsed tasks', () => {
+    const tasks = [
+      { id: 'root-1', parentTaskId: null },
+      { id: 'child-1', parentTaskId: 'root-1' },
+      { id: 'grandchild-1', parentTaskId: 'child-1' },
+      { id: 'root-2', parentTaskId: null },
+    ];
+
+    expect(buildTaskRows(tasks, new Set(['root-1']))).toEqual([
+      { task: tasks[0], depth: 0 },
+      { task: tasks[3], depth: 0 },
+    ]);
+  });
 });
