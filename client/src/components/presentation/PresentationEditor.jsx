@@ -32,6 +32,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   const isEditorInitializedRef = useRef(false);
   const editorGenerationRef = useRef(0);
   const presentationRef = useRef(presentation);
+  const pendingImportToastRef = useRef(null);
   const editorLanguageRef = useRef(
     getPresentationEditorLanguage(i18n.resolvedLanguage || i18n.language),
   );
@@ -48,7 +49,13 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
     [presentation.id],
   );
 
-  presentationRef.current = presentation;
+  const trackedPresentation = presentationRef.current;
+  if (
+    presentation.id !== trackedPresentation.id ||
+    presentation.cryptpadKeyVersion >= trackedPresentation.cryptpadKeyVersion
+  ) {
+    presentationRef.current = presentation;
+  }
 
   const handleRetry = useCallback(() => {
     editorGenerationRef.current += 1;
@@ -94,23 +101,19 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
     const toastId = toast.loading(t('common.presentationImportLoading', { name: file.name }));
 
     try {
-      const result = await api.saveProjectPresentationFile(presentation.id, file);
+      const result = await api.importProjectPresentationFile(presentation.id, file);
       const importedPresentation = result.item;
 
-      // An existing CryptPad key identifies the previous document. Start a fresh
-      // session so CryptPad imports the uploaded PPTX instead of reopening it.
-      presentationRef.current = {
-        ...presentationRef.current,
-        cryptpadSessionKey: null,
-        cryptpadKeyVersion: importedPresentation.cryptpadKeyVersion,
-        cryptpadMode: importedPresentation.cryptpadMode,
+      presentationRef.current = importedPresentation;
+      pendingImportToastRef.current = {
+        id: toastId,
+        successMessage: t('common.presentationImportSuccess'),
+        failureMessage: t('common.presentationImportFailed'),
       };
-      toast.success(t('common.presentationImportSuccess'), { id: toastId });
       handleRetry();
     } catch (nextError) {
       setImportError('upload');
       toast.error(t('common.presentationImportFailed'), { id: toastId });
-    } finally {
       setIsImporting(false);
     }
   }, [handleRetry, isImporting, pendingImportFile, presentation.id, t]);
@@ -206,6 +209,16 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
         setIsReady(false);
         setLoadPhase(phase);
         setEditorError(error);
+
+        const pendingImportToast = pendingImportToastRef.current;
+        if (pendingImportToast) {
+          pendingImportToastRef.current = null;
+          setImportError('upload');
+          setIsImporting(false);
+          toast.error(pendingImportToast.failureMessage, {
+            id: pendingImportToast.id,
+          });
+        }
       }
 
       return error;
@@ -287,6 +300,15 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
                 if (!isCancelled) {
                   setPhase('ready');
                   setIsReady(true);
+
+                  const pendingImportToast = pendingImportToastRef.current;
+                  if (pendingImportToast) {
+                    pendingImportToastRef.current = null;
+                    toast.success(pendingImportToast.successMessage, {
+                      id: pendingImportToast.id,
+                    });
+                    setIsImporting(false);
+                  }
                 }
               },
               onError: (nextError) => {

@@ -76,6 +76,9 @@ describe('Project presentation controllers', () => {
           id: 'presentation-1',
           projectId: 'project-1',
           boardId: 'board-1',
+          cryptpadEditKey: 'old-edit-key',
+          cryptpadViewKey: 'old-view-key',
+          cryptpadKeyVersion: 3,
           documentData: {
             filename: 'presentation.pptx',
             preview: {
@@ -136,7 +139,7 @@ describe('Project presentation controllers', () => {
 
     const result = await uploadFile.fn.call(
       { req: { currentUser: { id: 'user-1' } } },
-      { id: 'presentation-1' },
+      { id: 'presentation-1', resetSession: true },
       { success: (payload) => payload },
     );
 
@@ -153,6 +156,11 @@ describe('Project presentation controllers', () => {
       status: 'pending',
       sourceFilename: updatedValues.documentData.filename,
     });
+    expect(updatedValues).to.include({
+      cryptpadEditKey: null,
+      cryptpadViewKey: null,
+      cryptpadKeyVersion: 4,
+    });
     expect(enqueuedJobs).to.deep.equal([
       { presentationId: 'presentation-1', sourceFilename: updatedValues.documentData.filename },
     ]);
@@ -164,6 +172,7 @@ describe('Project presentation controllers', () => {
           item: {
             id: 'presentation-1',
             documentData: updatedValues.documentData,
+            cryptpadKeyVersion: 4,
           },
         },
       ],
@@ -177,6 +186,13 @@ describe('Project presentation controllers', () => {
       'Project presentation upload completed',
       { presentationId: 'presentation-1', phase: 'completed' },
     ]);
+  });
+
+  it('preserves the current CryptPad session for editor autosaves by default', () => {
+    expect(uploadFile.inputs.resetSession).to.include({
+      type: 'boolean',
+      defaultsTo: false,
+    });
   });
 
   it('notifies board users about a successful key rotation without broadcasting either key', async () => {

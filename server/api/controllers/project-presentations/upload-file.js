@@ -22,6 +22,7 @@ const Errors = {
 module.exports = {
   inputs: {
     id: { ...idInput, required: true },
+    resetSession: { type: 'boolean', defaultsTo: false },
   },
 
   exits: {
@@ -116,7 +117,7 @@ module.exports = {
     try {
       await fileManager.saveFromPath(filePath, file.fd, PRESENTATION_MIME_TYPE);
 
-      updatedPresentation = await ProjectPresentation.qm.updateOne(presentation.id, {
+      const values = {
         documentData: {
           mimeType: PRESENTATION_MIME_TYPE,
           sizeInBytes: file.size,
@@ -126,7 +127,17 @@ module.exports = {
             sourceFilename: filename,
           },
         },
-      });
+      };
+
+      if (inputs.resetSession) {
+        Object.assign(values, {
+          cryptpadEditKey: null,
+          cryptpadViewKey: null,
+          cryptpadKeyVersion: presentation.cryptpadKeyVersion + 1,
+        });
+      }
+
+      updatedPresentation = await ProjectPresentation.qm.updateOne(presentation.id, values);
 
       if (!updatedPresentation) {
         throw Errors.PRESENTATION_NOT_FOUND;

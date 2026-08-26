@@ -16,10 +16,14 @@ const updateProjectPresentationCryptPadKey = (id, data, headers) =>
 const saveProjectPresentationFile = (id, file, headers) =>
   http.post(`/project-presentations/${id}/file`, { file }, headers);
 
+const importProjectPresentationFile = (id, file, headers) =>
+  http.post(`/project-presentations/${id}/file`, { file, resetSession: true }, headers);
+
 export default {
   getProjectPresentations,
   createBoardPresentation,
   disableProjectPresentation,
   updateProjectPresentationCryptPadKey,
   saveProjectPresentationFile,
+  importProjectPresentationFile,
 };

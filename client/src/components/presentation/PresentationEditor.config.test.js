@@ -25,8 +25,14 @@ describe('Presentation editor permissions', () => {
 
   test('starts a fresh CryptPad session for an imported PowerPoint', () => {
     expect(source).toMatch(/const importedPresentation = result\.item/);
-    expect(source).toMatch(/cryptpadSessionKey:\s*null/);
-    expect(source).toMatch(/cryptpadMode:\s*importedPresentation\.cryptpadMode/);
+    expect(source).toMatch(/api\.importProjectPresentationFile/);
+    expect(source).toMatch(/presentationRef\.current = importedPresentation/);
+  });
+
+  test('does not restore an older session while the imported editor is starting', () => {
+    expect(source).toMatch(
+      /presentation\.cryptpadKeyVersion >= trackedPresentation\.cryptpadKeyVersion/,
+    );
   });
 
   test('asks for confirmation before replacing the current presentation', () => {
@@ -36,13 +42,14 @@ describe('Presentation editor permissions', () => {
 
   test('shows loading, success, and error feedback while importing a PowerPoint', () => {
     expect(source).toMatch(/toast\.loading/);
-    expect(source).toMatch(/toast\.success/);
     expect(source).toMatch(/toast\.error/);
+    expect(source).toMatch(/onDocumentReady:[\s\S]*?toast\.success[\s\S]*?setIsImporting\(false\)/);
   });
 
   test('does not let the replaced editor save its previous document over the import', () => {
     expect(source).toMatch(/editorGenerationRef\.current \+= 1/);
     expect(source).toMatch(/editorGeneration !== editorGenerationRef\.current/);
+    expect(source).toMatch(/onSave:[\s\S]*?api[\s\S]*?\.saveProjectPresentationFile/);
   });
 
   test('does not bootstrap unrelated ONLYOFFICE editors before the presentation', () => {
