@@ -603,6 +603,7 @@ export default {
       webPushState_blocked: "Bloqueadas pelo browser",
       webPushState_unsupported: "Não suportadas por este browser",
       webPushState_error: "Não foi possível atualizar este browser",
+      webPushTestUnavailable: "O serviço de notificações deste browser não está disponível.",
       webPushBlockedHelp:
         "Permita notificações para o Boards nas definições do browser para as ativar.",
       webPushErrorHelp: "Verifique a ligação e tente novamente.",
@@ -714,6 +715,7 @@ export default {
         "Tente novamente. Se o problema continuar, contacte um administrador do projeto.",
       presentationSaveFailed:
         "Não foi possível guardar a alteração da apresentação.",
+      presentationCreateFailed: "Não foi possível criar a apresentação. Tente novamente.",
       presentationImport: "Importar PowerPoint",
       presentationImportConfirm:
         "Importar “{{name}}”? O PowerPoint atual será substituído e esta ação não pode ser anulada.",
@@ -1053,6 +1055,7 @@ export default {
       retry: "Tentar novamente",
       turnOffChatNotifications: "Desativar",
       turnOnChatNotifications: "Ativar",
+      testChatNotifications: "Testar aviso",
       activateUser: "Ativar utilizador",
       activateUser_title: "Ativar Utilizador",
       addAnotherCard: "Adicionar outro cartão",

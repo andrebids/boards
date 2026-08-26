@@ -257,6 +257,7 @@ export default {
       webPushState_blocked: 'Vom Browser blockiert',
       webPushState_unsupported: 'Von diesem Browser nicht unterstützt',
       webPushState_error: 'Dieser Browser konnte nicht aktualisiert werden',
+      webPushTestUnavailable: 'Der Benachrichtigungsdienst dieses Browsers ist nicht verfügbar.',
       webPushBlockedHelp:
         'Erlauben Sie Benachrichtigungen für Boards in den Browser-Einstellungen.',
       webPushErrorHelp: 'Prüfen Sie die Verbindung und versuchen Sie es erneut.',
@@ -347,6 +348,7 @@ export default {
     action: {
       turnOffChatNotifications: 'Ausschalten',
       turnOnChatNotifications: 'Einschalten',
+      testChatNotifications: 'Benachrichtigung testen',
       activateUser: 'Benutzer aktivieren',
       activateUser_title: 'Benutzer aktivieren',
       addAnotherCard: 'Karte hinzufügen',

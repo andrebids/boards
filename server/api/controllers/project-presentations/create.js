@@ -46,7 +46,7 @@ module.exports = {
         boardId: board.id,
         createdByUserId: currentUser.id,
         isEnabled: true,
-        title: `Apresentação — ${board.name}`,
+        title: `Apresentação - ${board.name}`,
       });
     }
 

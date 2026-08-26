@@ -270,6 +270,7 @@ export default {
       webPushState_blocked: 'Bloqueadas por el navegador',
       webPushState_unsupported: 'No compatibles con este navegador',
       webPushState_error: 'No se pudo actualizar este navegador',
+      webPushTestUnavailable: 'El servicio de notificaciones de este navegador no está disponible.',
       webPushBlockedHelp:
         'Permite las notificaciones de Boards en la configuración del navegador para activarlas.',
       webPushErrorHelp: 'Comprueba la conexión e inténtalo de nuevo.',
@@ -386,6 +387,7 @@ export default {
     action: {
       turnOffChatNotifications: 'Desactivar',
       turnOnChatNotifications: 'Activar',
+      testChatNotifications: 'Probar aviso',
       activateUser: 'Activar usuario',
       activateUser_title: 'Activar usuario',
       addAnotherCard: 'Añadir otra tarjeta',

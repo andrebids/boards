@@ -1,15 +1,18 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Icon } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 
+import Config from '../../constants/Config';
 import Paths from '../../constants/Paths';
 import selectors from '../../selectors';
+import PlusIcon from '../../assets/images/plus-icon.svg?react';
 import { makePathWithPresentationBoard } from './presentationNavigation';
 import { usePresentation } from './PresentationContext';
 import getEnabledPresentationForBoard, {
   getPresentationBoardTileMode,
+  getPresentationBoardTilePreview,
 } from './presentationBoardTileState';
 
 import styles from './PresentationBoardTile.module.scss';
@@ -24,6 +27,12 @@ const PresentationBoardTile = React.memo(() => {
   const mode = boardId && getPresentationBoardTileMode(presentations, boardId, canEdit);
   const presentation =
     mode === 'open' ? getEnabledPresentationForBoard(presentations, boardId) : null;
+  const preview = getPresentationBoardTilePreview(presentation);
+  const [failedPreviewFilename, setFailedPreviewFilename] = useState(null);
+
+  useEffect(() => {
+    setFailedPreviewFilename(null);
+  }, [preview?.filename]);
 
   const handleCreate = useCallback(async () => {
     setCreateError(false);
@@ -43,26 +52,29 @@ const PresentationBoardTile = React.memo(() => {
   }
 
   if (mode === 'create') {
+    const createLabel = createError
+      ? t('common.presentationCreateFailed')
+      : t('action.createPresentation');
+
     return (
-      <button type="button" className={styles.tile} disabled={isCreating} onClick={handleCreate}>
-        <div className={styles.cover} aria-hidden="true">
-          <Icon
-            name={isCreating ? 'spinner' : 'file powerpoint outline'}
-            loading={isCreating}
-            className={styles.coverIcon}
-          />
-          <span className={styles.coverLabel}>{t('common.presentations')}</span>
-        </div>
-        <div className={styles.content}>
-          <span className={styles.type}>{t('common.presentations')}</span>
-          <span className={styles.title}>{t('action.createPresentation')}</span>
-          <span className={styles.open}>{t('common.presentationCreateDescription')}</span>
-          {createError && (
-            <span className={styles.error} role="alert">
-              {t('common.presentationSaveFailed')}
-            </span>
-          )}
-        </div>
+      <button
+        type="button"
+        className={`${styles.tile} ${styles.createTile}`}
+        disabled={isCreating}
+        title={createLabel}
+        aria-label={createLabel}
+        onClick={handleCreate}
+      >
+        {isCreating ? (
+          <Icon name="spinner" loading className={styles.createSpinner} aria-hidden="true" />
+        ) : (
+          <PlusIcon className={styles.createIcon} aria-hidden="true" />
+        )}
+        {createError && (
+          <span className={styles.visuallyHidden} role="alert">
+            {t('common.presentationCreateFailed')}
+          </span>
+        )}
       </button>
     );
   }
@@ -72,16 +84,37 @@ const PresentationBoardTile = React.memo(() => {
     board.id,
   );
 
+  if (preview && failedPreviewFilename !== preview.filename) {
+    const previewUrl = `${Config.SERVER_BASE_URL}/api/project-presentations/${presentation.id}/preview?v=${encodeURIComponent(
+      preview.filename,
+    )}`;
+
+    return (
+      <Link
+        to={presentationPath}
+        className={`${styles.tile} ${styles.previewTile}`}
+        title={presentation.title}
+        aria-label={`${t('action.open')}: ${presentation.title}`}
+      >
+        <img
+          className={styles.previewImage}
+          src={previewUrl}
+          alt=""
+          onError={() => setFailedPreviewFilename(preview.filename)}
+        />
+      </Link>
+    );
+  }
+
   return (
-    <Link to={presentationPath} className={styles.tile} title={presentation.title}>
-      <div className={styles.cover} aria-hidden="true">
+    <Link
+      to={presentationPath}
+      className={`${styles.tile} ${styles.previewTile}`}
+      title={presentation.title}
+      aria-label={`${t('action.open')}: ${presentation.title}`}
+    >
+      <div className={styles.previewPlaceholder} aria-hidden="true">
         <Icon name="file powerpoint outline" className={styles.coverIcon} />
-        <span className={styles.coverLabel}>{t('common.presentations')}</span>
-      </div>
-      <div className={styles.content}>
-        <span className={styles.type}>{t('common.presentations')}</span>
-        <span className={styles.title}>{presentation.title}</span>
-        <span className={styles.open}>{t('action.open')}</span>
       </div>
     </Link>
   );

@@ -5,6 +5,7 @@ import {
   disableWebPush,
   disableWebPushForLogout,
   reconcileWebPush,
+  showWebPushTestNotification,
   urlBase64ToUint8Array,
 } from './web-push';
 
@@ -186,5 +187,23 @@ describe('web push lifecycle', () => {
     await disableWebPushForLogout({ environment, removeSubscription });
 
     expect(subscription.unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  test('shows a local device notification through the registered worker', async () => {
+    const environment = makeEnvironment({ permission: 'granted' });
+    environment.registration.showNotification = jest.fn().mockResolvedValue(undefined);
+
+    await expect(showWebPushTestNotification(environment)).resolves.toBe(true);
+    expect(environment.registration.showNotification).toHaveBeenCalledWith(
+      'Boards · Teste de notificação',
+      {
+        body: 'Teste de notificações neste dispositivo',
+        icon: '/logo192.png',
+        renotify: true,
+        requireInteraction: true,
+        silent: false,
+        tag: 'boards-web-push-test',
+      },
+    );
   });
 });

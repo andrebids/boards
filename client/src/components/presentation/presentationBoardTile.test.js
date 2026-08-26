@@ -1,5 +1,6 @@
 import getEnabledPresentationForBoard, {
   getPresentationBoardTileMode,
+  getPresentationBoardTilePreview,
 } from './presentationBoardTileState';
 
 describe('getEnabledPresentationForBoard', () => {
@@ -23,5 +24,46 @@ describe('getEnabledPresentationForBoard', () => {
   test('offers creation only to an editor when the board has no presentation', () => {
     expect(getPresentationBoardTileMode(presentations, 'board-3', true)).toBe('create');
     expect(getPresentationBoardTileMode(presentations, 'board-3', false)).toBeNull();
+  });
+
+  test('uses a preview only when it belongs to the current PPTX version', () => {
+    const presentation = {
+      documentData: {
+        filename: 'presentation-new.pptx',
+        preview: {
+          status: 'ready',
+          sourceFilename: 'presentation-new.pptx',
+          filename: 'preview-presentation-new.jpg',
+        },
+      },
+    };
+
+    expect(getPresentationBoardTilePreview(presentation)).toEqual(
+      expect.objectContaining({ filename: 'preview-presentation-new.jpg' }),
+    );
+  });
+
+  test('does not show a stale or incomplete preview', () => {
+    expect(
+      getPresentationBoardTilePreview({
+        documentData: {
+          filename: 'presentation-new.pptx',
+          preview: {
+            status: 'ready',
+            sourceFilename: 'presentation-old.pptx',
+            filename: 'preview-presentation-old.jpg',
+          },
+        },
+      }),
+    ).toBeNull();
+
+    expect(
+      getPresentationBoardTilePreview({
+        documentData: {
+          filename: 'presentation-new.pptx',
+          preview: { status: 'pending', sourceFilename: 'presentation-new.pptx' },
+        },
+      }),
+    ).toBeNull();
   });
 });

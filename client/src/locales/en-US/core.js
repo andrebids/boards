@@ -332,6 +332,7 @@ export default {
       webPushState_blocked: "Blocked by the browser",
       webPushState_unsupported: "Not supported by this browser",
       webPushState_error: "Could not update this browser",
+      webPushTestUnavailable: "This browser's notification service is unavailable.",
       webPushBlockedHelp: "Allow notifications for Boards in your browser settings to turn them on.",
       webPushErrorHelp: "Check your connection and try again.",
       oldestFirst: "Oldest first",
@@ -441,6 +442,7 @@ export default {
       presentationLoadErrorDescription:
         "Try again. If the problem continues, contact a project administrator.",
       presentationSaveFailed: "Presentation change could not be saved.",
+      presentationCreateFailed: "Presentation could not be created. Try again.",
       presentationImport: "Import PowerPoint",
       presentationImportConfirm:
         "Import “{{name}}”? The current PowerPoint will be replaced and this action cannot be undone.",
@@ -773,6 +775,7 @@ export default {
       retry: "Try again",
       turnOffChatNotifications: "Turn off",
       turnOnChatNotifications: "Turn on",
+      testChatNotifications: "Test notification",
       activateUser: "Activate user",
       activateUser_title: "Activate User",
       addAnotherCard: "Add another card",

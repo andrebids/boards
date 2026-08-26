@@ -19,6 +19,7 @@ import {
   disableWebPush,
   getWebPushErrorState,
   reconcileWebPush,
+  showWebPushTestNotification,
 } from '../../../utils/web-push';
 import NotificationServices from '../../notification-services/NotificationServices';
 
@@ -29,6 +30,7 @@ const NotificationsPane = React.memo(() => {
   const config = useSelector(selectors.selectConfig);
   const notificationServiceIds = useSelector(selectors.selectNotificationServiceIdsForCurrentUser);
   const [webPushState, setWebPushState] = useState(WebPushStates.ACTIVATING);
+  const [webPushTestUnavailable, setWebPushTestUnavailable] = useState(false);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -109,6 +111,15 @@ const NotificationsPane = React.memo(() => {
       setWebPushState(getWebPushErrorState(error));
     }
   }, [removeWebPushSubscription, syncWebPushSubscription, webPushConfig.publicKey, webPushState]);
+
+  const handleWebPushTest = useCallback(async () => {
+    try {
+      const wasShown = await showWebPushTestNotification();
+      setWebPushTestUnavailable(!wasShown);
+    } catch (error) {
+      setWebPushState(getWebPushErrorState(error));
+    }
+  }, []);
 
   const updateForm = user.notificationLevelUpdateForm || {};
   const isUpdating = Boolean(updateForm.isSubmitting);
@@ -233,21 +244,33 @@ const NotificationsPane = React.memo(() => {
                 {t('common.webPushErrorHelp')}
               </p>
             )}
+            {webPushTestUnavailable && (
+              <p className={styles.error} role="alert">
+                {t('common.webPushTestUnavailable')}
+              </p>
+            )}
           </div>
-          <Button
-            type="button"
-            size="small"
-            variant={webPushState === WebPushStates.ACTIVE ? 'secondary' : 'primary'}
-            isPending={webPushState === WebPushStates.ACTIVATING}
-            isDisabled={
-              webPushState === WebPushStates.BLOCKED || webPushState === WebPushStates.UNSUPPORTED
-            }
-            onClick={handleWebPushToggle}
-          >
-            {webPushState === WebPushStates.ACTIVE
-              ? t('action.turnOffChatNotifications')
-              : t('action.turnOnChatNotifications')}
-          </Button>
+          <div className={styles.deviceActions}>
+            {webPushState === WebPushStates.ACTIVE && (
+              <Button type="button" size="small" variant="secondary" onClick={handleWebPushTest}>
+                {t('action.testChatNotifications')}
+              </Button>
+            )}
+            <Button
+              type="button"
+              size="small"
+              variant={webPushState === WebPushStates.ACTIVE ? 'secondary' : 'primary'}
+              isPending={webPushState === WebPushStates.ACTIVATING}
+              isDisabled={
+                webPushState === WebPushStates.BLOCKED || webPushState === WebPushStates.UNSUPPORTED
+              }
+              onClick={handleWebPushToggle}
+            >
+              {webPushState === WebPushStates.ACTIVE
+                ? t('action.turnOffChatNotifications')
+                : t('action.turnOnChatNotifications')}
+            </Button>
+          </div>
         </section>
       )}
 

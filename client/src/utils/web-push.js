@@ -162,3 +162,30 @@ export const disableWebPushForLogout = async ({
     .catch(() => {});
   await subscription.unsubscribe();
 };
+
+export const showWebPushTestNotification = async (environment = getDefaultEnvironment()) => {
+  if (!isWebPushSupported(environment) || environment.notification.permission !== 'granted') {
+    // eslint-disable-next-line no-console
+    console.warn('[WEB_PUSH_TEST] Notifications are not granted for this browser');
+    return false;
+  }
+
+  const registration = await environment.navigator.serviceWorker.getRegistration('/');
+  if (!registration) {
+    // eslint-disable-next-line no-console
+    console.warn('[WEB_PUSH_TEST] No Boards service worker registration was found');
+    return false;
+  }
+
+  await registration.showNotification('Boards · Teste de notificação', {
+    body: 'Teste de notificações neste dispositivo',
+    icon: '/logo192.png',
+    renotify: true,
+    requireInteraction: true,
+    silent: false,
+    tag: 'boards-web-push-test',
+  });
+  // eslint-disable-next-line no-console
+  console.info('[WEB_PUSH_TEST] Notification requested from the Boards service worker');
+  return true;
+};

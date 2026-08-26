@@ -124,7 +124,7 @@ const loadSubscriptions = async (userIds) => {
        id,
        user_id AS "userId",
        endpoint,
-       p256dh,
+       p_256_dh AS "p256dh",
        auth
      FROM web_push_subscription
      WHERE user_id = ANY($1::bigint[])

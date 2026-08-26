@@ -96,6 +96,10 @@ module.exports = {
       presentation.id,
       presentation.documentData && presentation.documentData.filename,
     );
+    const previousPreviewFilename =
+      presentation.documentData &&
+      presentation.documentData.preview &&
+      presentation.documentData.preview.filename;
 
     const discardUnpublishedFile = async () => {
       try {
@@ -117,6 +121,10 @@ module.exports = {
           mimeType: PRESENTATION_MIME_TYPE,
           sizeInBytes: file.size,
           filename,
+          preview: {
+            status: 'pending',
+            sourceFilename: filename,
+          },
         },
       });
 
@@ -144,6 +152,37 @@ module.exports = {
         });
       }
     }
+
+    if (previousPreviewFilename) {
+      try {
+        await fileManager.delete(getFilePath(presentation.id, previousPreviewFilename));
+      } catch (error) {
+        sails.log.warn('Failed to remove replaced project presentation preview', {
+          presentationId: presentation.id,
+          phase: 'cleanup',
+        });
+      }
+    }
+
+    try {
+      await sails.helpers.projectPresentationPreview.enqueue.with({
+        presentationId: presentation.id,
+        sourceFilename: filename,
+      });
+    } catch (error) {
+      sails.log.warn('Failed to queue project presentation preview', {
+        presentationId: presentation.id,
+        phase: 'preview-queue',
+      });
+    }
+
+    sails.sockets.broadcast(
+      `projectPresentation:${updatedPresentation.id}`,
+      'projectPresentationUpdate',
+      {
+        item: _.omit(updatedPresentation, ['cryptpadEditKey', 'cryptpadViewKey']),
+      },
+    );
 
     sails.log.info('Project presentation upload completed', {
       presentationId: presentation.id,

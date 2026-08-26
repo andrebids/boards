@@ -225,6 +225,7 @@ export default {
         "Tente novamente. Se o problema continuar, entre em contato com um administrador do projeto.",
       presentationSaveFailed:
         "Não foi possível salvar a alteração da apresentação.",
+      presentationCreateFailed: "Não foi possível criar a apresentação. Tente novamente.",
       presentationImport: "Importar PowerPoint",
       presentationImportConfirm:
         "Importar “{{name}}”? O PowerPoint atual será substituído e esta ação não poderá ser desfeita.",

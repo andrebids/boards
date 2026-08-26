@@ -136,6 +136,25 @@ module.exports.custom = {
   ),
   videoProcessingMaxAttempts: envToPositiveNumber(process.env.VIDEO_PROCESSING_MAX_ATTEMPTS, 3),
 
+  projectPresentationPreviewEnabled:
+    process.env.PROJECT_PRESENTATION_PREVIEW_ENABLED !== 'false',
+  projectPresentationPreviewPollIntervalSeconds: envToPositiveNumber(
+    process.env.PROJECT_PRESENTATION_PREVIEW_POLL_INTERVAL_SECONDS,
+    5,
+  ),
+  projectPresentationPreviewMaxJobsPerRun: envToPositiveNumber(
+    process.env.PROJECT_PRESENTATION_PREVIEW_MAX_JOBS_PER_RUN,
+    1,
+  ),
+  projectPresentationPreviewMaxAttempts: envToPositiveNumber(
+    process.env.PROJECT_PRESENTATION_PREVIEW_MAX_ATTEMPTS,
+    3,
+  ),
+  projectPresentationPreviewCommandTimeoutMs: envToPositiveNumber(
+    process.env.PROJECT_PRESENTATION_PREVIEW_COMMAND_TIMEOUT_MS,
+    30000,
+  ),
+
   defaultAdminEmail:
     process.env.DEFAULT_ADMIN_EMAIL && process.env.DEFAULT_ADMIN_EMAIL.toLowerCase(),
 

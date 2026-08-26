@@ -131,6 +131,7 @@ module.exports.routes = {
   'POST /api/project-presentations/:id/disable': 'project-presentations/disable',
   'POST /api/project-presentations/:id/cryptpad-key': 'project-presentations/update-cryptpad-key',
   'GET /api/project-presentations/:id/file': 'project-presentations/download-file',
+  'GET /api/project-presentations/:id/preview': 'project-presentations/download-preview',
   'POST /api/project-presentations/:id/file': 'project-presentations/upload-file',
   'GET /api/gantt-plans/:id/source-tasks': 'gantt-plans/source-tasks',
   'POST /api/gantt-plans/:id/import-source-tasks': 'gantt-plans/import-source-tasks',

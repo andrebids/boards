@@ -63,6 +63,8 @@ describe('Project presentation controllers', () => {
     const savedPaths = [];
     const deletedPaths = [];
     const infoEvents = [];
+    const enqueuedJobs = [];
+    const broadcasts = [];
     let updatedValues;
 
     await fs.writeFile(file.fd, makePptxFile());
@@ -76,6 +78,9 @@ describe('Project presentation controllers', () => {
           boardId: 'board-1',
           documentData: {
             filename: 'presentation.pptx',
+            preview: {
+              filename: 'preview-presentation-old.jpg',
+            },
           },
         }),
         updateOne: async (id, values) => {
@@ -105,6 +110,11 @@ describe('Project presentation controllers', () => {
         projectPresentations: {
           presentOne: (presentation) => presentation,
         },
+        projectPresentationPreview: {
+          enqueue: {
+            with: async (job) => enqueuedJobs.push(job),
+          },
+        },
       },
       hooks: {
         'file-manager': {
@@ -117,6 +127,9 @@ describe('Project presentation controllers', () => {
             },
           }),
         },
+      },
+      sockets: {
+        broadcast: (...args) => broadcasts.push(args),
       },
       log: { info: (...args) => infoEvents.push(args), warn: () => {} },
     };
@@ -136,8 +149,28 @@ describe('Project presentation controllers', () => {
       sizeInBytes: file.size,
     });
     expect(updatedValues.documentData.filename).to.equal(savedPaths[0].split('/').at(-1));
+    expect(updatedValues.documentData.preview).to.deep.equal({
+      status: 'pending',
+      sourceFilename: updatedValues.documentData.filename,
+    });
+    expect(enqueuedJobs).to.deep.equal([
+      { presentationId: 'presentation-1', sourceFilename: updatedValues.documentData.filename },
+    ]);
+    expect(broadcasts).to.deep.equal([
+      [
+        'projectPresentation:presentation-1',
+        'projectPresentationUpdate',
+        {
+          item: {
+            id: 'presentation-1',
+            documentData: updatedValues.documentData,
+          },
+        },
+      ],
+    ]);
     expect(deletedPaths).to.deep.equal([
       'private/attachments/project-presentations/presentation-1/presentation.pptx',
+      'private/attachments/project-presentations/presentation-1/preview-presentation-old.jpg',
     ]);
     expect(result.item.documentData.filename).to.equal(updatedValues.documentData.filename);
     expect(infoEvents).to.deep.include([
