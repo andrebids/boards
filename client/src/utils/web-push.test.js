@@ -193,11 +193,16 @@ describe('web push lifecycle', () => {
     const environment = makeEnvironment({ permission: 'granted' });
     environment.registration.showNotification = jest.fn().mockResolvedValue(undefined);
 
-    await expect(showWebPushTestNotification(environment)).resolves.toBe(true);
+    await expect(
+      showWebPushTestNotification(environment, {
+        body: 'Notifications are working on this device.',
+        title: 'Boards notification test',
+      }),
+    ).resolves.toBe(true);
     expect(environment.registration.showNotification).toHaveBeenCalledWith(
-      'Boards · Teste de notificação',
+      'Boards notification test',
       {
-        body: 'Teste de notificações neste dispositivo',
+        body: 'Notifications are working on this device.',
         icon: '/logo192.png',
         renotify: true,
         requireInteraction: true,

@@ -14,6 +14,7 @@
 
 - [x] Tarefa 4 — Criar worker mínimo que mostra sempre cada Push recebido.
 - [x] Tarefa 5 — Preservar o deep link após login/OIDC e focar o compositor.
+- [x] Tarefa 5A — Apresentar no Boards um aviso inspirado no Teams com remetente, contexto e ações **Responder**/**Abrir conversa**.
 
 ## Fase 4 — Entrega
 
@@ -25,3 +26,4 @@
 
 - [x] Durante desenvolvimento, usar hot reload e testes focados; não executar build local.
 - [ ] No release, verificar o worker no artefacto e o header `Cache-Control: no-cache`.
+- [x] Procedimento de rollout, canário, observabilidade e rollback documentado em `chat-desktop-notifications-production.md`.

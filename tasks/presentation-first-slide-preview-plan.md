@@ -9,6 +9,58 @@ No quadro Kanban, apresentar uma única peça de navegação para a apresentaç�
 
 O resultado deve reutilizar a largura, escala, cores, foco e deslocação horizontal das listas Planka. Não cria uma nova página, coleção, rota ou editor.
 
+## Plano de conclusão Ponytail (estado real em 2026-08-26)
+
+O caminho funcional já existe no commit `b1cf909`: guardar o PPTX marca a preview como pendente, enfileira a versão, converte `PPTX -> PDF -> primeira página JPEG`, guarda a imagem no armazenamento privado, publica a atualização por socket e o tile pede o endpoint autorizado de preview.
+
+O bloqueio confirmado no ambiente local é menor: o `Dockerfile` de produção já instala LibreOffice e Poppler, mas o `Dockerfile.dev` não. O job atual chegou ao worker e falhou com `spawn soffice ENOENT`. A tabela da fila existe; há um job falhado e duas apresentações locais com PPTX.
+
+### Tarefa A: completar o runtime de desenvolvimento
+
+**Descrição:** adicionar `libreoffice` e `poppler-utils` à lista existente de pacotes de `Dockerfile.dev`, espelhando apenas as dependências que o worker já invoca.
+
+**Critérios de aceitação:**
+
+- [ ] `soffice` e `pdftoppm` existem dentro de `planka-server`.
+- [ ] O servidor inicia com o hook `project-presentation-preview` ativo.
+
+**Verificação:** reconstruir/recriar apenas o container de desenvolvimento do servidor e executar `command -v soffice` e `command -v pdftoppm`. Não executar build do cliente.
+
+**Dependências:** nenhuma. **Âmbito:** XS, um ficheiro (`Dockerfile.dev`).
+
+### Tarefa B: reiniciar corretamente uma nova tentativa
+
+**Descrição:** no `ON CONFLICT` de `project-presentation-preview/enqueue`, repor `attempts = 0` quando uma nova versão do PPTX volta a enfileirar a apresentação. Sem isto, um job anteriormente esgotado fica com o contador antigo.
+
+**Critérios de aceitação:**
+
+- [ ] Uma nova gravação substitui um job falhado por `pending` com zero tentativas.
+- [ ] O teste focado da fila cobre essa reposição.
+
+**Verificação:** executar apenas os testes de `project-presentation-preview` do servidor.
+
+**Dependências:** nenhuma. **Âmbito:** S, helper e teste existente.
+
+### Tarefa C: gerar e confirmar a capa real
+
+**Descrição:** depois do novo container estar ativo, guardar uma vez cada apresentação local que ainda não tenha preview. Essa gravação reaproveita o fluxo normal e evita criar código permanente de backfill para dois registos.
+
+**Critérios de aceitação:**
+
+- [ ] O job termina em `ready` sem `ENOENT`.
+- [ ] O endpoint privado devolve `image/jpeg` apenas a um utilizador autorizado.
+- [ ] O tile troca o placeholder pelo primeiro slide sem recarregar o quadro.
+- [ ] Uma falha de conversão continua a mostrar o placeholder e não bloqueia a gravação.
+
+**Verificação:** logs do worker, estado do job, pedido autenticado ao endpoint e inspeção no Kanban por hot reload.
+
+**Dependências:** tarefas A e B. **Âmbito:** validação, sem novo código.
+
+### Deliberadamente fora deste incremento
+
+- Backfill automático ou serviço adicional para apresentações antigas; adicionar apenas quando houver volume que torne impraticável guardar cada apresentação uma vez.
+- Miniaturas de todos os slides, seleção manual de capa ou screenshots do iframe.
+
 ## Leitura de design
 
 Produto de gestão visual, para utilizadores que já trabalham no Kanban, com linguagem escura, densa e funcional do Planka. Preservar o sistema existente, sem cards de marketing, gradientes, animação automática ou texto sobre a miniatura.
@@ -20,8 +72,8 @@ Parâmetros aplicados: variância 2, movimento 2, densidade 8. O único moviment
 - `ProjectPresentation.boardId` é único, logo a relação já é uma apresentação por quadro.
 - O cliente já carrega as apresentações no `ProjectPresentationProvider` e já sabe criar uma por `POST /boards/:id/presentation`.
 - O quadro já contém trabalho local não commitado para `PresentationBoardTile`; ele cria/abre a apresentação sem a colocar no `Droppable` das listas.
-- O PPTX fica privado em `project-presentations/<id>/...`; `documentData` guarda apenas metadados do PPTX. Não há miniatura, endpoint de imagem ou conversor de slides.
-- O container Planka tem `ffmpeg`, mas não contém um conversor PPTX para imagem. O OnlyOffice dentro do CryptPad não deve ser usado pelo browser para tirar screenshots.
+- O PPTX e a miniatura ficam privados em `project-presentations/<id>/...`; `documentData.preview` liga a imagem à versão atual do PPTX.
+- A fila, o endpoint autorizado e o conversor já existem. O `Dockerfile` de produção inclui LibreOffice/Poppler, mas a imagem de desenvolvimento atual não; o OnlyOffice dentro do CryptPad continua fora deste fluxo.
 
 ## Decisões de produto e arquitetura
 

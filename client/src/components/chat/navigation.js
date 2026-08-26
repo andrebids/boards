@@ -27,6 +27,11 @@ export const getGlobalConversationTarget = ({
   } else {
     parameters.delete('chatMessage');
   }
+  if (item.reply) {
+    parameters.set('reply', '1');
+  } else {
+    parameters.delete('reply');
+  }
 
   return {
     conversationId,

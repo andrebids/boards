@@ -63,7 +63,7 @@
     }
   }
 
-  .createTitle {
+  .tileTitle {
     align-items: center;
     box-sizing: border-box;
     color: var(--text-primary);
@@ -94,13 +94,17 @@
   }
 
   .previewTile {
-    height: 153px;
+    background: #303947;
+    display: flex;
+    flex-direction: column;
+    height: 197px;
   }
 
   .previewImage,
   .previewPlaceholder {
     display: block;
-    height: 100%;
+    flex: 1 1 153px;
+    min-height: 0;
     width: 100%;
   }
 

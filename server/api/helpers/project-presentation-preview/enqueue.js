@@ -29,6 +29,7 @@ module.exports = {
        ON CONFLICT (presentation_id) DO UPDATE
        SET source_filename = EXCLUDED.source_filename,
            status = 'pending',
+           attempts = 0,
            scheduled_at = NOW(),
            last_error = NULL,
            completed_at = NULL,

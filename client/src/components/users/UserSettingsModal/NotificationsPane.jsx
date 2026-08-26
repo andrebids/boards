@@ -21,26 +21,17 @@ import {
   reconcileWebPush,
   showWebPushTestNotification,
 } from '../../../utils/web-push';
-import NotificationServices from '../../notification-services/NotificationServices';
 
 import styles from './NotificationsPane.module.scss';
 
 const NotificationsPane = React.memo(() => {
   const user = useSelector(selectors.selectCurrentUser);
   const config = useSelector(selectors.selectConfig);
-  const notificationServiceIds = useSelector(selectors.selectNotificationServiceIdsForCurrentUser);
   const [webPushState, setWebPushState] = useState(WebPushStates.ACTIVATING);
   const [webPushTestUnavailable, setWebPushTestUnavailable] = useState(false);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
-
-  const handleCreate = useCallback(
-    (data) => {
-      dispatch(entryActions.createNotificationServiceInCurrentUser(data));
-    },
-    [dispatch],
-  );
 
   const handleNotificationLevelChange = useCallback(
     ({ target: { value } }) => {
@@ -114,12 +105,15 @@ const NotificationsPane = React.memo(() => {
 
   const handleWebPushTest = useCallback(async () => {
     try {
-      const wasShown = await showWebPushTestNotification();
+      const wasShown = await showWebPushTestNotification(undefined, {
+        body: t('common.chatNotificationsOnThisDeviceDescription'),
+        title: `Boards · ${t('action.testChatNotifications')}`,
+      });
       setWebPushTestUnavailable(!wasShown);
     } catch (error) {
       setWebPushState(getWebPushErrorState(error));
     }
-  }, []);
+  }, [t]);
 
   const updateForm = user.notificationLevelUpdateForm || {};
   const isUpdating = Boolean(updateForm.isSubmitting);
@@ -273,14 +267,6 @@ const NotificationsPane = React.memo(() => {
           </div>
         </section>
       )}
-
-      <section className={styles.services} aria-labelledby="notification-services-title">
-        <h3 id="notification-services-title" className={styles.sectionTitle}>
-          {t('common.notificationDelivery')}
-        </h3>
-        <p className={styles.sectionDescription}>{t('common.notificationDeliveryDescription')}</p>
-        <NotificationServices ids={notificationServiceIds} onCreate={handleCreate} />
-      </section>
     </Tab.Pane>
   );
 });

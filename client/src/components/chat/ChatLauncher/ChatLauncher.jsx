@@ -5,7 +5,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { MessageCircle, X } from 'lucide-react';
+import { MessageCircle, Reply, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
@@ -228,6 +228,20 @@ const ChatLauncher = React.memo(() => {
     });
   }, [dismissPreview, openGlobalConversation, previewAlert]);
 
+  const handlePreviewReply = useCallback(() => {
+    if (!previewAlert) {
+      return;
+    }
+
+    dismissPreview();
+    openGlobalConversation({
+      conversationId: previewAlert.conversationId,
+      firstUnreadMessageId: previewAlert.messageId,
+      projectId: previewAlert.projectId,
+      reply: true,
+    });
+  }, [dismissPreview, openGlobalConversation, previewAlert]);
+
   if (!isEnabled) {
     return null;
   }
@@ -243,6 +257,13 @@ const ChatLauncher = React.memo(() => {
   const previewLastMessage = alertConversation?.lastMessage || alertInboxItem?.lastMessage;
   const previewSenderName = alertSender?.name || alertInboxItem?.title || t('chat.conversation');
   const previewText = getMessagePreviewText(previewLastMessage, t);
+  const previewConversationTitle = alertInboxItem?.title || t('chat.conversation');
+  const previewContext = [
+    previewConversationTitle !== previewSenderName ? previewConversationTitle : null,
+    alertInboxItem?.projectName,
+  ]
+    .filter(Boolean)
+    .join(' · ');
   const previewUnreadCount = Math.max(
     alertConversation?.unreadCount || 0,
     alertInboxItem?.unreadCount || 0,
@@ -262,15 +283,30 @@ const ChatLauncher = React.memo(() => {
         />
       )}
       {previewAlert && (
-        <div
+        <aside
           className={`${styles.messagePreview} ${
             isPreviewClosing ? styles.messagePreviewClosing : ''
           }`}
+          aria-label={t('chat.newMessageAlert')}
+          aria-live="polite"
           onBlur={schedulePreviewDismiss}
           onFocus={clearPreviewTimers}
           onMouseEnter={clearPreviewTimers}
           onMouseLeave={schedulePreviewDismiss}
         >
+          <header className={styles.previewHeader}>
+            <span className={styles.previewAppMark} aria-hidden="true">
+              <MessageCircle size={15} strokeWidth={2.2} />
+            </span>
+            <strong>Boards</strong>
+            <span>{t('chat.newMessageAlert')}</span>
+          </header>
+          <CloseButton
+            ariaLabel={t('chat.close')}
+            className={styles.previewDismiss}
+            onClick={dismissPreview}
+            title={t('chat.close')}
+          />
           <button
             type="button"
             className={styles.previewOpen}
@@ -281,24 +317,29 @@ const ChatLauncher = React.memo(() => {
             <span className={styles.previewCopy}>
               <span className={styles.previewTitleLine}>
                 <strong>{previewSenderName}</strong>
-                <span
-                  aria-label={t('chat.unreadMessages', {
-                    count: previewUnreadCount,
-                  })}
-                >
-                  {previewUnreadCount > 99 ? '99+' : previewUnreadCount}
-                </span>
+                <span>{previewContext}</span>
               </span>
-              <small>{previewText}</small>
+              <span className={styles.previewMessage}>{previewText}</span>
             </span>
           </button>
-          <CloseButton
-            ariaLabel={t('chat.close')}
-            className={styles.previewDismiss}
-            onClick={dismissPreview}
-            title={t('chat.close')}
-          />
-        </div>
+          <footer className={styles.previewActions}>
+            <button type="button" className={styles.previewReply} onClick={handlePreviewReply}>
+              <Reply aria-hidden="true" size={15} strokeWidth={2} />
+              {t('chat.reply')}
+            </button>
+            <button type="button" className={styles.previewSecondary} onClick={handlePreviewOpen}>
+              {t('chat.openConversation')}
+            </button>
+            <span
+              className={styles.previewUnread}
+              aria-label={t('chat.unreadMessages', {
+                count: previewUnreadCount,
+              })}
+            >
+              {previewUnreadCount > 99 ? '99+' : previewUnreadCount}
+            </span>
+          </footer>
+        </aside>
       )}
       <button
         type="button"

@@ -183,9 +183,6 @@ export default merge({}, enUSCore, {
         "Enregistrement de la préférence de notification…",
       notificationPreferenceSaveFailed:
         "Impossible d’enregistrer la préférence de notification. Veuillez réessayer.",
-      notificationDelivery: "Envoi des notifications",
-      notificationDeliveryDescription:
-        "Ces services d’envoi respectent la préférence personnelle ci-dessus.",
       oldestFirst: "Le plus ancien en premier",
       openBoard_title: "Ouvrir le tableau",
       optional_inline: "optionnel",
@@ -487,9 +484,6 @@ export default merge({}, enUSCore, {
         "Utilisez cet outil pour envoyer un véritable e-mail de test avec le compte SMTP configuré globalement (« {{email}} »).",
       sendTestEmailTitle: "Envoyer un e-mail de test",
       sendTestEmail: "Envoyer l’e-mail de test",
-      globalNotificationsActiveTitle: "Système de notifications globales actif",
-      globalNotificationsActiveDescription:
-        "Toutes les notifications sont envoyées de manière centralisée via l’adresse e-mail <strong>{{email}}</strong>. Aucune configuration supplémentaire n’est requise de la part de l’utilisateur.",
       expandPanel: "Développer le panneau",
       collapsePanel: "Réduire le panneau",
       openActivityHistory: "Ouvrir l’historique des activités",

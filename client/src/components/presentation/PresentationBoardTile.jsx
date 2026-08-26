@@ -65,7 +65,7 @@ const PresentationBoardTile = React.memo(() => {
         aria-label={createLabel}
         onClick={handleCreate}
       >
-        <span className={styles.createTitle}>{t('common.presentations')}</span>
+        <span className={styles.tileTitle}>{t('common.presentations')}</span>
         <span className={styles.createBody} aria-hidden="true">
           {isCreating ? (
             <Icon name="spinner" loading className={styles.createSpinner} />
@@ -99,6 +99,7 @@ const PresentationBoardTile = React.memo(() => {
         title={presentation.title}
         aria-label={`${t('action.open')}: ${presentation.title}`}
       >
+        <span className={styles.tileTitle}>{t('common.presentations')}</span>
         <img
           className={styles.previewImage}
           src={previewUrl}
@@ -116,6 +117,7 @@ const PresentationBoardTile = React.memo(() => {
       title={presentation.title}
       aria-label={`${t('action.open')}: ${presentation.title}`}
     >
+      <span className={styles.tileTitle}>{t('common.presentations')}</span>
       <div className={styles.previewPlaceholder} aria-hidden="true">
         <Icon name="file powerpoint outline" className={styles.coverIcon} />
       </div>

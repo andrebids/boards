@@ -51,55 +51,86 @@
 
   .messagePreview {
     animation: message-preview-enter 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
-    backdrop-filter: blur(16px);
-    background: rgba(24, 30, 39, 0.94);
-    border: 0;
-    border-radius: 16px;
-    bottom: 24px;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-border);
+    border-radius: 10px;
+    bottom: 88px;
     box-shadow:
-      0 18px 44px rgba(5, 8, 12, 0.34),
-      0 4px 12px rgba(5, 8, 12, 0.22);
+      0 18px 48px rgba(5, 8, 12, 0.42),
+      0 4px 14px rgba(5, 8, 12, 0.28);
     color: var(--chat-foreground);
-    display: block;
-    min-height: 58px;
     overflow: hidden;
-    padding: 0;
     position: fixed;
-    right: 88px;
+    right: 24px;
     text-align: left;
-    transform-origin: right center;
-    width: min(292px, calc(100vw - 116px));
+    transform-origin: right bottom;
+    width: min(360px, calc(100vw - 32px));
     z-index: 1006;
+  }
 
-    &:hover {
-      background: rgba(32, 39, 51, 0.97);
+  .previewHeader {
+    align-items: center;
+    background: var(--chat-surface-secondary);
+    border-bottom: 1px solid var(--chat-separator);
+    display: flex;
+    gap: 8px;
+    min-height: 42px;
+    padding: 7px 42px 7px 12px;
+
+    strong {
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    > span:last-child {
+      color: var(--chat-muted-subtle);
+      font-size: 11px;
+      line-height: 18px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
-  .previewOpen {
+  .previewAppMark {
     align-items: center;
+    background: var(--chat-accent);
+    border-radius: 5px;
+    color: var(--chat-accent-foreground);
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 26px;
+    justify-content: center;
+    width: 26px;
+  }
+
+  .previewOpen {
+    align-items: start;
     appearance: none;
     background: transparent;
     border: 0;
     color: inherit;
     cursor: pointer;
     display: grid;
-    gap: 10px;
+    gap: 12px;
     grid-template-columns: 36px minmax(0, 1fr);
-    min-height: 58px;
+    min-height: 86px;
     min-width: 0;
-    padding: 10px 38px 10px 10px;
+    padding: 14px 16px;
     text-align: left;
     width: 100%;
+
+    &:hover {
+      background: var(--chat-surface-hover);
+    }
 
     &:active {
       opacity: 0.78;
     }
 
     &:focus-visible {
-      border-radius: 14px;
-      outline: 2px solid var(--chat-focus-ring);
-      outline-offset: -2px;
+      box-shadow: inset 0 0 0 2px var(--chat-accent);
+      outline: none;
     }
   }
 
@@ -107,8 +138,8 @@
     background: transparent !important;
     color: var(--chat-muted) !important;
     position: absolute;
-    right: 6px;
-    top: 6px;
+    right: 7px;
+    top: 7px;
 
     &:hover {
       background: rgba(255, 255, 255, 0.08) !important;
@@ -124,50 +155,108 @@
   .previewCopy {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 7px;
     min-width: 0;
-
-    small {
-      color: var(--chat-muted);
-      display: block;
-      font-size: 12px;
-      line-height: 1.35;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
   }
 
   .previewTitleLine {
-    align-items: center;
     display: flex;
-    gap: 8px;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 1px;
     min-width: 0;
 
     strong {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
-      line-height: 1.25;
+      line-height: 19px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     span {
-      align-items: center;
-      background: var(--chat-accent-soft-hover);
-      border-radius: 999px;
-      color: #7cc4ff;
-      display: inline-flex;
-      flex: 0 0 auto;
-      font-size: 10px;
-      font-weight: 800;
-      height: 20px;
-      justify-content: center;
-      min-width: 20px;
-      padding: 0 6px;
+      color: var(--chat-muted-subtle);
+      font-size: 11px;
+      line-height: 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
+  }
+
+  .previewMessage {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: var(--chat-muted);
+    display: -webkit-box;
+    font-size: 13px;
+    line-height: 18px;
+    max-height: 36px;
+    overflow: hidden;
+  }
+
+  .previewActions {
+    align-items: center;
+    border-top: 1px solid var(--chat-separator);
+    display: flex;
+    gap: 8px;
+    min-height: 48px;
+    padding: 8px 12px;
+
+    button {
+      align-items: center;
+      border-radius: var(--chat-radius-control);
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 650;
+      gap: 6px;
+      height: 32px;
+      justify-content: center;
+      padding: 0 12px;
+
+      &:focus-visible {
+        outline: 2px solid var(--chat-accent);
+        outline-offset: 2px;
+      }
+    }
+  }
+
+  .previewReply {
+    background: var(--chat-accent);
+    border: 1px solid var(--chat-accent);
+    color: var(--chat-accent-foreground);
+
+    &:hover {
+      background: var(--chat-accent-hover);
+      filter: brightness(1.08);
+    }
+  }
+
+  .previewSecondary {
+    background: var(--chat-default);
+    border: 1px solid var(--chat-border);
+    color: var(--chat-foreground);
+
+    &:hover {
+      background: var(--chat-default-hover);
+    }
+  }
+
+  .previewUnread {
+    align-items: center;
+    background: var(--chat-accent-soft-hover);
+    border-radius: 999px;
+    color: #7cc4ff;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 10px;
+    font-weight: 800;
+    height: 22px;
+    justify-content: center;
+    margin-left: auto;
+    min-width: 22px;
+    padding: 0 6px;
   }
 
   .iconStack {
@@ -291,9 +380,9 @@
       right: 16px;
     }
     .messagePreview {
-      bottom: 16px;
-      right: 80px;
-      width: min(280px, calc(100vw - 104px));
+      bottom: 80px;
+      right: 16px;
+      width: min(360px, calc(100vw - 32px));
     }
   }
 

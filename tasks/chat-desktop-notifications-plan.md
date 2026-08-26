@@ -183,6 +183,16 @@ Podemos validar a lista antes da reunião?
 
 ## Fase 3 — Worker e navegação
 
+### Tarefa 3B — Aviso visual dentro do Boards
+
+**Descrição:** Quando o socket recebe `chatMessageAlert` e a conversa não está já aberta, reutilizar o `ChatLauncher` para apresentar um aviso compacto inspirado na hierarquia do Teams. O aviso usa a identidade Boards e os tokens do chat, mostra remetente, conversa/projeto e uma pré-visualização curta, e inclui **Responder** e **Abrir conversa**.
+
+**Resposta:** a ação **Responder** acrescenta `reply=1` ao deep link interno já validado. O `ChatWindow` consome esse parâmetro uma única vez e foca o compositor.
+
+**Limite visual:** este layout só existe dentro do Boards. O Windows/macOS continua a desenhar o aviso Web Push nativo. Por compatibilidade com Safari, cada evento Push continua a gerar um aviso visível; por isso, alguns browsers podem apresentar também o aviso do sistema quando o Boards está aberto.
+
+**Verificação:** testes focados da elegibilidade da pré-visualização e da construção do deep link com intenção de resposta; validação visual e por teclado no browser.
+
 ### Tarefa 4 — Mostrar o aviso persistente
 
 **Descrição:** Criar um service worker mínimo em `client/public/`. No evento `push`, validar a versão e os campos do payload e chamar sempre `registration.showNotification()`. No `notificationclick`, fechar o aviso, focar/navegar uma janela Boards existente ou abrir uma nova rota relativa à mesma origem.

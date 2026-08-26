@@ -254,7 +254,6 @@ const timeAgo = {
     },
   },
 };
-
 export default {
   dateFns,
   timeAgo,
@@ -591,9 +590,6 @@ export default {
       savingNotificationPreference: "A guardar a preferência de notificações…",
       notificationPreferenceSaveFailed:
         "Não foi possível guardar a preferência de notificações. Tente novamente.",
-      notificationDelivery: "Entrega das notificações",
-      notificationDeliveryDescription:
-        "Estes serviços de entrega respeitam a preferência pessoal acima.",
       chatNotificationsOnThisDevice: "Notificações do chat neste dispositivo",
       chatNotificationsOnThisDeviceDescription:
         "Mostra uma pré-visualização curta no Windows ou macOS, mesmo com o separador Boards fechado.",
@@ -1009,9 +1005,6 @@ export default {
         'Use esta ferramenta para enviar um e-mail de teste real usando a conta SMTP configurada globalmente ("{{email}}").',
       sendTestEmailTitle: "Enviar um E-mail de Teste",
       sendTestEmail: "Enviar E-mail de Teste",
-      globalNotificationsActiveTitle: "Sistema de Notificações Globais Ativo",
-      globalNotificationsActiveDescription:
-        "Todas as notificações são enviadas centralmente através do endereço de e-mail <strong>{{email}}</strong>. Não é necessária qualquer configuração adicional por parte do utilizador.",
       cardImages: "Imagens do cartão",
       cardMedia: "Imagens e vídeos do cartão",
       imagePosition: "Imagem {{current}} de {{total}}",

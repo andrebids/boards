@@ -320,9 +320,6 @@ export default {
       savingNotificationPreference: "Saving notification preference…",
       notificationPreferenceSaveFailed:
         "We couldn't save your notification preference. Try again.",
-      notificationDelivery: "Notification delivery",
-      notificationDeliveryDescription:
-        "These delivery services follow the personal preference above.",
       chatNotificationsOnThisDevice: "Chat notifications on this device",
       chatNotificationsOnThisDeviceDescription:
         "Show a short message preview in Windows or macOS, even when the Boards tab is closed.",
@@ -761,9 +758,6 @@ export default {
         'Use this tool to send a real test email using the globally configured SMTP account ("{{email}}").',
       sendTestEmailTitle: "Send a Test Email",
       sendTestEmail: "Send Test Email",
-      globalNotificationsActiveTitle: "Global Notification System Active",
-      globalNotificationsActiveDescription:
-        "All notifications are sent centrally through the email address <strong>{{email}}</strong>. No additional configuration is required from the user.",
       expandPanel: "Expand panel",
       collapsePanel: "Collapse panel",
       openActivityHistory: "Open activity history",

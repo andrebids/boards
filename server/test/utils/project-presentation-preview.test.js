@@ -31,6 +31,7 @@ describe('Project presentation preview queue', () => {
     expect(job).to.deep.equal({ id: 1 });
     expect(queries).to.have.lengthOf(1);
     expect(queries[0].query).to.include('ON CONFLICT (presentation_id) DO UPDATE');
+    expect(queries[0].query).to.include('attempts = 0');
     expect(queries[0].values).to.deep.equal(['presentation-1', 'presentation-new.pptx']);
   });
 });
