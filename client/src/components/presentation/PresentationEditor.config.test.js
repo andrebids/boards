@@ -54,7 +54,12 @@ describe('Presentation editor permissions', () => {
   test('does not let the replaced editor save its previous document over the import', () => {
     expect(source).toMatch(/editorGenerationRef\.current \+= 1/);
     expect(source).toMatch(/editorGeneration !== editorGenerationRef\.current/);
-    expect(source).toMatch(/onSave:[\s\S]*?api[\s\S]*?\.saveProjectPresentationFile/);
+    expect(source).toMatch(
+      /onSave:[\s\S]*?\.saveProjectPresentationFile\([\s\S]*?presentationRef\.current\.cryptpadKeyVersion/,
+    );
+    expect(apiSource).toMatch(
+      /saveProjectPresentationFile = \(id, file, keyVersion, headers\)[\s\S]*?file\?keyVersion=\$\{keyVersion\}/,
+    );
   });
 
   test('does not bootstrap unrelated ONLYOFFICE editors before the presentation', () => {

@@ -32,6 +32,15 @@ const makePptxFile = () => {
   return Buffer.concat([localHeader, centralDirectory, endRecord]);
 };
 
+const fileExists = async (filePath) => {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 describe('Project presentation controllers', () => {
   let previousGlobals;
   let tempDirectory;
@@ -99,11 +108,17 @@ describe('Project presentation controllers', () => {
     };
     global.sails = {
       config: {
-        custom: { attachmentMaxBytes: 1024 * 1024, attachmentsPathSegment: 'private/attachments' },
+        custom: {
+          attachmentMaxBytes: 1024 * 1024,
+          attachmentsPathSegment: 'private/attachments',
+        },
       },
       helpers: {
         presentations: {
-          getProjectAccess: async () => ({ canEdit: false, accessibleBoardIds: ['board-1'] }),
+          getProjectAccess: async () => ({
+            canEdit: false,
+            accessibleBoardIds: ['board-1'],
+          }),
         },
         utils: {
           receiveFile: {
@@ -162,7 +177,10 @@ describe('Project presentation controllers', () => {
       cryptpadKeyVersion: 4,
     });
     expect(enqueuedJobs).to.deep.equal([
-      { presentationId: 'presentation-1', sourceFilename: updatedValues.documentData.filename },
+      {
+        presentationId: 'presentation-1',
+        sourceFilename: updatedValues.documentData.filename,
+      },
     ]);
     expect(broadcasts).to.deep.equal([
       [
@@ -195,6 +213,137 @@ describe('Project presentation controllers', () => {
     });
   });
 
+  it('discards a completed autosave when its CryptPad session version is stale', async () => {
+    const file = {
+      fd: path.join(tempDirectory, 'stale-autosave.pptx'),
+      filename: 'presentation.pptx',
+      size: 0,
+    };
+    const currentPresentation = {
+      id: 'presentation-1',
+      projectId: 'project-1',
+      boardId: 'board-1',
+      cryptpadKeyVersion: 4,
+      documentData: { filename: 'imported.pptx' },
+    };
+    const stalePresentation = {
+      ...currentPresentation,
+      cryptpadKeyVersion: 3,
+      documentData: { filename: 'previous.pptx' },
+    };
+    const deletedPaths = [];
+    const updateCriteria = [];
+    const broadcasts = [];
+    const enqueuedJobs = [];
+
+    await fs.writeFile(file.fd, makePptxFile());
+    file.size = (await fs.stat(file.fd)).size;
+
+    global.ProjectPresentation = {
+      qm: {
+        getOneById: async () =>
+          updateCriteria.length === 0 ? stalePresentation : currentPresentation,
+        updateOne: async (criteria) => {
+          updateCriteria.push(criteria);
+          return undefined;
+        },
+      },
+    };
+    global.Project = { qm: { getOneById: async () => ({ id: 'project-1' }) } };
+    global.sails = {
+      config: {
+        custom: {
+          attachmentMaxBytes: 1024 * 1024,
+          attachmentsPathSegment: 'private/attachments',
+        },
+      },
+      helpers: {
+        presentations: {
+          getProjectAccess: async () => ({ accessibleBoardIds: ['board-1'] }),
+        },
+        utils: { receiveFile: { with: async () => [file] } },
+        projectPresentations: { presentOne: (presentation) => presentation },
+        projectPresentationPreview: {
+          enqueue: { with: async (job) => enqueuedJobs.push(job) },
+        },
+      },
+      hooks: {
+        'file-manager': {
+          getInstance: () => ({
+            saveFromPath: async () => {},
+            delete: async (filePath) => deletedPaths.push(filePath),
+          }),
+        },
+      },
+      sockets: { broadcast: (...args) => broadcasts.push(args) },
+      log: { info: () => {}, warn: () => {} },
+    };
+
+    const result = await uploadFile.fn.call(
+      { req: { currentUser: { id: 'user-1' } } },
+      { id: 'presentation-1', resetSession: false, keyVersion: 3 },
+      { success: (payload) => payload },
+    );
+
+    expect(updateCriteria).to.deep.equal([{ id: 'presentation-1', cryptpadKeyVersion: 3 }]);
+    expect(deletedPaths).to.have.lengthOf(1);
+    expect(deletedPaths[0]).to.match(/presentation-[\w-]+\.pptx$/);
+    expect(deletedPaths).not.to.include(
+      'private/attachments/project-presentations/presentation-1/imported.pptx',
+    );
+    expect(enqueuedJobs).to.have.lengthOf(0);
+    expect(broadcasts).to.have.lengthOf(0);
+    expect(result.item).to.equal(currentPresentation);
+    expect(await fileExists(file.fd)).to.equal(false);
+  });
+
+  it('rejects multiple uploads and removes every received temporary file', async () => {
+    const files = ['first.pdf', 'second.pptx'].map((filename) => ({
+      fd: path.join(tempDirectory, filename),
+      filename,
+      size: 4,
+    }));
+    await Promise.all(files.map(({ fd }) => fs.writeFile(fd, 'nope')));
+
+    global.ProjectPresentation = {
+      qm: {
+        getOneById: async () => ({
+          id: 'presentation-1',
+          projectId: 'project-1',
+          boardId: 'board-1',
+          cryptpadKeyVersion: 1,
+        }),
+      },
+    };
+    global.Project = { qm: { getOneById: async () => ({ id: 'project-1' }) } };
+    global.sails = {
+      config: { custom: { attachmentMaxBytes: 1024 * 1024 } },
+      helpers: {
+        presentations: {
+          getProjectAccess: async () => ({ accessibleBoardIds: ['board-1'] }),
+        },
+        utils: { receiveFile: { with: async () => files } },
+      },
+      log: { warn: () => {} },
+    };
+
+    let error;
+    try {
+      await uploadFile.fn.call(
+        { req: { currentUser: { id: 'user-1' } } },
+        { id: 'presentation-1', resetSession: true },
+        {},
+      );
+    } catch (nextError) {
+      error = nextError;
+    }
+
+    expect(error).to.deep.equal({
+      invalidPresentationFile: 'Invalid presentation file',
+    });
+    expect(await Promise.all(files.map(({ fd }) => fileExists(fd)))).to.deep.equal([false, false]);
+  });
+
   it('notifies board users about a successful key rotation without broadcasting either key', async () => {
     const broadcasts = [];
     const updatedPresentation = {
@@ -208,7 +357,10 @@ describe('Project presentation controllers', () => {
 
     global.ProjectPresentation = {
       qm: {
-        getOneById: async () => ({ ...updatedPresentation, cryptpadKeyVersion: 1 }),
+        getOneById: async () => ({
+          ...updatedPresentation,
+          cryptpadKeyVersion: 1,
+        }),
         updateOne: async () => updatedPresentation,
       },
     };
@@ -225,7 +377,10 @@ describe('Project presentation controllers', () => {
     global.sails = {
       helpers: {
         presentations: {
-          getProjectAccess: async () => ({ canEdit: true, accessibleBoardIds: ['board-1'] }),
+          getProjectAccess: async () => ({
+            canEdit: true,
+            accessibleBoardIds: ['board-1'],
+          }),
         },
         projects: {
           makeScoper: {
@@ -242,7 +397,12 @@ describe('Project presentation controllers', () => {
 
     const result = await updateCryptpadKey.fn.call(
       { req: { currentUser: { id: 'user-1' } } },
-      { id: 'presentation-1', keyVersion: 1, editKey: 'edit-secret', viewKey: 'view-secret' },
+      {
+        id: 'presentation-1',
+        keyVersion: 1,
+        editKey: 'edit-secret',
+        viewKey: 'view-secret',
+      },
     );
 
     expect(result).to.deep.equal({ key: 'edit-secret', keyVersion: 2 });
@@ -250,7 +410,10 @@ describe('Project presentation controllers', () => {
     broadcasts.forEach(([, eventName, payload]) => {
       expect(eventName).to.equal('projectPresentationUpdate');
       expect(payload.item).to.not.have.any.keys('cryptpadEditKey', 'cryptpadViewKey');
-      expect(payload.item).to.include({ id: 'presentation-1', cryptpadKeyVersion: 2 });
+      expect(payload.item).to.include({
+        id: 'presentation-1',
+        cryptpadKeyVersion: 2,
+      });
     });
   });
 });

@@ -342,7 +342,11 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
                 });
 
                 api
-                  .saveProjectPresentationFile(initialPresentation.id, presentationFile)
+                  .saveProjectPresentationFile(
+                    initialPresentation.id,
+                    presentationFile,
+                    presentationRef.current.cryptpadKeyVersion,
+                  )
                   .then(() => callback())
                   .catch((nextError) => {
                     const error = reportFailure('document-save', nextError);

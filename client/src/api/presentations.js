@@ -13,8 +13,8 @@ const disableProjectPresentation = (id, headers) =>
 const updateProjectPresentationCryptPadKey = (id, data, headers) =>
   socket.post(`/project-presentations/${id}/cryptpad-key`, data, headers);
 
-const saveProjectPresentationFile = (id, file, headers) =>
-  http.post(`/project-presentations/${id}/file`, { file }, headers);
+const saveProjectPresentationFile = (id, file, keyVersion, headers) =>
+  http.post(`/project-presentations/${id}/file?keyVersion=${keyVersion}`, { file }, headers);
 
 const importProjectPresentationFile = (id, file, headers) =>
   http.post(`/project-presentations/${id}/file?resetSession=true`, { file }, headers);
