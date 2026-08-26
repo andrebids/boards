@@ -25,7 +25,7 @@ services:
           sha256sum package-lock.json > node_modules/.planka-dev-lock
         fi
 
-        npm run db:init
+        npm run db:migrate
         npm start
     restart: on-failure
     dns:
@@ -82,6 +82,11 @@ services:
           npm install
           sha256sum package-lock.json > node_modules/.planka-dev-lock
         fi
+
+        until node -e "require('http').get('http://planka-server:1337/api/config', ({ statusCode }) => process.exit(statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"; do
+          echo "A aguardar pelo servidor Planka..."
+          sleep 1
+        done
 
         npx vite --host
     working_dir: /app/client
