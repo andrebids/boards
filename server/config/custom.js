@@ -12,6 +12,7 @@ const { URL } = require('url');
 const sails = require('sails');
 
 const version = require('../version');
+const { parseWebPushConfig } = require('../utils/web-push-config');
 
 const envToNumber = (value) => {
   const number = parseInt(value, 10);
@@ -39,6 +40,7 @@ const threeDAttachmentMaxBytes = envToPositiveNumber(
   process.env.THREE_D_ATTACHMENT_MAX_BYTES,
   1024 * 1024 * 1024,
 );
+const webPush = parseWebPushConfig(process.env);
 
 module.exports.custom = {
   /**
@@ -120,6 +122,8 @@ module.exports.custom = {
     process.env.CHAT_EMAIL_NOTIFICATION_MAX_ATTEMPTS,
     5,
   ),
+
+  webPush,
 
   videoProcessingEnabled: process.env.VIDEO_PROCESSING_ENABLED !== 'false',
   videoProcessingPollIntervalSeconds: envToPositiveNumber(

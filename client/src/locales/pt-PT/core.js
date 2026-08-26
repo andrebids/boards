@@ -594,6 +594,18 @@ export default {
       notificationDelivery: "Entrega das notificações",
       notificationDeliveryDescription:
         "Estes serviços de entrega respeitam a preferência pessoal acima.",
+      chatNotificationsOnThisDevice: "Notificações do chat neste dispositivo",
+      chatNotificationsOnThisDeviceDescription:
+        "Mostra uma pré-visualização curta no Windows ou macOS, mesmo com o separador Boards fechado.",
+      webPushState_inactive: "Desligadas neste browser",
+      webPushState_activating: "A verificar este browser…",
+      webPushState_active: "Ativas neste browser",
+      webPushState_blocked: "Bloqueadas pelo browser",
+      webPushState_unsupported: "Não suportadas por este browser",
+      webPushState_error: "Não foi possível atualizar este browser",
+      webPushBlockedHelp:
+        "Permita notificações para o Boards nas definições do browser para as ativar.",
+      webPushErrorHelp: "Verifique a ligação e tente novamente.",
       oldestFirst: "Mais antigos primeiro",
       openBoard_title: "Abrir Quadro",
       optional_inline: "opcional",
@@ -1037,6 +1049,8 @@ export default {
 
     action: {
       retry: "Tentar novamente",
+      turnOffChatNotifications: "Desativar",
+      turnOnChatNotifications: "Ativar",
       activateUser: "Ativar utilizador",
       activateUser_title: "Ativar Utilizador",
       addAnotherCard: "Adicionar outro cartão",

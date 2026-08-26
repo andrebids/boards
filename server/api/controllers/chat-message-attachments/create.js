@@ -294,6 +294,31 @@ module.exports = {
       }
     }
 
+    if (
+      !message.text &&
+      sails.config.custom.webPush &&
+      sails.config.custom.webPush.enabled
+    ) {
+      try {
+        const recipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
+          conversation,
+        );
+        await sails.helpers.webPushNotifications.schedule.with({
+          message,
+          conversation,
+          recipientUserIds,
+          senderUserId: currentUser.id,
+          hasAttachment: true,
+        });
+      } catch (error) {
+        sails.log.error('[WEB_PUSH_NOTIFICATION][ATTACHMENT_SCHEDULE_ERROR]', {
+          messageId: message.id,
+          attachmentId: attachment.id,
+          code: error.code || error.name || 'ATTACHMENT_SCHEDULE_ERROR',
+        });
+      }
+    }
+
     const item = sails.helpers.chatMessageAttachments.presentOne(attachment);
     const payload = { item, messageId: message.id };
 

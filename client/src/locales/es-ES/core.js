@@ -261,6 +261,18 @@ export default {
       noProjects: 'Sin proyectos',
       noUnreadNotifications: 'No hay notificaciones sin leer',
       notifications: 'Notificaciones',
+      chatNotificationsOnThisDevice: 'Notificaciones del chat en este dispositivo',
+      chatNotificationsOnThisDeviceDescription:
+        'Muestra una vista previa breve en Windows o macOS, incluso con la pestaña de Boards cerrada.',
+      webPushState_inactive: 'Desactivadas en este navegador',
+      webPushState_activating: 'Comprobando este navegador…',
+      webPushState_active: 'Activadas en este navegador',
+      webPushState_blocked: 'Bloqueadas por el navegador',
+      webPushState_unsupported: 'No compatibles con este navegador',
+      webPushState_error: 'No se pudo actualizar este navegador',
+      webPushBlockedHelp:
+        'Permite las notificaciones de Boards en la configuración del navegador para activarlas.',
+      webPushErrorHelp: 'Comprueba la conexión e inténtalo de nuevo.',
       oldestFirst: 'Más antiguo primero',
       openBoard_title: 'Abrir Tablero',
       optional_inline: 'opcional',
@@ -372,6 +384,8 @@ export default {
     },
 
     action: {
+      turnOffChatNotifications: 'Desactivar',
+      turnOnChatNotifications: 'Activar',
       activateUser: 'Activar usuario',
       activateUser_title: 'Activar usuario',
       addAnotherCard: 'Añadir otra tarjeta',

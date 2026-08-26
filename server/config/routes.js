@@ -61,7 +61,33 @@ function staticDirServer(prefix, dirFn) {
   };
 }
 
+function serveBoardsPushWorker(_req, res, next) {
+  res.set({
+    'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+    Pragma: 'no-cache',
+    Expires: '0',
+  });
+
+  return res.sendFile(
+    path.join(sails.config.appPath, 'public', 'boards-push-sw.js'),
+    {
+      cacheControl: false,
+      dotfiles: 'deny',
+    },
+    (error) => {
+      if (error) {
+        next(error);
+      }
+    },
+  );
+}
+
 module.exports.routes = {
+  'GET /boards-push-sw.js': {
+    fn: serveBoardsPushWorker,
+    skipAssets: false,
+  },
+
   'GET /api/config': 'config/show',
 
   'POST /api/access-tokens': 'access-tokens/create',
@@ -142,6 +168,8 @@ module.exports.routes = {
   'GET /api/chat-message-attachments/:id/stream': 'chat-message-attachments/stream',
   'HEAD /api/chat-message-attachments/:id/stream': 'chat-message-attachments/stream',
   'POST /api/chat-diagnostics': 'chat-diagnostics/create',
+  'POST /api/web-push-subscriptions': 'web-push-subscriptions/create',
+  'DELETE /api/web-push-subscriptions/current': 'web-push-subscriptions/delete-current',
 
   'POST /api/projects/:projectId/project-managers': 'project-managers/create',
   'DELETE /api/project-managers/:id': 'project-managers/delete',

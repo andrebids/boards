@@ -34,6 +34,7 @@ import chat from './chat';
 import gantt from './gantt';
 import presentations from './presentations';
 import dashboard from './dashboard';
+import webPushSubscriptions from './web-push-subscriptions';
 
 export { http, socket };
 
@@ -67,4 +68,5 @@ export default {
   ...gantt,
   ...presentations,
   ...dashboard,
+  ...webPushSubscriptions,
 };

@@ -13,6 +13,7 @@ import ChatAvatar from '../ChatAvatar';
 import MessageComposer from '../MessageComposer';
 import MessageList from '../MessageList';
 import useChatParticipantMuteState from '../useChatParticipantMuteState';
+import { consumeReplyIntent } from '../deep-link';
 import { compareIds } from '../../../utils/id-helpers';
 import {
   getConversationTitle,
@@ -77,6 +78,7 @@ const ChatWindow = React.memo(({ id }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isGroupEditorOpen, setIsGroupEditorOpen] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
+  const [shouldFocusComposer, setShouldFocusComposer] = useState(false);
 
   const handleFilesDrop = useCallback((acceptedFiles) => {
     filesDropHandlerRef.current?.(acceptedFiles);
@@ -113,6 +115,12 @@ const ChatWindow = React.memo(({ id }) => {
       ),
     );
   }, [conversation, dispatch, id]);
+
+  useEffect(() => {
+    if (conversation && consumeReplyIntent(id)) {
+      setShouldFocusComposer(true);
+    }
+  }, [conversation, id]);
 
   const currentParticipant = conversation?.participants?.find(
     ({ userId }) => userId === currentUser.id,
@@ -442,6 +450,7 @@ const ChatWindow = React.memo(({ id }) => {
         typingUserIds={typingUserIds}
       />
       <MessageComposer
+        autoFocus={shouldFocusComposer}
         conversationId={id}
         isDisabled={conversation.isBlocked}
         onFilesDropHandlerChange={handleFilesDropHandlerChange}

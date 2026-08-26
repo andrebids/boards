@@ -96,5 +96,9 @@
   "email:passwordReset:introduction": "Recebemos um pedido para alterar a password da sua conta.",
   "email:passwordReset:button": "ESCOLHER NOVA PASSWORD",
   "email:passwordReset:expiry": "Este link é válido durante %s minutos e só pode ser utilizado uma vez.",
-  "email:passwordReset:security": "Se não fez este pedido, ignore este email. A sua password não será alterada."
+  "email:passwordReset:security": "Se não fez este pedido, ignore este email. A sua password não será alterada.",
+  "webPush:attachment": "Enviou um ficheiro",
+  "webPush:general": "Geral",
+  "webPush:reply": "Responder",
+  "webPush:title": "%s em %s"
 }

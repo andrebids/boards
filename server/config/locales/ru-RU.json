@@ -34,5 +34,9 @@
 	"email:passwordReset:introduction": "Мы получили запрос на изменение пароля вашей учётной записи.",
 	"email:passwordReset:button": "ВЫБРАТЬ НОВЫЙ ПАРОЛЬ",
 	"email:passwordReset:expiry": "Эта ссылка действительна в течение %s минут и может быть использована только один раз.",
-	"email:passwordReset:security": "Если вы не отправляли этот запрос, проигнорируйте письмо. Ваш пароль не будет изменён."
+	"email:passwordReset:security": "Если вы не отправляли этот запрос, проигнорируйте письмо. Ваш пароль не будет изменён.",
+	"webPush:attachment": "Отправил(а) файл",
+	"webPush:general": "Общие",
+	"webPush:reply": "Ответить",
+	"webPush:title": "%s в %s"
 }

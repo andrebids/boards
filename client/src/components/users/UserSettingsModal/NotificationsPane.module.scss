@@ -11,6 +11,36 @@
     margin: 10px 0 0;
   }
 
+  .deviceNotifications {
+    align-items: center;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    display: flex;
+    gap: 18px;
+    justify-content: space-between;
+    margin-top: 22px;
+    padding-top: 20px;
+  }
+
+  .deviceNotificationsContent {
+    min-width: 0;
+  }
+
+  .deviceStatus {
+    align-items: center;
+    color: rgba(226, 232, 240, 0.84);
+    display: flex;
+    font-size: 12px;
+    gap: 7px;
+    margin: 0;
+  }
+
+  .help {
+    color: rgba(203, 213, 225, 0.7);
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 7px 0 0;
+  }
+
   .option {
     align-items: flex-start;
     background: rgba(255, 255, 255, 0.025);
@@ -103,6 +133,19 @@
     padding-top: 20px;
   }
 
+  .statusDot {
+    background: rgba(148, 163, 184, 0.75);
+    border-radius: 50%;
+    flex: 0 0 auto;
+    height: 7px;
+    width: 7px;
+  }
+
+  .statusDotActive {
+    background: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.12);
+  }
+
   .visuallyHidden {
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
@@ -118,5 +161,12 @@
     border: none;
     box-shadow: none;
     color: rgba(230, 237, 243, 0.9);
+  }
+
+  @media (max-width: 600px) {
+    .deviceNotifications {
+      align-items: stretch;
+      flex-direction: column;
+    }
   }
 }

@@ -114,6 +114,14 @@ module.exports = {
         db,
       });
 
+      await sails.helpers.webPushNotifications.schedule.with({
+        message: createdMessage,
+        conversation: inputs.conversation,
+        recipientUserIds: uniqueRecipientUserIds,
+        senderUserId: inputs.user.id,
+        db,
+      });
+
       wasCreated = true;
       return createdMessage;
     });

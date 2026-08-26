@@ -3,21 +3,31 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Tab } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
+import api from '../../../api';
 import { UserNotificationLevels } from '../../../constants/Enums';
+import { Button } from '../../../lib/custom-ui';
+import {
+  WebPushStates,
+  activateWebPush,
+  disableWebPush,
+  reconcileWebPush,
+} from '../../../utils/web-push';
 import NotificationServices from '../../notification-services/NotificationServices';
 
 import styles from './NotificationsPane.module.scss';
 
 const NotificationsPane = React.memo(() => {
   const user = useSelector(selectors.selectCurrentUser);
+  const config = useSelector(selectors.selectConfig);
   const notificationServiceIds = useSelector(selectors.selectNotificationServiceIdsForCurrentUser);
+  const [webPushState, setWebPushState] = useState(WebPushStates.ACTIVATING);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -39,6 +49,65 @@ const NotificationsPane = React.memo(() => {
     },
     [dispatch],
   );
+
+  const webPushConfig = config.webPush || {};
+  const syncWebPushSubscription = useCallback(
+    (subscription) => api.createWebPushSubscription(subscription),
+    [],
+  );
+  const removeWebPushSubscription = useCallback(
+    (endpoint) => api.deleteCurrentWebPushSubscription(endpoint),
+    [],
+  );
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    if (!webPushConfig.enabled) {
+      setWebPushState(WebPushStates.UNSUPPORTED);
+      return undefined;
+    }
+
+    setWebPushState(WebPushStates.ACTIVATING);
+    reconcileWebPush({
+      enabled: webPushConfig.enabled,
+      publicKey: webPushConfig.publicKey,
+      syncSubscription: syncWebPushSubscription,
+    })
+      .then((state) => {
+        if (isCurrent) {
+          setWebPushState(state);
+        }
+      })
+      .catch(() => {
+        if (isCurrent) {
+          setWebPushState(WebPushStates.ERROR);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [syncWebPushSubscription, webPushConfig.enabled, webPushConfig.publicKey]);
+
+  const handleWebPushToggle = useCallback(async () => {
+    setWebPushState(WebPushStates.ACTIVATING);
+
+    try {
+      const nextState =
+        webPushState === WebPushStates.ACTIVE
+          ? await disableWebPush({
+              removeSubscription: removeWebPushSubscription,
+            })
+          : await activateWebPush({
+              publicKey: webPushConfig.publicKey,
+              syncSubscription: syncWebPushSubscription,
+            });
+      setWebPushState(nextState);
+    } catch {
+      setWebPushState(WebPushStates.ERROR);
+    }
+  }, [removeWebPushSubscription, syncWebPushSubscription, webPushConfig.publicKey, webPushState]);
 
   const updateForm = user.notificationLevelUpdateForm || {};
   const isUpdating = Boolean(updateForm.isSubmitting);
@@ -134,6 +203,52 @@ const NotificationsPane = React.memo(() => {
           </p>
         )}
       </fieldset>
+
+      {webPushConfig.enabled && (
+        <section className={styles.deviceNotifications} aria-labelledby="web-push-title">
+          <div className={styles.deviceNotificationsContent}>
+            <h3 id="web-push-title" className={styles.sectionTitle}>
+              {t('common.chatNotificationsOnThisDevice')}
+            </h3>
+            <p className={styles.sectionDescription}>
+              {t('common.chatNotificationsOnThisDeviceDescription')}
+            </p>
+            <p className={styles.deviceStatus} role="status" aria-live="polite">
+              <span
+                className={
+                  webPushState === WebPushStates.ACTIVE
+                    ? `${styles.statusDot} ${styles.statusDotActive}`
+                    : styles.statusDot
+                }
+                aria-hidden="true"
+              />
+              {t(`common.webPushState_${webPushState}`)}
+            </p>
+            {webPushState === WebPushStates.BLOCKED && (
+              <p className={styles.help}>{t('common.webPushBlockedHelp')}</p>
+            )}
+            {webPushState === WebPushStates.ERROR && (
+              <p className={styles.error} role="alert">
+                {t('common.webPushErrorHelp')}
+              </p>
+            )}
+          </div>
+          <Button
+            type="button"
+            size="small"
+            variant={webPushState === WebPushStates.ACTIVE ? 'secondary' : 'primary'}
+            isPending={webPushState === WebPushStates.ACTIVATING}
+            isDisabled={
+              webPushState === WebPushStates.BLOCKED || webPushState === WebPushStates.UNSUPPORTED
+            }
+            onClick={handleWebPushToggle}
+          >
+            {webPushState === WebPushStates.ACTIVE
+              ? t('action.turnOffChatNotifications')
+              : t('action.turnOnChatNotifications')}
+          </Button>
+        </section>
+      )}
 
       <section className={styles.services} aria-labelledby="notification-services-title">
         <h3 id="notification-services-title" className={styles.sectionTitle}>

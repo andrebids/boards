@@ -10,6 +10,7 @@ import { authenticateWithOidc, authenticateWithOidcCallback } from './login';
 import selectors from '../../../selectors';
 import ActionTypes from '../../../constants/ActionTypes';
 import Paths from '../../../constants/Paths';
+import { consumeReturnTo, storeCurrentLocationForReturn } from './return-to';
 
 export function* goTo(pathname) {
   yield put(push(pathname));
@@ -21,6 +22,11 @@ export function* goToLogin() {
 
 export function* goToRoot() {
   yield call(goTo, Paths.ROOT);
+}
+
+export function* goToPostAuthenticationTarget() {
+  const target = yield call(consumeReturnTo);
+  yield call(goTo, target || Paths.ROOT);
 }
 
 export function* handleLocationChange() {
@@ -38,6 +44,7 @@ export function* handleLocationChange() {
     case Paths.PRESENTATION:
     case Paths.BOARDS:
     case Paths.CARDS:
+      yield call(storeCurrentLocationForReturn);
       yield call(goToLogin);
 
       break;
@@ -78,6 +85,7 @@ export function* handleLocationChange() {
 export default {
   goTo,
   goToLogin,
+  goToPostAuthenticationTarget,
   goToRoot,
   handleLocationChange,
 };

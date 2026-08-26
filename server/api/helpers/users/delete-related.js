@@ -119,6 +119,10 @@ module.exports = {
       userId: userIdOrIds,
     });
 
+    await WebPushSubscription.qm.delete({
+      userId: userIdOrIds,
+    });
+
     return {
       projectManagers,
       boardMemberships,

@@ -34,5 +34,9 @@
   "email:passwordReset:introduction": "Hemos recibido una solicitud para cambiar la contraseña de tu cuenta.",
   "email:passwordReset:button": "ELEGIR UNA NUEVA CONTRASEÑA",
   "email:passwordReset:expiry": "Este enlace es válido durante %s minutos y solo se puede utilizar una vez.",
-  "email:passwordReset:security": "Si no has solicitado este cambio, ignora este correo. Tu contraseña no cambiará."
+  "email:passwordReset:security": "Si no has solicitado este cambio, ignora este correo. Tu contraseña no cambiará.",
+  "webPush:attachment": "Ha enviado un archivo",
+  "webPush:general": "General",
+  "webPush:reply": "Responder",
+  "webPush:title": "%s en %s"
 }

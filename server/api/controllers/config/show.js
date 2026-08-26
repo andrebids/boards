@@ -56,6 +56,12 @@ module.exports = {
               sails.config.custom.passwordResetEnabled &&
               sails.hooks.smtp.isEnabled() &&
               !sails.config.custom.oidcEnforced,
+            webPush: {
+              enabled: sails.config.custom.webPush.enabled,
+              publicKey: sails.config.custom.webPush.enabled
+                ? sails.config.custom.webPush.publicKey
+                : null,
+            },
           },
           currentUser,
         ),

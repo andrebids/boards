@@ -12,6 +12,7 @@ import actions from '../../../actions';
 import api from '../../../api';
 import i18n from '../../../i18n';
 import { removeAccessToken } from '../../../utils/access-token-storage';
+import { disableWebPushForLogout } from '../../../utils/web-push';
 
 export function* initializeCore() {
   const { item: config } = yield call(request, api.getConfig); // TODO: handle error
@@ -118,6 +119,14 @@ export function* updateHomeView(value) {
 }
 
 export function* logout(invalidateAccessToken) {
+  try {
+    yield call(disableWebPushForLogout, {
+      removeSubscription: (endpoint) => api.deleteCurrentWebPushSubscription(endpoint),
+    });
+  } catch {
+    /* Best effort: logout must continue when the browser cleanup fails. */
+  }
+
   yield call(removeAccessToken);
 
   if (invalidateAccessToken) {

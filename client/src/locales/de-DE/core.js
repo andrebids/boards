@@ -248,6 +248,18 @@ export default {
       noProjects: 'Keine Projekte',
       noUnreadNotifications: 'Keine ungelesenen Benachrichtigungen.',
       notifications: 'Benachrichtigungen',
+      chatNotificationsOnThisDevice: 'Chat-Benachrichtigungen auf diesem Gerät',
+      chatNotificationsOnThisDeviceDescription:
+        'Zeigt eine kurze Vorschau unter Windows oder macOS, auch wenn der Boards-Tab geschlossen ist.',
+      webPushState_inactive: 'In diesem Browser ausgeschaltet',
+      webPushState_activating: 'Browser wird geprüft…',
+      webPushState_active: 'In diesem Browser eingeschaltet',
+      webPushState_blocked: 'Vom Browser blockiert',
+      webPushState_unsupported: 'Von diesem Browser nicht unterstützt',
+      webPushState_error: 'Dieser Browser konnte nicht aktualisiert werden',
+      webPushBlockedHelp:
+        'Erlauben Sie Benachrichtigungen für Boards in den Browser-Einstellungen.',
+      webPushErrorHelp: 'Prüfen Sie die Verbindung und versuchen Sie es erneut.',
       oldestFirst: 'Älteste zuerst',
       openBoard_title: 'Arbeitsbereich öffnen',
       optional_inline: 'Optional',
@@ -333,6 +345,8 @@ export default {
     },
 
     action: {
+      turnOffChatNotifications: 'Ausschalten',
+      turnOnChatNotifications: 'Einschalten',
       activateUser: 'Benutzer aktivieren',
       activateUser_title: 'Benutzer aktivieren',
       addAnotherCard: 'Karte hinzufügen',

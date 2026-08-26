@@ -97,7 +97,8 @@ const mentionsInputStyle = {
   },
 };
 
-const MessageComposer = React.memo(({ conversationId, isDisabled, onFilesDropHandlerChange }) => {
+const MessageComposer = React.memo((props) => {
+  const { autoFocus, conversationId, isDisabled, onFilesDropHandlerChange } = props;
   const [t] = useTranslation();
   const [files, setFiles] = useState([]);
   const [attachmentPreparationCount, setAttachmentPreparationCount] = useState(0);
@@ -105,6 +106,8 @@ const MessageComposer = React.memo(({ conversationId, isDisabled, onFilesDropHan
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const [isEmojiMenuOpen, setIsEmojiMenuOpen] = useState(false);
   const toolsRef = useRef(null);
+  const inputRef = useRef(null);
+  const hasAutoFocusedRef = useRef(false);
   const dispatch = useDispatch();
   const typingSentAtRef = useRef(0);
   const selectDraft = useMemo(() => selectors.makeSelectChatDraftByConversationId(), []);
@@ -297,6 +300,15 @@ const MessageComposer = React.memo(({ conversationId, isDisabled, onFilesDropHan
   const handleEmojiClick = useCallback((emojiData) => addEmoji(emojiData.emoji), [addEmoji]);
 
   useEffect(() => {
+    if (!autoFocus || isDisabled || hasAutoFocusedRef.current) {
+      return;
+    }
+
+    hasAutoFocusedRef.current = true;
+    inputRef.current?.focus();
+  }, [autoFocus, isDisabled]);
+
+  useEffect(() => {
     if (!onFilesDropHandlerChange) {
       return undefined;
     }
@@ -423,6 +435,7 @@ const MessageComposer = React.memo(({ conversationId, isDisabled, onFilesDropHan
         </div>
         <div className={styles.inputShell}>
           <MentionsInput
+            inputRef={inputRef}
             value={text}
             maxLength={10000}
             disabled={isDisabled}
@@ -464,12 +477,14 @@ const MessageComposer = React.memo(({ conversationId, isDisabled, onFilesDropHan
 });
 
 MessageComposer.propTypes = {
+  autoFocus: PropTypes.bool,
   conversationId: PropTypes.string.isRequired,
   isDisabled: PropTypes.bool,
   onFilesDropHandlerChange: PropTypes.func,
 };
 
 MessageComposer.defaultProps = {
+  autoFocus: false,
   isDisabled: false,
   onFilesDropHandlerChange: undefined,
 };

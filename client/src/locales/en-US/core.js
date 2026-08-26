@@ -323,6 +323,17 @@ export default {
       notificationDelivery: "Notification delivery",
       notificationDeliveryDescription:
         "These delivery services follow the personal preference above.",
+      chatNotificationsOnThisDevice: "Chat notifications on this device",
+      chatNotificationsOnThisDeviceDescription:
+        "Show a short message preview in Windows or macOS, even when the Boards tab is closed.",
+      webPushState_inactive: "Off on this browser",
+      webPushState_activating: "Checking this browser…",
+      webPushState_active: "On for this browser",
+      webPushState_blocked: "Blocked by the browser",
+      webPushState_unsupported: "Not supported by this browser",
+      webPushState_error: "Could not update this browser",
+      webPushBlockedHelp: "Allow notifications for Boards in your browser settings to turn them on.",
+      webPushErrorHelp: "Check your connection and try again.",
       oldestFirst: "Oldest first",
       openBoard_title: "Open Board",
       optional_inline: "optional",
@@ -758,6 +769,8 @@ export default {
 
     action: {
       retry: "Try again",
+      turnOffChatNotifications: "Turn off",
+      turnOnChatNotifications: "Turn on",
       activateUser: "Activate user",
       activateUser_title: "Activate User",
       addAnotherCard: "Add another card",

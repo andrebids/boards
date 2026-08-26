@@ -11,6 +11,7 @@ describe('Chat message attachment controller', () => {
   let broadcastError;
   let responseStatus;
   let createdValues;
+  let scheduledPush;
   let temporaryDirectory;
   let temporaryFile;
 
@@ -25,6 +26,7 @@ describe('Chat message attachment controller', () => {
     broadcastError = null;
     responseStatus = null;
     createdValues = null;
+    scheduledPush = null;
     temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'planka-chat-controller-'));
     temporaryFile = path.join(temporaryDirectory, 'image.png');
     fs.writeFileSync(temporaryFile, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
@@ -59,6 +61,14 @@ describe('Chat message attachment controller', () => {
           },
           getUnreadCountsForUsers: async () => {
             throw new Error('unread query must not run');
+          },
+        },
+        webPushNotifications: {
+          schedule: {
+            with: async (values) => {
+              scheduledPush = values;
+              return 1;
+            },
           },
         },
         chatMessageAttachments: {
@@ -218,5 +228,52 @@ describe('Chat message attachment controller', () => {
     expect(responseStatus).to.equal(201);
     expect(result.item.id).to.equal('attachment-1');
     expect(broadcasts).to.have.length(0);
+  });
+
+  it('schedules an attachment-only push after an attachment is persisted', async () => {
+    global.sails.config.custom.webPush = { enabled: true };
+    global.sails.helpers.chat.getConversationRecipientUserIds = async () => [
+      'user-1',
+      'user-2',
+    ];
+    global.ChatMessage.qm.getOneById = async () => ({
+      id: 'message-1',
+      conversationId: 'conversation-1',
+      userId: 'user-1',
+      text: '',
+    });
+    const response = {
+      once: () => {},
+      status: (status) => {
+        responseStatus = status;
+      },
+      writableEnded: false,
+    };
+
+    await controller.fn.call(
+      {
+        req: {
+          currentUser: { id: 'user-1' },
+          headers: { 'content-length': '8', 'content-type': 'multipart/form-data' },
+          once: () => {},
+        },
+        res: response,
+      },
+      { messageId: 'message-1', clientAttachmentId: 'client-attachment-1' },
+      {},
+    );
+
+    expect(scheduledPush).to.deep.include({
+      message: {
+        id: 'message-1',
+        conversationId: 'conversation-1',
+        userId: 'user-1',
+        text: '',
+      },
+      conversation: { id: 'conversation-1', projectId: 'project-1' },
+      recipientUserIds: ['user-1', 'user-2'],
+      senderUserId: 'user-1',
+      hasAttachment: true,
+    });
   });
 });
