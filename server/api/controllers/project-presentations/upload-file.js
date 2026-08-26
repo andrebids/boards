@@ -91,10 +91,9 @@ module.exports = {
       }
 
       if (files.length !== 1) {
-        sails.log.warn('Project presentation upload rejected', {
-          presentationId: presentation.id,
-          phase: 'validation',
-        });
+        sails.log.warn(
+          `Project presentation upload rejected presentationId=${presentation.id} phase=validation reason=fileCount`,
+        );
         throw Errors.INVALID_PRESENTATION_FILE;
       }
 
@@ -112,10 +111,13 @@ module.exports = {
         !validation.isValid ||
         validation.extension !== 'pptx'
       ) {
-        sails.log.warn('Project presentation upload rejected', {
-          presentationId: presentation.id,
-          phase: 'validation',
-        });
+        const reason =
+          !Number.isFinite(file.size) || file.size === 0
+            ? 'emptyFile'
+            : validation.reason || 'unexpectedExtension';
+        sails.log.warn(
+          `Project presentation upload rejected presentationId=${presentation.id} phase=validation reason=${reason}`,
+        );
         throw Errors.INVALID_PRESENTATION_FILE;
       }
 

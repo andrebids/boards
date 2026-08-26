@@ -353,6 +353,59 @@ describe('Project presentation controllers', () => {
     expect(await Promise.all(files.map(({ fd }) => fileExists(fd)))).to.deep.equal([false, false]);
   });
 
+  it('records why invalid PowerPoint content was rejected and removes the temporary file', async () => {
+    const file = {
+      fd: path.join(tempDirectory, 'invalid.pptx'),
+      filename: 'invalid.pptx',
+      size: 4,
+    };
+    const warningEvents = [];
+    await fs.writeFile(file.fd, 'nope');
+
+    global.ProjectPresentation = {
+      qm: {
+        getOneById: async () => ({
+          id: 'presentation-1',
+          projectId: 'project-1',
+          boardId: 'board-1',
+          cryptpadKeyVersion: 1,
+        }),
+      },
+    };
+    global.Project = { qm: { getOneById: async () => ({ id: 'project-1' }) } };
+    global.sails = {
+      config: { custom: { attachmentMaxBytes: 1024 * 1024 } },
+      helpers: {
+        presentations: {
+          getProjectAccess: async () => ({ accessibleBoardIds: ['board-1'] }),
+        },
+        utils: { receiveFile: { with: async () => [file] } },
+      },
+      log: { warn: (...args) => warningEvents.push(args) },
+    };
+
+    let error;
+    try {
+      await uploadFile.fn.call(
+        { req: { currentUser: { id: 'user-1' } } },
+        { id: 'presentation-1', resetSession: true },
+        {},
+      );
+    } catch (nextError) {
+      error = nextError;
+    }
+
+    expect(error).to.deep.equal({
+      invalidPresentationFile: 'Invalid presentation file',
+    });
+    expect(warningEvents).to.deep.equal([
+      [
+        'Project presentation upload rejected presentationId=presentation-1 phase=validation reason=contentMismatch',
+      ],
+    ]);
+    expect(await fileExists(file.fd)).to.equal(false);
+  });
+
   it('notifies board users about a successful key rotation without broadcasting either key', async () => {
     const broadcasts = [];
     const updatedPresentation = {

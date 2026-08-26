@@ -715,7 +715,7 @@ export default {
       presentationImport: "Importar PowerPoint",
       presentationImportConfirm:
         "Importar “{{name}}”? O PowerPoint atual será substituído e esta ação não pode ser anulada.",
-      presentationImportInvalidFile: "Selecione um ficheiro PowerPoint (.pptx).",
+      presentationImportInvalidFile: "Selecione um ficheiro PowerPoint (.pptx) válido e suportado.",
       presentationImportLoading: "A importar {{name}}…",
       presentationImportSuccess: "PowerPoint importado. A abrir a apresentação…",
       presentationImportFailed: "Não foi possível importar o PowerPoint. Tente novamente.",

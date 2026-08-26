@@ -1,5 +1,6 @@
 import {
   getPresentationImportOrigins,
+  isInvalidPresentationImportError,
   isPresentationImportRequest,
   isPptxFile,
   PRESENTATION_FILE_ACCEPT,
@@ -15,6 +16,17 @@ describe('presentation import', () => {
     expect(isPptxFile({ name: 'CAMPAIGN.PPTX' })).toBe(true);
     expect(isPptxFile({ name: 'campaign.pdf' })).toBe(false);
     expect(isPptxFile(null)).toBe(false);
+  });
+
+  test('distinguishes a rejected PowerPoint from an upload failure', () => {
+    expect(
+      isInvalidPresentationImportError({
+        code: 'E_UNPROCESSABLE_ENTITY',
+        message: 'Invalid presentation file',
+        statusCode: 422,
+      }),
+    ).toBe(true);
+    expect(isInvalidPresentationImportError({ code: 'E_HTTP_NETWORK' })).toBe(false);
   });
 
   test('limits the file picker to the PowerPoint MIME type and extension', () => {

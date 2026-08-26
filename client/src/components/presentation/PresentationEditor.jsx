@@ -16,6 +16,7 @@ import getPresentationEditorLanguage from './presentationLocale';
 import PresentationImportConfirmModal from './PresentationImportConfirmModal';
 import PresentationMediaPicker from './PresentationMediaPicker';
 import {
+  isInvalidPresentationImportError,
   isPresentationImportRequest,
   isPptxFile,
   getPresentationImportOrigins,
@@ -110,8 +111,15 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
       };
       handleRetry();
     } catch (nextError) {
-      setImportError('upload');
-      toast.error(t('common.presentationImportFailed'), { id: toastId });
+      const nextImportError = isInvalidPresentationImportError(nextError) ? 'invalid' : 'upload';
+      const message = t(
+        nextImportError === 'invalid'
+          ? 'common.presentationImportInvalidFile'
+          : 'common.presentationImportFailed',
+      );
+
+      setImportError(nextImportError);
+      toast.error(message, { id: toastId });
       setIsImporting(false);
     }
   }, [handleRetry, isImporting, pendingImportFile, presentation.id, t]);

@@ -24,6 +24,15 @@ export const getPresentationImportOrigins = (cryptPadUrl, cryptPadSandboxUrl) =>
 
 export const isPptxFile = (file) => Boolean(file && /\.pptx$/i.test(file.name));
 
+export const isInvalidPresentationImportError = (error) =>
+  Boolean(
+    error &&
+      (error.invalidPresentationFile ||
+        (error.statusCode === 422 &&
+          error.code === 'E_UNPROCESSABLE_ENTITY' &&
+          error.message === 'Invalid presentation file')),
+  );
+
 export const isPresentationImportRequest = (data) =>
   Boolean(
     data &&
