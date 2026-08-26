@@ -195,6 +195,12 @@ module.exports = {
             if (!currentPresentation) {
               break;
             }
+            if (
+              (currentPresentation.documentData && currentPresentation.documentData.filename) !==
+              (presentation.documentData && presentation.documentData.filename)
+            ) {
+              break;
+            }
           }
 
           if (!updatedPresentation && currentPresentation) {

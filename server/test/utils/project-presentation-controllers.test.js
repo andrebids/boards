@@ -306,6 +306,101 @@ describe('Project presentation controllers', () => {
     expect(await fileExists(file.fd)).to.equal(false);
   });
 
+  it('does not let an older import replace a newer imported document', async () => {
+    const file = {
+      fd: path.join(tempDirectory, 'older-import.pptx'),
+      filename: 'older-import.pptx',
+      size: 0,
+    };
+    const initialPresentation = {
+      id: 'presentation-1',
+      projectId: 'project-1',
+      boardId: 'board-1',
+      cryptpadKeyVersion: 3,
+      documentData: { filename: 'previous.pptx' },
+    };
+    const newerPresentation = {
+      ...initialPresentation,
+      cryptpadKeyVersion: 4,
+      documentData: { filename: 'newer-import.pptx' },
+    };
+    const deletedPaths = [];
+    const updateCriteria = [];
+    const broadcasts = [];
+    const enqueuedJobs = [];
+    let readCount = 0;
+
+    await fs.writeFile(file.fd, makePptxFile());
+    file.size = (await fs.stat(file.fd)).size;
+
+    global.ProjectPresentation = {
+      qm: {
+        getOneById: async () => {
+          readCount += 1;
+          return readCount === 1 ? initialPresentation : newerPresentation;
+        },
+        updateOne: async (criteria, values) => {
+          updateCriteria.push(criteria);
+          return updateCriteria.length === 1 ? undefined : { id: criteria.id, ...values };
+        },
+      },
+    };
+    global.Project = { qm: { getOneById: async () => ({ id: 'project-1' }) } };
+    global.sails = {
+      config: {
+        custom: {
+          attachmentMaxBytes: 1024 * 1024,
+          attachmentsPathSegment: 'private/attachments',
+        },
+      },
+      helpers: {
+        presentations: {
+          getProjectAccess: async () => ({
+            canEdit: true,
+            accessibleBoardIds: ['board-1'],
+          }),
+        },
+        utils: { receiveFile: { with: async () => [file] } },
+        projectPresentations: { presentOne: (presentation) => presentation },
+        projectPresentationPreview: {
+          enqueue: { with: async (job) => enqueuedJobs.push(job) },
+        },
+      },
+      hooks: {
+        'file-manager': {
+          getInstance: () => ({
+            saveFromPath: async () => {},
+            delete: async (filePath) => deletedPaths.push(filePath),
+          }),
+        },
+      },
+      sockets: { broadcast: (...args) => broadcasts.push(args) },
+      log: { info: () => {}, warn: () => {} },
+    };
+
+    let error;
+    try {
+      await uploadFile.fn.call(
+        { req: { currentUser: { id: 'user-1' } } },
+        { id: 'presentation-1', resetSession: true },
+        { success: (payload) => payload },
+      );
+    } catch (nextError) {
+      error = nextError;
+    }
+
+    expect(error).to.deep.equal({ uploadError: 'Presentation changed during upload' });
+    expect(updateCriteria).to.deep.equal([{ id: 'presentation-1', cryptpadKeyVersion: 3 }]);
+    expect(deletedPaths).to.have.lengthOf(1);
+    expect(deletedPaths[0]).to.match(/presentation-[\w-]+\.pptx$/);
+    expect(deletedPaths).not.to.include(
+      'private/attachments/project-presentations/presentation-1/newer-import.pptx',
+    );
+    expect(enqueuedJobs).to.have.lengthOf(0);
+    expect(broadcasts).to.have.lengthOf(0);
+    expect(await fileExists(file.fd)).to.equal(false);
+  });
+
   it('rejects multiple uploads and removes every received temporary file', async () => {
     const files = ['first.pdf', 'second.pptx'].map((filename) => ({
       fd: path.join(tempDirectory, filename),
