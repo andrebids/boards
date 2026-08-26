@@ -82,7 +82,10 @@ describe('Presentation editor permissions', () => {
     expect(source).toMatch(/editorGenerationRef\.current \+= 1/);
     expect(source).toMatch(/editorGeneration !== editorGenerationRef\.current/);
     expect(source).toMatch(
-      /onSave:[\s\S]*?\.saveProjectPresentationFile\([\s\S]*?presentationRef\.current\.cryptpadKeyVersion/,
+      /let editorKeyVersion = initialPresentation\.cryptpadKeyVersion[\s\S]*?onSave:[\s\S]*?\.saveProjectPresentationFile\([\s\S]*?editorKeyVersion/,
+    );
+    expect(source).toMatch(
+      /onNewKey:[\s\S]*?if \(result\.key\) \{[\s\S]*?editorKeyVersion = result\.keyVersion/,
     );
     expect(apiSource).toMatch(
       /saveProjectPresentationFile = \(id, file, keyVersion, headers\)[\s\S]*?file\?keyVersion=\$\{keyVersion\}/,

@@ -165,6 +165,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   useEffect(() => {
     const initialPresentation = presentationRef.current;
     const editorGeneration = editorGenerationRef.current;
+    let editorKeyVersion = initialPresentation.cryptpadKeyVersion;
     if (!initialPresentation.isEnabled || !editorRef.current || isEditorInitializedRef.current) {
       return undefined;
     }
@@ -314,15 +315,17 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
               },
               onNewKey: async (data, callback) => {
                 try {
-                  const currentPresentation = presentationRef.current;
                   const result = await api.updateProjectPresentationCryptPadKey(
                     initialPresentation.id,
                     {
-                      keyVersion: currentPresentation.cryptpadKeyVersion,
+                      keyVersion: editorKeyVersion,
                       editKey: data.new,
                       viewKey: data.view,
                     },
                   );
+                  if (result.key) {
+                    editorKeyVersion = result.keyVersion;
+                  }
                   onSessionUpdate(initialPresentation.id, result.key, result.keyVersion);
                   callback(result.key);
                 } catch (nextError) {
@@ -343,7 +346,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
                   .saveProjectPresentationFile(
                     initialPresentation.id,
                     presentationFile,
-                    presentationRef.current.cryptpadKeyVersion,
+                    editorKeyVersion,
                   )
                   .then(() => callback())
                   .catch((nextError) => {

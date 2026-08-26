@@ -12,6 +12,7 @@ const getFilePath = require('../../../utils/project-presentation-file-path');
 
 const PRESENTATION_MIME_TYPE =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+const MAX_IMPORT_UPDATE_ATTEMPTS = 3;
 
 const Errors = {
   PRESENTATION_NOT_FOUND: { presentationNotFound: 'Presentation not found' },
@@ -19,6 +20,7 @@ const Errors = {
   INVALID_PRESENTATION_FILE: {
     invalidPresentationFile: 'Invalid presentation file',
   },
+  UPLOAD_CONFLICT: { uploadError: 'Presentation changed during upload' },
 };
 
 module.exports = {
@@ -168,17 +170,42 @@ module.exports = {
         };
 
         if (inputs.resetSession) {
-          Object.assign(values, {
-            cryptpadEditKey: null,
-            cryptpadViewKey: null,
-            cryptpadKeyVersion: presentation.cryptpadKeyVersion + 1,
-          });
-        }
+          let currentPresentation = presentation;
+          for (let attempt = 0; attempt < MAX_IMPORT_UPDATE_ATTEMPTS; attempt += 1) {
+            // Each retry must observe the result of the previous compare-and-swap.
+            // eslint-disable-next-line no-await-in-loop
+            updatedPresentation = await ProjectPresentation.qm.updateOne(
+              {
+                id: presentation.id,
+                cryptpadKeyVersion: currentPresentation.cryptpadKeyVersion,
+              },
+              {
+                ...values,
+                cryptpadEditKey: null,
+                cryptpadViewKey: null,
+                cryptpadKeyVersion: currentPresentation.cryptpadKeyVersion + 1,
+              },
+            );
+            if (updatedPresentation) {
+              break;
+            }
 
-        const criteria = inputs.resetSession
-          ? presentation.id
-          : { id: presentation.id, cryptpadKeyVersion: inputs.keyVersion };
-        updatedPresentation = await ProjectPresentation.qm.updateOne(criteria, values);
+            // eslint-disable-next-line no-await-in-loop
+            currentPresentation = await ProjectPresentation.qm.getOneById(presentation.id);
+            if (!currentPresentation) {
+              break;
+            }
+          }
+
+          if (!updatedPresentation && currentPresentation) {
+            throw Errors.UPLOAD_CONFLICT;
+          }
+        } else {
+          updatedPresentation = await ProjectPresentation.qm.updateOne(
+            { id: presentation.id, cryptpadKeyVersion: inputs.keyVersion },
+            values,
+          );
+        }
 
         if (!updatedPresentation) {
           if (inputs.resetSession) {

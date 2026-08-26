@@ -75,6 +75,7 @@ describe('Project presentation controllers', () => {
     const enqueuedJobs = [];
     const broadcasts = [];
     let updatedValues;
+    const updateCriteria = [];
 
     await fs.writeFile(file.fd, makePptxFile());
     file.size = (await fs.stat(file.fd)).size;
@@ -87,7 +88,7 @@ describe('Project presentation controllers', () => {
           boardId: 'board-1',
           cryptpadEditKey: 'old-edit-key',
           cryptpadViewKey: 'old-view-key',
-          cryptpadKeyVersion: 3,
+          cryptpadKeyVersion: updateCriteria.length === 0 ? 3 : 4,
           documentData: {
             filename: 'presentation.pptx',
             preview: {
@@ -95,9 +96,13 @@ describe('Project presentation controllers', () => {
             },
           },
         }),
-        updateOne: async (id, values) => {
+        updateOne: async (criteria, values) => {
+          updateCriteria.push(criteria);
+          if (updateCriteria.length === 1) {
+            return undefined;
+          }
           updatedValues = values;
-          return { id, ...values };
+          return { id: criteria.id, ...values };
         },
       },
     };
@@ -171,10 +176,14 @@ describe('Project presentation controllers', () => {
       status: 'pending',
       sourceFilename: updatedValues.documentData.filename,
     });
+    expect(updateCriteria).to.deep.equal([
+      { id: 'presentation-1', cryptpadKeyVersion: 3 },
+      { id: 'presentation-1', cryptpadKeyVersion: 4 },
+    ]);
     expect(updatedValues).to.include({
       cryptpadEditKey: null,
       cryptpadViewKey: null,
-      cryptpadKeyVersion: 4,
+      cryptpadKeyVersion: 5,
     });
     expect(enqueuedJobs).to.deep.equal([
       {
@@ -190,7 +199,7 @@ describe('Project presentation controllers', () => {
           item: {
             id: 'presentation-1',
             documentData: updatedValues.documentData,
-            cryptpadKeyVersion: 4,
+            cryptpadKeyVersion: 5,
           },
         },
       ],
