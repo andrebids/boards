@@ -5,6 +5,7 @@ const {
   selectWebPushSubscriptionsToPrune,
   validateWebPushSubscription,
 } = require('../../utils/web-push-subscription');
+const WebPushSubscription = require('../../api/models/WebPushSubscription');
 
 const validSubscription = {
   endpoint: 'https://push.example.com/send/subscription-id',
@@ -16,6 +17,10 @@ const validSubscription = {
 };
 
 describe('web-push subscription validation', () => {
+  it('maps the browser public-key attribute to the migration column', () => {
+    expect(WebPushSubscription.attributes.p256dh.columnName).to.equal('p_256_dh');
+  });
+
   it('accepts an HTTPS endpoint whose DNS addresses are public', async () => {
     const result = await validateWebPushSubscription(validSubscription, {
       lookup: async () => [{ address: '203.0.113.10' }],

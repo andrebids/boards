@@ -30,7 +30,14 @@ describe('Presentation editor permissions', () => {
   });
 
   test('asks for confirmation before replacing the current presentation', () => {
-    expect(source).toMatch(/window\.confirm\(t\('common\.presentationImportConfirm'\)\)/);
+    expect(source).toMatch(/PresentationImportConfirmModal/);
+    expect(source).not.toMatch(/window\.confirm/);
+  });
+
+  test('shows loading, success, and error feedback while importing a PowerPoint', () => {
+    expect(source).toMatch(/toast\.loading/);
+    expect(source).toMatch(/toast\.success/);
+    expect(source).toMatch(/toast\.error/);
   });
 
   test('does not let the replaced editor save its previous document over the import', () => {

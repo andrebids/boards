@@ -47,8 +47,8 @@ module.exports = {
       throw Errors.INVALID_SUBSCRIPTION;
     }
 
-    const item = await sails.helpers.webPushSubscriptions
-      .upsertOne({
+    const item = await sails.helpers.webPushSubscriptions.upsertOne
+      .with({
         user: this.req.currentUser,
         subscription,
       })

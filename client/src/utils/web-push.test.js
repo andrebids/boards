@@ -1,6 +1,7 @@
 import {
   WebPushStates,
   activateWebPush,
+  getWebPushErrorState,
   disableWebPush,
   disableWebPushForLogout,
   reconcileWebPush,
@@ -126,6 +127,14 @@ describe('web push lifecycle', () => {
     ).resolves.toBe(WebPushStates.BLOCKED);
 
     expect(environment.navigator.serviceWorker.register).not.toHaveBeenCalled();
+  });
+
+  test('classifies a denied Push subscription as blocked instead of a generic error', () => {
+    expect(
+      getWebPushErrorState(
+        new DOMException('Registration failed - permission denied', 'AbortError'),
+      ),
+    ).toBe(WebPushStates.BLOCKED);
   });
 
   test('keeps activation inactive when the permission prompt is dismissed', async () => {

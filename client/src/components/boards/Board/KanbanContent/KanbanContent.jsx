@@ -18,6 +18,7 @@ import DroppableTypes from '../../../../constants/DroppableTypes';
 import { BoardMembershipRoles, ListTypes } from '../../../../constants/Enums';
 import AddList from './AddList';
 import List from '../../../lists/List';
+import PresentationBoardTile from '../../../presentation/PresentationBoardTile';
 import PlusMathIcon from '../../../../assets/images/plus-math-icon.svg?react';
 
 import styles from './KanbanContent.module.scss';
@@ -458,7 +459,8 @@ const KanbanContent = React.memo(() => {
           />
         </div>
       )}
-      <div>
+      <div className={styles.content}>
+        <PresentationBoardTile />
         <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <Droppable droppableId="board" type={DroppableTypes.LIST} direction="horizontal">
             {({ innerRef, droppableProps, placeholder }) => (

@@ -166,6 +166,21 @@ Podemos validar a lista antes da reunião?
 - [ ] Logout e troca de conta não deixam a conta anterior a receber avisos.
 - [ ] Permissão bloqueada no browser apresenta instrução, sem repetir o prompt.
 
+### Tarefa 3A — Convite inicial após o deploy
+
+**Descrição:** Depois de um utilizador autenticado entrar no Boards, mostrar uma única vez um convite interno para ativar notificações do chat neste dispositivo, apenas quando Web Push for suportado, a feature estiver ativa e a permissão ainda estiver em `default`.
+
+**Fluxo:** o convite explica o benefício e apresenta **Ativar notificações** e **Agora não**. Só o clique em **Ativar notificações** chama `Notification.requestPermission()` e cria a subscrição; nunca pedir a permissão nativa automaticamente no carregamento da página.
+
+**Persistência:** guardar por utilizador a data de dispensa/aceitação para não repetir o convite em cada login. Uma dispensa permite voltar a apresentar o convite após um intervalo definido; uma recusa do browser não volta a abrir o pedido nativo e remete para Definições.
+
+**Critérios de aceitação:**
+
+- [ ] O convite aparece no máximo uma vez por utilizador/dispositivo até ser dispensado ou aceite.
+- [ ] O botão reutiliza o mesmo fluxo de ativação das Definições.
+- [ ] A opção mantém-se sempre disponível em Definições para ativar ou desligar.
+- [ ] Estados de bloqueio mostram instruções sem novos prompts automáticos.
+
 ## Fase 3 — Worker e navegação
 
 ### Tarefa 4 — Mostrar o aviso persistente

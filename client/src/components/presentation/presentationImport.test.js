@@ -4,6 +4,10 @@ import {
   isPptxFile,
   PRESENTATION_FILE_ACCEPT,
 } from './presentationImport';
+import enUS from '../../locales/en-US/core';
+import frFR from '../../locales/fr-FR/core';
+import ptBR from '../../locales/pt-BR/core';
+import ptPT from '../../locales/pt-PT/core';
 
 describe('presentation import', () => {
   test('only accepts PowerPoint files before uploading', () => {
@@ -37,5 +41,17 @@ describe('presentation import', () => {
     expect(getPresentationImportOrigins('http://localhost:3010')).toEqual(
       new Set(['http://localhost:3010', 'http://localhost:3013']),
     );
+  });
+
+  test.each([
+    ['en-US', enUS.translation.common],
+    ['fr-FR', frFR.translation.common],
+    ['pt-BR', ptBR.translation.common],
+    ['pt-PT', ptPT.translation.common],
+  ])('describes confirmation and feedback in %s', (_, common) => {
+    expect(common.presentationImportConfirm).toContain('{{name}}');
+    expect(common.presentationImportLoading).toContain('{{name}}');
+    expect(common.presentationImportSuccess).toBeTruthy();
+    expect(common.presentationImportFailed).toBeTruthy();
   });
 });

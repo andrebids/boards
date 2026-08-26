@@ -22,6 +22,19 @@ export const isWebPushSupported = (environment = getDefaultEnvironment()) =>
     environment.notification && environment.navigator?.serviceWorker && environment.pushManager,
   );
 
+export const getWebPushErrorState = (error) => {
+  const message = String((error && error.message) || '').toLowerCase();
+  if (
+    (error && error.name === 'NotAllowedError') ||
+    message.includes('permission denied') ||
+    message.includes('permission is denied')
+  ) {
+    return WebPushStates.BLOCKED;
+  }
+
+  return WebPushStates.ERROR;
+};
+
 export const urlBase64ToUint8Array = (value) => {
   const padding = '='.repeat((4 - (value.length % 4)) % 4);
   const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');

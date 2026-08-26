@@ -11,6 +11,7 @@ module.exports = {
       type: 'string',
       required: true,
       maxLength: 128,
+      columnName: 'p_256_dh',
     },
     auth: {
       type: 'string',

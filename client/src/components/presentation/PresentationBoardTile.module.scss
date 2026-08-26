@@ -1,0 +1,109 @@
+:global(#app) {
+  .tile {
+    align-self: flex-start;
+    appearance: none;
+    background: var(--app-dark-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    box-sizing: border-box;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: block;
+    flex: 0 0 272px;
+    font: inherit;
+    height: 176px;
+    margin-right: 8px;
+    overflow: hidden;
+    padding: 0;
+    text-align: left;
+    text-decoration: none;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.95);
+      outline: none;
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
+  }
+
+  .cover {
+    align-items: center;
+    background: var(--app-dark-surface-hover);
+    display: flex;
+    flex: 0 0 92px;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .coverIcon {
+    color: var(--text-secondary);
+    font-size: 28px;
+    line-height: 1;
+    margin: 0;
+  }
+
+  .coverLabel,
+  .type {
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 14px;
+    text-transform: uppercase;
+  }
+
+  .content {
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0;
+    min-height: 0;
+    padding: 8px;
+  }
+
+  .title {
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .open {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 16px;
+    margin-top: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .error {
+    color: #ffb4b4;
+    font-size: 12px;
+    line-height: 16px;
+  }
+}

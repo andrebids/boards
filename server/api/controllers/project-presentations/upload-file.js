@@ -39,6 +39,10 @@ module.exports = {
       project && (await sails.helpers.presentations.getProjectAccess(project, currentUser));
 
     if (!presentation || !access || !access.accessibleBoardIds.includes(presentation.boardId)) {
+      sails.log.warn('Project presentation upload rejected', {
+        presentationId: inputs.id,
+        phase: 'access',
+      });
       throw Errors.PRESENTATION_NOT_FOUND;
     }
     let files;
@@ -49,10 +53,18 @@ module.exports = {
         maxBytes: sails.config.custom.attachmentMaxBytes,
       });
     } catch (error) {
+      sails.log.warn('Project presentation upload failed', {
+        presentationId: presentation.id,
+        phase: 'receive',
+      });
       return exits.uploadError(error.message || 'Could not receive presentation file');
     }
 
     if (files.length === 0) {
+      sails.log.warn('Project presentation upload rejected', {
+        presentationId: presentation.id,
+        phase: 'receive',
+      });
       throw Errors.NO_FILE_WAS_UPLOADED;
     }
 
@@ -70,6 +82,10 @@ module.exports = {
       !validation.isValid ||
       validation.extension !== 'pptx'
     ) {
+      sails.log.warn('Project presentation upload rejected', {
+        presentationId: presentation.id,
+        phase: 'validation',
+      });
       throw Errors.INVALID_PRESENTATION_FILE;
     }
 
@@ -87,7 +103,7 @@ module.exports = {
       } catch (error) {
         sails.log.warn('Failed to remove unfinished project presentation upload', {
           presentationId: presentation.id,
-          error: error.message,
+          phase: 'cleanup',
         });
       }
     };
@@ -108,6 +124,10 @@ module.exports = {
         throw Errors.PRESENTATION_NOT_FOUND;
       }
     } catch (error) {
+      sails.log.warn('Project presentation upload failed', {
+        presentationId: presentation.id,
+        phase: 'persistence',
+      });
       await discardUnpublishedFile();
       throw error;
     } finally {
@@ -120,10 +140,15 @@ module.exports = {
       } catch (error) {
         sails.log.warn('Failed to remove replaced project presentation file', {
           presentationId: presentation.id,
-          error: error.message,
+          phase: 'cleanup',
         });
       }
     }
+
+    sails.log.info('Project presentation upload completed', {
+      presentationId: presentation.id,
+      phase: 'completed',
+    });
 
     return exits.success({
       item: sails.helpers.projectPresentations.presentOne(updatedPresentation, true),

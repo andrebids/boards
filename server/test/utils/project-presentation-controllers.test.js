@@ -62,6 +62,7 @@ describe('Project presentation controllers', () => {
     };
     const savedPaths = [];
     const deletedPaths = [];
+    const infoEvents = [];
     let updatedValues;
 
     await fs.writeFile(file.fd, makePptxFile());
@@ -117,7 +118,7 @@ describe('Project presentation controllers', () => {
           }),
         },
       },
-      log: { warn: () => {} },
+      log: { info: (...args) => infoEvents.push(args), warn: () => {} },
     };
 
     const result = await uploadFile.fn.call(
@@ -139,6 +140,10 @@ describe('Project presentation controllers', () => {
       'private/attachments/project-presentations/presentation-1/presentation.pptx',
     ]);
     expect(result.item.documentData.filename).to.equal(updatedValues.documentData.filename);
+    expect(infoEvents).to.deep.include([
+      'Project presentation upload completed',
+      { presentationId: 'presentation-1', phase: 'completed' },
+    ]);
   });
 
   it('notifies board users about a successful key rotation without broadcasting either key', async () => {

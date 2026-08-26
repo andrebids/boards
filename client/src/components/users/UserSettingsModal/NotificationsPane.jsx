@@ -17,6 +17,7 @@ import {
   WebPushStates,
   activateWebPush,
   disableWebPush,
+  getWebPushErrorState,
   reconcileWebPush,
 } from '../../../utils/web-push';
 import NotificationServices from '../../notification-services/NotificationServices';
@@ -79,9 +80,9 @@ const NotificationsPane = React.memo(() => {
           setWebPushState(state);
         }
       })
-      .catch(() => {
+      .catch((error) => {
         if (isCurrent) {
-          setWebPushState(WebPushStates.ERROR);
+          setWebPushState(getWebPushErrorState(error));
         }
       });
 
@@ -104,8 +105,8 @@ const NotificationsPane = React.memo(() => {
               syncSubscription: syncWebPushSubscription,
             });
       setWebPushState(nextState);
-    } catch {
-      setWebPushState(WebPushStates.ERROR);
+    } catch (error) {
+      setWebPushState(getWebPushErrorState(error));
     }
   }, [removeWebPushSubscription, syncWebPushSubscription, webPushConfig.publicKey, webPushState]);
 

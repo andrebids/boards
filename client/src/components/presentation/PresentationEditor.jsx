@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types';
 import { Icon } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
 
 import Config from '../../constants/Config';
 import api from '../../api';
@@ -12,6 +13,7 @@ import {
   normalizePresentationLoadError,
 } from './presentationEditorDiagnostics';
 import getPresentationEditorLanguage from './presentationLocale';
+import PresentationImportConfirmModal from './PresentationImportConfirmModal';
 import PresentationMediaPicker from './PresentationMediaPicker';
 import {
   isPresentationImportRequest,
@@ -36,6 +38,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   const [editorError, setEditorError] = useState(null);
   const [imageInsertCallback, setImageInsertCallback] = useState(null);
   const [importError, setImportError] = useState(null);
+  const [pendingImportFile, setPendingImportFile] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [loadPhase, setLoadPhase] = useState('initializing');
@@ -57,40 +60,60 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   }, []);
 
   const handlePresentationFileSelect = useCallback(
-    async (file) => {
+    (file) => {
+      if (isImporting || pendingImportFile) {
+        return;
+      }
+
       if (!isPptxFile(file)) {
         setImportError('invalid');
         return;
       }
 
-      // eslint-disable-next-line no-alert
-      if (!window.confirm(t('common.presentationImportConfirm'))) {
-        return;
-      }
-
       setImportError(null);
-      setIsImporting(true);
-      try {
-        const result = await api.saveProjectPresentationFile(presentation.id, file);
-        const importedPresentation = result.item;
-
-        // An existing CryptPad key identifies the previous document. Start a fresh
-        // session so CryptPad imports the uploaded PPTX instead of reopening it.
-        presentationRef.current = {
-          ...presentationRef.current,
-          cryptpadSessionKey: null,
-          cryptpadKeyVersion: importedPresentation.cryptpadKeyVersion,
-          cryptpadMode: importedPresentation.cryptpadMode,
-        };
-        handleRetry();
-      } catch (nextError) {
-        setImportError('upload');
-      } finally {
-        setIsImporting(false);
-      }
+      setPendingImportFile(file);
     },
-    [handleRetry, presentation.id, t],
+    [isImporting, pendingImportFile],
   );
+
+  const handlePresentationImportCancel = useCallback(() => {
+    if (!isImporting) {
+      setPendingImportFile(null);
+    }
+  }, [isImporting]);
+
+  const handlePresentationImportConfirm = useCallback(async () => {
+    const file = pendingImportFile;
+    if (!file || isImporting) {
+      return;
+    }
+
+    setPendingImportFile(null);
+    setImportError(null);
+    setIsImporting(true);
+    const toastId = toast.loading(t('common.presentationImportLoading', { name: file.name }));
+
+    try {
+      const result = await api.saveProjectPresentationFile(presentation.id, file);
+      const importedPresentation = result.item;
+
+      // An existing CryptPad key identifies the previous document. Start a fresh
+      // session so CryptPad imports the uploaded PPTX instead of reopening it.
+      presentationRef.current = {
+        ...presentationRef.current,
+        cryptpadSessionKey: null,
+        cryptpadKeyVersion: importedPresentation.cryptpadKeyVersion,
+        cryptpadMode: importedPresentation.cryptpadMode,
+      };
+      toast.success(t('common.presentationImportSuccess'), { id: toastId });
+      handleRetry();
+    } catch (nextError) {
+      setImportError('upload');
+      toast.error(t('common.presentationImportFailed'), { id: toastId });
+    } finally {
+      setIsImporting(false);
+    }
+  }, [handleRetry, isImporting, pendingImportFile, presentation.id, t]);
 
   useEffect(() => {
     const cryptPadOrigins = getPresentationImportOrigins(
@@ -101,7 +124,8 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
       if (
         !cryptPadOrigins.has(event.origin) ||
         !isPresentationImportRequest(event.data) ||
-        isImporting
+        isImporting ||
+        pendingImportFile
       ) {
         return;
       }
@@ -114,7 +138,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
     return () => {
       window.removeEventListener('message', handlePresentationImportMessage);
     };
-  }, [handlePresentationFileSelect, isImporting]);
+  }, [handlePresentationFileSelect, isImporting, pendingImportFile]);
 
   const handleImageInsertRequest = useCallback((data, callback) => {
     if (!data || typeof callback !== 'function') {
@@ -370,6 +394,13 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
         open={imageInsertCallback !== null}
         onClose={handleImagePickerClose}
         onSelect={handleImageSelect}
+      />
+      <PresentationImportConfirmModal
+        file={pendingImportFile}
+        open={pendingImportFile !== null}
+        onCancel={handlePresentationImportCancel}
+        onConfirm={handlePresentationImportConfirm}
+        isImporting={isImporting}
       />
     </>
   );

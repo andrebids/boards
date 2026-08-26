@@ -227,9 +227,11 @@ export default {
         "Não foi possível salvar a alteração da apresentação.",
       presentationImport: "Importar PowerPoint",
       presentationImportConfirm:
-        "O PowerPoint atual será substituído e esta ação não poderá ser desfeita. Deseja continuar?",
+        "Importar “{{name}}”? O PowerPoint atual será substituído e esta ação não poderá ser desfeita.",
       presentationImportInvalidFile:
         "Selecione um arquivo PowerPoint (.pptx).",
+      presentationImportLoading: "Importando {{name}}…",
+      presentationImportSuccess: "PowerPoint importado. Abrindo a apresentação…",
       presentationImportFailed:
         "Não foi possível importar o PowerPoint. Tente novamente.",
       presentationPreparingTitle: "Editor de apresentações sendo preparado",
