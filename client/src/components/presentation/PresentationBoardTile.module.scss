@@ -45,20 +45,42 @@
   }
 
   .createTile {
-    align-items: center;
-    background: rgba(107, 128, 140, 0.08);
-    border-color: transparent;
+    align-items: stretch;
+    background: #303947;
     display: flex;
     fill: rgba(255, 255, 255, 0.48);
+    flex-direction: column;
     height: 153px;
-    justify-content: center;
+    justify-content: flex-start;
 
     &:hover {
-      background: rgba(107, 128, 140, 0.14);
-      border-color: transparent;
-      box-shadow: none;
+      background: #303947;
       fill: rgba(255, 255, 255, 0.68);
+
+      .createBody {
+        background: rgba(255, 255, 255, 0.06);
+      }
     }
+  }
+
+  .createTitle {
+    align-items: center;
+    box-sizing: border-box;
+    color: var(--text-primary);
+    display: flex;
+    flex: 0 0 44px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    padding: 6px 12px;
+  }
+
+  .createBody {
+    align-items: center;
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: center;
+    transition: background-color 160ms ease;
   }
 
   .createIcon {

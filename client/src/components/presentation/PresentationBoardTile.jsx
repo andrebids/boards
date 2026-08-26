@@ -65,11 +65,14 @@ const PresentationBoardTile = React.memo(() => {
         aria-label={createLabel}
         onClick={handleCreate}
       >
-        {isCreating ? (
-          <Icon name="spinner" loading className={styles.createSpinner} aria-hidden="true" />
-        ) : (
-          <PlusIcon className={styles.createIcon} aria-hidden="true" />
-        )}
+        <span className={styles.createTitle}>{t('common.presentations')}</span>
+        <span className={styles.createBody} aria-hidden="true">
+          {isCreating ? (
+            <Icon name="spinner" loading className={styles.createSpinner} />
+          ) : (
+            <PlusIcon className={styles.createIcon} />
+          )}
+        </span>
         {createError && (
           <span className={styles.visuallyHidden} role="alert">
             {t('common.presentationCreateFailed')}

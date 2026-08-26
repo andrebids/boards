@@ -62,12 +62,6 @@ const ChatNotificationItem = React.memo(({ item, onOpen }) => {
         {context && <span className={styles.context}>{context}</span>}
         <span className={styles.preview}>{preview}</span>
       </span>
-      <span
-        className={styles.unread}
-        aria-label={t('chat.unreadMessages', { count: item.unreadCount })}
-      >
-        {item.unreadCount > 99 ? '99+' : item.unreadCount}
-      </span>
     </button>
   );
 });

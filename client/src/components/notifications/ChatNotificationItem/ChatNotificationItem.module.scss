@@ -80,22 +80,6 @@
     overflow: hidden;
   }
 
-  .unread {
-    align-items: center;
-    background: #1687f8;
-    border-radius: 999px;
-    color: #fff;
-    display: inline-flex;
-    flex: 0 0 auto;
-    font-size: 10px;
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    height: 20px;
-    justify-content: center;
-    min-width: 20px;
-    padding: 0 6px;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .item {
       transition: none;

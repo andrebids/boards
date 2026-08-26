@@ -59,6 +59,28 @@ describe('getGlobalConversationTarget', () => {
     });
   });
 
+  test('adds a one-time reply intent when opening from a notification action', () => {
+    expect(
+      getGlobalConversationTarget({
+        currentPathname: '/boards/current-board',
+        currentProjectId: 'current-project',
+        currentSearch: '?cardModal=details',
+        firstBoardId: 'first-board',
+        item: {
+          conversationId: 'general-conversation',
+          firstUnreadMessageId: 'first-unread-message',
+          projectId: 'current-project',
+          reply: true,
+        },
+      }),
+    ).toEqual({
+      conversationId: 'general-conversation',
+      isCurrentProject: true,
+      path:
+        '/boards/current-board?cardModal=details&chatConversation=general-conversation&chatMessage=first-unread-message&reply=1',
+    });
+  });
+
   test('ignores incomplete inbox items', () => {
     expect(
       getGlobalConversationTarget({
