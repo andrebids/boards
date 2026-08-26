@@ -15,8 +15,8 @@
     flex: 0 0 auto;
     gap: 4px;
     grid-template-columns: minmax(0, 1fr) 36px 36px;
-    min-height: 52px;
-    padding: 8px 14px;
+    min-height: 40px;
+    padding: 4px 12px;
 
     strong {
       font-size: clamp(15px, 1.25vw, 19px);
@@ -59,11 +59,11 @@
         color-mix(in oklab, var(--app-dark-border) 72%, transparent);
       box-sizing: border-box;
       display: grid;
-      flex: 0 0 42px;
+      flex: 0 0 28px;
       gap: 4px;
       grid-template-columns: minmax(0, 1fr) 36px 36px;
-      min-height: 42px;
-      padding: 6px 14px;
+      min-height: 28px;
+      padding: 3px 12px;
     }
 
     li:last-child {
@@ -79,13 +79,13 @@
     );
     color: var(--app-dark-text-muted);
     display: flex !important;
-    flex-basis: 30px !important;
+    flex-basis: 22px !important;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.04em;
-    min-height: 30px !important;
-    padding-bottom: 4px !important;
-    padding-top: 4px !important;
+    min-height: 22px !important;
+    padding-bottom: 2px !important;
+    padding-top: 2px !important;
     text-transform: uppercase;
   }
 
@@ -104,11 +104,11 @@
     display: inline-flex;
     font-size: 15px;
     font-weight: 800;
-    height: 22px;
+    height: 20px;
     justify-content: center;
     justify-self: center;
     line-height: 1;
-    width: 22px;
+    width: 20px;
   }
 
   .editableTicker {

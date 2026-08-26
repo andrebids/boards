@@ -1,0 +1,29 @@
+:global(#app) {
+  .wrapper {
+    align-items: center;
+    background: var(--app-dark-surface);
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .link {
+    aspect-ratio: 1;
+    display: block;
+    height: 100%;
+    max-width: 100%;
+
+    &:focus-visible {
+      outline: 2px solid var(--app-focus);
+      outline-offset: 2px;
+    }
+  }
+
+  .qrCode {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+}

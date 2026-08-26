@@ -10,10 +10,15 @@ const WIDGETS = {
   blachereStatic: { minW: 3, minH: 4, maxW: 12, maxH: 10 },
   blachereAnimated: { minW: 3, minH: 4, maxW: 12, maxH: 10 },
   codexUsage: { minW: 4, minH: 4, maxW: 12, maxH: 10 },
+  factorialEntrance: { minW: 2, minH: 2, maxW: 2, maxH: 2 },
 };
 
 const GANTT_ZOOM_LEVELS = new Set(["day", "week", "month", "quarter"]);
-const BLACHERE_WIDGET_TYPES = new Set(["blachereStatic", "blachereAnimated"]);
+const BLACHERE_WIDGET_TYPES = new Set([
+  "blachereProducts",
+  "blachereStatic",
+  "blachereAnimated",
+]);
 const TASK_STATE_COLUMNS = ["twoD", "threeD"];
 
 const normalizeBlachereTaskConfig = (config) => {

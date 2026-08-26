@@ -26,27 +26,19 @@ describe("dashboard layout", () => {
         { id: "attention-list", type: "attention", x: 4, y: 6, w: 4, h: 4 },
         { id: "status-detail", type: "status", x: 8, y: 6, w: 4, h: 4 },
         {
-          id: "blachere-static",
-          type: "blachereStatic",
+          id: "blachere-products",
+          type: "blachereProducts",
           x: 0,
           y: 10,
-          w: 6,
-          h: 7,
+          w: 12,
+          h: 10,
         },
-        {
-          id: "blachere-animated",
-          type: "blachereAnimated",
-          x: 6,
-          y: 10,
-          w: 6,
-          h: 9,
-        },
-        { id: "codex-usage", type: "codexUsage", x: 0, y: 19, w: 4, h: 4 },
+        { id: "codex-usage", type: "codexUsage", x: 0, y: 20, w: 4, h: 4 },
       ]),
-    ).to.have.length(10);
+    ).to.have.length(9);
   });
 
-  it("accepts separate Static and Animated task lists without configuration", () => {
+  it("keeps legacy Static and Animated task lists valid", () => {
     expect(
       normalizeDashboardLayout([
         {
@@ -67,7 +59,14 @@ describe("dashboard layout", () => {
         },
       ]),
     ).to.deep.equal([
-      { id: "blachere-static", type: "blachereStatic", x: 0, y: 0, w: 3, h: 5 },
+      {
+        id: "blachere-static",
+        type: "blachereStatic",
+        x: 0,
+        y: 0,
+        w: 3,
+        h: 5,
+      },
       {
         id: "blachere-animated",
         type: "blachereAnimated",
@@ -83,8 +82,8 @@ describe("dashboard layout", () => {
     expect(
       normalizeDashboardLayout([
         {
-          id: "blachere-static",
-          type: "blachereStatic",
+          id: "blachere-products",
+          type: "blachereProducts",
           x: 0,
           y: 0,
           w: 3,
@@ -102,8 +101,8 @@ describe("dashboard layout", () => {
       ]),
     ).to.deep.equal([
       {
-        id: "blachere-static",
-        type: "blachereStatic",
+        id: "blachere-products",
+        type: "blachereProducts",
         x: 0,
         y: 0,
         w: 3,
@@ -119,8 +118,8 @@ describe("dashboard layout", () => {
     expect(() =>
       normalizeDashboardLayout([
         {
-          id: "blachere-static",
-          type: "blachereStatic",
+          id: "blachere-products",
+          type: "blachereProducts",
           x: 0,
           y: 0,
           w: 3,
@@ -140,6 +139,30 @@ describe("dashboard layout", () => {
       ]),
     ).to.deep.equal([
       { id: "codex-usage", type: "codexUsage", x: 0, y: 0, w: 4, h: 4 },
+    ]);
+  });
+
+  it("accepts the fixed-size Factorial entrance QR widget", () => {
+    expect(
+      normalizeDashboardLayout([
+        {
+          id: "factorial-entrance",
+          type: "factorialEntrance",
+          x: 0,
+          y: 0,
+          w: 2,
+          h: 2,
+        },
+      ]),
+    ).to.deep.equal([
+      {
+        id: "factorial-entrance",
+        type: "factorialEntrance",
+        x: 0,
+        y: 0,
+        w: 2,
+        h: 2,
+      },
     ]);
   });
 

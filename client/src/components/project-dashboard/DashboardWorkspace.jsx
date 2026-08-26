@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { shallowEqual, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { GridStack as GridStackReact } from 'gridstack/dist/react';
 import 'gridstack/dist/gridstack.min.css';
@@ -10,7 +10,7 @@ import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import { UserRoles } from '../../constants/Enums';
 import * as dashboardLayoutHelpers from './dashboardLayout';
-import DashboardNewsTicker from './DashboardNewsTicker';
+import DashboardNewsTicker from './DashboardNewsTicker.jsx';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
 
 import styles from './DashboardWorkspace.module.scss';
@@ -21,9 +21,8 @@ const WIDGET_LABELS = {
   status: 'Estado',
   upcoming: 'Próximas tarefas',
   blachereProducts: 'Blachere Products',
-  blachereStatic: 'Static',
-  blachereAnimated: 'Animated',
   codexUsage: 'Uso do Codex',
+  factorialEntrance: 'Entrada Factorial',
 };
 
 const DashboardWidgetActionsContext = React.createContext({
@@ -105,12 +104,14 @@ const DashboardWorkspace = React.memo(() => {
   const loadedGridLayoutRef = useRef(null);
   const [searchParams] = useSearchParams();
   const user = useSelector(selectors.selectCurrentUser);
-  const projects = useSelector((state) => {
-    const projectIds = selectors.selectProjectIdsForCurrentUser(state) || [];
-    return projectIds
+  const projectIds = useSelector(selectors.selectProjectIdsForCurrentUser);
+  const projects = useSelector(
+    (state) =>
+      (projectIds || [])
       .map((projectId) => selectors.selectProjectById(state, projectId))
-      .filter(Boolean);
-  });
+        .filter(Boolean),
+    shallowEqual,
+  );
   const isTvMode = searchParams.get('tv') === '1';
   const isPreviewAllowed = user?.role === UserRoles.ADMIN;
   const [ganttProjectId, setGanttProjectId] = useState('');
@@ -129,7 +130,9 @@ const DashboardWorkspace = React.memo(() => {
 
   const applyDashboard = useCallback(
     (dashboard) => {
-      const layout = dashboardLayoutHelpers.normalizeDashboardLayout(dashboard.layout || []);
+      const layout = dashboardLayoutHelpers.compactBlachereTaskLists(
+        dashboardLayoutHelpers.normalizeDashboardLayout(dashboard.layout || []),
+      );
       const nextLayout =
         layout.length > 0 || dashboard.version > 1
           ? layout
@@ -371,7 +374,7 @@ const DashboardWorkspace = React.memo(() => {
       const nextLayout = dashboardLayoutRef.current.map((widget) => {
         if (
           widget.id !== widgetId ||
-          (widget.type !== 'blachereStatic' && widget.type !== 'blachereAnimated')
+          !['blachereProducts', 'blachereStatic', 'blachereAnimated'].includes(widget.type)
         ) {
           return widget;
         }

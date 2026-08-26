@@ -32,4 +32,12 @@ describe('dashboard module isolation', () => {
       /draggable: \{ handle: `\.\$\{styles\.dragHandle\}` \},/,
     );
   });
+
+  it('defers the Gantt widget until it enters the viewport', () => {
+    const widgetContentSource = readSource('./widgets/DashboardWidgetContent.jsx');
+
+    expect(widgetContentSource).toContain("import { useInView } from 'react-intersection-observer';");
+    expect(widgetContentSource).toMatch(/useInView\(\{ triggerOnce: true \}\)/);
+    expect(widgetContentSource).toContain('<DeferredDashboardGanttWidget');
+  });
 });

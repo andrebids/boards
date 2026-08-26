@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 import api from '../../api';
+import {
+  getDashboardTickerItems,
+  shouldRenderDashboardTickerThumbnail,
+} from './dashboard-news-ticker';
 
 import styles from './DashboardNewsTicker.module.scss';
 
@@ -32,18 +36,19 @@ const DashboardNewsTicker = React.memo(() => {
     };
   }, []);
 
+  const tickerItems = useMemo(() => getDashboardTickerItems(items), [items]);
   const tickerSequences = useMemo(
     () => [
-      ['current', items],
-      ['duplicate', items],
+      ['current', tickerItems],
+      ['duplicate', tickerItems],
     ],
-    [items],
+    [tickerItems],
   );
 
   return (
     <aside className={styles.ticker} aria-label="Notícias de tecnologia">
       <div className={styles.viewport}>
-        {items.length > 0 ? (
+        {tickerItems.length > 0 ? (
           <div className={styles.track}>
             {tickerSequences.map(([sequenceId, sequenceItems]) => (
               <div
@@ -59,14 +64,16 @@ const DashboardNewsTicker = React.memo(() => {
                     rel="noreferrer"
                     target="_blank"
                   >
-                    {item.imageUrl && (
+                    {shouldRenderDashboardTickerThumbnail(item) && (
                       <img
                         alt=""
                         className={styles.thumbnail}
                         decoding="async"
-                        loading="eager"
+                        height="72"
+                        loading="lazy"
                         referrerPolicy="no-referrer"
                         src={item.imageUrl}
+                        width="104"
                         onError={(event) => {
                           const image = event.currentTarget;
                           image.hidden = true;
