@@ -16,7 +16,7 @@ const Errors = {
 };
 
 const getAvailableUsername = async (name, suffix = 0) => {
-  const username = sails.helpers.users.generateUsername(name, suffix);
+  const username = await sails.helpers.users.generateUsername.with({ name, suffix });
 
   if (!(await User.findOne({ username }))) {
     return username;
