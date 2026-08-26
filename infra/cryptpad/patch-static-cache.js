@@ -6,9 +6,10 @@ const { pipeline } = require('node:stream/promises');
 const fsp = fs.promises;
 
 const marker = 'ONLYOFFICE_LOCAL_NO_CACHE';
-const serviceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_9_';
-const previousServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_8_';
-const legacyServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_7_';
+const serviceWorkerCacheMarker = 'document_editor_static_planka_import_20260826_10_';
+const previousServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_9_';
+const legacyServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_8_';
+const olderLegacyServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_7_';
 const originalCachePolicy = `    if (/[\\?\\&]ver=[^\\/]+$/.test(req.url)) { res.setHeader("Cache-Control", "max-age=31536000"); }
     else { res.setHeader("Cache-Control", "no-cache"); }`;
 const legacyLocalCachePolicy = `    // ONLYOFFICE_LOCAL_CACHE: let the browser reuse the versioned editor bundle in dev.
@@ -41,7 +42,11 @@ function patchServiceWorkerCache(source) {
     return source;
   }
 
-  for (const previousMarker of [previousServiceWorkerCacheMarker, legacyServiceWorkerCacheMarker]) {
+  for (const previousMarker of [
+    previousServiceWorkerCacheMarker,
+    legacyServiceWorkerCacheMarker,
+    olderLegacyServiceWorkerCacheMarker,
+  ]) {
     if (source.includes(previousMarker)) {
       return source.replace(previousMarker, serviceWorkerCacheMarker);
     }

@@ -59,10 +59,9 @@ module.exports = {
         maxBytes: sails.config.custom.attachmentMaxBytes,
       });
     } catch (error) {
-      sails.log.warn('Project presentation upload failed', {
-        presentationId: presentation.id,
-        phase: 'receive',
-      });
+      sails.log.warn(
+        `Project presentation upload failed presentationId=${presentation.id} phase=receive reason=receiveError`,
+      );
       return exits.uploadError(error.message || 'Could not receive presentation file');
     }
 
@@ -83,10 +82,9 @@ module.exports = {
 
     try {
       if (files.length === 0) {
-        sails.log.warn('Project presentation upload rejected', {
-          presentationId: presentation.id,
-          phase: 'receive',
-        });
+        sails.log.warn(
+          `Project presentation upload rejected presentationId=${presentation.id} phase=receive reason=noFile`,
+        );
         throw Errors.NO_FILE_WAS_UPLOADED;
       }
 

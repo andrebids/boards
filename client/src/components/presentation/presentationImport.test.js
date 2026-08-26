@@ -1,7 +1,7 @@
 import {
+  getPresentationImportFile,
   getPresentationImportOrigins,
   isInvalidPresentationImportError,
-  isPresentationImportRequest,
   isPptxFile,
   PRESENTATION_FILE_ACCEPT,
 } from './presentationImport';
@@ -35,12 +35,45 @@ describe('presentation import', () => {
     );
   });
 
-  test('only accepts import messages produced by the native ONLYOFFICE action', () => {
-    const file = { name: 'campaign.pptx' };
+  test('reconstructs byte payloads produced by the native ONLYOFFICE action', async () => {
+    const bytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04]).buffer;
+    const file = getPresentationImportFile({
+      type: 'planka:presentation-import',
+      file: { name: 'campaign.pptx', lastModified: 123, bytes },
+    });
 
-    expect(isPresentationImportRequest({ type: 'planka:presentation-import', file })).toBe(true);
-    expect(isPresentationImportRequest({ type: 'planka:presentation-import' })).toBe(false);
-    expect(isPresentationImportRequest({ type: 'planka:other-action', file })).toBe(false);
+    expect(file).toBeInstanceOf(File);
+    expect(file.name).toBe('campaign.pptx');
+    expect(file.type).toBe(
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    );
+    expect(file.lastModified).toBe(123);
+    expect(new Uint8Array(await file.arrayBuffer())).toEqual(new Uint8Array(bytes));
+  });
+
+  test('normalizes cached legacy File payloads into the current window', () => {
+    const legacyFile = new File(['pptx'], 'campaign.pptx');
+    const file = getPresentationImportFile({
+      type: 'planka:presentation-import',
+      file: legacyFile,
+    });
+
+    expect(file).toBeInstanceOf(File);
+    expect(file).not.toBe(legacyFile);
+    expect(file.size).toBe(legacyFile.size);
+  });
+
+  test('rejects malformed import messages', () => {
+    const file = new File(['pptx'], 'campaign.pptx');
+
+    expect(getPresentationImportFile({ type: 'planka:presentation-import' })).toBeNull();
+    expect(getPresentationImportFile({ type: 'planka:other-action', file })).toBeNull();
+    expect(
+      getPresentationImportFile({
+        type: 'planka:presentation-import',
+        file: { name: 'campaign.pptx', bytes: new ArrayBuffer(0) },
+      }),
+    ).toBeNull();
   });
 
   test('accepts the configured CryptPad sandbox origin used by ONLYOFFICE', () => {

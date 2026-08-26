@@ -16,8 +16,8 @@ import getPresentationEditorLanguage from './presentationLocale';
 import PresentationImportConfirmModal from './PresentationImportConfirmModal';
 import PresentationMediaPicker from './PresentationMediaPicker';
 import {
+  getPresentationImportFile,
   isInvalidPresentationImportError,
-  isPresentationImportRequest,
   isPptxFile,
   getPresentationImportOrigins,
   PRESENTATION_MIME_TYPE,
@@ -130,16 +130,16 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
       Config.CRYPTPAD_SANDBOX_URL,
     );
     const handlePresentationImportMessage = (event) => {
-      if (
-        !cryptPadOrigins.has(event.origin) ||
-        !isPresentationImportRequest(event.data) ||
-        isImporting ||
-        pendingImportFile
-      ) {
+      if (!cryptPadOrigins.has(event.origin) || isImporting || pendingImportFile) {
         return;
       }
 
-      handlePresentationFileSelect(event.data.file);
+      const file = getPresentationImportFile(event.data);
+      if (!file) {
+        return;
+      }
+
+      handlePresentationFileSelect(file);
     };
 
     window.addEventListener('message', handlePresentationImportMessage);

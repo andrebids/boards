@@ -274,9 +274,15 @@ test('adds the PowerPoint import action directly to the native Insert toolbar', 
   assert.match(patched, /slot-btn-planka-presentation-import"><\/span>\\n                    <span class="btn-slot text x-huge slot-insertimg/);
   assert.equal((patched.match(/input\.accept = plankaPresentationImportAccept/g) || []).length, 2);
   assert.equal(
-    (patched.match(/type: plankaPresentationImportMessageType, file: file/g) || []).length,
+    (patched.match(/sendPlankaPresentationImport\(file\)/g) || []).length,
     2,
   );
+  assert.equal(
+    (patched.match(/const plankaPresentationImportBinaryTransport = true/g) || []).length,
+    2,
+  );
+  assert.equal((patched.match(/reader\.readAsArrayBuffer\(file\)/g) || []).length, 2);
+  assert.equal((patched.match(/bytes: bytes/g) || []).length, 2);
   assert.match(patched, /viewBox="0 0 32 32"/);
   assert.match(patched, /plankaPresentationImportVerticalLayout = true/);
   assert.match(patched, /button\.style\.flexDirection = 'column'/);
@@ -291,6 +297,32 @@ test('adds the PowerPoint import action directly to the native Insert toolbar', 
   assert.match(patched, /fm-btn-planka-presentation-import/);
   assert.match(patched, /saveItem\.insertAdjacentElement\('afterend', menuItem\)/);
   assert.match(patched, /icon\.classList\.add\('btn-open'\)/);
+  assert.equal(patchPresentationImportToolbar(patched), patched);
+});
+
+test('upgrades a cached PowerPoint import action to binary file transport', () => {
+  const source =
+    String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
+  const legacy = patchPresentationImportToolbar(source)
+    .replaceAll(
+      /    const plankaPresentationImportBinaryTransport = true;\n    const sendPlankaPresentationImport = function \(file\) \{[\s\S]*?        reader\.readAsArrayBuffer\(file\);\n    \};\n/g,
+      '',
+    )
+    .replaceAll(
+      'sendPlankaPresentationImport(file);',
+      "window.top.postMessage({ type: plankaPresentationImportMessageType, file: file }, '*');",
+    );
+  const patched = patchPresentationImportToolbar(legacy);
+
+  assert.equal(
+    (patched.match(/const plankaPresentationImportBinaryTransport = true/g) || []).length,
+    2,
+  );
+  assert.equal((patched.match(/reader\.readAsArrayBuffer\(file\)/g) || []).length, 2);
+  assert.doesNotMatch(
+    patched,
+    /window\.top\.postMessage\(\{ type: plankaPresentationImportMessageType, file: file \}/,
+  );
   assert.equal(patchPresentationImportToolbar(patched), patched);
 });
 

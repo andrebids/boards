@@ -106,6 +106,8 @@ const presentationImportRuntimeMarker = 'const plankaPresentationImportButtonId'
 const presentationImportFileMenuMarker = 'const plankaPresentationImportFileMenuId';
 const presentationImportFileMenuRuntimeMarker =
   'window.setInterval(installPlankaPresentationImportFileMenu, 100);';
+const presentationImportBinaryTransportMarker =
+  'const plankaPresentationImportBinaryTransport = true';
 const presentationImportVerticalLayoutMarker = 'const plankaPresentationImportVerticalLayout = true';
 const presentationImportTransparentButtonMarker = 'const plankaPresentationImportTransparentButton = true';
 const presentationImportCompactIconMarker = 'const plankaPresentationImportCompactIcon = true';
@@ -185,11 +187,30 @@ ${presentationImportIcon}
         caption.style.whiteSpace = 'nowrap';
         caption.textContent = captionLabel;`;
 
+const presentationImportSendFile = `    const plankaPresentationImportBinaryTransport = true;
+    const sendPlankaPresentationImport = function (file) {
+        const reader = new FileReader();
+        reader.addEventListener('load', function () {
+            const bytes = reader.result;
+            if (!(bytes instanceof ArrayBuffer) || bytes.byteLength === 0) { return; }
+            window.top.postMessage({
+                type: plankaPresentationImportMessageType,
+                file: {
+                    name: file.name,
+                    lastModified: file.lastModified,
+                    bytes: bytes,
+                },
+            }, '*', [bytes]);
+        });
+        reader.readAsArrayBuffer(file);
+    };`;
+
 const presentationImportFileMenuRuntime = `
 ;(function () {
     const plankaPresentationImportFileMenuId = 'fm-btn-planka-presentation-import';
     const plankaPresentationImportMessageType = 'planka:presentation-import';
     const plankaPresentationImportAccept = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+${presentationImportSendFile}
 
     const installPlankaPresentationImportFileMenu = function () {
         const saveItem = document.getElementById('fm-btn-save');
@@ -222,7 +243,7 @@ const presentationImportFileMenuRuntime = `
             input.addEventListener('change', function () {
                 const file = input.files && input.files[0];
                 if (!file) { return; }
-                window.top.postMessage({ type: plankaPresentationImportMessageType, file: file }, '*');
+                sendPlankaPresentationImport(file);
             });
             input.click();
         });
@@ -238,6 +259,7 @@ const presentationImportRuntime = `
     const plankaPresentationImportButtonId = 'planka-presentation-import';
     const plankaPresentationImportMessageType = 'planka:presentation-import';
     const plankaPresentationImportAccept = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+${presentationImportSendFile}
 
     const installPlankaPresentationImportButton = function () {
         const slot = document.getElementById('slot-btn-planka-presentation-import');
@@ -253,7 +275,7 @@ ${presentationImportCaption}
             input.addEventListener('change', function () {
                 const file = input.files && input.files[0];
                 if (!file) { return; }
-                window.top.postMessage({ type: plankaPresentationImportMessageType, file: file }, '*');
+                sendPlankaPresentationImport(file);
             });
             input.click();
         });
@@ -291,7 +313,7 @@ const legacyPresentationImportFileMenuSuffix = `
             input.addEventListener('change', function () {
                 const file = input.files && input.files[0];
                 if (!file) { return; }
-                window.top.postMessage({ type: plankaPresentationImportMessageType, file: file }, '*');
+                sendPlankaPresentationImport(file);
             });
             input.click();
         });
@@ -573,6 +595,23 @@ function patchPresentationToolbar(source) {
 
 function patchPresentationImportToolbar(source) {
   let patched = source;
+
+  if (
+    !patched.includes(presentationImportBinaryTransportMarker) &&
+    patched.includes(
+      "window.top.postMessage({ type: plankaPresentationImportMessageType, file: file }, '*');",
+    )
+  ) {
+    patched = patched
+      .replaceAll(
+        "    const plankaPresentationImportAccept = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';",
+        `    const plankaPresentationImportAccept = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';\n${presentationImportSendFile}`,
+      )
+      .replaceAll(
+        "window.top.postMessage({ type: plankaPresentationImportMessageType, file: file }, '*');",
+        'sendPlankaPresentationImport(file);',
+      );
+  }
 
   if (patched.includes(previousPresentationImportToolbarReplacement)) {
     patched = patched.replace(
