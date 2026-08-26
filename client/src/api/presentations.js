@@ -17,7 +17,7 @@ const saveProjectPresentationFile = (id, file, headers) =>
   http.post(`/project-presentations/${id}/file`, { file }, headers);
 
 const importProjectPresentationFile = (id, file, headers) =>
-  http.post(`/project-presentations/${id}/file`, { file, resetSession: true }, headers);
+  http.post(`/project-presentations/${id}/file?resetSession=true`, { file }, headers);
 
 export default {
   getProjectPresentations,

@@ -5,6 +5,10 @@ const source = fs.readFileSync(
   path.join(process.cwd(), 'src', 'components', 'presentation', 'PresentationEditor.jsx'),
   'utf8',
 );
+const apiSource = fs.readFileSync(
+  path.join(process.cwd(), 'src', 'api', 'presentations.js'),
+  'utf8',
+);
 
 describe('Presentation editor permissions', () => {
   test('shows PowerPoint import to every board member with access', () => {
@@ -27,6 +31,7 @@ describe('Presentation editor permissions', () => {
     expect(source).toMatch(/const importedPresentation = result\.item/);
     expect(source).toMatch(/api\.importProjectPresentationFile/);
     expect(source).toMatch(/presentationRef\.current = importedPresentation/);
+    expect(apiSource).toMatch(/file\?resetSession=true`, \{ file \}/);
   });
 
   test('does not restore an older session while the imported editor is starting', () => {
