@@ -6,10 +6,10 @@
 import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Icon, Menu } from 'semantic-ui-react';
 import { Button } from '../../../lib/custom-ui';
-import { useTranslation } from 'react-i18next';
 import { usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
@@ -20,6 +20,10 @@ import { BoardMembershipRoles, BoardViews, UserRoles } from '../../../constants/
 import UserAvatar from '../../users/UserAvatar';
 import UserStep from '../../users/UserStep';
 import NotificationsStep from '../../notifications/NotificationsStep';
+import {
+  getPresentationBoardContextId,
+  makePathWithPresentationBoard,
+} from '../../presentation/presentationNavigation';
 
 import styles from './Header.module.scss';
 
@@ -32,6 +36,8 @@ const Header = React.memo(() => {
   const user = useSelector(selectors.selectCurrentUser);
   const project = useSelector(selectors.selectCurrentProject);
   const board = useSelector(selectors.selectCurrentBoard);
+  const boards = useSelector(selectors.selectBoardsForCurrentProject) || [];
+  const pathsMatch = useSelector(selectors.selectPathsMatch);
   const notificationIds = useSelector(selectors.selectNotificationIdsForCurrentUser);
   const unreadChatConversationTotal =
     useSelector(selectors.selectChatInboxUnreadConversationTotal) || 0;
@@ -39,6 +45,22 @@ const Header = React.memo(() => {
   const isFavoritesEnabled = useSelector(selectors.selectIsFavoritesEnabled);
   const isEditModeEnabled = useSelector(selectors.selectIsEditModeEnabled);
   const isSidebarExpanded = useSelector(selectIsSidebarExpanded);
+  const [searchParams] = useSearchParams();
+
+  const presentationBoardId = getPresentationBoardContextId(
+    pathsMatch?.pattern.path,
+    searchParams,
+  );
+  const presentationBoard = boards.find(({ id }) => id === presentationBoardId);
+  const backPath = presentationBoard
+    ? makePathWithPresentationBoard(
+        Paths.BOARDS.replace(':id', presentationBoard.id),
+        presentationBoard.id,
+      )
+    : Paths.ROOT;
+  const backLabel = presentationBoard
+    ? `${t('action.returnToBoard')}: ${presentationBoard.name}`
+    : t('action.back');
 
   const withFavoritesToggler = useSelector(
     // TODO: use selector instead?
@@ -170,7 +192,9 @@ const Header = React.memo(() => {
             </Menu.Item>
             <Menu.Item
               as={Link}
-              to={Paths.ROOT}
+              to={backPath}
+              aria-label={backLabel}
+              title={backLabel}
               className={classNames(styles.item, styles.itemHoverable)}
             >
               <Icon fitted name="arrow left" />

@@ -6,8 +6,8 @@
 - [x] Tarefa 3: renderizar e guardar o primeiro slide privado.
 - [x] Tarefa 4: expor o preview autorizado e propagar a atualização.
 - [x] Tarefa 5: executar testes focados.
-- [ ] Conclusão A: instalar `libreoffice` e `poppler-utils` no `Dockerfile.dev` e recriar apenas `planka-server`.
-- [ ] Conclusão B: repor `attempts = 0` ao reenfileirar uma nova versão e cobrir com teste focado.
-- [ ] Conclusão C: guardar uma vez as apresentações locais existentes e confirmar job `ready`, endpoint privado e capa no Kanban.
-- [ ] Smoke test por hot reload.
+- [x] Conclusão A: instalar `libreoffice` e `poppler-utils` no `Dockerfile.dev` e recriar apenas `planka-server`.
+- [x] Conclusão B: repor `attempts = 0` ao reenfileirar uma nova versão e cobrir com teste focado.
+- [x] Conclusão C: reenfileirar as apresentações locais existentes e confirmar job `ready`, endpoint privado e capa no Kanban.
+- [x] Smoke test por hot reload.
 - [ ] Checkpoint final: aprovar visual cover-only e limites operacionais.

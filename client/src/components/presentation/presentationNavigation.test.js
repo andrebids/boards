@@ -1,6 +1,8 @@
 import makePresentationBoardSearchParams, {
+  getPresentationBoardContextId,
   makePathWithPresentationBoard,
 } from './presentationNavigation';
+import Paths from '../../constants/Paths';
 
 describe('presentation board navigation', () => {
   test('opens one board through the shared board query parameter', () => {
@@ -15,5 +17,12 @@ describe('presentation board navigation', () => {
     expect(makePathWithPresentationBoard('/projects/project-1/gantt', 'board-1')).toBe(
       '/projects/project-1/gantt?board=board-1',
     );
+  });
+
+  test('keeps the associated board as navigation context on the presentation route', () => {
+    const searchParams = new URLSearchParams({ board: 'board-1' });
+
+    expect(getPresentationBoardContextId(Paths.PRESENTATION, searchParams)).toBe('board-1');
+    expect(getPresentationBoardContextId(Paths.BOARDS, searchParams)).toBeNull();
   });
 });

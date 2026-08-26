@@ -21,8 +21,8 @@ O bloqueio confirmado no ambiente local é menor: o `Dockerfile` de produção j
 
 **Critérios de aceitação:**
 
-- [ ] `soffice` e `pdftoppm` existem dentro de `planka-server`.
-- [ ] O servidor inicia com o hook `project-presentation-preview` ativo.
+- [x] `soffice` e `pdftoppm` existem dentro de `planka-server`.
+- [x] O servidor inicia com o hook `project-presentation-preview` ativo.
 
 **Verificação:** reconstruir/recriar apenas o container de desenvolvimento do servidor e executar `command -v soffice` e `command -v pdftoppm`. Não executar build do cliente.
 
@@ -34,8 +34,8 @@ O bloqueio confirmado no ambiente local é menor: o `Dockerfile` de produção j
 
 **Critérios de aceitação:**
 
-- [ ] Uma nova gravação substitui um job falhado por `pending` com zero tentativas.
-- [ ] O teste focado da fila cobre essa reposição.
+- [x] Uma nova gravação substitui um job falhado por `pending` com zero tentativas.
+- [x] O teste focado da fila cobre essa reposição.
 
 **Verificação:** executar apenas os testes de `project-presentation-preview` do servidor.
 
@@ -47,10 +47,10 @@ O bloqueio confirmado no ambiente local é menor: o `Dockerfile` de produção j
 
 **Critérios de aceitação:**
 
-- [ ] O job termina em `ready` sem `ENOENT`.
-- [ ] O endpoint privado devolve `image/jpeg` apenas a um utilizador autorizado.
-- [ ] O tile troca o placeholder pelo primeiro slide sem recarregar o quadro.
-- [ ] Uma falha de conversão continua a mostrar o placeholder e não bloqueia a gravação.
+- [x] O job termina em `ready` sem `ENOENT`.
+- [x] O endpoint privado devolve `image/jpeg` apenas a um utilizador autorizado.
+- [x] O tile troca o placeholder pelo primeiro slide no quadro.
+- [x] Uma falha de conversão continua a mostrar o placeholder e não bloqueia a gravação.
 
 **Verificação:** logs do worker, estado do job, pedido autenticado ao endpoint e inspeção no Kanban por hot reload.
 

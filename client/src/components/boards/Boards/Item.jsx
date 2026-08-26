@@ -16,7 +16,10 @@ import { Button } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import Paths from '../../../constants/Paths';
-import { makePathWithPresentationBoard } from '../../presentation/presentationNavigation';
+import {
+  getPresentationBoardContextId,
+  makePathWithPresentationBoard,
+} from '../../presentation/presentationNavigation';
 
 import styles from './Item.module.scss';
 
@@ -24,6 +27,7 @@ const Item = React.memo(({ id, index }) => {
   const [t] = useTranslation();
   const [searchParams] = useSearchParams();
   const selectBoardById = useMemo(() => selectors.makeSelectBoardById(), []);
+  const pathsMatch = useSelector(selectors.selectPathsMatch);
 
   const selectNotificationsTotalByBoardId = useMemo(
     () => selectors.makeSelectNotificationsTotalByBoardId(),
@@ -34,9 +38,16 @@ const Item = React.memo(({ id, index }) => {
   const notificationsTotal = useSelector(state =>
     selectNotificationsTotalByBoardId(state, id)
   );
-  const isActive = useSelector(
-    state => id === selectors.selectPath(state).boardId
+  const activeBoardId = useSelector(state => selectors.selectPath(state).boardId);
+  const presentationBoardId = getPresentationBoardContextId(
+    pathsMatch?.pattern.path,
+    searchParams,
   );
+  const isActive = id === (presentationBoardId || activeBoardId);
+  let ariaCurrent;
+  if (isActive) {
+    ariaCurrent = presentationBoardId ? 'location' : 'page';
+  }
 
   const canEdit = useSelector(state => {
     const isEditModeEnabled = selectors.selectIsEditModeEnabled(state); // TODO: move out?
@@ -78,7 +89,12 @@ const Item = React.memo(({ id, index }) => {
               <>
                 <Link
                   to={boardPath}
-                  title={board.name}
+                  title={
+                    id === presentationBoardId
+                      ? `${t('action.returnToBoard')}: ${board.name}`
+                      : board.name
+                  }
+                  aria-current={ariaCurrent}
                   className={styles.link}
                 >
                   <div className={styles.headerContent}>
