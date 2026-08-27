@@ -304,4 +304,51 @@ describe('Card update transaction', () => {
     expect(loggedErrors[0][0]).to.include('Failed to create move action for card card-1');
     expect(loggedErrors[1][0]).to.include('Failed to create due date action for card card-1');
   });
+
+  it('allows a video attachment to become the card cover', async () => {
+    const card = {
+      id: 'card-1',
+      boardId: 'board-1',
+      listId: 'list-1',
+    };
+
+    global.Card = {
+      qm: {
+        updateOne: async (_id, values) => ({ ...card, ...values }),
+      },
+    };
+    global.sails = {
+      helpers: {
+        lists: {
+          isFinite: () => false,
+        },
+        utils: {
+          sendWebhooks: {
+            with: () => {},
+          },
+        },
+      },
+      sockets: {
+        broadcast: () => {},
+      },
+    };
+
+    const result = await updateCard.fn({
+      record: card,
+      values: {
+        coverAttachment: {
+          id: 'attachment-1',
+          data: {
+            video: { status: 'ready' },
+          },
+        },
+      },
+      project: { id: 'project-1' },
+      board: { id: 'board-1' },
+      list: { id: 'list-1', boardId: 'board-1', type: 'active' },
+      actorUser: { id: 'user-1' },
+    });
+
+    expect(result.coverAttachmentId).to.equal('attachment-1');
+  });
 });

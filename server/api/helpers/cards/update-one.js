@@ -95,7 +95,7 @@ module.exports = {
     }
 
     if (values.coverAttachment) {
-      if (!values.coverAttachment.data.image) {
+      if (!values.coverAttachment.data.image && !values.coverAttachment.data.video) {
         throw 'coverAttachmentInValuesMustContainImage';
       }
 
