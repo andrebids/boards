@@ -48,7 +48,6 @@ import BoardMembershipsStep from '../../../board-memberships/BoardMembershipsSte
 import LabelChip from '../../../labels/LabelChip';
 import LabelsStep from '../../../labels/LabelsStep';
 import ListsStep from '../../../lists/ListsStep';
-import Attachments from '../../../attachments/Attachments';
 import AddAttachmentStep from '../../../attachments/AddAttachmentStep';
 import AddCustomFieldGroupStep from '../../../custom-field-groups/AddCustomFieldGroupStep';
 
@@ -61,9 +60,6 @@ const StoryContent = React.memo(({ onClose }) => {
   const board = useSelector(selectors.selectCurrentBoard);
   const userIds = useSelector(selectors.selectUserIdsForCurrentCard);
   const labelIds = useSelector(selectors.selectLabelIdsForCurrentCard);
-  const attachmentIds = useSelector(
-    selectors.selectAttachmentIdsForCurrentCard
-  );
 
   const isJoined = useSelector(selectors.selectIsCurrentUserInCurrentCard);
 
@@ -513,17 +509,6 @@ const StoryContent = React.memo(({ onClose }) => {
             </div>
           )}
           <CustomFieldGroups />
-          {attachmentIds.length > 0 && (
-            <div className={styles.contentModule}>
-              <div className={styles.moduleWrapper}>
-                <Icon name="attach" className={styles.moduleIcon} />
-                <div className={styles.moduleHeader}>
-                  {t('common.attachments')}
-                </div>
-                <Attachments />
-              </div>
-            </div>
-          )}
           <div className={styles.contentModule}>
             <div className={styles.moduleWrapper}>
               <Icon name="list ul" className={styles.moduleIcon} />

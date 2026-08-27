@@ -51,7 +51,6 @@ import LabelChip from '../../labels/LabelChip';
 import LabelsStep from '../../labels/LabelsStep';
 import ListsStep from '../../lists/ListsStep';
 import AddTaskListStep from '../../task-lists/AddTaskListStep';
-import Attachments from '../../attachments/Attachments';
 import AddAttachmentStep from '../../attachments/AddAttachmentStep';
 import AddCustomFieldGroupStep from '../../custom-field-groups/AddCustomFieldGroupStep';
 
@@ -65,7 +64,6 @@ const ProjectContent = React.memo(({ onClose }) => {
   const board = useSelector(selectors.selectCurrentBoard);
   const userIds = useSelector(selectors.selectUserIdsForCurrentCard);
   const labelIds = useSelector(selectors.selectLabelIdsForCurrentCard);
-  const attachmentIds = useSelector(selectors.selectAttachmentIdsForCurrentCard);
 
   const isJoined = useSelector(selectors.selectIsCurrentUserInCurrentCard);
 
@@ -547,15 +545,6 @@ const ProjectContent = React.memo(({ onClose }) => {
           )}
           <CustomFieldGroups />
           <TaskLists />
-          {attachmentIds.length > 0 && (
-            <div className={styles.contentModule}>
-              <div className={styles.moduleWrapper}>
-                <Icon name="attach" className={styles.moduleIcon} />
-                <div className={styles.moduleHeader}>{t('common.attachments')}</div>
-                <Attachments />
-              </div>
-            </div>
-          )}
           <div className={styles.contentModule}>
             <div className={styles.moduleWrapper}>
               <Icon name="list ul" className={styles.moduleIcon} />
