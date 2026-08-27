@@ -181,9 +181,11 @@
   }
 
   .calendar {
-    margin-top: 20px;
+    margin: 20px auto 0;
+    max-width: 100%;
     min-width: 0;
     overflow: hidden;
+    width: min(100%, var(--calendar-width));
   }
 
   .monthLabels,
@@ -230,6 +232,7 @@
   }
 
   .day {
+    aspect-ratio: 1;
     background: color-mix(in oklab, var(--app-dark-surface-hover) 80%, var(--app-dark-surface));
     border-radius: 1px;
     display: block;

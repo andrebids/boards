@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 
 import api from '../../../api';
 
+import { buildActivityCalendar, getActivityLevel } from './codex-usage-activity';
 import getCodexUsageForecast from './codex-usage-forecast';
 import styles from './DashboardCodexUsageWidget.module.scss';
 
 const USAGE_REFRESH_INTERVAL_MS = 60 * 1000;
-const CALENDAR_DAYS = 365;
-const CALENDAR_WEEKS = 53;
 const TOKEN_UNITS = [
   { threshold: 1e9, suffix: 'B', divisor: 1e9 },
   { threshold: 1e6, suffix: 'M', divisor: 1e6 },
@@ -90,76 +89,26 @@ const formatDuration = (seconds) => {
   return `${minutes}m`;
 };
 
-const toDateKey = (date) => date.toISOString().slice(0, 10);
-
-const buildActivityCalendar = (dailyUsageBuckets) => {
-  const tokensByDate = new Map(
-    (Array.isArray(dailyUsageBuckets) ? dailyUsageBuckets : []).map(({ startDate, tokens }) => [
-      startDate,
-      tokens,
-    ]),
-  );
-  const today = new Date();
-  const endDate = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
-  );
-  const startDate = new Date(endDate);
-  startDate.setUTCDate(startDate.getUTCDate() - (CALENDAR_DAYS - 1));
-  const gridStartDate = new Date(startDate);
-  gridStartDate.setUTCDate(gridStartDate.getUTCDate() - gridStartDate.getUTCDay());
-  const weeks = [];
-  const cursor = new Date(gridStartDate);
-
-  while (cursor <= endDate && weeks.length < CALENDAR_WEEKS) {
-    const week = [];
-    for (let day = 0; day < 7; day += 1) {
-      const date = new Date(cursor);
-      date.setUTCDate(cursor.getUTCDate() + day);
-      const dateKey = toDateKey(date);
-      const tokens = tokensByDate.get(dateKey) || 0;
-      week.push({ dateKey, date, tokens });
-    }
-    weeks.push(week);
-    cursor.setUTCDate(cursor.getUTCDate() + 7);
-  }
-
-  const peak = Math.max(0, ...weeks.flat().map(({ tokens }) => tokens));
-  const monthMarks = weeks.reduce((marks, week, index) => {
-    const month = week[0].date.getUTCMonth();
-    const previousMonth = index > 0 ? weeks[index - 1][0].date.getUTCMonth() : null;
-    if (index === 0 || month !== previousMonth) {
-      marks.push({
-        index,
-        label: new Intl.DateTimeFormat('pt-PT', { month: 'short' })
-          .format(week[0].date)
-          .replace('.', ''),
-      });
-    }
-    return marks;
-  }, []);
-
-  return { monthMarks, peak, weeks };
-};
-
-const getActivityLevel = (tokens, peak) => {
-  if (!tokens || !peak) {
-    return 0;
-  }
-
-  return Math.max(1, Math.ceil((Math.log1p(tokens) / Math.log1p(peak)) * 4));
-};
-
 function TokenActivity({ activity }) {
   const calendar = buildActivityCalendar(activity?.dailyUsageBuckets);
   const summary = activity?.summary;
   const hasActivity = summary && Number.isSafeInteger(summary.lifetimeTokens);
-  const calendarStyle = { '--calendar-columns': calendar.weeks.length };
+  const calendarStyle = {
+    '--calendar-columns': calendar.weeks.length,
+    '--calendar-width': `${20 + calendar.weeks.length * 17}px`,
+  };
+  const focusedPeriodLabel = calendar.focusedMonthLabel
+    ? `desde ${calendar.focusedMonthLabel}`
+    : null;
+  const calendarAriaLabel = `Atividade diária de tokens ${
+    focusedPeriodLabel || 'nos últimos 12 meses'
+  }`;
 
   return (
     <div className={styles.activity}>
       <div className={styles.activityHeading}>
         <span>Atividade de tokens</span>
-        <small>últimos 12 meses</small>
+        <small>{focusedPeriodLabel || 'últimos 12 meses'}</small>
       </div>
       {hasActivity ? (
         <>
@@ -185,11 +134,8 @@ function TokenActivity({ activity }) {
               <strong>{formatDuration(summary.longestRunningTurnSec)}</strong>
             </div>
           </div>
-          <div
-            className={styles.calendar}
-            aria-label="Atividade diária de tokens nos últimos 12 meses"
-          >
-            <div className={styles.monthLabels} style={calendarStyle} aria-hidden="true">
+          <div className={styles.calendar} style={calendarStyle} aria-label={calendarAriaLabel}>
+            <div className={styles.monthLabels} aria-hidden="true">
               <span />
               {calendar.monthMarks.map(({ index, label }) => (
                 <span key={`${index}-${label}`} style={{ gridColumn: index + 2 }}>
@@ -197,12 +143,7 @@ function TokenActivity({ activity }) {
                 </span>
               ))}
             </div>
-            <div
-              className={styles.calendarGrid}
-              style={calendarStyle}
-              role="img"
-              aria-label="Atividade diária de tokens nos últimos 12 meses"
-            >
+            <div className={styles.calendarGrid} role="img" aria-label={calendarAriaLabel}>
               <div className={styles.weekdayLabels} aria-hidden="true">
                 {WEEKDAY_LABELS.map((label) => (
                   <span key={label}>{label[0]}</span>
