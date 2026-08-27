@@ -1,10 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 
-import api from "../../../api";
+import api from '../../../api';
 
-import styles from "./DashboardCodexUsageWidget.module.scss";
+import styles from './DashboardCodexUsageWidget.module.scss';
 
 const USAGE_REFRESH_INTERVAL_MS = 60 * 1000;
+const CALENDAR_DAYS = 365;
+const CALENDAR_WEEKS = 53;
+const TOKEN_UNITS = [
+  { threshold: 1e9, suffix: 'B', divisor: 1e9 },
+  { threshold: 1e6, suffix: 'M', divisor: 1e6 },
+  { threshold: 1e3, suffix: 'K', divisor: 1e3 },
+];
+const WEEKDAY_LABELS = ['D0', 'S1', 'T2', 'Q3', 'Q4', 'S5', 'S6'];
 
 const normalizeUsagePercent = (usagePercent) => {
   if (!Number.isFinite(usagePercent)) {
@@ -26,14 +35,213 @@ const formatRenewal = (resetsAt) => {
 
   return {
     dateTime: renewalDate.toISOString(),
-    label: new Intl.DateTimeFormat("pt-PT", {
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      month: "2-digit",
-      year: "numeric",
+    label: new Intl.DateTimeFormat('pt-PT', {
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
     }).format(renewalDate),
   };
+};
+
+const formatTokenCount = (tokens) => {
+  if (!Number.isSafeInteger(tokens) || tokens < 0) {
+    return '—';
+  }
+
+  const unit = TOKEN_UNITS.find(({ threshold }) => tokens >= threshold);
+  const value = unit ? tokens / unit.divisor : tokens;
+
+  return `${new Intl.NumberFormat('pt-PT', {
+    maximumFractionDigits: unit ? 2 : 0,
+  }).format(value)}${unit ? unit.suffix : ''}`;
+};
+
+const formatDuration = (seconds) => {
+  if (!Number.isSafeInteger(seconds) || seconds < 0) {
+    return '—';
+  }
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  return `${minutes}m`;
+};
+
+const toDateKey = (date) => date.toISOString().slice(0, 10);
+
+const buildActivityCalendar = (dailyUsageBuckets) => {
+  const tokensByDate = new Map(
+    (Array.isArray(dailyUsageBuckets) ? dailyUsageBuckets : []).map(({ startDate, tokens }) => [
+      startDate,
+      tokens,
+    ]),
+  );
+  const today = new Date();
+  const endDate = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+  const startDate = new Date(endDate);
+  startDate.setUTCDate(startDate.getUTCDate() - (CALENDAR_DAYS - 1));
+  const gridStartDate = new Date(startDate);
+  gridStartDate.setUTCDate(gridStartDate.getUTCDate() - gridStartDate.getUTCDay());
+  const weeks = [];
+  const cursor = new Date(gridStartDate);
+
+  while (cursor <= endDate && weeks.length < CALENDAR_WEEKS) {
+    const week = [];
+    for (let day = 0; day < 7; day += 1) {
+      const date = new Date(cursor);
+      date.setUTCDate(cursor.getUTCDate() + day);
+      const dateKey = toDateKey(date);
+      const tokens = tokensByDate.get(dateKey) || 0;
+      week.push({ dateKey, date, tokens });
+    }
+    weeks.push(week);
+    cursor.setUTCDate(cursor.getUTCDate() + 7);
+  }
+
+  const peak = Math.max(0, ...weeks.flat().map(({ tokens }) => tokens));
+  const monthMarks = weeks.reduce((marks, week, index) => {
+    const month = week[0].date.getUTCMonth();
+    const previousMonth = index > 0 ? weeks[index - 1][0].date.getUTCMonth() : null;
+    if (index === 0 || month !== previousMonth) {
+      marks.push({
+        index,
+        label: new Intl.DateTimeFormat('pt-PT', { month: 'short' })
+          .format(week[0].date)
+          .replace('.', ''),
+      });
+    }
+    return marks;
+  }, []);
+
+  return { monthMarks, peak, weeks };
+};
+
+const getActivityLevel = (tokens, peak) => {
+  if (!tokens || !peak) {
+    return 0;
+  }
+
+  return Math.max(1, Math.ceil((Math.log1p(tokens) / Math.log1p(peak)) * 4));
+};
+
+function TokenActivity({ activity }) {
+  const calendar = buildActivityCalendar(activity?.dailyUsageBuckets);
+  const summary = activity?.summary;
+  const hasActivity = summary && Number.isSafeInteger(summary.lifetimeTokens);
+  const calendarStyle = { '--calendar-columns': calendar.weeks.length };
+
+  return (
+    <div className={styles.activity}>
+      <div className={styles.activityHeading}>
+        <span>Atividade de tokens</span>
+        <small>últimos 12 meses</small>
+      </div>
+      {hasActivity ? (
+        <>
+          <div className={styles.activityStats}>
+            <div>
+              <span>Total</span>
+              <strong>{formatTokenCount(summary.lifetimeTokens)}</strong>
+            </div>
+            <div>
+              <span>Pico diário</span>
+              <strong>{formatTokenCount(summary.peakDailyTokens)}</strong>
+            </div>
+            <div>
+              <span>Streak</span>
+              <strong>{summary.currentStreakDays}d</strong>
+            </div>
+            <div>
+              <span>Melhor</span>
+              <strong>{summary.longestStreakDays}d</strong>
+            </div>
+            <div>
+              <span>Tarefa mais longa</span>
+              <strong>{formatDuration(summary.longestRunningTurnSec)}</strong>
+            </div>
+          </div>
+          <div
+            className={styles.calendar}
+            aria-label="Atividade diária de tokens nos últimos 12 meses"
+          >
+            <div className={styles.monthLabels} style={calendarStyle} aria-hidden="true">
+              <span />
+              {calendar.monthMarks.map(({ index, label }) => (
+                <span key={`${index}-${label}`} style={{ gridColumn: index + 2 }}>
+                  {label}
+                </span>
+              ))}
+            </div>
+            <div
+              className={styles.calendarGrid}
+              style={calendarStyle}
+              role="img"
+              aria-label="Atividade diária de tokens nos últimos 12 meses"
+            >
+              <div className={styles.weekdayLabels} aria-hidden="true">
+                {WEEKDAY_LABELS.map((label) => (
+                  <span key={label}>{label[0]}</span>
+                ))}
+              </div>
+              {calendar.weeks.map((week) => (
+                <div className={styles.week} key={week[0].dateKey}>
+                  {week.map(({ dateKey, tokens }) => {
+                    const level = getActivityLevel(tokens, calendar.peak);
+                    return (
+                      <span
+                        className={`${styles.day} ${styles[`level${level}`]}`}
+                        key={dateKey}
+                        title={`${dateKey}: ${tokens.toLocaleString('pt-PT')} tokens`}
+                        aria-label={`${dateKey}: ${tokens.toLocaleString('pt-PT')} tokens`}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            <div className={styles.legend} aria-hidden="true">
+              <span>menos</span>
+              {[0, 1, 2, 3, 4].map((level) => (
+                <i className={`${styles.day} ${styles[`level${level}`]}`} key={level} />
+              ))}
+              <span>mais</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <p className={styles.activityEmpty}>A bridge ainda não enviou atividade de tokens.</p>
+      )}
+    </div>
+  );
+}
+
+TokenActivity.defaultProps = {
+  activity: null,
+};
+
+TokenActivity.propTypes = {
+  activity: PropTypes.shape({
+    summary: PropTypes.shape({
+      lifetimeTokens: PropTypes.number,
+      peakDailyTokens: PropTypes.number,
+      longestRunningTurnSec: PropTypes.number,
+      currentStreakDays: PropTypes.number,
+      longestStreakDays: PropTypes.number,
+    }),
+    dailyUsageBuckets: PropTypes.arrayOf(
+      PropTypes.shape({
+        startDate: PropTypes.string,
+        tokens: PropTypes.number,
+      }),
+    ),
+  }),
 };
 
 const DashboardCodexUsageWidget = React.memo(() => {
@@ -65,50 +273,48 @@ const DashboardCodexUsageWidget = React.memo(() => {
   const usedPercent = normalizeUsagePercent(usage?.usedPercent);
   const hasUsage = usedPercent !== null;
   const remainingPercent = hasUsage ? 100 - usedPercent : null;
-  const displayedPercent = hasUsage ? `${remainingPercent}%` : "—";
+  const displayedPercent = hasUsage ? `${remainingPercent}%` : '—';
   const renewal = formatRenewal(usage?.resetsAt);
 
   return (
     <section className={styles.wrapper} aria-label="Uso semanal do Codex">
-      <div
-        className={styles.gauge}
-        role="status"
-        aria-label={
-          hasUsage
-            ? `Uso semanal do Codex: ${remainingPercent}% restante, ${usedPercent}% utilizado${
-                renewal ? `, repõe ${renewal.label}` : ""
-              }`
-            : "Uso semanal ainda indisponível"
-        }
-      >
-        <svg
-          className={styles.gaugeSvg}
-          viewBox="0 0 240 142"
-          aria-hidden="true"
-          focusable="false"
+      <div className={styles.weekly}>
+        <div
+          className={styles.gauge}
+          role="status"
+          aria-label={
+            hasUsage
+              ? `Uso semanal do Codex: ${remainingPercent}% restante, ${usedPercent}% utilizado${
+                  renewal ? `, repõe ${renewal.label}` : ''
+                }`
+              : 'Uso semanal ainda indisponível'
+          }
         >
-          <path
-            className={styles.track}
-            d="M 30 120 A 90 90 0 0 1 210 120"
-            pathLength="100"
-          />
-          <path
-            className={styles.fill}
-            d="M 30 120 A 90 90 0 0 1 210 120"
-            pathLength="100"
-            strokeDasharray={hasUsage ? `${remainingPercent} 100` : "0 100"}
-          />
-        </svg>
-        <div className={styles.reading} aria-live="polite">
-          <strong>{displayedPercent}</strong>
-          {hasUsage && <span>restante</span>}
+          <svg
+            className={styles.gaugeSvg}
+            viewBox="0 0 240 142"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path className={styles.track} d="M 30 120 A 90 90 0 0 1 210 120" pathLength="100" />
+            <path
+              className={styles.fill}
+              d="M 30 120 A 90 90 0 0 1 210 120"
+              pathLength="100"
+              strokeDasharray={hasUsage ? `${remainingPercent} 100` : '0 100'}
+            />
+          </svg>
+          <div className={styles.reading} aria-live="polite">
+            <strong>{displayedPercent}</strong>
+            {hasUsage && <span>restante</span>}
+          </div>
+        </div>
+        <div className={styles.details}>
+          {hasUsage && <span>{usedPercent}% usado</span>}
+          {renewal && <time dateTime={renewal.dateTime}>Repõe {renewal.label}</time>}
         </div>
       </div>
-      <div className={styles.details}>
-        {renewal && (
-          <time dateTime={renewal.dateTime}>Repõe {renewal.label}</time>
-        )}
-      </div>
+      <TokenActivity activity={usage?.tokenActivity} />
     </section>
   );
 });

@@ -10,6 +10,7 @@ const Errors = {
 module.exports = {
   inputs: {
     resetsAt: { type: 'number', required: true },
+    tokenActivity: { type: 'json', required: false },
     usedPercent: { type: 'number', required: true },
     windowDurationMins: { type: 'number', required: true },
   },
@@ -39,7 +40,9 @@ module.exports = {
     const dashboard = await getGlobalDashboard();
     await Dashboard.updateOne({ id: dashboard.id }).set({ codexUsage });
 
-    sails.sockets.broadcast('dashboard', 'dashboardCodexUsageUpdate', { item: codexUsage });
+    sails.sockets.broadcast('dashboard', 'dashboardCodexUsageUpdate', {
+      item: codexUsage,
+    });
     return { item: codexUsage };
   },
 };

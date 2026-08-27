@@ -1,9 +1,14 @@
-# Bridge de uso semanal do Codex
+# Bridge de uso do Codex
 
 Este processo deve correr no computador onde o Codex Desktop tem sessao iniciada.
-Ele le apenas o limite semanal `primary` atraves do App Server local e envia o
-snapshot para o Planka. A televisao consulta depois o Planka, nunca o computador
-nem a conta Codex.
+Ele le o limite semanal `primary` e a atividade de tokens atraves do App Server
+local (`account/rateLimits/read` e `account/usage/read`) e envia o snapshot para
+o Planka. A televisao consulta depois o Planka, nunca o computador nem a conta
+Codex.
+
+O snapshot de atividade inclui o total vitalicio, o pico diario, as streaks, a
+duracao da tarefa mais longa e os buckets diarios devolvidos pelo Codex. Nao sao
+lidos ficheiros de sessoes nem credenciais locais.
 
 ## Configuracao
 

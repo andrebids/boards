@@ -9,6 +9,7 @@ const APP_SERVER_TIMEOUT_MS = 15_000;
 const DEFAULT_INTERVAL_MS = 60_000;
 const MIN_INTERVAL_MS = 10_000;
 const MAX_INTERVAL_MS = 60 * 60 * 1000;
+const MAX_DAILY_USAGE_BUCKETS = 400;
 const BRIDGE_PATH = 'api/dashboard/codex-usage';
 
 const isLocalHost = (hostname) =>
@@ -48,9 +49,55 @@ export const extractWeeklyUsage = (response) => {
   };
 };
 
+export const extractTokenActivity = (response) => {
+  const summary = response?.summary;
+  const dailyUsageBuckets = response?.dailyUsageBuckets;
+  const summaryFields = [
+    'lifetimeTokens',
+    'peakDailyTokens',
+    'longestRunningTurnSec',
+    'currentStreakDays',
+    'longestStreakDays',
+  ];
+
+  assertUsageValue(summary && typeof summary === 'object', 'does not contain a token summary');
+  for (const field of summaryFields) {
+    assertUsageValue(
+      Number.isSafeInteger(summary[field]) && summary[field] >= 0,
+      `has an invalid ${field}`,
+    );
+  }
+  assertUsageValue(
+    Array.isArray(dailyUsageBuckets) && dailyUsageBuckets.length <= MAX_DAILY_USAGE_BUCKETS,
+    'has invalid daily usage buckets',
+  );
+
+  for (const bucket of dailyUsageBuckets) {
+    assertUsageValue(
+      bucket && typeof bucket === 'object' && /^\d{4}-\d{2}-\d{2}$/.test(bucket.startDate),
+      'has an invalid daily usage date',
+    );
+    assertUsageValue(
+      Number.isSafeInteger(bucket.tokens) && bucket.tokens >= 0,
+      'has invalid daily usage tokens',
+    );
+  }
+
+  return {
+    summary: Object.fromEntries(summaryFields.map((field) => [field, summary[field]])),
+    dailyUsageBuckets: dailyUsageBuckets.map(({ startDate, tokens }) => ({
+      startDate,
+      tokens,
+    })),
+  };
+};
+
 export const createPlankaUsageUrl = (plankaUrl) => {
   const endpoint = new URL(plankaUrl);
-  if (endpoint.protocol !== 'https:' && !(endpoint.protocol === 'http:' && isLocalHost(endpoint.hostname))) {
+  if (
+    endpoint.protocol !== 'https:' &&
+    !(endpoint.protocol === 'http:' && isLocalHost(endpoint.hostname))
+  ) {
     throw new Error('PLANKA_URL must use HTTPS unless it targets localhost');
   }
 
@@ -62,7 +109,11 @@ export const createPlankaUsageUrl = (plankaUrl) => {
 
 const getIntervalMs = () => {
   const intervalMs = Number(process.env.CODEX_USAGE_INTERVAL_MS || DEFAULT_INTERVAL_MS);
-  if (!Number.isFinite(intervalMs) || intervalMs < MIN_INTERVAL_MS || intervalMs > MAX_INTERVAL_MS) {
+  if (
+    !Number.isFinite(intervalMs) ||
+    intervalMs < MIN_INTERVAL_MS ||
+    intervalMs > MAX_INTERVAL_MS
+  ) {
     throw new Error(
       `CODEX_USAGE_INTERVAL_MS must be between ${MIN_INTERVAL_MS} and ${MAX_INTERVAL_MS}`,
     );
@@ -108,7 +159,7 @@ const findCodexExecutable = async () => {
   return latest.executable;
 };
 
-const readRateLimits = (codexExecutable) =>
+const readAppServer = (codexExecutable, method) =>
   new Promise((resolve, reject) => {
     const appServer = spawn(codexExecutable, ['app-server', '--stdio'], {
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -166,10 +217,10 @@ const readRateLimits = (codexExecutable) =>
 
         if (message.id === 1 && !initialized) {
           initialized = true;
-          send({ jsonrpc: '2.0', id: 2, method: 'account/rateLimits/read', params: null });
+          send({ jsonrpc: '2.0', id: 2, method, params: null });
         } else if (message.id === 2) {
           if (message.error) {
-            finish(new Error('Codex App Server rejected the rate-limit request'));
+            finish(new Error(`Codex App Server rejected ${method}`));
           } else {
             finish(null, message.result);
           }
@@ -187,6 +238,11 @@ const readRateLimits = (codexExecutable) =>
       },
     });
   });
+
+const readRateLimits = (codexExecutable) =>
+  readAppServer(codexExecutable, 'account/rateLimits/read');
+
+const readTokenActivity = (codexExecutable) => readAppServer(codexExecutable, 'account/usage/read');
 
 const publishUsage = async (endpoint, token, usage) => {
   const response = await fetch(endpoint, {
@@ -207,8 +263,11 @@ const publishUsage = async (endpoint, token, usage) => {
 
 const runOnce = async ({ codexExecutable, endpoint, token }) => {
   const usage = extractWeeklyUsage(await readRateLimits(codexExecutable));
-  await publishUsage(endpoint, token, usage);
-  console.log(`Codex usage snapshot sent (${usage.usedPercent}%).`);
+  const tokenActivity = extractTokenActivity(await readTokenActivity(codexExecutable));
+  await publishUsage(endpoint, token, { ...usage, tokenActivity });
+  console.log(
+    `Codex usage snapshot sent (${usage.usedPercent}%, ${tokenActivity.dailyUsageBuckets.length} daily buckets).`,
+  );
 };
 
 const runBridge = async () => {
@@ -253,7 +312,8 @@ const runBridge = async () => {
   });
 };
 
-const isEntryPoint = process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url;
+const isEntryPoint =
+  process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url;
 
 if (isEntryPoint) {
   runBridge().catch((error) => {

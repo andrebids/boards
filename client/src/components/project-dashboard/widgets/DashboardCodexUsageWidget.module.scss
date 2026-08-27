@@ -3,15 +3,23 @@
     --codex-usage-accent: oklch(0.69 0.13 185);
 
     background: var(--app-dark-surface);
+    container-type: inline-size;
     color: var(--app-dark-text);
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+    display: grid;
+    gap: clamp(12px, 1.5vw, 24px);
+    grid-template-columns: minmax(150px, 0.7fr) minmax(0, 1.7fr);
     height: 100%;
-    justify-content: center;
     min-height: 0;
     overflow: hidden;
     padding: clamp(12px, 1.25vw, 18px);
+  }
+
+  .weekly {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
   }
 
   .gauge {
@@ -84,8 +92,193 @@
     margin-top: clamp(4px, 0.75vw, 10px);
     white-space: nowrap;
 
+    span {
+      color: var(--codex-usage-accent);
+    }
+
     time {
       color: var(--app-dark-text-muted);
+    }
+  }
+
+  .activity {
+    align-self: center;
+    min-width: 0;
+  }
+
+  .activityHeading {
+    align-items: baseline;
+    display: flex;
+    gap: 8px;
+    line-height: 1;
+
+    span {
+      font-size: clamp(15px, 1.4vw, 20px);
+      font-weight: 600;
+    }
+
+    small {
+      color: var(--app-dark-text-muted);
+      font-size: clamp(10px, 0.9vw, 12px);
+    }
+  }
+
+  .activityStats {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-top: clamp(14px, 1.5vw, 20px);
+
+    div {
+      min-width: 0;
+    }
+
+    span,
+    strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    span {
+      color: var(--app-dark-text-muted);
+      font-size: clamp(9px, 0.8vw, 11px);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    strong {
+      font-size: clamp(13px, 1.3vw, 18px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+  }
+
+  .calendar {
+    margin-top: clamp(14px, 1.5vw, 22px);
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .monthLabels,
+  .calendarGrid {
+    display: grid;
+    grid-template-columns: 20px repeat(var(--calendar-columns), minmax(0, 1fr));
+  }
+
+  .monthLabels {
+    color: var(--app-dark-text-muted);
+    font-size: 9px;
+    grid-auto-flow: column;
+    line-height: 1;
+    min-height: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+
+    span {
+      grid-row: 1;
+    }
+  }
+
+  .calendarGrid {
+    min-height: 0;
+  }
+
+  .weekdayLabels,
+  .week {
+    display: grid;
+    gap: 3px;
+    grid-template-rows: repeat(7, minmax(0, 1fr));
+  }
+
+  .weekdayLabels {
+    color: var(--app-dark-text-muted);
+    font-size: 8px;
+    line-height: 1;
+    text-align: right;
+  }
+
+  .week {
+    min-width: 0;
+  }
+
+  .day {
+    background: color-mix(in oklab, var(--app-dark-surface-hover) 80%, var(--app-dark-surface));
+    border-radius: 1px;
+    display: block;
+    min-height: 4px;
+    min-width: 0;
+  }
+
+  .level1 {
+    background: color-mix(in oklab, var(--codex-usage-accent) 25%, var(--app-dark-surface));
+  }
+
+  .level2 {
+    background: color-mix(in oklab, var(--codex-usage-accent) 45%, var(--app-dark-surface));
+  }
+
+  .level3 {
+    background: color-mix(in oklab, var(--codex-usage-accent) 68%, var(--app-dark-surface));
+  }
+
+  .level4 {
+    background: var(--codex-usage-accent);
+  }
+
+  .legend {
+    align-items: center;
+    color: var(--app-dark-text-muted);
+    display: flex;
+    font-size: 9px;
+    gap: 4px;
+    justify-content: flex-end;
+    margin-top: 8px;
+
+    .day {
+      height: 7px;
+      min-height: 7px;
+      width: 7px;
+    }
+  }
+
+  .activityEmpty {
+    color: var(--app-dark-text-muted);
+    font-size: 12px;
+    margin: 20px 0 0;
+  }
+
+  @container (max-width: 560px) {
+    .wrapper {
+      gap: 4px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .weekly {
+      display: grid;
+      grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.2fr);
+    }
+
+    .gauge {
+      justify-self: center;
+      width: min(100%, 220px);
+    }
+
+    .details {
+      justify-content: center;
+      margin-top: 0;
+    }
+
+    .activityStats {
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .calendar {
+      margin-top: 10px;
     }
   }
 }

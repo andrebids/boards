@@ -12,6 +12,16 @@ describe('Codex usage snapshot', () => {
           resetsAt: 1787812769,
           usedPercent: 12,
           windowDurationMins: 10080,
+          tokenActivity: {
+            summary: {
+              lifetimeTokens: 31700000000,
+              peakDailyTokens: 2000000000,
+              longestRunningTurnSec: 83815,
+              currentStreakDays: 3,
+              longestStreakDays: 33,
+            },
+            dailyUsageBuckets: [{ startDate: '2026-08-26', tokens: 1028139962 }],
+          },
         },
         new Date('2026-08-21T08:00:00.000Z'),
       ),
@@ -20,6 +30,16 @@ describe('Codex usage snapshot', () => {
       updatedAt: '2026-08-21T08:00:00.000Z',
       usedPercent: 12,
       windowDurationMins: 10080,
+      tokenActivity: {
+        summary: {
+          lifetimeTokens: 31700000000,
+          peakDailyTokens: 2000000000,
+          longestRunningTurnSec: 83815,
+          currentStreakDays: 3,
+          longestStreakDays: 33,
+        },
+        dailyUsageBuckets: [{ startDate: '2026-08-26', tokens: 1028139962 }],
+      },
     });
   });
 
