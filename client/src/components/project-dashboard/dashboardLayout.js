@@ -18,6 +18,7 @@ export const GANTT_ZOOM_LEVELS = ['day', 'week', 'month', 'quarter'];
 export const GRIDSTACK_DASHBOARD_COMPONENT = 'DashboardWidget';
 
 const BLACHERE_WIDGET_TYPES = new Set(['blachereProducts', 'blachereStatic', 'blachereAnimated']);
+const HIDDEN_WIDGET_TYPES = new Set(['blachereProducts']);
 const TASK_STATE_COLUMNS = ['twoD', 'threeD'];
 
 const normalizeBlachereTaskConfig = (config) => {
@@ -101,15 +102,7 @@ export const createDefaultDashboardLayout = () => [
   { id: 'upcoming-list', type: 'upcoming', x: 0, y: 6, w: 4, h: 4 },
   { id: 'attention-list', type: 'attention', x: 4, y: 6, w: 4, h: 4 },
   { id: 'status-detail', type: 'status', x: 8, y: 6, w: 4, h: 4 },
-  {
-    id: 'blachere-products',
-    type: 'blachereProducts',
-    x: 0,
-    y: 10,
-    w: 12,
-    h: 10,
-  },
-  { id: 'codex-usage', type: 'codexUsage', x: 0, y: 20, w: 4, h: 4 },
+  { id: 'codex-usage', type: 'codexUsage', x: 0, y: 10, w: 4, h: 4 },
 ];
 
 export const normalizeDashboardLayout = (layout) => {
@@ -118,8 +111,9 @@ export const normalizeDashboardLayout = (layout) => {
   }
 
   const ids = new Set();
+  const visibleLayout = layout.filter((item) => !HIDDEN_WIDGET_TYPES.has(item.type));
 
-  return layout.map((item) => {
+  return visibleLayout.map((item) => {
     const widget = DASHBOARD_WIDGETS[item.type];
 
     if (!widget) {
@@ -204,50 +198,6 @@ export const hasDashboardGridChanged = (previousLayout, nextLayout) => {
       previousWidget.w !== widget.w ||
       previousWidget.h !== widget.h
     );
-  });
-};
-
-export const compactBlachereTaskLists = (layout) => {
-  const staticWidget = layout.find(
-    (widget) => widget.id === 'blachere-static' && widget.type === 'blachereStatic',
-  );
-  const animatedWidget = layout.find(
-    (widget) => widget.id === 'blachere-animated' && widget.type === 'blachereAnimated',
-  );
-
-  if (!staticWidget || !animatedWidget) {
-    return layout;
-  }
-
-  const x = Math.min(staticWidget.x, animatedWidget.x);
-  const y = Math.min(staticWidget.y, animatedWidget.y);
-  const w = Math.max(staticWidget.x + staticWidget.w, animatedWidget.x + animatedWidget.w) - x;
-  const h = Math.max(staticWidget.y + staticWidget.h, animatedWidget.y + animatedWidget.h) - y;
-
-  if (w > DASHBOARD_WIDGETS.blachereProducts.maxW || h > DASHBOARD_WIDGETS.blachereProducts.maxH) {
-    return layout;
-  }
-
-  const taskStates = {
-    ...(staticWidget.config?.taskStates || {}),
-    ...(animatedWidget.config?.taskStates || {}),
-  };
-  const compactedWidget = {
-    id: 'blachere-products',
-    type: 'blachereProducts',
-    x,
-    y,
-    w,
-    h,
-    ...(Object.keys(taskStates).length > 0 && { config: { taskStates } }),
-  };
-
-  return layout.flatMap((widget) => {
-    if (widget === staticWidget) {
-      return [compactedWidget];
-    }
-
-    return widget === animatedWidget ? [] : [widget];
   });
 };
 

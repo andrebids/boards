@@ -25,17 +25,9 @@ describe("dashboard layout", () => {
         { id: "upcoming-list", type: "upcoming", x: 0, y: 6, w: 4, h: 4 },
         { id: "attention-list", type: "attention", x: 4, y: 6, w: 4, h: 4 },
         { id: "status-detail", type: "status", x: 8, y: 6, w: 4, h: 4 },
-        {
-          id: "blachere-products",
-          type: "blachereProducts",
-          x: 0,
-          y: 10,
-          w: 12,
-          h: 10,
-        },
-        { id: "codex-usage", type: "codexUsage", x: 0, y: 20, w: 4, h: 4 },
+        { id: "codex-usage", type: "codexUsage", x: 0, y: 10, w: 4, h: 4 },
       ]),
-    ).to.have.length(9);
+    ).to.have.length(8);
   });
 
   it("keeps legacy Static and Animated task lists valid", () => {
@@ -78,7 +70,7 @@ describe("dashboard layout", () => {
     ]);
   });
 
-  it("keeps only valid 2D and 3D task states for Blachere widgets", () => {
+  it("hides the retired Blachere Products widget from saved layouts", () => {
     expect(
       normalizeDashboardLayout([
         {
@@ -99,27 +91,13 @@ describe("dashboard layout", () => {
           },
         },
       ]),
-    ).to.deep.equal([
-      {
-        id: "blachere-products",
-        type: "blachereProducts",
-        x: 0,
-        y: 0,
-        w: 3,
-        h: 5,
-        config: {
-          taskStates: {
-            "Static-Cherry Light-0": { twoD: "done", threeD: "pending" },
-          },
-        },
-      },
-    ]);
+    ).to.deep.equal([]);
 
     expect(() =>
       normalizeDashboardLayout([
         {
-          id: "blachere-products",
-          type: "blachereProducts",
+          id: "blachere-static",
+          type: "blachereStatic",
           x: 0,
           y: 0,
           w: 3,

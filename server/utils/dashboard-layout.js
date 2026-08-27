@@ -19,6 +19,7 @@ const BLACHERE_WIDGET_TYPES = new Set([
   "blachereStatic",
   "blachereAnimated",
 ]);
+const HIDDEN_WIDGET_TYPES = new Set(["blachereProducts"]);
 const TASK_STATE_COLUMNS = ["twoD", "threeD"];
 
 const normalizeBlachereTaskConfig = (config) => {
@@ -105,8 +106,9 @@ const normalizeDashboardLayout = (layout) => {
   }
 
   const ids = new Set();
+  const visibleLayout = layout.filter((item) => !HIDDEN_WIDGET_TYPES.has(item.type));
 
-  return layout.map((item) => {
+  return visibleLayout.map((item) => {
     const widget = WIDGETS[item.type];
 
     if (!widget) {

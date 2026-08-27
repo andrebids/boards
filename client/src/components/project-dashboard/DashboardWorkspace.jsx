@@ -130,9 +130,7 @@ const DashboardWorkspace = React.memo(() => {
 
   const applyDashboard = useCallback(
     (dashboard) => {
-      const layout = dashboardLayoutHelpers.compactBlachereTaskLists(
-        dashboardLayoutHelpers.normalizeDashboardLayout(dashboard.layout || []),
-      );
+      const layout = dashboardLayoutHelpers.normalizeDashboardLayout(dashboard.layout || []);
       const nextLayout =
         layout.length > 0 || dashboard.version > 1
           ? layout
