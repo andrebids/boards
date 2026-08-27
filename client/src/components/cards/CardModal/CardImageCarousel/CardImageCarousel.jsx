@@ -13,24 +13,27 @@ import { Icon } from 'semantic-ui-react';
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import { ClosableContext } from '../../../../contexts';
+import { usePopupInClosableContext } from '../../../../hooks';
 import { isListArchiveOrTrash } from '../../../../utils/record-helpers';
-import { BoardMembershipRoles } from '../../../../constants/Enums';
-import VideoPlayer from '../../../common/VideoPlayer';
+import { AttachmentTypes, BoardMembershipRoles } from '../../../../constants/Enums';
 import TimeAgo from '../../../common/TimeAgo';
-import getDefaultMedia, { getNewlyAddedMedia } from './selection';
+import EditAttachmentStep from '../../../attachments/Attachments/EditStep';
+import AttachmentPreview from './AttachmentPreview';
+import getDefaultMedia, {
+  getCarouselAttachments,
+  getNewlyAddedMedia,
+  isCoverableAttachment,
+  isDownloadableAttachment,
+  isPersistedAttachment,
+  isVideoAttachment,
+} from './selection';
 
 import styles from './CardImageCarousel.module.scss';
 
 const SWIPE_THRESHOLD = 48;
 
-const isVideoAttachment = (attachment) =>
-  Boolean(
-    attachment.data.video ||
-      (attachment.data.mimeType && attachment.data.mimeType.startsWith('video/')),
-  );
-
 const getThumbnailUrl = (attachment, preferredSize = '720') => {
-  if (!attachment.data.thumbnailUrls) {
+  if (!attachment.data?.thumbnailUrls) {
     return null;
   }
 
@@ -67,30 +70,7 @@ const CardImageCarousel = React.memo(() => {
   });
 
   const images = useMemo(() => {
-    const visualAttachments = attachments.filter(
-      (attachment) =>
-        attachment.isPersisted !== false &&
-        attachment.data &&
-        attachment.data.url &&
-        ((attachment.data.image && attachment.data.thumbnailUrls) || isVideoAttachment(attachment)),
-    );
-
-    if (!card.coverAttachmentId) {
-      return visualAttachments;
-    }
-
-    const coverAttachment = visualAttachments.find(
-      (attachment) => attachment.id === card.coverAttachmentId,
-    );
-
-    if (!coverAttachment) {
-      return visualAttachments;
-    }
-
-    return [
-      coverAttachment,
-      ...visualAttachments.filter((attachment) => attachment.id !== coverAttachment.id),
-    ];
+    return getCarouselAttachments(attachments, card.coverAttachmentId);
   }, [attachments, card.coverAttachmentId]);
 
   const [t] = useTranslation();
@@ -188,8 +168,10 @@ const CardImageCarousel = React.memo(() => {
         );
   const selectedImage = images[selectedIndex];
   const hasMultipleImages = images.length > 1;
-  const selectedIsVideo = selectedImage ? isVideoAttachment(selectedImage) : false;
+  const selectedIsImage = isCoverableAttachment(selectedImage);
+  const selectedCanDownload = isDownloadableAttachment(selectedImage);
   const isCover = selectedImage?.id === card.coverAttachmentId;
+  const EditPopup = usePopupInClosableContext(EditAttachmentStep);
 
   const updateThumbnailScrollState = useCallback(() => {
     const thumbnailsElement = thumbnailsRef.current;
@@ -476,7 +458,7 @@ const CardImageCarousel = React.memo(() => {
       event.preventDefault();
       event.stopPropagation();
 
-      if (!selectedImage || selectedIsVideo) {
+      if (!selectedImage || !selectedIsImage) {
         return;
       }
 
@@ -486,7 +468,7 @@ const CardImageCarousel = React.memo(() => {
         }),
       );
     },
-    [dispatch, isCover, selectedImage, selectedIsVideo],
+    [dispatch, isCover, selectedImage, selectedIsImage],
   );
 
   const handleDownloadClick = useCallback(
@@ -519,17 +501,10 @@ const CardImageCarousel = React.memo(() => {
     });
   }, []);
 
-  const handleActionsMenuDownloadClick = useCallback(
-    (event) => {
-      handleDownloadClick(event);
-      setIsActionsMenuOpen(false);
-      setIsDeleteConfirmationOpen(false);
-      window.requestAnimationFrame(() => {
-        actionsButtonRef.current?.focus();
-      });
-    },
-    [handleDownloadClick],
-  );
+  const handleEditRequestClick = useCallback(() => {
+    setIsActionsMenuOpen(false);
+    setIsDeleteConfirmationOpen(false);
+  }, []);
 
   const handleDeleteRequestClick = useCallback((event) => {
     event.preventDefault();
@@ -631,20 +606,14 @@ const CardImageCarousel = React.memo(() => {
             const isVideo = isVideoAttachment(image);
             const thumbnailUrl = getThumbnailUrl(image);
 
-            if (isVideo) {
+            if (!image.data?.image || isVideo) {
               return (
-                <div
+                <AttachmentPreview
                   key={image.id}
-                  className={classNames(
-                    styles.slide,
-                    styles.videoSlide,
-                    isSelected && styles.slideSelected,
-                  )}
-                >
-                  {isSelected && (
-                    <VideoPlayer attachment={image} autoPlay posterUrl={thumbnailUrl} />
-                  )}
-                </div>
+                  attachment={image}
+                  isSelected={isSelected}
+                  posterUrl={thumbnailUrl}
+                />
               );
             }
 
@@ -722,119 +691,136 @@ const CardImageCarousel = React.memo(() => {
             </>
           )}
         </div>
-        <div
-          ref={actionToolbarRef}
-          className={styles.actionToolbar}
-          role="group"
-          aria-label={t('common.actions')}
-          onPointerDown={(event) => event.stopPropagation()}
-          onPointerUp={(event) => event.stopPropagation()}
-        >
-          {canEdit && !selectedIsVideo && (
-            <button
-              type="button"
-              className={classNames(
-                styles.actionButton,
-                styles.coverActionButton,
-                isCover && styles.actionButtonActive,
-              )}
-              aria-label={coverActionLabel}
-              aria-pressed={isCover}
-              title={coverActionLabel}
-              onClick={handleToggleCoverClick}
-            >
-              <Icon fitted name={isCover ? 'check circle' : 'image outline'} aria-hidden="true" />
-              <span className={styles.actionLabel}>{t('common.cover')}</span>
-            </button>
-          )}
-          {canEdit && !selectedIsVideo && (
-            <span className={styles.actionDivider} aria-hidden="true" />
-          )}
-          <button
-            ref={actionsButtonRef}
-            type="button"
-            className={styles.actionButton}
+        <div className={styles.detailsBar}>
+          <div className={styles.selectedDetails}>
+            <span className={styles.selectedName} title={selectedImage.name}>
+              {selectedImage.name}
+            </span>
+            <span className={styles.selectedInformation}>
+              <TimeAgo date={selectedImage.createdAt} />
+            </span>
+          </div>
+          <div
+            ref={actionToolbarRef}
+            className={styles.actionToolbar}
+            role="group"
             aria-label={t('common.actions')}
-            aria-controls={isActionsMenuOpen ? 'card-media-actions-menu' : undefined}
-            aria-expanded={isActionsMenuOpen}
-            aria-haspopup="menu"
-            title={t('common.actions')}
-            onClick={handleActionsMenuToggleClick}
+            onPointerDown={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
           >
-            <Icon fitted name="ellipsis horizontal" aria-hidden="true" />
-          </button>
-          {isActionsMenuOpen && isDeleteConfirmationOpen && (
-            <div
-              ref={actionsMenuRef}
-              id="card-media-actions-menu"
-              className={classNames(styles.actionsMenu, styles.actionsMenuConfirmation)}
-              role="alertdialog"
-              aria-label={t('common.deleteAttachment', {
-                context: 'title',
-              })}
-              aria-modal="true"
-              tabIndex={-1}
-            >
-              <p className={styles.confirmationMessage}>
-                {t('common.areYouSureYouWantToDeleteThisAttachment')}
-              </p>
-              <div className={styles.confirmationActions}>
-                <button
-                  type="button"
-                  className={styles.confirmationCancelButton}
-                  onClick={handleDeleteCancelClick}
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="button"
-                  className={styles.confirmationDeleteButton}
-                  onClick={handleDeleteConfirm}
-                >
-                  {t('action.deleteAttachment')}
-                </button>
-              </div>
-            </div>
-          )}
-          {isActionsMenuOpen && !isDeleteConfirmationOpen && (
-            <div
-              ref={actionsMenuRef}
-              id="card-media-actions-menu"
-              className={styles.actionsMenu}
-              role="menu"
-              aria-label={t('common.actions')}
-              tabIndex={-1}
-              onKeyDown={handleActionsMenuKeyDown}
-            >
+            {canEdit && selectedIsImage && (
               <button
                 type="button"
-                role="menuitem"
-                className={styles.actionsMenuItem}
-                onClick={handleActionsMenuDownloadClick}
+                className={classNames(
+                  styles.actionButton,
+                  styles.labeledActionButton,
+                  isCover && styles.actionButtonActive,
+                )}
+                aria-label={coverActionLabel}
+                aria-pressed={isCover}
+                title={coverActionLabel}
+                onClick={handleToggleCoverClick}
+              >
+                <Icon fitted name={isCover ? 'check circle' : 'image outline'} aria-hidden="true" />
+                <span className={styles.actionLabel}>{t('common.cover')}</span>
+              </button>
+            )}
+            {selectedCanDownload && (
+              <button
+                type="button"
+                className={classNames(styles.actionButton, styles.labeledActionButton)}
+                onClick={handleDownloadClick}
               >
                 <Icon fitted name="download" aria-hidden="true" />
-                <span>{t('common.download')}</span>
+                <span className={styles.actionLabel}>{t('common.download')}</span>
               </button>
-              {canEdit && (
-                <>
-                  <span className={styles.actionsMenuDivider} aria-hidden="true" />
+            )}
+            {canEdit && isPersistedAttachment(selectedImage) && (
+              <button
+                ref={actionsButtonRef}
+                type="button"
+                className={styles.actionButton}
+                aria-label={t('common.actions')}
+                aria-controls={isActionsMenuOpen ? 'card-media-actions-menu' : undefined}
+                aria-expanded={isActionsMenuOpen}
+                aria-haspopup="menu"
+                title={t('common.actions')}
+                onClick={handleActionsMenuToggleClick}
+              >
+                <Icon fitted name="ellipsis horizontal" aria-hidden="true" />
+              </button>
+            )}
+            {isActionsMenuOpen && isDeleteConfirmationOpen && (
+              <div
+                ref={actionsMenuRef}
+                id="card-media-actions-menu"
+                className={classNames(styles.actionsMenu, styles.actionsMenuConfirmation)}
+                role="alertdialog"
+                aria-label={t('common.deleteAttachment', {
+                  context: 'title',
+                })}
+                aria-modal="true"
+                tabIndex={-1}
+              >
+                <p className={styles.confirmationMessage}>
+                  {t('common.areYouSureYouWantToDeleteThisAttachment')}
+                </p>
+                <div className={styles.confirmationActions}>
+                  <button
+                    type="button"
+                    className={styles.confirmationCancelButton}
+                    onClick={handleDeleteCancelClick}
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.confirmationDeleteButton}
+                    onClick={handleDeleteConfirm}
+                  >
+                    {t('action.deleteAttachment')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isActionsMenuOpen && !isDeleteConfirmationOpen && (
+              <div
+                ref={actionsMenuRef}
+                id="card-media-actions-menu"
+                className={styles.actionsMenu}
+                role="menu"
+                aria-label={t('common.actions')}
+                tabIndex={-1}
+                onKeyDown={handleActionsMenuKeyDown}
+              >
+                <EditPopup attachmentId={selectedImage.id}>
                   <button
                     type="button"
                     role="menuitem"
-                    className={classNames(styles.actionsMenuItem, styles.actionsMenuItemDanger)}
-                    onClick={handleDeleteRequestClick}
+                    className={styles.actionsMenuItem}
+                    onClick={handleEditRequestClick}
                   >
-                    <Icon fitted name="trash alternate outline" aria-hidden="true" />
-                    <span>
-                      {t('common.deleteAttachment', {
-                        context: 'title',
-                      })}
-                    </span>
+                    <Icon fitted name="pencil" aria-hidden="true" />
+                    <span>{t('action.edit')}</span>
                   </button>
-                </>
-              )}
-            </div>
-          )}
+                </EditPopup>
+                <span className={styles.actionsMenuDivider} aria-hidden="true" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={classNames(styles.actionsMenuItem, styles.actionsMenuItemDanger)}
+                  onClick={handleDeleteRequestClick}
+                >
+                  <Icon fitted name="trash alternate outline" aria-hidden="true" />
+                  <span>
+                    {t('common.deleteAttachment', {
+                      context: 'title',
+                    })}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <div className={styles.status} aria-live="polite">
           {t('common.mediaPosition', {
@@ -870,11 +856,19 @@ const CardImageCarousel = React.memo(() => {
               {images.map((image, index) => {
                 const isSelected = index === selectedIndex;
                 const isVideo = isVideoAttachment(image);
+                const isLink = image.type === AttachmentTypes.LINK;
+                const isThumbnailCover = image.id === card.coverAttachmentId;
                 const thumbnailUrl = getThumbnailUrl(image, '360');
                 const temporalMetadata = temporalMetadataById[image.id];
                 let thumbnailNode;
 
-                if (thumbnailUrl) {
+                if (!isPersistedAttachment(image)) {
+                  thumbnailNode = (
+                    <span className={styles.thumbnailFallback} aria-hidden="true">
+                      <span className={styles.thumbnailLoadingSpinner} />
+                    </span>
+                  );
+                } else if (thumbnailUrl) {
                   thumbnailNode = (
                     <img
                       src={thumbnailUrl}
@@ -883,7 +877,7 @@ const CardImageCarousel = React.memo(() => {
                       className={styles.thumbnailImage}
                     />
                   );
-                } else if (isVideo) {
+                } else if (isVideo && image.data?.url) {
                   thumbnailNode = (
                     <video
                       src={image.data.url}
@@ -894,10 +888,16 @@ const CardImageCarousel = React.memo(() => {
                       className={styles.thumbnailImage}
                     />
                   );
+                } else if (isLink) {
+                  thumbnailNode = (
+                    <span className={styles.thumbnailFallback} aria-hidden="true">
+                      <Icon fitted name="linkify" />
+                    </span>
+                  );
                 } else {
                   thumbnailNode = (
                     <span className={styles.thumbnailFallback} aria-hidden="true">
-                      <Icon fitted name="file image outline" />
+                      <Icon fitted name="file outline" />
                     </span>
                   );
                 }
@@ -908,10 +908,12 @@ const CardImageCarousel = React.memo(() => {
                     type="button"
                     tabIndex={isSelected ? 0 : -1}
                     aria-current={isSelected ? 'true' : undefined}
-                    aria-label={t('common.mediaPosition', {
+                    aria-label={`${image.name}. ${
+                      isThumbnailCover ? `${t('common.cover')}. ` : ''
+                    }${t('common.mediaPosition', {
                       current: index + 1,
                       total: images.length,
-                    })}
+                    })}`}
                     title={
                       temporalMetadata?.fullDateTime
                         ? `${image.name}\n${temporalMetadata.fullDateTime}`
@@ -927,6 +929,11 @@ const CardImageCarousel = React.memo(() => {
                       {isVideo && (
                         <span className={styles.thumbnailVideoIndicator} aria-hidden="true">
                           <Icon fitted name="play" />
+                        </span>
+                      )}
+                      {isThumbnailCover && (
+                        <span className={styles.thumbnailCoverIndicator} aria-hidden="true">
+                          <Icon fitted name="check" />
                         </span>
                       )}
                     </span>

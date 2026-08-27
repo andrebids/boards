@@ -41,9 +41,85 @@
     width: 32px;
   }
 
-  .videoSlide {
-    background: transparent;
+  .attachmentSlide {
+    align-items: center;
+    background: var(--card-modal-surface, #18181b);
     cursor: default;
+    display: flex;
+    justify-content: center;
+  }
+
+  .embeddedPreview {
+    border: 0;
+    border-radius: 12px;
+    height: 100%;
+    width: 100%;
+  }
+
+  .audioPreview {
+    max-width: calc(100% - 32px);
+    width: 420px;
+  }
+
+  .previewMessage {
+    align-items: center;
+    color: var(--card-modal-muted, #d4d4d8);
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+    gap: 14px;
+    justify-content: center;
+    line-height: 20px;
+    max-width: 420px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .linkPreview {
+    align-items: center;
+    color: var(--card-modal-text, #f4f4f5);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+    max-width: calc(100% - 32px);
+    padding: 24px;
+    text-align: center;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--card-modal-text, #fafafa);
+
+      .previewAction {
+        background: var(--card-modal-surface-hover, rgba(255, 255, 255, 0.09));
+      }
+    }
+
+    &:focus-visible {
+      border-radius: 10px;
+      box-shadow: 0 0 0 3px var(--card-modal-accent-soft, rgba(37, 99, 235, 0.35));
+      outline: none;
+    }
+  }
+
+  .previewName {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .previewAction {
+    border-radius: 8px;
+    color: var(--card-modal-muted, #d4d4d8);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    padding: 7px 12px;
   }
 
   .navigation {
@@ -198,6 +274,31 @@
     width: 22px;
   }
 
+  .thumbnailCoverIndicator {
+    align-items: center;
+    background: var(--card-modal-accent, #168ef1);
+    border: 2px solid var(--card-modal-background, #101216);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    font-size: 8px;
+    height: 18px;
+    justify-content: center;
+    left: -5px;
+    position: absolute;
+    top: -5px;
+    width: 18px;
+  }
+
+  .thumbnailLoadingSpinner {
+    animation: carouselMediaSpin 800ms linear infinite;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--card-modal-text, #fff);
+    height: 18px;
+    width: 18px;
+  }
+
   .thumbnailSelected {
     .thumbnailPreview {
       border-color: var(--card-modal-accent, #168ef1);
@@ -347,11 +448,41 @@
     touch-action: pan-y;
   }
 
+  .detailsBar {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    margin: 10px 52px 0;
+  }
+
+  .selectedDetails {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .selectedName {
+    color: var(--card-modal-text, #f4f4f5);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .selectedInformation {
+    color: var(--card-modal-muted, #a1a1aa);
+    font-size: 11px;
+    line-height: 16px;
+  }
+
   .actionToolbar {
     align-items: center;
     display: flex;
+    flex: 0 0 auto;
     gap: 3px;
-    margin: 10px 52px 0 auto;
     position: relative;
     width: max-content;
     z-index: 3;
@@ -392,13 +523,6 @@
     }
   }
 
-  .actionDivider {
-    background: var(--card-modal-border, rgba(255, 255, 255, 0.12));
-    height: 18px;
-    margin: 0 1px;
-    width: 1px;
-  }
-
   .actionLabel {
     line-height: 16px;
     white-space: nowrap;
@@ -414,7 +538,7 @@
     }
   }
 
-  .coverActionButton {
+  .labeledActionButton {
     font-size: 12px;
     font-weight: 600;
     gap: 7px;
@@ -567,6 +691,7 @@
     .slide,
     .thumbnail,
     .thumbnailNavigation,
+    .thumbnailLoadingSpinner,
     .thumbnailRail::before,
     .thumbnailRail::after,
     .mediaLoadingSpinner {
@@ -593,7 +718,8 @@
       width: 60px;
     }
 
-    .actionToolbar {
+    .detailsBar {
+      margin-left: 44px;
       margin-right: 44px;
     }
 
@@ -615,8 +741,15 @@
       margin: 0;
     }
 
-    .actionToolbar {
+    .detailsBar {
+      align-items: flex-start;
+      margin-left: 0;
       margin-right: 0;
+    }
+
+    .actionToolbar {
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .thumbnailRail {

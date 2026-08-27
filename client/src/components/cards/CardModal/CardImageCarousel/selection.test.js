@@ -1,4 +1,45 @@
-import getDefaultMedia, { getNewlyAddedMedia } from './selection';
+import getDefaultMedia, {
+  getCarouselAttachments,
+  getNewlyAddedMedia,
+  isCoverableAttachment,
+  isDownloadableAttachment,
+  isPersistedAttachment,
+} from './selection';
+
+describe('getCarouselAttachments', () => {
+  const image = {
+    id: 'image',
+    isPersisted: true,
+  };
+  const document = {
+    id: 'document',
+    isPersisted: true,
+  };
+  const link = {
+    id: 'link',
+    isPersisted: true,
+  };
+  const uploading = {
+    id: 'local:uploading',
+    isPersisted: false,
+  };
+
+  test('keeps every attachment type in the player', () => {
+    expect(getCarouselAttachments([document, link, uploading], null)).toEqual([
+      document,
+      link,
+      uploading,
+    ]);
+  });
+
+  test('places the card cover first without removing other attachments', () => {
+    expect(getCarouselAttachments([document, image, link], image.id)).toEqual([
+      image,
+      document,
+      link,
+    ]);
+  });
+});
 
 describe('getDefaultMedia', () => {
   const olderCover = {
@@ -20,6 +61,71 @@ describe('getDefaultMedia', () => {
 
   test('returns null when the card has no visual attachments', () => {
     expect(getDefaultMedia([], olderCover.id)).toBeNull();
+  });
+});
+
+describe('attachment actions', () => {
+  test('detects persistence for raw selector records and decorated records', () => {
+    expect(isPersistedAttachment({ id: 'attachment-1' })).toBeTruthy();
+    expect(isPersistedAttachment({ id: 'attachment-2', isPersisted: true })).toBeTruthy();
+    expect(isPersistedAttachment({ id: 'local:attachment-3' })).toBeFalsy();
+    expect(isPersistedAttachment({ id: 'attachment-4', isPersisted: false })).toBeFalsy();
+  });
+
+  test('allows cover only for persisted image files', () => {
+    expect(
+      isCoverableAttachment({
+        isPersisted: true,
+        type: 'file',
+        data: { image: { width: 100, height: 100 } },
+      }),
+    ).toBeTruthy();
+    expect(
+      isCoverableAttachment({
+        isPersisted: true,
+        type: 'file',
+        data: { image: { width: 100, height: 100 }, video: {} },
+      }),
+    ).toBeFalsy();
+    expect(isCoverableAttachment({ isPersisted: true, type: 'link', data: {} })).toBeFalsy();
+    expect(
+      isCoverableAttachment({
+        id: 'raw-image',
+        type: 'file',
+        data: { image: { width: 100, height: 100 } },
+      }),
+    ).toBeTruthy();
+  });
+
+  test('shows download only for persisted file attachments with a URL', () => {
+    expect(
+      isDownloadableAttachment({
+        isPersisted: true,
+        type: 'file',
+        data: { url: '/attachments/report.pdf' },
+      }),
+    ).toBeTruthy();
+    expect(
+      isDownloadableAttachment({
+        isPersisted: false,
+        type: 'file',
+        data: { url: '/attachments/report.pdf' },
+      }),
+    ).toBeFalsy();
+    expect(
+      isDownloadableAttachment({
+        isPersisted: true,
+        type: 'link',
+        data: { url: 'https://example.com' },
+      }),
+    ).toBeFalsy();
+    expect(
+      isDownloadableAttachment({
+        id: 'raw-file',
+        type: 'file',
+        data: { url: '/attachments/raw-report.pdf' },
+      }),
+    ).toBeTruthy();
   });
 });
 
