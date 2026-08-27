@@ -45,6 +45,23 @@ const formatRenewal = (resetsAt) => {
   };
 };
 
+const formatResetCountdown = (resetsAt, nowMs) => {
+  if (!Number.isSafeInteger(resetsAt) || !Number.isFinite(nowMs)) {
+    return null;
+  }
+
+  const remainingMs = resetsAt * 1000 - nowMs;
+  if (remainingMs <= 0) {
+    return 'agora';
+  }
+
+  const remainingHours = Math.floor(remainingMs / (60 * 60 * 1000));
+  const days = Math.floor(remainingHours / 24);
+  const hours = remainingHours % 24;
+
+  return `${days}d ${hours}h`;
+};
+
 const formatTokenCount = (tokens) => {
   if (!Number.isSafeInteger(tokens) || tokens < 0) {
     return '—';
@@ -246,6 +263,7 @@ TokenActivity.propTypes = {
 
 const DashboardCodexUsageWidget = React.memo(() => {
   const [usage, setUsage] = useState(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
     let isCancelled = false;
@@ -261,8 +279,13 @@ const DashboardCodexUsageWidget = React.memo(() => {
         .catch(() => {});
     };
 
-    loadUsage();
-    const intervalId = window.setInterval(loadUsage, USAGE_REFRESH_INTERVAL_MS);
+    const refresh = () => {
+      setNowMs(Date.now());
+      loadUsage();
+    };
+
+    refresh();
+    const intervalId = window.setInterval(refresh, USAGE_REFRESH_INTERVAL_MS);
 
     return () => {
       isCancelled = true;
@@ -275,6 +298,7 @@ const DashboardCodexUsageWidget = React.memo(() => {
   const remainingPercent = hasUsage ? 100 - usedPercent : null;
   const displayedPercent = hasUsage ? `${remainingPercent}%` : '—';
   const renewal = formatRenewal(usage?.resetsAt);
+  const resetCountdown = formatResetCountdown(usage?.resetsAt, nowMs);
 
   return (
     <section className={styles.wrapper} aria-label="Uso semanal do Codex">
@@ -311,7 +335,11 @@ const DashboardCodexUsageWidget = React.memo(() => {
         </div>
         <div className={styles.details}>
           {hasUsage && <span>{usedPercent}% usado</span>}
-          {renewal && <time dateTime={renewal.dateTime}>Repõe {renewal.label}</time>}
+          {renewal && resetCountdown && (
+            <time dateTime={renewal.dateTime} title={renewal.label}>
+              Faltam {resetCountdown}
+            </time>
+          )}
         </div>
       </div>
       <TokenActivity activity={usage?.tokenActivity} />
