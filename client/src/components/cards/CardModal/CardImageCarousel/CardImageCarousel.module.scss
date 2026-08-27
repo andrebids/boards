@@ -61,6 +61,34 @@
     width: 420px;
   }
 
+  .threeDPreview,
+  .threeDCanvas {
+    height: 100%;
+    width: 100%;
+  }
+
+  .threeDPreview {
+    background: var(--card-modal-surface, #18181b);
+    position: relative;
+  }
+
+  .threeDCanvas {
+    touch-action: none;
+
+    canvas {
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  .threeDStatus {
+    inset: 0;
+    margin: auto;
+    pointer-events: none;
+    position: absolute;
+  }
+
   .previewMessage {
     align-items: center;
     color: var(--card-modal-muted, #d4d4d8);

@@ -15,12 +15,15 @@ import { AttachmentTypes } from '../../../../constants/Enums';
 import ContentViewer from '../../../attachments/Attachments/ContentViewer';
 import CsvViewer from '../../../attachments/Attachments/CsvViewer';
 import VideoPlayer from '../../../common/VideoPlayer';
-import { isPersistedAttachment, isVideoAttachment } from './selection';
+import { getThreeDFormat, isPersistedAttachment, isVideoAttachment } from './selection';
 
 import styles from './CardImageCarousel.module.scss';
 
+const ThreeDViewer = React.lazy(() => import('./ThreeDViewer'));
+
 const AttachmentPreview = React.memo(({ attachment, isSelected, posterUrl }) => {
   const [t] = useTranslation();
+  const threeDFormat = getThreeDFormat(attachment);
 
   let content = null;
 
@@ -47,6 +50,19 @@ const AttachmentPreview = React.memo(({ attachment, isSelected, posterUrl }) => 
       );
     } else if (isVideoAttachment(attachment)) {
       content = <VideoPlayer attachment={attachment} autoPlay posterUrl={posterUrl} />;
+    } else if (threeDFormat) {
+      content = (
+        <React.Suspense
+          fallback={
+            <span className={styles.previewMessage} role="status" aria-busy="true">
+              <span className={styles.mediaLoadingSpinner} aria-hidden="true" />
+              {t('common.loading')}
+            </span>
+          }
+        >
+          <ThreeDViewer attachment={attachment} format={threeDFormat} />
+        </React.Suspense>
+      );
     } else {
       switch (attachment.data.mimeType) {
         case 'application/pdf':
