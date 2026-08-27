@@ -47,4 +47,11 @@ describe('dashboard module isolation', () => {
     expect(styles).toContain('@container (min-width: 900px)');
     expect(styles).not.toContain('@media (min-width: 900px)');
   });
+
+  it('always stacks Codex usage above token activity', () => {
+    const styles = readSource('./widgets/DashboardCodexUsageWidget.module.scss');
+
+    expect(styles.match(/\.weekly\s*\{/g)).toHaveLength(1);
+    expect(styles).toMatch(/\.weekly\s*\{[^}]*display: flex;[^}]*flex-direction: column;/s);
+  });
 });

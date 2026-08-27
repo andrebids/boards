@@ -354,7 +354,7 @@ const DashboardCodexUsageWidget = React.memo(() => {
           {hasUsage && <span>{usedPercent}% usado</span>}
           {renewal && resetCountdown && (
             <time dateTime={renewal.dateTime} title={renewal.label}>
-              Faltam {resetCountdown}
+              Reset em {resetCountdown}
             </time>
           )}
         </div>
