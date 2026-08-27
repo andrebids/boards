@@ -621,38 +621,6 @@ const CardImageCarousel = React.memo(() => {
               </GalleryItem>
             );
           })}
-          {hasMultipleImages && (
-            <>
-              <button
-                type="button"
-                className={classNames(styles.navigation, styles.previous)}
-                aria-label={t('action.previousMedia')}
-                onKeyDown={handleKeyDown}
-                onClick={selectPrevious}
-              >
-                <Icon fitted name="chevron left" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={classNames(styles.navigation, styles.next)}
-                aria-label={t('action.nextMedia')}
-                onKeyDown={handleKeyDown}
-                onClick={selectNext}
-              >
-                <Icon fitted name="chevron right" aria-hidden="true" />
-              </button>
-            </>
-          )}
-        </div>
-        <div className={styles.detailsBar}>
-          <div className={styles.selectedDetails}>
-            <span className={styles.selectedName} title={selectedImage.name}>
-              {selectedImage.name}
-            </span>
-            <span className={styles.selectedInformation}>
-              <TimeAgo date={selectedImage.createdAt} />
-            </span>
-          </div>
           <div
             ref={actionToolbarRef}
             className={styles.actionToolbar}
@@ -747,6 +715,38 @@ const CardImageCarousel = React.memo(() => {
                 </div>
               </div>
             )}
+          </div>
+          {hasMultipleImages && (
+            <>
+              <button
+                type="button"
+                className={classNames(styles.navigation, styles.previous)}
+                aria-label={t('action.previousMedia')}
+                onKeyDown={handleKeyDown}
+                onClick={selectPrevious}
+              >
+                <Icon fitted name="chevron left" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className={classNames(styles.navigation, styles.next)}
+                aria-label={t('action.nextMedia')}
+                onKeyDown={handleKeyDown}
+                onClick={selectNext}
+              >
+                <Icon fitted name="chevron right" aria-hidden="true" />
+              </button>
+            </>
+          )}
+        </div>
+        <div className={styles.detailsBar}>
+          <div className={styles.selectedDetails}>
+            <span className={styles.selectedName} title={selectedImage.name}>
+              {selectedImage.name}
+            </span>
+            <span className={styles.selectedInformation}>
+              <TimeAgo date={selectedImage.createdAt} />
+            </span>
           </div>
         </div>
         <div className={styles.status} aria-live="polite">

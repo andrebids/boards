@@ -494,12 +494,22 @@
 
   .actionToolbar {
     align-items: center;
+    background: rgba(var(--glass-bg-strong-rgb), 0.92);
+    border: 1px solid var(--card-modal-border, rgba(255, 255, 255, 0.1));
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
     display: flex;
-    flex: 0 0 auto;
     gap: 3px;
-    position: relative;
+    padding: 3px;
+    position: absolute;
+    right: 10px;
+    top: 10px;
     width: max-content;
     z-index: 3;
+
+    &:empty {
+      display: none;
+    }
   }
 
   .actionButton {
@@ -709,11 +719,6 @@
       align-items: flex-start;
       margin-left: 0;
       margin-right: 0;
-    }
-
-    .actionToolbar {
-      flex-wrap: wrap;
-      justify-content: flex-end;
     }
 
     .thumbnailRail {
