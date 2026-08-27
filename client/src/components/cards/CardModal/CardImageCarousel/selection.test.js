@@ -1,6 +1,7 @@
 import getDefaultMedia, {
   getCarouselAttachments,
   getNewlyAddedMedia,
+  getSpreadsheetPreviewStatus,
   getThreeDFormat,
   isCoverableAttachment,
   isDownloadableAttachment,
@@ -66,6 +67,39 @@ describe('getDefaultMedia', () => {
 });
 
 describe('attachment actions', () => {
+  test('allows a bounded XLSX preview by filename or MIME type', () => {
+    expect(
+      getSpreadsheetPreviewStatus({
+        name: 'report.xlsx',
+        data: { sizeInBytes: 1024 },
+      }),
+    ).toBe('ready');
+    expect(
+      getSpreadsheetPreviewStatus({
+        name: 'report',
+        data: {
+          mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          sizeInBytes: 1024,
+        },
+      }),
+    ).toBe('ready');
+  });
+
+  test('rejects unsupported and oversized spreadsheet previews', () => {
+    expect(
+      getSpreadsheetPreviewStatus({
+        name: 'legacy.xls',
+        data: { sizeInBytes: 1024 },
+      }),
+    ).toBeNull();
+    expect(
+      getSpreadsheetPreviewStatus({
+        name: 'large.xlsx',
+        data: { sizeInBytes: 5 * 1024 * 1024 + 1 },
+      }),
+    ).toBe('tooBig');
+  });
+
   test('detects the supported 3D attachment formats by filename', () => {
     expect(getThreeDFormat({ name: 'tree.OBJ', data: {} })).toBe('obj');
     expect(getThreeDFormat({ name: 'fallback.txt', data: { filename: 'scene.glb' } })).toBe('glb');

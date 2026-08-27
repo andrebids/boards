@@ -3,6 +3,9 @@ import { getFileExtension } from '../../../../utils/file-helpers';
 import { isLocalId } from '../../../../utils/local-id';
 
 const THREE_D_FORMATS = new Set(['obj', 'stl', 'glb', 'gltf']);
+const XLSX_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+export const MAX_XLSX_PREVIEW_SIZE_IN_BYTES = 5 * 1024 * 1024;
 
 const getAttachmentTimestamp = (attachment) => {
   const timestamp = attachment.createdAt?.getTime?.() ?? new Date(attachment.createdAt).getTime();
@@ -20,6 +23,17 @@ export const getThreeDFormat = (attachment) => {
   const extension = getFileExtension(attachment.data?.filename || attachment.name);
 
   return THREE_D_FORMATS.has(extension) ? extension : null;
+};
+
+export const getSpreadsheetPreviewStatus = (attachment) => {
+  const extension = getFileExtension(attachment.data?.filename || attachment.name);
+  const isXlsx = extension === 'xlsx' || attachment.data?.mimeType === XLSX_MIME_TYPE;
+
+  if (!isXlsx) {
+    return null;
+  }
+
+  return attachment.data?.sizeInBytes > MAX_XLSX_PREVIEW_SIZE_IN_BYTES ? 'tooBig' : 'ready';
 };
 
 export const isPersistedAttachment = (attachment) =>
