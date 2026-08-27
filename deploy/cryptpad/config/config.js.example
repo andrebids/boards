@@ -8,6 +8,7 @@ module.exports = {
   httpSafeOrigin: 'https://slides-sandbox.example.com',
   httpAddress: '0.0.0.0',
   websocketPort: 3012,
+  maxUploadSize: 500 * 1024 * 1024,
   enableEmbedding: true,
   removeDonateButton: true,
   adminKeys: [],
