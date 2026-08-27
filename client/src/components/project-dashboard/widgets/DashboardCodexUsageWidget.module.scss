@@ -285,14 +285,7 @@
 
     .activityStats {
       column-gap: 10px;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
       margin-top: 10px;
-      row-gap: 0;
-
-      div,
-      div:nth-child(n + 4) {
-        grid-column: span 1;
-      }
     }
 
     .calendar {
@@ -300,13 +293,8 @@
     }
   }
 
-  @container (min-width: 900px) {
-    .gauge {
-      width: min(220px, 25cqw);
-    }
-
+  @container (min-width: 520px) {
     .activityStats {
-      column-gap: 18px;
       grid-template-columns: repeat(5, minmax(0, 1fr));
       row-gap: 0;
 
@@ -314,6 +302,12 @@
       div:nth-child(n + 4) {
         grid-column: span 1;
       }
+    }
+  }
+
+  @container (min-width: 900px) {
+    .gauge {
+      width: min(220px, 25cqw);
     }
   }
 }
