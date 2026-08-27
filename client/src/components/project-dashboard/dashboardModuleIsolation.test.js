@@ -40,4 +40,11 @@ describe('dashboard module isolation', () => {
     expect(widgetContentSource).toMatch(/useInView\(\{ triggerOnce: true \}\)/);
     expect(widgetContentSource).toContain('<DeferredDashboardGanttWidget');
   });
+
+  it('sizes the Codex usage layout from the widget container instead of the viewport', () => {
+    const styles = readSource('./widgets/DashboardCodexUsageWidget.module.scss');
+
+    expect(styles).toContain('@container (min-width: 900px)');
+    expect(styles).not.toContain('@media (min-width: 900px)');
+  });
 });

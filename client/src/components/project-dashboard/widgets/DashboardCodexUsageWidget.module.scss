@@ -6,8 +6,9 @@
     container-type: inline-size;
     color: var(--app-dark-text);
     display: grid;
-    gap: clamp(20px, 2vw, 28px);
-    grid-template-columns: minmax(150px, 160px) minmax(0, 1fr);
+    gap: 20px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     height: 100%;
     min-height: 0;
     overflow: hidden;
@@ -16,17 +17,20 @@
 
   .weekly {
     align-items: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    column-gap: 20px;
+    display: grid;
+    grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+    grid-template-rows: repeat(2, auto);
     min-width: 0;
   }
 
   .gauge {
     flex: 0 0 auto;
+    grid-row: 1 / span 2;
+    justify-self: center;
     min-height: 0;
     position: relative;
-    width: min(100%, 420px);
+    width: min(100%, 220px);
   }
 
   .gaugeSvg {
@@ -82,6 +86,7 @@
 
   .details {
     align-items: center;
+    align-self: end;
     color: var(--app-dark-text-muted);
     display: flex;
     flex: 0 0 auto;
@@ -89,7 +94,8 @@
     font-variant-numeric: tabular-nums;
     gap: 12px;
     line-height: 1.2;
-    margin-top: clamp(4px, 0.75vw, 10px);
+    justify-content: flex-start;
+    margin-top: 0;
     white-space: nowrap;
 
     span {
@@ -102,13 +108,14 @@
   }
 
   .forecast {
+    align-self: start;
     color: var(--app-dark-text-muted);
     font-size: clamp(10px, 0.9vw, 12px);
     font-variant-numeric: tabular-nums;
     line-height: 1.35;
-    margin: 7px 0 0;
+    margin: 5px 0 0;
     max-width: 100%;
-    text-align: center;
+    text-align: left;
     width: 100%;
 
     time {
@@ -117,7 +124,7 @@
   }
 
   .activity {
-    align-self: center;
+    align-self: stretch;
     min-width: 0;
     width: 100%;
   }
@@ -275,14 +282,7 @@
   }
 
   @container (max-width: 560px) {
-    .wrapper {
-      gap: 4px;
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto minmax(0, 1fr);
-    }
-
     .weekly {
-      display: grid;
       grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.2fr);
     }
 
@@ -292,8 +292,7 @@
     }
 
     .details {
-      justify-content: center;
-      margin-top: 0;
+      justify-content: flex-start;
     }
 
     .activityStats {
@@ -314,22 +313,8 @@
   }
 
   @container (min-width: 900px) {
-    .wrapper {
-      gap: 20px;
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto minmax(0, 1fr);
-    }
-
-    .weekly {
-      align-items: center;
-    }
-
     .gauge {
       width: min(220px, 25cqw);
-    }
-
-    .activity {
-      align-self: stretch;
     }
 
     .activityStats {
@@ -341,14 +326,6 @@
       div:nth-child(n + 4) {
         grid-column: span 1;
       }
-    }
-  }
-
-  @media (min-width: 900px) {
-    .wrapper {
-      gap: 20px;
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto minmax(0, 1fr);
     }
   }
 }
