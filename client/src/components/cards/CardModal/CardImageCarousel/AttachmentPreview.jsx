@@ -100,6 +100,9 @@ const AttachmentPreview = React.memo(({ attachment, isSelected, posterUrl }) => 
             content = (
               <span className={styles.previewMessage}>
                 <Icon fitted name="file outline" size="big" aria-hidden="true" />
+                <span className={styles.previewName} title={attachment.name}>
+                  {attachment.name}
+                </span>
                 {t('common.thereIsNoPreviewAvailableForThisAttachment')}
               </span>
             );
