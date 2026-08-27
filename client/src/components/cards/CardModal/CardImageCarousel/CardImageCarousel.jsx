@@ -77,7 +77,6 @@ const CardImageCarousel = React.memo(() => {
   const dispatch = useDispatch();
   const [selectedId, setSelectedId] = useState(null);
   const [loadedImageKeys, setLoadedImageKeys] = useState({});
-  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [thumbnailScrollState, setThumbnailScrollState] = useState({
     hasOverflow: false,
@@ -231,7 +230,6 @@ const CardImageCarousel = React.memo(() => {
   }, [card.id, currentUserId, images]);
 
   useEffect(() => {
-    setIsActionsMenuOpen(false);
     setIsDeleteConfirmationOpen(false);
   }, [selectedId]);
 
@@ -288,7 +286,7 @@ const CardImageCarousel = React.memo(() => {
   }, [selectedIndex]);
 
   useEffect(() => {
-    if (!isActionsMenuOpen) {
+    if (!isDeleteConfirmationOpen) {
       return undefined;
     }
 
@@ -298,7 +296,6 @@ const CardImageCarousel = React.memo(() => {
 
     const handleDocumentPointerDown = (event) => {
       if (!actionToolbarRef.current?.contains(event.target)) {
-        setIsActionsMenuOpen(false);
         setIsDeleteConfirmationOpen(false);
       }
     };
@@ -310,7 +307,6 @@ const CardImageCarousel = React.memo(() => {
 
       event.preventDefault();
       event.stopPropagation();
-      setIsActionsMenuOpen(false);
       setIsDeleteConfirmationOpen(false);
       actionsButtonRef.current?.focus();
     };
@@ -323,7 +319,7 @@ const CardImageCarousel = React.memo(() => {
       document.removeEventListener('pointerdown', handleDocumentPointerDown);
       document.removeEventListener('keydown', handleDocumentKeyDown);
     };
-  }, [isActionsMenuOpen, isDeleteConfirmationOpen]);
+  }, [isDeleteConfirmationOpen]);
 
   const selectIndex = useCallback(
     (index) => {
@@ -489,23 +485,6 @@ const CardImageCarousel = React.memo(() => {
     [selectedImage],
   );
 
-  const handleActionsMenuToggleClick = useCallback((event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsActionsMenuOpen((isOpen) => {
-      if (isOpen) {
-        setIsDeleteConfirmationOpen(false);
-      }
-
-      return !isOpen;
-    });
-  }, []);
-
-  const handleEditRequestClick = useCallback(() => {
-    setIsActionsMenuOpen(false);
-    setIsDeleteConfirmationOpen(false);
-  }, []);
-
   const handleDeleteRequestClick = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -523,38 +502,9 @@ const CardImageCarousel = React.memo(() => {
       return;
     }
 
-    setIsActionsMenuOpen(false);
     setIsDeleteConfirmationOpen(false);
     dispatch(entryActions.deleteAttachment(selectedImage.id));
   }, [dispatch, selectedImage]);
-
-  const handleActionsMenuKeyDown = useCallback((event) => {
-    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
-      return;
-    }
-
-    const buttons = Array.from(actionsMenuRef.current?.querySelectorAll('button') || []);
-    const currentIndex = buttons.indexOf(document.activeElement);
-
-    if (!buttons.length) {
-      return;
-    }
-
-    let nextIndex;
-    if (event.key === 'Home') {
-      nextIndex = 0;
-    } else if (event.key === 'End') {
-      nextIndex = buttons.length - 1;
-    } else if (event.key === 'ArrowDown') {
-      nextIndex = (currentIndex + 1) % buttons.length;
-    } else {
-      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    buttons[nextIndex].focus();
-  }, []);
 
   if (!selectedImage) {
     return null;
@@ -567,6 +517,9 @@ const CardImageCarousel = React.memo(() => {
     : t('action.makeCover', {
         context: 'title',
       });
+  const deleteActionLabel = t('common.deleteAttachment', {
+    context: 'title',
+  });
 
   return (
     <Gallery
@@ -728,37 +681,48 @@ const CardImageCarousel = React.memo(() => {
             {selectedCanDownload && (
               <button
                 type="button"
-                className={classNames(styles.actionButton, styles.labeledActionButton)}
+                className={styles.actionButton}
+                aria-label={t('common.download')}
+                title={t('common.download')}
                 onClick={handleDownloadClick}
               >
                 <Icon fitted name="download" aria-hidden="true" />
-                <span className={styles.actionLabel}>{t('common.download')}</span>
               </button>
             )}
             {canEdit && isPersistedAttachment(selectedImage) && (
-              <button
-                ref={actionsButtonRef}
-                type="button"
-                className={styles.actionButton}
-                aria-label={t('common.actions')}
-                aria-controls={isActionsMenuOpen ? 'card-media-actions-menu' : undefined}
-                aria-expanded={isActionsMenuOpen}
-                aria-haspopup="menu"
-                title={t('common.actions')}
-                onClick={handleActionsMenuToggleClick}
-              >
-                <Icon fitted name="ellipsis horizontal" aria-hidden="true" />
-              </button>
+              <>
+                <EditPopup attachmentId={selectedImage.id}>
+                  <button
+                    type="button"
+                    className={styles.actionButton}
+                    aria-label={t('action.edit')}
+                    title={t('action.edit')}
+                  >
+                    <Icon fitted name="pencil" aria-hidden="true" />
+                  </button>
+                </EditPopup>
+                <button
+                  ref={actionsButtonRef}
+                  type="button"
+                  className={styles.actionButton}
+                  aria-label={deleteActionLabel}
+                  aria-controls={isDeleteConfirmationOpen ? 'card-media-actions-menu' : undefined}
+                  aria-expanded={isDeleteConfirmationOpen}
+                  aria-haspopup="dialog"
+                  title={deleteActionLabel}
+                  onClick={handleDeleteRequestClick}
+                >
+                  <Icon fitted name="trash alternate outline" aria-hidden="true" />
+                </button>
+              </>
             )}
-            {isActionsMenuOpen && isDeleteConfirmationOpen && (
+            {isDeleteConfirmationOpen && (
               <div
                 ref={actionsMenuRef}
                 id="card-media-actions-menu"
                 className={classNames(styles.actionsMenu, styles.actionsMenuConfirmation)}
                 role="alertdialog"
-                aria-label={t('common.deleteAttachment', {
-                  context: 'title',
-                })}
+                aria-label={deleteActionLabel}
                 aria-modal="true"
                 tabIndex={-1}
               >
@@ -781,43 +745,6 @@ const CardImageCarousel = React.memo(() => {
                     {t('action.deleteAttachment')}
                   </button>
                 </div>
-              </div>
-            )}
-            {isActionsMenuOpen && !isDeleteConfirmationOpen && (
-              <div
-                ref={actionsMenuRef}
-                id="card-media-actions-menu"
-                className={styles.actionsMenu}
-                role="menu"
-                aria-label={t('common.actions')}
-                tabIndex={-1}
-                onKeyDown={handleActionsMenuKeyDown}
-              >
-                <EditPopup attachmentId={selectedImage.id}>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className={styles.actionsMenuItem}
-                    onClick={handleEditRequestClick}
-                  >
-                    <Icon fitted name="pencil" aria-hidden="true" />
-                    <span>{t('action.edit')}</span>
-                  </button>
-                </EditPopup>
-                <span className={styles.actionsMenuDivider} aria-hidden="true" />
-                <button
-                  type="button"
-                  role="menuitem"
-                  className={classNames(styles.actionsMenuItem, styles.actionsMenuItemDanger)}
-                  onClick={handleDeleteRequestClick}
-                >
-                  <Icon fitted name="trash alternate outline" aria-hidden="true" />
-                  <span>
-                    {t('common.deleteAttachment', {
-                      context: 'title',
-                    })}
-                  </span>
-                </button>
               </div>
             )}
           </div>

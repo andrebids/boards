@@ -582,56 +582,6 @@
     padding: 12px;
   }
 
-  .actionsMenuDivider {
-    background: var(--card-modal-border, rgba(255, 255, 255, 0.1));
-    display: block;
-    height: 1px;
-    margin: 5px 4px;
-  }
-
-  .actionsMenuItem {
-    align-items: center;
-    background: transparent;
-    border: 0;
-    border-radius: 8px;
-    color: var(--card-modal-muted, #d4d4d8);
-    cursor: pointer;
-    display: flex;
-    font: inherit;
-    font-size: 13px;
-    gap: 10px;
-    min-height: 34px;
-    padding: 7px 9px;
-    text-align: left;
-    transition:
-      background-color 120ms ease,
-      color 120ms ease;
-    width: 100%;
-
-    i {
-      flex: 0 0 16px;
-      margin: 0;
-      width: 16px;
-    }
-
-    &:hover,
-    &:focus-visible {
-      background: var(--card-modal-surface-hover, rgba(255, 255, 255, 0.09));
-      color: var(--card-modal-text, #fafafa);
-      outline: none;
-    }
-  }
-
-  .actionsMenuItemDanger {
-    color: var(--card-modal-danger, #fda4af);
-
-    &:hover,
-    &:focus-visible {
-      background: var(--card-modal-danger-soft, rgba(244, 63, 94, 0.16));
-      color: var(--card-modal-danger, #fecdd3);
-    }
-  }
-
   .confirmationMessage {
     color: var(--card-modal-text, #e4e4e7);
     font-size: 13px;
