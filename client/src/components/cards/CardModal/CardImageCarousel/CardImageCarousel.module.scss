@@ -213,6 +213,7 @@
     transition:
       opacity 160ms ease,
       transform 160ms ease;
+    width: 66px;
 
     &:hover {
       opacity: 0.84;
@@ -277,17 +278,17 @@
   .thumbnailCoverIndicator {
     align-items: center;
     background: var(--card-modal-accent, #168ef1);
-    border: 2px solid var(--card-modal-background, #101216);
+    border: 1px solid rgba(255, 255, 255, 0.82);
     border-radius: 50%;
     color: #fff;
     display: flex;
     font-size: 8px;
-    height: 18px;
+    height: 16px;
     justify-content: center;
-    left: -5px;
+    left: 4px;
     position: absolute;
-    top: -5px;
-    width: 18px;
+    top: 4px;
+    width: 16px;
   }
 
   .thumbnailLoadingSpinner {
@@ -313,6 +314,19 @@
     font-variant-numeric: tabular-nums;
     margin-top: 3px;
     min-width: 0;
+  }
+
+  .thumbnailName {
+    color: var(--card-modal-text, #e4e4e7);
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 14px;
+    max-width: 100%;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .thumbnailRelativeTime {

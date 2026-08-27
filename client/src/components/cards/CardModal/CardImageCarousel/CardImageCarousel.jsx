@@ -938,6 +938,7 @@ const CardImageCarousel = React.memo(() => {
                       )}
                     </span>
                     <span className={styles.thumbnailTime} aria-hidden="true">
+                      <span className={styles.thumbnailName}>{image.name}</span>
                       <span className={styles.thumbnailRelativeTime}>
                         <TimeAgo date={image.createdAt} />
                       </span>
