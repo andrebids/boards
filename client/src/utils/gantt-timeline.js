@@ -14,6 +14,9 @@ export const getGanttTitleMarqueeMetrics = (labelWidth, viewportWidth) => {
   };
 };
 
+export const getGanttCenteredScrollLeft = (markerLeft, chartWidth) =>
+  Math.max(0, Math.round(markerLeft - chartWidth / 2));
+
 const createGanttCurrentTimeMarker = ({ scales, scaleStart, cellWidth, now, text }) => ({
   left: Math.round(scales.diff(now, scaleStart, 'hour') * cellWidth),
   start: now,

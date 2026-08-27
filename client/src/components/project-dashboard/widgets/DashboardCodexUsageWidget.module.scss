@@ -85,13 +85,12 @@
     color: var(--app-dark-text-muted);
     display: flex;
     flex: 0 0 auto;
-    flex-wrap: wrap;
     font-size: clamp(11px, 1vw, 14px);
     font-variant-numeric: tabular-nums;
     gap: 12px;
     line-height: 1.2;
     margin-top: clamp(4px, 0.75vw, 10px);
-    text-align: center;
+    white-space: nowrap;
 
     span {
       color: var(--codex-usage-accent);

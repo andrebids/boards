@@ -41,6 +41,7 @@ const formatRenewal = (resetsAt) => {
       hour: '2-digit',
       minute: '2-digit',
       month: '2-digit',
+      year: 'numeric',
     }).format(renewalDate),
   };
 };
@@ -61,9 +62,6 @@ const formatResetCountdown = (resetsAt, nowMs) => {
 
   return `${days}d ${hours}h`;
 };
-
-const formatForecastCountdown = (depletesAtMs, nowMs) =>
-  formatResetCountdown(Math.round(depletesAtMs / 1000), nowMs);
 
 const formatTokenCount = (tokens) => {
   if (!Number.isSafeInteger(tokens) || tokens < 0) {
@@ -301,8 +299,12 @@ const DashboardCodexUsageWidget = React.memo(() => {
   const remainingPercent = hasUsage ? 100 - usedPercent : null;
   const displayedPercent = hasUsage ? `${remainingPercent}%` : '—';
   const renewal = formatRenewal(usage?.resetsAt);
+  const resetCountdown = formatResetCountdown(usage?.resetsAt, nowMs);
   const forecast = getCodexUsageForecast(usage);
-  const forecastCountdown = forecast ? formatForecastCountdown(forecast.depletesAtMs, nowMs) : null;
+  const forecastDepletion = forecast
+    ? formatRenewal(Math.round(forecast.depletesAtMs / 1000))
+    : null;
+  const forecastDepletionLabel = forecastDepletion?.label.replace(',', ' às');
   const forecastRate = forecast
     ? new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 2 }).format(
         forecast.usedPercentPerHour,
@@ -320,10 +322,10 @@ const DashboardCodexUsageWidget = React.memo(() => {
               ? `Uso semanal do Codex: ${remainingPercent}% restante, ${usedPercent}% utilizado${
                   renewal ? `, repõe ${renewal.label}` : ''
                 }${
-                  forecast && forecastCountdown
+                  forecast && forecastDepletion
                     ? `, ao ritmo médio de ${forecastRate}% por hora esgota ${
                         forecast.isBeforeReset ? 'antes' : 'depois'
-                      } do reset, em ${forecastCountdown}`
+                      } do reset, dia ${forecastDepletionLabel}`
                     : ''
                 }`
               : 'Uso semanal ainda indisponível'
@@ -350,21 +352,21 @@ const DashboardCodexUsageWidget = React.memo(() => {
         </div>
         <div className={styles.details}>
           {hasUsage && <span>{usedPercent}% usado</span>}
-          {renewal && (
+          {renewal && resetCountdown && (
             <time dateTime={renewal.dateTime} title={renewal.label}>
-              Esgota {renewal.label}
+              Faltam {resetCountdown}
             </time>
           )}
         </div>
-        {forecast && forecastCountdown && (
+        {forecast && forecastDepletion && (
           <p
             className={styles.forecast}
             title="Estimativa baseada no consumo médio desde o início desta janela"
           >
             Ritmo médio: {forecastRate}%/h.{' '}
-            <time dateTime={new Date(forecast.depletesAtMs).toISOString()}>
-              {forecast.isBeforeReset ? 'Esgota' : 'Esgotaria'} em {forecastCountdown},{' '}
-              {forecast.isBeforeReset ? 'antes' : 'depois'} do reset.
+            <time dateTime={forecastDepletion.dateTime}>
+              Esgota dia {forecastDepletionLabel}, {forecast.isBeforeReset ? 'antes' : 'depois'} do
+              reset.
             </time>
           </p>
         )}

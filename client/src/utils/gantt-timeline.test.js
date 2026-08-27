@@ -1,4 +1,7 @@
-import createGanttCurrentTimeMarker, { getGanttTitleMarqueeMetrics } from './gantt-timeline';
+import createGanttCurrentTimeMarker, {
+  getGanttCenteredScrollLeft,
+  getGanttTitleMarqueeMetrics,
+} from './gantt-timeline';
 
 describe('Gantt task title marquee', () => {
   test('uses a constant reading speed only when the title overflows', () => {
@@ -12,6 +15,11 @@ describe('Gantt task title marquee', () => {
 });
 
 describe('Gantt current time marker', () => {
+  test('centers the current time without scrolling before the timeline start', () => {
+    expect(getGanttCenteredScrollLeft(700, 400)).toBe(500);
+    expect(getGanttCenteredScrollLeft(100, 400)).toBe(0);
+  });
+
   test('places the marker at the current hour instead of the start of today', () => {
     const now = new Date(2026, 7, 14, 15, 0);
     const scaleStart = new Date(2026, 7, 14);

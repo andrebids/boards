@@ -16,13 +16,11 @@ import '@svar-ui/react-gantt/all.css';
 import { buildGanttTaskColorStyles } from '../../constants/GanttColors';
 import { formatGanttDate } from '../../utils/gantt-dates';
 import createGanttCurrentTimeMarker, {
+  getGanttCenteredScrollLeft,
   getGanttTitleMarqueeMetrics,
 } from '../../utils/gantt-timeline';
 import CardMembers from '../cards/Card/CardMembers';
-import {
-  mapGanttItemsToTimelineTasks,
-  mapGanttLinksToTimelineLinks,
-} from './ganttTimelineMapper';
+import { mapGanttItemsToTimelineTasks, mapGanttLinksToTimelineLinks } from './ganttTimelineMapper';
 
 import styles from './GanttTimelineAdapter.module.scss';
 
@@ -172,6 +170,7 @@ const GanttTimelineAdapter = React.memo(
     const onItemChangeRef = useRef(onItemChange);
     const onZoomLevelChangeRef = useRef(onZoomLevelChange);
     const ganttApiRef = useRef(null);
+    const timelineRef = useRef(null);
     const todayLabelRef = useRef(todayLabel);
     const isDashboardWidget = variant === 'dashboard';
     todayLabelRef.current = todayLabel;
@@ -306,29 +305,42 @@ const GanttTimelineAdapter = React.memo(
       [assigneesColumnWidth, t],
     );
 
-    const updateCurrentTimeMarker = useCallback(() => {
+    const updateCurrentTimeMarker = useCallback(({ focus = false, chartWidth } = {}) => {
       const ganttApi = ganttApiRef.current;
       if (!ganttApi) {
         return;
       }
 
       const state = ganttApi.getState();
-      const { _scales: scales, _start: scaleStart, cellWidth } = state;
+      const {
+        _scales: scales,
+        _start: scaleStart,
+        _chartWidth: currentChartWidth,
+        cellWidth,
+      } = state;
       if (!scales || !scaleStart || !cellWidth) {
         return;
       }
 
-      ganttApi.getStores().data.setState({
-        _markers: [
-          createGanttCurrentTimeMarker({
-            scales,
-            scaleStart,
-            cellWidth,
-            now: new Date(),
-            text: todayLabelRef.current,
-          }),
-        ],
+      const marker = createGanttCurrentTimeMarker({
+        scales,
+        scaleStart,
+        cellWidth,
+        now: new Date(),
+        text: todayLabelRef.current,
       });
+
+      ganttApi.getStores().data.setState({ _markers: [marker] });
+
+      const focusChartWidth =
+        timelineRef.current?.querySelector('.wx-chart')?.clientWidth ||
+        chartWidth ||
+        currentChartWidth;
+      if (focus && focusChartWidth) {
+        ganttApi.exec('scroll-chart', {
+          left: getGanttCenteredScrollLeft(marker.left, focusChartWidth),
+        });
+      }
     }, []);
 
     useEffect(() => {
@@ -342,12 +354,36 @@ const GanttTimelineAdapter = React.memo(
       };
     }, [updateCurrentTimeMarker]);
 
+    useEffect(() => {
+      if (
+        !isDashboardWidget ||
+        readyZoomLevel !== zoomLevel ||
+        typeof ResizeObserver === 'undefined'
+      ) {
+        return undefined;
+      }
+
+      const chart = timelineRef.current?.querySelector('.wx-chart');
+      if (!chart) {
+        return undefined;
+      }
+
+      const resizeObserver = new ResizeObserver(() => {
+        updateCurrentTimeMarker({ focus: true, chartWidth: chart.clientWidth });
+      });
+      resizeObserver.observe(chart);
+
+      return () => resizeObserver.disconnect();
+    }, [isDashboardWidget, readyZoomLevel, updateCurrentTimeMarker, zoomLevel]);
+
     const handleInit = useCallback(
       (ganttApi) => {
         ganttApiRef.current = ganttApi;
 
         updateCurrentTimeMarker();
-        ganttApi.on('resize-chart', updateCurrentTimeMarker);
+        ganttApi.on('resize-chart', ({ width }) => {
+          updateCurrentTimeMarker({ focus: isDashboardWidget, chartWidth: width });
+        });
         ganttApi.on('zoom-scale', () => {
           updateCurrentTimeMarker();
           const nativeZoomLevel = NATIVE_ZOOM_LEVELS[ganttApi.getState().zoom.level];
@@ -379,7 +415,10 @@ const GanttTimelineAdapter = React.memo(
           });
         }
 
-        window.requestAnimationFrame(() => setReadyZoomLevel(zoomLevel));
+        window.requestAnimationFrame(() => {
+          updateCurrentTimeMarker({ focus: isDashboardWidget });
+          setReadyZoomLevel(zoomLevel);
+        });
       },
       [isDashboardWidget, updateCurrentTimeMarker, zoomLevel],
     );
@@ -408,6 +447,7 @@ const GanttTimelineAdapter = React.memo(
 
     return (
       <div
+        ref={timelineRef}
         className={styles.wrapper}
         data-gantt-color-scope
         data-zoom-level={zoomLevel}
