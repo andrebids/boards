@@ -1,0 +1,149 @@
+.viewer {
+  background: var(--card-modal-surface, #18181b);
+  color: var(--card-modal-text, #f4f4f5);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+.toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--card-modal-border, rgba(255, 255, 255, 0.12));
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 8px 12px;
+}
+
+.sheetSelect,
+.pageButton {
+  background: var(--card-modal-surface-raised, #27272a);
+  border: 1px solid var(--card-modal-border, rgba(255, 255, 255, 0.12));
+  color: var(--card-modal-text, #f4f4f5);
+
+  &:focus-visible {
+    outline: 2px solid var(--card-modal-accent, #3b82f6);
+    outline-offset: 2px;
+  }
+}
+
+.sheetSelect {
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  max-width: min(320px, 60vw);
+  min-height: 32px;
+  padding: 4px 30px 4px 10px;
+  text-overflow: ellipsis;
+}
+
+.pagination {
+  align-items: center;
+  color: var(--card-modal-muted, #d4d4d8);
+  display: flex;
+  flex: 0 0 auto;
+  font-size: 12px;
+  gap: 8px;
+}
+
+.pageButton {
+  align-items: center;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  font-size: 20px;
+  height: 30px;
+  justify-content: center;
+  padding: 0;
+  width: 30px;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.35;
+  }
+}
+
+.viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+  line-height: 18px;
+  min-width: 100%;
+  width: max-content;
+
+  th,
+  td {
+    border-bottom: 1px solid var(--card-modal-border, rgba(255, 255, 255, 0.1));
+    border-right: 1px solid var(--card-modal-border, rgba(255, 255, 255, 0.1));
+    max-width: 280px;
+    overflow: hidden;
+    padding: 8px 10px;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  th {
+    background: var(--card-modal-surface-raised, #27272a);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.025);
+  }
+}
+
+.status {
+  align-items: center;
+  background: var(--card-modal-surface, #18181b);
+  color: var(--card-modal-muted, #d4d4d8);
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 12px;
+  height: 100%;
+  justify-content: center;
+  line-height: 20px;
+  padding: 24px;
+  text-align: center;
+  width: 100%;
+}
+
+.filename {
+  color: var(--card-modal-text, #f4f4f5);
+  font-size: 14px;
+  font-weight: 600;
+  max-width: min(420px, 100%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spinner {
+  animation: xlsxPreviewSpin 800ms linear infinite;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  height: 30px;
+  width: 30px;
+}
+
+@keyframes xlsxPreviewSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

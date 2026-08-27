@@ -183,6 +183,7 @@
     "vite-plugin-commonjs": "^0.10.4",
     "vite-plugin-node-polyfills": "^0.23.0",
     "vite-plugin-svgr": "^4.3.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {

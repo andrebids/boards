@@ -15,15 +15,22 @@ import { AttachmentTypes } from '../../../../constants/Enums';
 import ContentViewer from '../../../attachments/Attachments/ContentViewer';
 import CsvViewer from '../../../attachments/Attachments/CsvViewer';
 import VideoPlayer from '../../../common/VideoPlayer';
-import { getThreeDFormat, isPersistedAttachment, isVideoAttachment } from './selection';
+import {
+  getSpreadsheetPreviewStatus,
+  getThreeDFormat,
+  isPersistedAttachment,
+  isVideoAttachment,
+} from './selection';
 
 import styles from './CardImageCarousel.module.scss';
 
 const ThreeDViewer = React.lazy(() => import('./ThreeDViewer'));
+const XlsxViewer = React.lazy(() => import('./XlsxViewer'));
 
 const AttachmentPreview = React.memo(({ attachment, isSelected, posterUrl }) => {
   const [t] = useTranslation();
   const threeDFormat = getThreeDFormat(attachment);
+  const spreadsheetPreviewStatus = getSpreadsheetPreviewStatus(attachment);
 
   let content = null;
 
@@ -61,6 +68,25 @@ const AttachmentPreview = React.memo(({ attachment, isSelected, posterUrl }) => 
           }
         >
           <ThreeDViewer attachment={attachment} format={threeDFormat} />
+        </React.Suspense>
+      );
+    } else if (spreadsheetPreviewStatus === 'tooBig') {
+      content = (
+        <span className={styles.previewMessage}>
+          {t('common.contentOfThisAttachmentIsTooBigToDisplay')}
+        </span>
+      );
+    } else if (spreadsheetPreviewStatus === 'ready') {
+      content = (
+        <React.Suspense
+          fallback={
+            <span className={styles.previewMessage} role="status" aria-busy="true">
+              <span className={styles.mediaLoadingSpinner} aria-hidden="true" />
+              {t('common.loading')}
+            </span>
+          }
+        >
+          <XlsxViewer attachment={attachment} />
         </React.Suspense>
       );
     } else {
