@@ -301,6 +301,12 @@ export default {
       notificationHistoryLoadFailed: "Could not load notification history.",
       newSubtaskOf: "New subtask of “{{task}}”",
       notifications: "Notifications",
+      webPushPromptTitle: "Turn on chat notifications",
+      webPushPromptDescription:
+        "Get a short preview on this device, even when Boards is closed.",
+      webPushPromptActivate: "Turn on",
+      webPushPromptLater: "Not now",
+      webPushPromptError: "Could not turn on notifications. Try again.",
       personalNotifications: "Personal notifications",
       personalNotificationsDescription:
         "Choose how much activity reaches your notification inbox.",
@@ -452,7 +458,7 @@ export default {
         "The collaborative editor will be connected once the CryptPad service is configured.",
       presentationMediaTitle: "Card images",
       presentationMediaDescription:
-        "Choose an image from a board you can access.",
+        "Choose an image from a card on this board.",
       presentationMediaClose: "Close",
       presentationMediaSearch: "Search images",
       presentationMediaClearSearch: "Clear search",
@@ -461,7 +467,7 @@ export default {
       presentationMediaListLabel: "Card images",
       presentationMediaInserting: "Inserting…",
       presentationMediaSearchEmpty: "No images found.",
-      presentationMediaEmpty: "There are no card images yet.",
+      presentationMediaEmpty: "There are no card images on this board yet.",
       presentationMediaEmptyDescription:
         "You can also upload an image from your computer.",
       backToProject: "Back to project",

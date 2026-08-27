@@ -570,6 +570,12 @@ export default {
       notificationHistoryLoadFailed: "Não foi possível carregar o histórico de notificações.",
       newSubtaskOf: "Nova subtarefa de “{{task}}”",
       notifications: "Notificações",
+      webPushPromptTitle: "Ativar notificações do chat",
+      webPushPromptDescription:
+        "Receba uma pré-visualização curta neste dispositivo, mesmo com o Boards fechado.",
+      webPushPromptActivate: "Ativar",
+      webPushPromptLater: "Agora não",
+      webPushPromptError: "Não foi possível ativar as notificações. Tente novamente.",
       personalNotifications: "Notificações pessoais",
       personalNotificationsDescription:
         "Escolha quanta atividade chega à sua caixa de notificações.",
@@ -724,7 +730,7 @@ export default {
         "O editor colaborativo será ligado assim que o serviço CryptPad estiver configurado.",
       presentationMediaTitle: "Imagens dos cartões",
       presentationMediaDescription:
-        "Escolha uma imagem dos quadros a que tem acesso.",
+        "Escolha uma imagem de um cartão deste quadro.",
       presentationMediaClose: "Fechar",
       presentationMediaSearch: "Pesquisar imagens",
       presentationMediaClearSearch: "Limpar pesquisa",
@@ -734,7 +740,7 @@ export default {
       presentationMediaListLabel: "Imagens dos cartões",
       presentationMediaInserting: "A inserir…",
       presentationMediaSearchEmpty: "Não encontrámos imagens.",
-      presentationMediaEmpty: "Ainda não existem imagens nos cartões.",
+      presentationMediaEmpty: "Ainda não existem imagens nos cartões deste quadro.",
       presentationMediaEmptyDescription:
         "Também pode carregar uma imagem do computador.",
       backToProject: "Voltar ao projeto",

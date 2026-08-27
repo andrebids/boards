@@ -35,3 +35,5 @@ export const getMessagePreviewText = (lastMessage, t) => {
 
   return formatTextWithMentions(lastMessage.text || '') || t('chat.sentFile');
 };
+
+export const getQuickReplyText = (value) => value.trim() || null;

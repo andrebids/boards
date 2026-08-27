@@ -136,6 +136,12 @@ export default {
       noLists: 'Tidak ada daftar',
       noProjects: 'Tidak ada projek',
       noUnreadNotifications: 'Tiada notifikasi yang belum dibaca.',
+      webPushPromptTitle: 'Aktifkan notifikasi chat',
+      webPushPromptDescription:
+        'Dapatkan pratinjau singkat di perangkat ini, bahkan saat Boards ditutup.',
+      webPushPromptActivate: 'Aktifkan',
+      webPushPromptLater: 'Jangan sekarang',
+      webPushPromptError: 'Notifikasi tidak dapat diaktifkan. Coba lagi.',
       notifications: 'Notifikasi',
       openBoard_title: 'Buka Papan',
       optional_inline: 'opsional',

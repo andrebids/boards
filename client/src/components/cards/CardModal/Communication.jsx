@@ -9,6 +9,7 @@ import { Menu, Tab } from 'semantic-ui-react';
 
 import Comments from '../../comments/Comments';
 import CardActivities from '../../activities/CardActivities';
+import Attachments from '../../attachments/Attachments';
 
 import styles from './Communication.module.scss';
 
@@ -25,6 +26,16 @@ const Communication = React.memo(() => {
         </Menu.Item>
       ),
       render: () => <Comments />,
+    },
+    {
+      menuItem: (
+        <Menu.Item key="attachments" className={styles.menuItem}>
+          {t('common.attachments', {
+            context: 'title',
+          })}
+        </Menu.Item>
+      ),
+      render: () => <Attachments />,
     },
     {
       menuItem: (

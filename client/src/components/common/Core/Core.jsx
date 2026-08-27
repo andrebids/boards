@@ -23,6 +23,7 @@ import AddProjectModal from '../../projects/AddProjectModal';
 import { ProjectGanttProvider } from '../../gantt';
 import { ProjectPresentationProvider } from '../../presentation';
 import TabNotification from './TabNotification';
+import WebPushPrompt from '../WebPushPrompt';
 
 const Core = React.memo(() => {
   const isInitializing = useSelector(selectors.selectIsInitializing);
@@ -134,6 +135,9 @@ const Core = React.memo(() => {
               <Static />
             </ProjectPresentationProvider>
           </ProjectGanttProvider>
+          {!modalNode && !messageNode && (
+            <WebPushPrompt hasRelevantActivity={unreadChatMessageTotal > 0} />
+          )}
           {modalNode}
         </>
       )}

@@ -12,7 +12,7 @@ import { Button, Popup } from '../../../lib/custom-ui';
 
 import entryActions from '../../../entry-actions';
 import { useForm } from '../../../hooks';
-import CustomFieldEditor from './CustomFieldEditor';
+import CustomFieldEditor from '../../custom-field-groups/CustomFieldGroupStep/CustomFieldEditor';
 
 import styles from './CustomFieldAddStep.module.scss';
 

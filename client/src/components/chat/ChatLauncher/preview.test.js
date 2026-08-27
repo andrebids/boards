@@ -1,6 +1,7 @@
 import {
   getMessageAlertPresentation,
   getMessagePreviewText,
+  getQuickReplyText,
   shouldShowMessagePreview,
 } from './preview';
 
@@ -44,5 +45,10 @@ describe('chat launcher message preview', () => {
       false,
     );
     expect(nextMessage).toMatchObject({ isNew: true, shouldPresent: true });
+  });
+
+  test('normalizes a notification quick reply and rejects blank messages', () => {
+    expect(getQuickReplyText('  Sim, combinado.  ')).toBe('Sim, combinado.');
+    expect(getQuickReplyText('   ')).toBeNull();
   });
 });

@@ -267,6 +267,12 @@ export default {
       noLists: 'No lists',
       noProjects: 'No projects',
       noUnreadNotifications: 'No unread notifications.',
+      webPushPromptTitle: 'Turn on chat notifications',
+      webPushPromptDescription:
+        'Get a short preview on this device, even when Boards is closed.',
+      webPushPromptActivate: 'Turn on',
+      webPushPromptLater: 'Not now',
+      webPushPromptError: 'Could not turn on notifications. Try again.',
       notifications: 'Notifications',
       oldestFirst: 'Oldest first',
       openBoard_title: 'Open Board',

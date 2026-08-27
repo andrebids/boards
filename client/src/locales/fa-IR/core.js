@@ -137,6 +137,12 @@ export default {
       noLists: 'لیستی وجود ندارد',
       noProjects: 'پروژه‌ای وجود ندارد',
       noUnreadNotifications: 'اعلان خوانده نشده‌ای وجود ندارد.',
+      webPushPromptTitle: 'فعال کردن اعلان‌های گفتگو',
+      webPushPromptDescription:
+        'حتی وقتی Boards بسته است، پیش‌نمایش کوتاهی را در این دستگاه دریافت کنید.',
+      webPushPromptActivate: 'فعال کردن',
+      webPushPromptLater: 'اکنون نه',
+      webPushPromptError: 'فعال کردن اعلان‌ها ممکن نبود. دوباره تلاش کنید.',
       notifications: 'اعلان‌ها',
       oldestFirst: 'قدیمی‌ترین اول',
       openBoard_title: 'باز کردن برد',

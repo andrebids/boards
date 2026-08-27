@@ -140,6 +140,12 @@ export default {
       noLists: 'Няма списъци',
       noProjects: 'Няма проекти',
       noUnreadNotifications: 'Няма непрочетени известия.',
+      webPushPromptTitle: 'Включване на известията за чата',
+      webPushPromptDescription:
+        'Получавайте кратък преглед на това устройство дори когато Boards е затворен.',
+      webPushPromptActivate: 'Включване',
+      webPushPromptLater: 'Не сега',
+      webPushPromptError: 'Известията не можаха да бъдат включени. Опитайте отново.',
       notifications: 'Уведомления',
       oldestFirst: 'Първо най-старите',
       openBoard_title: 'Отворете табло',

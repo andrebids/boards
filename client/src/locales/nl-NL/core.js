@@ -137,6 +137,12 @@ export default {
       noLists: 'Geen lijsten',
       noProjects: 'Geen projecten',
       noUnreadNotifications: 'Geen ongelezen meldingen.',
+      webPushPromptTitle: 'Chatmeldingen inschakelen',
+      webPushPromptDescription:
+        'Ontvang een korte preview op dit apparaat, ook wanneer Boards gesloten is.',
+      webPushPromptActivate: 'Inschakelen',
+      webPushPromptLater: 'Niet nu',
+      webPushPromptError: 'Meldingen konden niet worden ingeschakeld. Probeer het opnieuw.',
       notifications: 'Meldingen',
       openBoard_title: 'Bord openen',
       optional_inline: 'optioneel',

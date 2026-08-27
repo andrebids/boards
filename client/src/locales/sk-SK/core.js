@@ -121,6 +121,12 @@ export default {
       noLists: 'Žiadne zoznamy',
       noProjects: 'Žiadne projekty',
       noUnreadNotifications: 'Žiadne neprečítané oznámenia.',
+      webPushPromptTitle: 'Zapnúť upozornenia chatu',
+      webPushPromptDescription:
+        'Dostávajte krátky náhľad na tomto zariadení, aj keď je Boards zatvorený.',
+      webPushPromptActivate: 'Zapnúť',
+      webPushPromptLater: 'Teraz nie',
+      webPushPromptError: 'Upozornenia sa nepodarilo zapnúť. Skúste to znova.',
       notifications: 'Oznámenia',
       openBoard_title: 'Otvoriť tabuľu',
       optional_inline: 'voliteľné',

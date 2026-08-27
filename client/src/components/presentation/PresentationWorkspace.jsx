@@ -103,7 +103,7 @@ const PresentationWorkspace = React.memo(({ isActive }) => {
     contentNode = (
       <PresentationEditor
         key={selectedPresentation.id}
-        boardIds={boards.map(({ id }) => id)}
+        boardIds={[selectedBoard.id]}
         presentation={selectedPresentation}
         onSessionUpdate={updateSession}
       />

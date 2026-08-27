@@ -242,6 +242,12 @@ export default {
       noLists: 'Немає списків',
       noProjects: 'Немає проектів',
       noUnreadNotifications: 'Немає непрочитаних сповіщень.',
+      webPushPromptTitle: 'Увімкнути сповіщення чату',
+      webPushPromptDescription:
+        'Отримуйте короткий попередній перегляд на цьому пристрої, навіть коли Boards закрито.',
+      webPushPromptActivate: 'Увімкнути',
+      webPushPromptLater: 'Не зараз',
+      webPushPromptError: 'Не вдалося ввімкнути сповіщення. Спробуйте ще раз.',
       notifications: 'Сповіщення',
       oldestFirst: 'Найстарший перший',
       openBoard_title: 'Відкрити Дошку',

@@ -3,22 +3,19 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Tab } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
-import api from '../../../api';
 import { UserNotificationLevels } from '../../../constants/Enums';
+import { useWebPush } from '../../../hooks';
 import { Button } from '../../../lib/custom-ui';
 import {
   WebPushStates,
-  activateWebPush,
-  disableWebPush,
   getWebPushErrorState,
-  reconcileWebPush,
   showWebPushTestNotification,
 } from '../../../utils/web-push';
 
@@ -26,9 +23,14 @@ import styles from './NotificationsPane.module.scss';
 
 const NotificationsPane = React.memo(() => {
   const user = useSelector(selectors.selectCurrentUser);
-  const config = useSelector(selectors.selectConfig);
-  const [webPushState, setWebPushState] = useState(WebPushStates.ACTIVATING);
   const [webPushTestUnavailable, setWebPushTestUnavailable] = useState(false);
+  const {
+    activate: activateWebPush,
+    disable: disableWebPush,
+    isEnabled: isWebPushEnabled,
+    setState: setWebPushState,
+    state: webPushState,
+  } = useWebPush();
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -44,64 +46,17 @@ const NotificationsPane = React.memo(() => {
     [dispatch],
   );
 
-  const webPushConfig = config.webPush || {};
-  const syncWebPushSubscription = useCallback(
-    (subscription) => api.createWebPushSubscription(subscription),
-    [],
-  );
-  const removeWebPushSubscription = useCallback(
-    (endpoint) => api.deleteCurrentWebPushSubscription(endpoint),
-    [],
-  );
-
-  useEffect(() => {
-    let isCurrent = true;
-
-    if (!webPushConfig.enabled) {
-      setWebPushState(WebPushStates.UNSUPPORTED);
-      return undefined;
-    }
-
-    setWebPushState(WebPushStates.ACTIVATING);
-    reconcileWebPush({
-      enabled: webPushConfig.enabled,
-      publicKey: webPushConfig.publicKey,
-      syncSubscription: syncWebPushSubscription,
-    })
-      .then((state) => {
-        if (isCurrent) {
-          setWebPushState(state);
-        }
-      })
-      .catch((error) => {
-        if (isCurrent) {
-          setWebPushState(getWebPushErrorState(error));
-        }
-      });
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [syncWebPushSubscription, webPushConfig.enabled, webPushConfig.publicKey]);
-
   const handleWebPushToggle = useCallback(async () => {
     setWebPushState(WebPushStates.ACTIVATING);
 
     try {
       const nextState =
-        webPushState === WebPushStates.ACTIVE
-          ? await disableWebPush({
-              removeSubscription: removeWebPushSubscription,
-            })
-          : await activateWebPush({
-              publicKey: webPushConfig.publicKey,
-              syncSubscription: syncWebPushSubscription,
-            });
+        webPushState === WebPushStates.ACTIVE ? await disableWebPush() : await activateWebPush();
       setWebPushState(nextState);
     } catch (error) {
       setWebPushState(getWebPushErrorState(error));
     }
-  }, [removeWebPushSubscription, syncWebPushSubscription, webPushConfig.publicKey, webPushState]);
+  }, [activateWebPush, disableWebPush, setWebPushState, webPushState]);
 
   const handleWebPushTest = useCallback(async () => {
     try {
@@ -113,7 +68,7 @@ const NotificationsPane = React.memo(() => {
     } catch (error) {
       setWebPushState(getWebPushErrorState(error));
     }
-  }, [t]);
+  }, [setWebPushState, t]);
 
   const updateForm = user.notificationLevelUpdateForm || {};
   const isUpdating = Boolean(updateForm.isSubmitting);
@@ -210,7 +165,7 @@ const NotificationsPane = React.memo(() => {
         )}
       </fieldset>
 
-      {webPushConfig.enabled && (
+      {isWebPushEnabled && (
         <section className={styles.deviceNotifications} aria-labelledby="web-push-title">
           <div className={styles.deviceNotificationsContent}>
             <h3 id="web-push-title" className={styles.sectionTitle}>

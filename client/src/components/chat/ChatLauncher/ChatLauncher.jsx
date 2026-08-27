@@ -4,16 +4,17 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { MessageCircle, Reply, X } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { MessageCircle, Send, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
+import entryActions from '../../../entry-actions';
 import { CloseButton } from '../../../lib/custom-ui';
 import { useChat } from '../ChatContext';
 import ChatAvatar from '../ChatAvatar';
 import ChatPanel from '../ChatPanel';
-import { getMessageAlertPresentation, getMessagePreviewText } from './preview';
+import { getMessageAlertPresentation, getMessagePreviewText, getQuickReplyText } from './preview';
 
 import styles from './ChatLauncher.module.scss';
 
@@ -23,6 +24,7 @@ const PREVIEW_EXIT_MS = 160;
 
 const ChatLauncher = React.memo(() => {
   const [t] = useTranslation();
+  const dispatch = useDispatch();
   const unreadTotal = useSelector(selectors.selectChatInboxUnreadConversationTotal) || 0;
   const lastMessageAlert = useSelector(selectors.selectLastChatMessageAlert);
   const alertConversation = useSelector((state) =>
@@ -57,11 +59,13 @@ const ChatLauncher = React.memo(() => {
   const [isAlerting, setIsAlerting] = useState(false);
   const [previewAlert, setPreviewAlert] = useState(null);
   const [isPreviewClosing, setIsPreviewClosing] = useState(false);
+  const [quickReply, setQuickReply] = useState('');
   const alertTimeoutRef = useRef(null);
   const closeTimeoutRef = useRef(null);
   const closeCompletionRef = useRef(null);
   const handledAlertMessageIdRef = useRef(null);
   const handledPreviewMessageIdRef = useRef(null);
+  const previewRef = useRef(null);
   const previewTimeoutRef = useRef(null);
   const previewExitTimeoutRef = useRef(null);
 
@@ -82,11 +86,16 @@ const ChatLauncher = React.memo(() => {
     previewExitTimeoutRef.current = window.setTimeout(() => {
       setPreviewAlert(null);
       setIsPreviewClosing(false);
+      setQuickReply('');
       previewExitTimeoutRef.current = null;
     }, PREVIEW_EXIT_MS);
   }, [clearPreviewTimers]);
 
   const schedulePreviewDismiss = useCallback(() => {
+    if (previewRef.current?.contains(document.activeElement)) {
+      return;
+    }
+
     clearPreviewTimers();
     previewTimeoutRef.current = window.setTimeout(dismissPreview, PREVIEW_VISIBLE_MS);
   }, [clearPreviewTimers, dismissPreview]);
@@ -134,6 +143,7 @@ const ChatLauncher = React.memo(() => {
       clearPreviewTimers();
       setPreviewAlert(null);
       setIsPreviewClosing(false);
+      setQuickReply('');
       return undefined;
     }
 
@@ -143,6 +153,7 @@ const ChatLauncher = React.memo(() => {
 
     setPreviewAlert(lastMessageAlert);
     setIsPreviewClosing(false);
+    setQuickReply('');
     schedulePreviewDismiss();
 
     return undefined;
@@ -228,19 +239,20 @@ const ChatLauncher = React.memo(() => {
     });
   }, [dismissPreview, openGlobalConversation, previewAlert]);
 
-  const handlePreviewReply = useCallback(() => {
-    if (!previewAlert) {
-      return;
-    }
+  const handleQuickReplySubmit = useCallback(
+    (event) => {
+      event.preventDefault();
+      const text = getQuickReplyText(quickReply);
 
-    dismissPreview();
-    openGlobalConversation({
-      conversationId: previewAlert.conversationId,
-      firstUnreadMessageId: previewAlert.messageId,
-      projectId: previewAlert.projectId,
-      reply: true,
-    });
-  }, [dismissPreview, openGlobalConversation, previewAlert]);
+      if (!previewAlert || !text) {
+        return;
+      }
+
+      dispatch(entryActions.createChatMessage(previewAlert.conversationId, { text }));
+      dismissPreview();
+    },
+    [dismissPreview, dispatch, previewAlert, quickReply],
+  );
 
   if (!isEnabled) {
     return null;
@@ -264,12 +276,8 @@ const ChatLauncher = React.memo(() => {
   ]
     .filter(Boolean)
     .join(' · ');
-  const previewUnreadCount = Math.max(
-    alertConversation?.unreadCount || 0,
-    alertInboxItem?.unreadCount || 0,
-    1,
-  );
   const previewAvatarUser = alertSender || { name: previewSenderName };
+  const quickReplyText = getQuickReplyText(quickReply);
 
   return (
     <>
@@ -284,6 +292,7 @@ const ChatLauncher = React.memo(() => {
       )}
       {previewAlert && (
         <aside
+          ref={previewRef}
           className={`${styles.messagePreview} ${
             isPreviewClosing ? styles.messagePreviewClosing : ''
           }`}
@@ -322,22 +331,26 @@ const ChatLauncher = React.memo(() => {
               <span className={styles.previewMessage}>{previewText}</span>
             </span>
           </button>
-          <footer className={styles.previewActions}>
-            <button type="button" className={styles.previewReply} onClick={handlePreviewReply}>
-              <Reply aria-hidden="true" size={15} strokeWidth={2} />
-              {t('chat.reply')}
-            </button>
-            <button type="button" className={styles.previewSecondary} onClick={handlePreviewOpen}>
-              {t('chat.openConversation')}
-            </button>
-            <span
-              className={styles.previewUnread}
-              aria-label={t('chat.unreadMessages', {
-                count: previewUnreadCount,
-              })}
-            >
-              {previewUnreadCount > 99 ? '99+' : previewUnreadCount}
-            </span>
+          <footer className={styles.previewReplyArea}>
+            <form className={styles.previewReplyForm} onSubmit={handleQuickReplySubmit}>
+              <input
+                type="text"
+                aria-label={t('chat.writeMessage')}
+                autoComplete="off"
+                maxLength={10000}
+                placeholder={t('chat.writeMessage')}
+                value={quickReply}
+                onChange={(event) => setQuickReply(event.target.value)}
+              />
+              <button
+                type="submit"
+                aria-label={t('chat.sendMessage')}
+                disabled={!quickReplyText}
+                title={t('chat.sendMessage')}
+              >
+                <Send aria-hidden="true" size={18} strokeWidth={2} />
+              </button>
+            </form>
           </footer>
         </aside>
       )}

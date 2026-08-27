@@ -137,6 +137,12 @@ export default {
       noLists: 'Nema spiskova',
       noProjects: 'Nema projekata',
       noUnreadNotifications: 'Nema nepročitanih obaveštenja.',
+      webPushPromptTitle: 'Uključi obaveštenja ćaskanja',
+      webPushPromptDescription:
+        'Primajte kratak pregled na ovom uređaju, čak i kada je Boards zatvoren.',
+      webPushPromptActivate: 'Uključi',
+      webPushPromptLater: 'Ne sada',
+      webPushPromptError: 'Obaveštenja nisu mogla da se uključe. Pokušajte ponovo.',
       notifications: 'Obaveštenja',
       oldestFirst: 'Prvo najstarije',
       openBoard_title: 'Otvori tablu',

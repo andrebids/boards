@@ -249,6 +249,13 @@ export default {
       noLists: 'Δεν υπάρχουν λίστες',
       noProjects: 'Δεν υπάρχουν έργα',
       noUnreadNotifications: 'Δεν υπάρχουν μη αναγνωσμένες ειδοποιήσεις.',
+      webPushPromptTitle: 'Ενεργοποίηση ειδοποιήσεων συνομιλίας',
+      webPushPromptDescription:
+        'Λάβετε μια σύντομη προεπισκόπηση σε αυτήν τη συσκευή, ακόμη και όταν το Boards είναι κλειστό.',
+      webPushPromptActivate: 'Ενεργοποίηση',
+      webPushPromptLater: 'Όχι τώρα',
+      webPushPromptError:
+        'Δεν ήταν δυνατή η ενεργοποίηση των ειδοποιήσεων. Δοκιμάστε ξανά.',
       notifications: 'Ειδοποιήσεις',
       oldestFirst: 'Παλαιότερα πρώτα',
       openBoard_title: 'Άνοιγμα πίνακα',

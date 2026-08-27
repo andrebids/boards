@@ -136,6 +136,12 @@ export default {
       noLists: 'リストがありません',
       noProjects: 'プロジェクトがありません',
       noUnreadNotifications: '未読の通知はありません。',
+      webPushPromptTitle: 'チャット通知を有効にする',
+      webPushPromptDescription:
+        'Boardsを閉じているときでも、このデバイスで短いプレビューを受け取れます。',
+      webPushPromptActivate: '有効にする',
+      webPushPromptLater: '今はしない',
+      webPushPromptError: '通知を有効にできませんでした。もう一度お試しください。',
       notifications: '通知',
       openBoard_title: 'ボードを開く',
       optional_inline: '任意',

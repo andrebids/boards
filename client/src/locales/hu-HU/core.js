@@ -138,6 +138,12 @@ export default {
       noLists: 'Nincsenek listák',
       noProjects: 'Nincsenek projektek',
       noUnreadNotifications: 'Nincsenek olvasatlan értesítések.',
+      webPushPromptTitle: 'Csevegési értesítések bekapcsolása',
+      webPushPromptDescription:
+        'Rövid előnézetet kaphat ezen az eszközön akkor is, amikor a Boards be van zárva.',
+      webPushPromptActivate: 'Bekapcsolás',
+      webPushPromptLater: 'Most nem',
+      webPushPromptError: 'Az értesítéseket nem sikerült bekapcsolni. Próbálja újra.',
       notifications: 'Értesítések',
       oldestFirst: 'Régebbi előre',
       openBoard_title: 'Tábla megnyitása',

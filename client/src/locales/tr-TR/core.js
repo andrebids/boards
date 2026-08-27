@@ -126,6 +126,12 @@ export default {
       noLists: 'Liste yok',
       noProjects: 'Proje yok',
       noUnreadNotifications: 'Okunmamış bildirim yok.',
+      webPushPromptTitle: 'Sohbet bildirimlerini aç',
+      webPushPromptDescription:
+        'Boards kapalıyken bile bu cihazda kısa bir önizleme alın.',
+      webPushPromptActivate: 'Aç',
+      webPushPromptLater: 'Şimdi değil',
+      webPushPromptError: 'Bildirimler açılamadı. Tekrar deneyin.',
       notifications: 'Bildirimler',
       openBoard_title: 'Açık Pano',
       optional_inline: 'İsteğe bağlı',

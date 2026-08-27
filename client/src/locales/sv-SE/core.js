@@ -123,6 +123,12 @@ export default {
       noLists: 'Inga listor',
       noProjects: 'Inga projekt',
       noUnreadNotifications: 'Inga olästa notifikationer.',
+      webPushPromptTitle: 'Aktivera chattaviseringar',
+      webPushPromptDescription:
+        'Få en kort förhandsvisning på den här enheten, även när Boards är stängt.',
+      webPushPromptActivate: 'Aktivera',
+      webPushPromptLater: 'Inte nu',
+      webPushPromptError: 'Det gick inte att aktivera aviseringarna. Försök igen.',
       notifications: 'Notifikationer',
       openBoard_title: 'Öppna tavla',
       optional_inline: 'valfri',

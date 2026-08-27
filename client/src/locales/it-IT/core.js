@@ -260,6 +260,12 @@ export default {
       noLists: 'Nessuna lista',
       noProjects: 'Nessun progetto',
       noUnreadNotifications: 'Nessuna notifica da leggere.',
+      webPushPromptTitle: 'Attiva le notifiche della chat',
+      webPushPromptDescription:
+        'Ricevi una breve anteprima su questo dispositivo, anche quando Boards è chiuso.',
+      webPushPromptActivate: 'Attiva',
+      webPushPromptLater: 'Non ora',
+      webPushPromptError: 'Impossibile attivare le notifiche. Riprova.',
       notifications: 'Notifiche',
       oldestFirst: 'Dal meno recente',
       openBoard_title: 'Bacheca aperta',

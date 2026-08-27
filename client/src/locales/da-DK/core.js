@@ -246,6 +246,12 @@ export default {
       noLists: 'Ingen lister',
       noProjects: 'Ingen projekter',
       noUnreadNotifications: 'Ingen ulæste notifikationer.',
+      webPushPromptTitle: 'Slå chatnotifikationer til',
+      webPushPromptDescription:
+        'Få en kort forhåndsvisning på denne enhed, selv når Boards er lukket.',
+      webPushPromptActivate: 'Slå til',
+      webPushPromptLater: 'Ikke nu',
+      webPushPromptError: 'Notifikationerne kunne ikke slås til. Prøv igen.',
       notifications: 'Notifikationer',
       oldestFirst: 'Ældste først',
       openBoard_title: 'Åbn tavle',

@@ -115,6 +115,12 @@ export default {
       noLists: "Ro'yxatlar yo'q",
       noProjects: "Loyihalar yo'q",
       noUnreadNotifications: "O'qilmagan bildirishnomalar yo'q.",
+      webPushPromptTitle: 'Chat bildirishnomalarini yoqish',
+      webPushPromptDescription:
+        'Boards yopiq bo‘lsa ham, ushbu qurilmada qisqa ko‘rinishni oling.',
+      webPushPromptActivate: 'Yoqish',
+      webPushPromptLater: 'Hozir emas',
+      webPushPromptError: 'Bildirishnomalarni yoqib bo‘lmadi. Qayta urinib ko‘ring.',
       notifications: 'Bildirishnomalar',
       openBoard_title: 'Doskani Ochish',
       optional_inline: 'ixtiyoriy',

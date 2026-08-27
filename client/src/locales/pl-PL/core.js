@@ -211,6 +211,12 @@ export default {
       noLists: 'Brak list',
       noProjects: 'Brak projektów',
       noUnreadNotifications: 'Brak nieprzeczytanych powiadomień.',
+      webPushPromptTitle: 'Włącz powiadomienia czatu',
+      webPushPromptDescription:
+        'Otrzymuj krótki podgląd na tym urządzeniu, nawet gdy Boards jest zamknięty.',
+      webPushPromptActivate: 'Włącz',
+      webPushPromptLater: 'Nie teraz',
+      webPushPromptError: 'Nie udało się włączyć powiadomień. Spróbuj ponownie.',
       notifications: 'Powiadomienia',
       oldestFirst: 'Najpierw najstarsze',
       openBoard_title: 'Otwórz Tablicę',

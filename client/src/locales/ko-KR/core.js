@@ -129,6 +129,12 @@ export default {
       noLists: '목록 없음',
       noProjects: '프로젝트 없음',
       noUnreadNotifications: '읽지 않은 알림 없음.',
+      webPushPromptTitle: '채팅 알림 켜기',
+      webPushPromptDescription:
+        'Boards가 닫혀 있어도 이 기기에서 짧은 미리보기를 받을 수 있습니다.',
+      webPushPromptActivate: '켜기',
+      webPushPromptLater: '나중에',
+      webPushPromptError: '알림을 켤 수 없습니다. 다시 시도하세요.',
       notifications: '알림',
       oldestFirst: '오래된 순',
       openBoard_title: '보드 열기',

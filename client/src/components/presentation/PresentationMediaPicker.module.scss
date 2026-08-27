@@ -125,24 +125,25 @@
   .grid {
     border-top: 1px solid var(--app-dark-border);
     display: grid;
-    gap: 8px;
+    gap: 12px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-height: 432px;
+    max-height: 520px;
     overflow-y: auto;
     padding: 16px 24px 24px;
   }
 
   .item {
-    align-items: center;
+    align-items: stretch;
     background: transparent;
     border: 1px solid var(--app-dark-border);
     border-radius: 4px;
     color: inherit;
     cursor: pointer;
     display: flex;
-    gap: 10px;
+    flex-direction: column;
     min-width: 0;
-    padding: 8px;
+    overflow: hidden;
+    padding: 0;
     position: relative;
     text-align: left;
 
@@ -164,17 +165,18 @@
 
   .thumbnail {
     background: var(--app-dark-surface-hover);
-    flex: 0 0 auto;
-    height: 64px;
-    object-fit: cover;
-    width: 76px;
+    aspect-ratio: 16 / 9;
+    display: block;
+    object-fit: contain;
+    width: 100%;
   }
 
   .itemContent {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
     min-width: 0;
+    padding: 10px 12px 12px;
 
     strong,
     span {
@@ -184,12 +186,12 @@
     }
 
     strong {
-      font-size: 14px;
+      font-size: 13px;
     }
 
     span {
       color: var(--app-dark-text-muted);
-      font-size: 12px;
+      font-size: 11px;
     }
   }
 

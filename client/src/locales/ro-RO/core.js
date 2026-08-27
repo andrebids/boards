@@ -135,6 +135,12 @@ export default {
       noLists: 'Fără Liste',
       noProjects: 'Fără proiecte',
       noUnreadNotifications: 'Fără notificări necitite.',
+      webPushPromptTitle: 'Activează notificările de chat',
+      webPushPromptDescription:
+        'Primește o previzualizare scurtă pe acest dispozitiv, chiar și când Boards este închis.',
+      webPushPromptActivate: 'Activează',
+      webPushPromptLater: 'Nu acum',
+      webPushPromptError: 'Notificările nu au putut fi activate. Încearcă din nou.',
       notifications: 'Notificări',
       openBoard_title: 'Tablă deschisă',
       optional_inline: 'optional',

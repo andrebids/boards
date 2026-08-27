@@ -167,6 +167,12 @@ export default merge({}, enUSCore, {
       noUnreadNotifications: "Aucune notification non lue.",
       newSubtaskOf: "Nouvelle sous-tâche de « {{task}} »",
       notifications: "Notifications",
+      webPushPromptTitle: "Activer les notifications du chat",
+      webPushPromptDescription:
+        "Recevez un court aperçu sur cet appareil, même lorsque Boards est fermé.",
+      webPushPromptActivate: "Activer",
+      webPushPromptLater: "Pas maintenant",
+      webPushPromptError: "Impossible d'activer les notifications. Réessayez.",
       personalNotifications: "Notifications personnelles",
       personalNotificationsDescription:
         "Choisissez la quantité d’activité qui arrive dans votre boîte de notifications.",
@@ -277,7 +283,7 @@ export default merge({}, enUSCore, {
         "L’éditeur collaboratif sera connecté une fois le service CryptPad configuré.",
       presentationMediaTitle: "Images des cartes",
       presentationMediaDescription:
-        "Choisissez une image parmi les tableaux auxquels vous avez accès.",
+        "Choisissez une image d’une carte de ce tableau.",
       presentationMediaClose: "Fermer",
       presentationMediaSearch: "Rechercher des images",
       presentationMediaClearSearch: "Effacer la recherche",
@@ -287,7 +293,7 @@ export default merge({}, enUSCore, {
       presentationMediaListLabel: "Images des cartes",
       presentationMediaInserting: "Insertion…",
       presentationMediaSearchEmpty: "Aucune image trouvée.",
-      presentationMediaEmpty: "Il n’y a pas encore d’images dans les cartes.",
+      presentationMediaEmpty: "Il n’y a pas encore d’images dans les cartes de ce tableau.",
       presentationMediaEmptyDescription:
         "Vous pouvez également téléverser une image depuis votre ordinateur.",
       backToProject: "Retour au projet",

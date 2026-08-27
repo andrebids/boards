@@ -248,6 +248,12 @@ export default {
       noProjects: 'Keine Projekte',
       noUnreadNotifications: 'Keine ungelesenen Benachrichtigungen.',
       notifications: 'Benachrichtigungen',
+      webPushPromptTitle: 'Chat-Benachrichtigungen aktivieren',
+      webPushPromptDescription:
+        'Erhalten Sie auf diesem Gerät eine kurze Vorschau, auch wenn Boards geschlossen ist.',
+      webPushPromptActivate: 'Aktivieren',
+      webPushPromptLater: 'Jetzt nicht',
+      webPushPromptError: 'Benachrichtigungen konnten nicht aktiviert werden. Versuchen Sie es erneut.',
       chatNotificationsOnThisDevice: 'Chat-Benachrichtigungen auf diesem Gerät',
       chatNotificationsOnThisDeviceDescription:
         'Zeigt eine kurze Vorschau unter Windows oder macOS, auch wenn der Boards-Tab geschlossen ist.',

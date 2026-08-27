@@ -9,6 +9,9 @@ export const WebPushStates = {
   ERROR: 'error',
 };
 
+export const WEB_PUSH_PROMPT_STORAGE_KEY = 'boards:web-push-prompt-last-shown-at-v1';
+export const WEB_PUSH_PROMPT_REMINDER_MS = 30 * 24 * 60 * 60 * 1000;
+
 const WORKER_URL = '/boards-push-sw.js';
 
 const getDefaultEnvironment = () => ({
@@ -21,6 +24,19 @@ export const isWebPushSupported = (environment = getDefaultEnvironment()) =>
   Boolean(
     environment.notification && environment.navigator?.serviceWorker && environment.pushManager,
   );
+
+export const shouldShowWebPushPrompt = ({
+  hasRelevantActivity = false,
+  lastShownAt,
+  now = Date.now(),
+}) => {
+  const parsedLastShownAt = Number(lastShownAt);
+  if (!Number.isFinite(parsedLastShownAt) || parsedLastShownAt <= 0) {
+    return true;
+  }
+
+  return hasRelevantActivity && now - parsedLastShownAt >= WEB_PUSH_PROMPT_REMINDER_MS;
+};
 
 export const getWebPushErrorState = (error) => {
   const message = String((error && error.message) || '').toLowerCase();

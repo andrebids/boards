@@ -261,6 +261,12 @@ export default {
       noProjects: 'Sin proyectos',
       noUnreadNotifications: 'No hay notificaciones sin leer',
       notifications: 'Notificaciones',
+      webPushPromptTitle: 'Activar las notificaciones del chat',
+      webPushPromptDescription:
+        'Recibe una vista previa breve en este dispositivo, incluso cuando Boards esté cerrado.',
+      webPushPromptActivate: 'Activar',
+      webPushPromptLater: 'Ahora no',
+      webPushPromptError: 'No se pudieron activar las notificaciones. Inténtalo de nuevo.',
       chatNotificationsOnThisDevice: 'Notificaciones del chat en este dispositivo',
       chatNotificationsOnThisDeviceDescription:
         'Muestra una vista previa breve en Windows o macOS, incluso con la pestaña de Boards cerrada.',

@@ -257,6 +257,12 @@ export default {
       noLists: 'Списков нет',
       noProjects: 'Проектов нет',
       noUnreadNotifications: 'Уведомлений нет.',
+      webPushPromptTitle: 'Включить уведомления чата',
+      webPushPromptDescription:
+        'Получайте краткий предварительный просмотр на этом устройстве, даже когда Boards закрыт.',
+      webPushPromptActivate: 'Включить',
+      webPushPromptLater: 'Не сейчас',
+      webPushPromptError: 'Не удалось включить уведомления. Повторите попытку.',
       notifications: 'Уведомления',
       oldestFirst: 'Старые первые',
       openBoard_title: 'Откройте доску',

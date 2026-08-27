@@ -14,6 +14,7 @@ import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import { ClosableContext } from '../../../../contexts';
 import { usePopupInClosableContext } from '../../../../hooks';
+import { getFileExtension } from '../../../../utils/file-helpers';
 import { isListArchiveOrTrash } from '../../../../utils/record-helpers';
 import { AttachmentTypes, BoardMembershipRoles } from '../../../../constants/Enums';
 import TimeAgo from '../../../common/TimeAgo';
@@ -45,11 +46,6 @@ const getThumbnailUrl = (attachment, preferredSize = '720') => {
     null
   );
 };
-
-const getLocalDateKey = (date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-
-const getLocalMinuteKey = (date) =>
-  `${getLocalDateKey(date)}-${date.getHours()}-${date.getMinutes()}`;
 
 const CardImageCarousel = React.memo(() => {
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
@@ -98,65 +94,6 @@ const CardImageCarousel = React.memo(() => {
     () => getDefaultMedia(images, card.coverAttachmentId),
     [images, card.coverAttachmentId],
   );
-  const temporalMetadataById = useMemo(() => {
-    const dayGroups = new Map();
-    const metadataById = {};
-
-    images.forEach((image) => {
-      const date = new Date(image.createdAt);
-
-      if (Number.isNaN(date.getTime())) {
-        return;
-      }
-
-      const item = {
-        date,
-        image,
-      };
-      const dateKey = getLocalDateKey(date);
-      const dayGroup = dayGroups.get(dateKey) || [];
-
-      dayGroup.push(item);
-      dayGroups.set(dateKey, dayGroup);
-      metadataById[image.id] = {
-        fullDateTime: t('format:fullDateTime', {
-          value: date,
-          postProcess: 'formatDate',
-        }),
-      };
-    });
-
-    dayGroups.forEach((dayGroup) => {
-      if (dayGroup.length < 2) {
-        return;
-      }
-
-      const minuteGroups = new Map();
-
-      dayGroup.forEach((item) => {
-        const minuteKey = getLocalMinuteKey(item.date);
-        const minuteGroup = minuteGroups.get(minuteKey) || [];
-
-        minuteGroup.push(item);
-        minuteGroups.set(minuteKey, minuteGroup);
-      });
-
-      minuteGroups.forEach((minuteGroup) => {
-        minuteGroup.forEach(({ date, image }, index) => {
-          metadataById[image.id] = {
-            ...metadataById[image.id],
-            time: t('format:time', {
-              value: date,
-              postProcess: 'formatDate',
-            }),
-            ordinal: minuteGroup.length > 1 ? `${index + 1}/${minuteGroup.length}` : null,
-          };
-        });
-      });
-    });
-
-    return metadataById;
-  }, [images, t]);
   const selectedImageIndex = images.findIndex((image) => image.id === selectedId);
   const selectedIndex =
     selectedImageIndex >= 0
@@ -786,7 +723,13 @@ const CardImageCarousel = React.memo(() => {
                 const isLink = image.type === AttachmentTypes.LINK;
                 const isThumbnailCover = image.id === card.coverAttachmentId;
                 const thumbnailUrl = getThumbnailUrl(image, '360');
-                const temporalMetadata = temporalMetadataById[image.id];
+                const thumbnailFormat = isLink
+                  ? 'LINK'
+                  : (
+                      image.data?.extension ||
+                      getFileExtension(image.data?.filename || image.name) ||
+                      'FILE'
+                    ).toUpperCase();
                 let thumbnailNode;
 
                 if (!isPersistedAttachment(image)) {
@@ -841,11 +784,7 @@ const CardImageCarousel = React.memo(() => {
                       current: index + 1,
                       total: images.length,
                     })}`}
-                    title={
-                      temporalMetadata?.fullDateTime
-                        ? `${image.name}\n${temporalMetadata.fullDateTime}`
-                        : image.name
-                    }
+                    title={image.name}
                     data-carousel-thumbnail={index}
                     className={classNames(styles.thumbnail, isSelected && styles.thumbnailSelected)}
                     onKeyDown={handleKeyDown}
@@ -864,21 +803,8 @@ const CardImageCarousel = React.memo(() => {
                         </span>
                       )}
                     </span>
-                    <span className={styles.thumbnailTime} aria-hidden="true">
-                      <span className={styles.thumbnailName}>{image.name}</span>
-                      <span className={styles.thumbnailRelativeTime}>
-                        <TimeAgo date={image.createdAt} />
-                      </span>
-                      {temporalMetadata?.time && (
-                        <span className={styles.thumbnailExactTime}>
-                          {temporalMetadata.time}
-                          {temporalMetadata.ordinal && (
-                            <span className={styles.thumbnailOrdinal}>
-                              {temporalMetadata.ordinal}
-                            </span>
-                          )}
-                        </span>
-                      )}
+                    <span className={styles.thumbnailFormat} aria-hidden="true">
+                      {thumbnailFormat}
                     </span>
                   </button>
                 );

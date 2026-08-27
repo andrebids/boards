@@ -135,6 +135,12 @@ export default {
       noLists: 'لاتوجد قوائم',
       noProjects: 'لاتوجد مشاريع',
       noUnreadNotifications: 'لاتوجد إشعارات غير مقروءة',
+      webPushPromptTitle: 'تفعيل إشعارات الدردشة',
+      webPushPromptDescription:
+        'احصل على معاينة قصيرة على هذا الجهاز، حتى عندما يكون Boards مغلقًا.',
+      webPushPromptActivate: 'تفعيل',
+      webPushPromptLater: 'ليس الآن',
+      webPushPromptError: 'تعذر تفعيل الإشعارات. حاول مرة أخرى.',
       notifications: 'الإشعارات',
       oldestFirst: 'الأقدم أولاً',
       openBoard_title: 'فتح اللوحة',

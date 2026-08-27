@@ -12,7 +12,7 @@ import { Input, Popup } from '../../../../lib/custom-ui';
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import { useField, useNestedRef } from '../../../../hooks';
-import User from './User';
+import User from '../../../board-memberships/BoardMemberships/AddStep/User';
 
 import styles from './AddStep.module.scss';
 

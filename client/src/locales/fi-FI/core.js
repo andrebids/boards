@@ -244,6 +244,12 @@ export default {
       noLists: 'Ei listoja',
       noProjects: 'Ei projekteja',
       noUnreadNotifications: 'Ei lukemattomia ilmoituksia.',
+      webPushPromptTitle: 'Ota chat-ilmoitukset käyttöön',
+      webPushPromptDescription:
+        'Saat lyhyen esikatselun tälle laitteelle myös silloin, kun Boards on suljettu.',
+      webPushPromptActivate: 'Ota käyttöön',
+      webPushPromptLater: 'Ei nyt',
+      webPushPromptError: 'Ilmoituksia ei voitu ottaa käyttöön. Yritä uudelleen.',
       notifications: 'Ilmoitukset',
       oldestFirst: 'Vanhimmat ensin',
       openBoard_title: 'Avaa taulu',

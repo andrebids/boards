@@ -16,9 +16,9 @@ import entryActions from '../../../entry-actions';
 import { useField, useNestedRef, useSteps } from '../../../hooks';
 import DroppableTypes from '../../../constants/DroppableTypes';
 import EditStep from './EditStep';
-import CustomField from './CustomField';
+import CustomField from '../../custom-field-groups/CustomFieldGroupStep/CustomField';
 import CustomFieldAddStep from './CustomFieldAddStep';
-import CustomFieldEditStep from './CustomFieldEditStep';
+import CustomFieldEditStep from '../../custom-field-groups/CustomFieldGroupStep/CustomFieldEditStep';
 import ConfirmationStep from '../../common/ConfirmationStep';
 
 import styles from './BaseCustomFieldGroupStep.module.scss';

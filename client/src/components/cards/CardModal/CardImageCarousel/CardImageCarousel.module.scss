@@ -361,56 +361,17 @@
     }
   }
 
-  .thumbnailTime {
-    align-items: center;
+  .thumbnailFormat {
     color: var(--card-modal-muted, #a1a1aa);
     display: flex;
-    flex-direction: column;
-    font-variant-numeric: tabular-nums;
+    font-size: 10px;
+    font-weight: 600;
+    justify-content: center;
+    line-height: 14px;
     margin-top: 3px;
-    min-width: 0;
-  }
-
-  .thumbnailName {
-    color: var(--card-modal-text, #e4e4e7);
-    display: block;
-    font-size: 10px;
-    font-weight: 600;
-    line-height: 14px;
-    max-width: 100%;
     overflow: hidden;
-    text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .thumbnailRelativeTime {
-    display: block;
-    font-size: 10px;
-    line-height: 14px;
-    max-width: 100%;
-    overflow: hidden;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .thumbnailExactTime {
-    align-items: center;
-    color: var(--card-modal-muted, #a1a1aa);
-    display: flex;
-    font-size: 9px;
-    font-weight: 600;
-    gap: 3px;
-    line-height: 11px;
-    white-space: nowrap;
-  }
-
-  .thumbnailOrdinal {
-    color: var(--card-modal-text, #e4e4e7);
-    font-size: 8px;
-    font-weight: 700;
-    opacity: 0.72;
   }
 
   .thumbnailRail {
@@ -504,8 +465,6 @@
     padding: 10px 3px 4px;
     scroll-padding-inline: 30px;
     scroll-snap-type: x proximity;
-    scrollbar-color: #b6bec4 transparent;
-    scrollbar-width: thin;
   }
 
   .viewport {

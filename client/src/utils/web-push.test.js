@@ -1,4 +1,5 @@
 import {
+  WEB_PUSH_PROMPT_REMINDER_MS,
   WebPushStates,
   activateWebPush,
   getWebPushErrorState,
@@ -6,6 +7,7 @@ import {
   disableWebPushForLogout,
   reconcileWebPush,
   showWebPushTestNotification,
+  shouldShowWebPushPrompt,
   urlBase64ToUint8Array,
 } from './web-push';
 
@@ -69,10 +71,7 @@ describe('web push lifecycle', () => {
 
   test('reconciles an existing granted subscription without creating another', async () => {
     const subscription = makeSubscription();
-    const environment = makeEnvironment({
-      permission: 'granted',
-      subscription,
-    });
+    const environment = makeEnvironment({ permission: 'granted', subscription });
     const syncSubscription = jest.fn().mockResolvedValue(undefined);
 
     const state = await reconcileWebPush({
@@ -155,10 +154,7 @@ describe('web push lifecycle', () => {
 
   test('always unsubscribes locally when remote removal fails', async () => {
     const subscription = makeSubscription();
-    const environment = makeEnvironment({
-      permission: 'granted',
-      subscription,
-    });
+    const environment = makeEnvironment({ permission: 'granted', subscription });
     const removeSubscription = jest.fn().mockRejectedValue(new Error('offline'));
 
     await expect(disableWebPush({ environment, removeSubscription })).rejects.toThrow('offline');
@@ -168,7 +164,10 @@ describe('web push lifecycle', () => {
 
   test('logout does not wait for remote removal before unsubscribing locally', async () => {
     const subscription = makeSubscription();
-    const environment = makeEnvironment({ permission: 'granted', subscription });
+    const environment = makeEnvironment({
+      permission: 'granted',
+      subscription,
+    });
     const removeSubscription = jest.fn(() => new Promise(() => {}));
 
     await disableWebPushForLogout({ environment, removeSubscription });
@@ -179,7 +178,10 @@ describe('web push lifecycle', () => {
 
   test('logout still unsubscribes locally when remote removal throws synchronously', async () => {
     const subscription = makeSubscription();
-    const environment = makeEnvironment({ permission: 'granted', subscription });
+    const environment = makeEnvironment({
+      permission: 'granted',
+      subscription,
+    });
     const removeSubscription = jest.fn(() => {
       throw new Error('socket unavailable');
     });
@@ -210,5 +212,29 @@ describe('web push lifecycle', () => {
         tag: 'boards-web-push-test',
       },
     );
+  });
+});
+
+describe('web push activation prompt', () => {
+  test('shows on the first eligible visit on a device', () => {
+    expect(shouldShowWebPushPrompt({ lastShownAt: null, now: 1000 })).toBe(true);
+  });
+
+  test('does not repeat during the reminder cooldown', () => {
+    expect(
+      shouldShowWebPushPrompt({
+        hasRelevantActivity: true,
+        lastShownAt: '1000',
+        now: 1000 + WEB_PUSH_PROMPT_REMINDER_MS - 1,
+      }),
+    ).toBe(false);
+  });
+
+  test('only repeats after the cooldown when there is relevant chat activity', () => {
+    const lastShownAt = '1000';
+    const now = 1000 + WEB_PUSH_PROMPT_REMINDER_MS;
+
+    expect(shouldShowWebPushPrompt({ lastShownAt, now })).toBe(false);
+    expect(shouldShowWebPushPrompt({ hasRelevantActivity: true, lastShownAt, now })).toBe(true);
   });
 });

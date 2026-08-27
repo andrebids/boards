@@ -147,10 +147,8 @@ const PresentationMediaPicker = React.memo(
                     className={styles.thumbnail}
                   />
                   <span className={styles.itemContent}>
-                    <strong>{item.name}</strong>
-                    <span>
-                      {item.boardName} · {item.cardName}
-                    </span>
+                    <strong>{item.cardName}</strong>
+                    <span>{item.name}</span>
                   </span>
                   {isLoadingId === item.id && (
                     <span className={styles.loading}>

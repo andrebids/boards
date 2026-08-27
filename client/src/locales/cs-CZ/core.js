@@ -235,6 +235,12 @@ export default {
       noLists: 'Žádné seznamy',
       noProjects: 'Žádné projekty',
       noUnreadNotifications: 'Žádné nepřečtené oznámení.',
+      webPushPromptTitle: 'Zapnout oznámení chatu',
+      webPushPromptDescription:
+        'Dostávejte na tomto zařízení krátký náhled, i když je Boards zavřený.',
+      webPushPromptActivate: 'Zapnout',
+      webPushPromptLater: 'Teď ne',
+      webPushPromptError: 'Oznámení se nepodařilo zapnout. Zkuste to znovu.',
       notifications: 'Oznámení',
       oldestFirst: 'Nejstarší',
       openBoard_title: 'Otevřít nástěnku',
