@@ -16,6 +16,14 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 /* eslint-enable import/extensions, import/no-unresolved */
 
+import {
+  DEFAULT_3D_EXPOSURE,
+  MAX_3D_EXPOSURE,
+  MIN_3D_EXPOSURE,
+  THREE_D_EXPOSURE_STEP,
+  THREE_D_POINTER_HANDLERS,
+} from './threeDViewerSettings';
+
 import styles from './CardImageCarousel.module.scss';
 
 const disposeMaterial = (material) => {
@@ -70,6 +78,7 @@ const ThreeDViewer = React.memo(({ attachment, format }) => {
   const [t] = useTranslation();
   const [status, setStatus] = useState('loading');
   const containerRef = useRef(null);
+  const updateExposureRef = useRef();
 
   useEffect(() => {
     const container = containerRef.current;
@@ -96,15 +105,17 @@ const ThreeDViewer = React.memo(({ attachment, format }) => {
     }
 
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = DEFAULT_3D_EXPOSURE;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.domElement.setAttribute('aria-label', attachment.name);
     renderer.domElement.setAttribute('role', 'img');
     renderer.domElement.tabIndex = 0;
     container.appendChild(renderer.domElement);
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 2.4));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 0.8));
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.8);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.4);
 
     directionalLight.position.set(3, 5, 4);
     scene.add(directionalLight);
@@ -116,6 +127,11 @@ const ThreeDViewer = React.memo(({ attachment, format }) => {
 
     const render = () => {
       renderer.render(scene, camera);
+    };
+
+    updateExposureRef.current = (exposure) => {
+      renderer.toneMappingExposure = exposure;
+      render();
     };
 
     const resize = () => {
@@ -181,6 +197,7 @@ const ThreeDViewer = React.memo(({ attachment, format }) => {
 
     return () => {
       disposed = true;
+      updateExposureRef.current = undefined;
       resizeObserver.disconnect();
       controls.removeEventListener('change', render);
       controls.stopListenToKeyEvents();
@@ -200,11 +217,26 @@ const ThreeDViewer = React.memo(({ attachment, format }) => {
     <div
       className={styles.threeDPreview}
       aria-busy={status === 'loading'}
-      onPointerDown={(event) => event.stopPropagation()}
-      onPointerUp={(event) => event.stopPropagation()}
-      onPointerCancel={(event) => event.stopPropagation()}
+      onPointerDown={THREE_D_POINTER_HANDLERS.onPointerDown}
     >
       <div ref={containerRef} className={styles.threeDCanvas} />
+      {status === 'ready' && (
+        <div
+          className={styles.threeDBrightness}
+          title={t('common.brightness', { defaultValue: 'Brightness' })}
+        >
+          <Icon fitted name="sun" aria-hidden="true" />
+          <input
+            type="range"
+            min={MIN_3D_EXPOSURE}
+            max={MAX_3D_EXPOSURE}
+            step={THREE_D_EXPOSURE_STEP}
+            defaultValue={DEFAULT_3D_EXPOSURE}
+            aria-label={t('common.brightness', { defaultValue: 'Brightness' })}
+            onChange={(event) => updateExposureRef.current?.(Number(event.currentTarget.value))}
+          />
+        </div>
+      )}
       {status === 'loading' && (
         <span className={classNames(styles.previewMessage, styles.threeDStatus)} role="status">
           <span className={styles.mediaLoadingSpinner} aria-hidden="true" />
