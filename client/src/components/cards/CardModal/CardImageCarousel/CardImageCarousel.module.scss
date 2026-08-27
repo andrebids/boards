@@ -515,11 +515,8 @@
     display: flex;
     gap: 3px;
     padding: 3px;
-    position: absolute;
-    right: 10px;
-    top: 10px;
+    position: relative;
     width: max-content;
-    z-index: 3;
 
     &:empty {
       display: none;
