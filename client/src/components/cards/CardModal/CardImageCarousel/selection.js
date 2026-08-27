@@ -48,8 +48,7 @@ export const isCoverableAttachment = (attachment) =>
   Boolean(
     isPersistedAttachment(attachment) &&
       attachment.type === AttachmentTypes.FILE &&
-      attachment.data?.image &&
-      !isVideoAttachment(attachment),
+      (attachment.data?.image || isVideoAttachment(attachment)),
   );
 
 export const isDownloadableAttachment = (attachment) =>

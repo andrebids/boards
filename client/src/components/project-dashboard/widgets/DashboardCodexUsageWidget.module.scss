@@ -107,8 +107,9 @@
     font-variant-numeric: tabular-nums;
     line-height: 1.35;
     margin: 7px 0 0;
-    max-width: 260px;
+    max-width: 100%;
     text-align: center;
+    width: 100%;
 
     time {
       color: var(--app-dark-text);

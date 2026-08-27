@@ -161,7 +161,7 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
               />
               <span className={styles.optionText}>{t('common.download')}</span>
             </button>
-            {attachment.data.image && canEdit && (
+            {(attachment.data.image || attachment.data.video) && canEdit && (
               <button
                 type="button"
                 className={styles.option}

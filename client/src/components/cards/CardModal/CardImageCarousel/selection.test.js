@@ -115,7 +115,7 @@ describe('attachment actions', () => {
     expect(isPersistedAttachment({ id: 'attachment-4', isPersisted: false })).toBeFalsy();
   });
 
-  test('allows cover only for persisted image files', () => {
+  test('allows cover only for persisted image and video files', () => {
     expect(
       isCoverableAttachment({
         isPersisted: true,
@@ -129,7 +129,14 @@ describe('attachment actions', () => {
         type: 'file',
         data: { image: { width: 100, height: 100 }, video: {} },
       }),
-    ).toBeFalsy();
+    ).toBeTruthy();
+    expect(
+      isCoverableAttachment({
+        isPersisted: true,
+        type: 'file',
+        data: { mimeType: 'video/mp4' },
+      }),
+    ).toBeTruthy();
     expect(isCoverableAttachment({ isPersisted: true, type: 'link', data: {} })).toBeFalsy();
     expect(
       isCoverableAttachment({
