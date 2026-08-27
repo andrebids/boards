@@ -1,5 +1,8 @@
 import { AttachmentTypes } from '../../../../constants/Enums';
+import { getFileExtension } from '../../../../utils/file-helpers';
 import { isLocalId } from '../../../../utils/local-id';
+
+const THREE_D_FORMATS = new Set(['obj', 'stl', 'glb', 'gltf']);
 
 const getAttachmentTimestamp = (attachment) => {
   const timestamp = attachment.createdAt?.getTime?.() ?? new Date(attachment.createdAt).getTime();
@@ -12,6 +15,12 @@ export const isVideoAttachment = (attachment) =>
     attachment.data?.video ||
       (attachment.data?.mimeType && attachment.data.mimeType.startsWith('video/')),
   );
+
+export const getThreeDFormat = (attachment) => {
+  const extension = getFileExtension(attachment.data?.filename || attachment.name);
+
+  return THREE_D_FORMATS.has(extension) ? extension : null;
+};
 
 export const isPersistedAttachment = (attachment) =>
   Boolean(

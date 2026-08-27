@@ -1,6 +1,7 @@
 import getDefaultMedia, {
   getCarouselAttachments,
   getNewlyAddedMedia,
+  getThreeDFormat,
   isCoverableAttachment,
   isDownloadableAttachment,
   isPersistedAttachment,
@@ -65,6 +66,14 @@ describe('getDefaultMedia', () => {
 });
 
 describe('attachment actions', () => {
+  test('detects the supported 3D attachment formats by filename', () => {
+    expect(getThreeDFormat({ name: 'tree.OBJ', data: {} })).toBe('obj');
+    expect(getThreeDFormat({ name: 'fallback.txt', data: { filename: 'scene.glb' } })).toBe('glb');
+    expect(getThreeDFormat({ name: 'mesh.stl', data: {} })).toBe('stl');
+    expect(getThreeDFormat({ name: 'scene.gltf', data: {} })).toBe('gltf');
+    expect(getThreeDFormat({ name: 'drawing.skp', data: {} })).toBeNull();
+  });
+
   test('detects persistence for raw selector records and decorated records', () => {
     expect(isPersistedAttachment({ id: 'attachment-1' })).toBeTruthy();
     expect(isPersistedAttachment({ id: 'attachment-2', isPersisted: true })).toBeTruthy();
