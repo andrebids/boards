@@ -298,7 +298,7 @@ export function* handleChatConversationUpdate(conversation, chatParticipants, us
   yield put(actions.handleChatInboxItemUpdate(conversation));
   const currentConversation = yield select(selectors.selectChatConversationById, conversation.id);
   if (!currentConversation) {
-    if (conversation.projectId) {
+    if (conversation.projectId && conversation.historyClearedThroughMessageId) {
       yield call(fetchChatConversations, conversation.projectId);
     }
     return;

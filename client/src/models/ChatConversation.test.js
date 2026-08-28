@@ -15,6 +15,30 @@ const reduceConversation = (conversation, type, readState) => {
 };
 
 describe('ChatConversation read state', () => {
+  test('clears the unread state and last message of the fixed General conversation', () => {
+    const conversation = { id: '10', update: jest.fn() };
+
+    ChatConversation.reducer(
+      {
+        type: ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS,
+        payload: {
+          historyState: {
+            conversationId: '10',
+            conversationType: 'projectGroup',
+            historyClearedThroughMessageId: '42',
+          },
+        },
+      },
+      { withId: () => conversation },
+    );
+
+    expect(conversation.update).toHaveBeenCalledWith({
+      unreadCount: 0,
+      lastMessage: null,
+      lastMessageAt: null,
+    });
+  });
+
   test('clears unread messages when the read cursor reaches the latest message', () => {
     const conversation = {
       id: '10',

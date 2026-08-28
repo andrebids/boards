@@ -241,8 +241,8 @@ module.exports = {
         const lastMessage = lastMessagesByConversationId.get(conversation.id);
         if (
           isIdAtOrBefore(
-            lastMessage?.id,
-            currentParticipant?.historyClearedThroughMessageId,
+            lastMessage && lastMessage.id,
+            currentParticipant && currentParticipant.historyClearedThroughMessageId,
           )
         ) {
           return null;

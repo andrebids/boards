@@ -113,21 +113,24 @@ module.exports = {
         ({ userId }) => userId === currentUser.id,
       );
       const isHistoryCleared = isIdAtOrBefore(
-        lastMessage?.id,
-        currentParticipant?.historyClearedThroughMessageId,
+        lastMessage && lastMessage.id,
+        currentParticipant && currentParticipant.historyClearedThroughMessageId,
       );
 
       if (isHistoryCleared && conversation.type !== ChatConversation.Types.PROJECT_GROUP) {
         return [];
       }
 
-      return [{
-        ...conversation,
-        lastMessage:
-          lastMessage && !isHistoryCleared
-            ? sails.helpers.chat.presentMessage(lastMessage)
-            : null,
-      }];
+      return [
+        {
+          ...conversation,
+          lastMessageAt: isHistoryCleared ? null : conversation.lastMessageAt,
+          lastMessage:
+            lastMessage && !isHistoryCleared
+              ? sails.helpers.chat.presentMessage(lastMessage)
+              : null,
+        },
+      ];
     });
     const conversationIds = sails.helpers.utils.mapRecords(conversations);
     const visibleConversationIds = new Set(conversationIds);

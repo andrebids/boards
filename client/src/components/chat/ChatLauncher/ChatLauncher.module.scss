@@ -18,7 +18,7 @@
       background-color var(--chat-motion-fast) var(--chat-ease),
       transform var(--chat-motion-fast) var(--chat-ease);
     width: 52px;
-    z-index: 1006;
+    z-index: var(--chat-layer-launcher);
 
     &:hover {
       background: var(--chat-accent-hover);
@@ -65,7 +65,7 @@
     text-align: left;
     transform-origin: right bottom;
     width: min(360px, calc(100vw - 32px));
-    z-index: 1006;
+    z-index: var(--chat-layer-launcher);
   }
 
   .previewHeader {

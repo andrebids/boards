@@ -105,6 +105,8 @@ const ChatWindow = React.memo(({ id }) => {
   const pendingReadMessageIdRef = useRef(null);
   const readHorizonTimeoutRef = useRef(null);
   const lastReadMessageIdRef = useRef(null);
+  const actionsButtonRef = useRef(null);
+  const actionsMenuRef = useRef(null);
   const wasHistoryClearingRef = useRef(false);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
@@ -175,6 +177,39 @@ const ChatWindow = React.memo(({ id }) => {
       }
     }
   }, [historyClearError, isHistoryClearing]);
+
+  useEffect(() => {
+    if (!isActionsOpen) {
+      return undefined;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      actionsMenuRef.current?.querySelector('button')?.focus();
+    });
+    const handlePointerDown = (event) => {
+      if (
+        !actionsButtonRef.current?.contains(event.target) &&
+        !actionsMenuRef.current?.contains(event.target)
+      ) {
+        setIsActionsOpen(false);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsActionsOpen(false);
+        actionsButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isActionsOpen]);
 
   const currentParticipant = conversation?.participants?.find(
     ({ userId }) => userId === currentUser.id,
@@ -398,9 +433,11 @@ const ChatWindow = React.memo(({ id }) => {
             />
           </button>
           <button
+            ref={actionsButtonRef}
             type="button"
             aria-label={t('chat.conversationActions')}
             aria-expanded={isActionsOpen}
+            aria-haspopup="menu"
             onClick={() => {
               setIsActionsOpen((value) => !value);
               setIsOptionsOpen(false);
@@ -445,9 +482,14 @@ const ChatWindow = React.memo(({ id }) => {
           </div>
         )}
         {isActionsOpen && (
-          <div className={`${styles.headerMenu} ${styles.actionsMenu}`} role="menu">
+          <div
+            ref={actionsMenuRef}
+            className={`${styles.headerMenu} ${styles.actionsMenu}`}
+            role="menu"
+          >
             <button
               type="button"
+              role="menuitem"
               className={styles.destructiveAction}
               onClick={() => {
                 setIsActionsOpen(false);

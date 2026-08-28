@@ -3,8 +3,9 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-const DEFAULT_LIMIT = 50;
 const { getGreaterId, isIdAtOrBefore } = require('../../../../utils/id-helpers');
+
+const DEFAULT_LIMIT = 50;
 
 const createOne = (values) => ChatMessage.create({ ...values }).fetch();
 
@@ -31,9 +32,9 @@ const getByConversationId = (
 const getWindowAroundId = async (
   conversationId,
   aroundId,
+  minimumId,
   beforeLimit = 25,
   afterLimit = 25,
-  minimumId,
 ) => {
   if (isIdAtOrBefore(aroundId, minimumId)) {
     return null;

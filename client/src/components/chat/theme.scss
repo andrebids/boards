@@ -41,6 +41,11 @@
   --chat-font-title: 17px;
   --chat-motion-fast: 160ms;
   --chat-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --chat-layer-dock: 10030;
+  --chat-layer-panel: 10031;
+  --chat-layer-launcher: 10032;
+  --chat-layer-popover: 10033;
+  --chat-layer-preview: 10034;
 
   @media (prefers-reduced-motion: reduce) {
     --chat-motion-fast: 0ms;

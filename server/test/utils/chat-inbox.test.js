@@ -66,6 +66,12 @@ describe('Chat inbox', () => {
         type: ChatConversationDefinition.Types.PROJECT_DIRECT,
         lastMessageAt: '2026-07-15T10:00:00.000Z',
       },
+      {
+        id: '202',
+        projectId: '20',
+        type: ChatConversationDefinition.Types.PROJECT_DIRECT,
+        lastMessageAt: '2026-07-15T09:00:00.000Z',
+      },
     ];
     const participants = [
       {
@@ -79,6 +85,14 @@ describe('Chat inbox', () => {
       { id: '2', conversationId: '200', userId: '2', notificationLevel: 'all' },
       { id: '3', conversationId: '201', userId: '3', notificationLevel: 'all' },
       { id: '4', conversationId: '201', userId: '4', notificationLevel: 'all' },
+      {
+        id: '5',
+        conversationId: '202',
+        userId: '1',
+        notificationLevel: 'all',
+        historyClearedThroughMessageId: '2020',
+      },
+      { id: '6', conversationId: '202', userId: '2', notificationLevel: 'all' },
     ];
     let requestedProjectIds;
 
@@ -131,6 +145,13 @@ describe('Chat inbox', () => {
             userId: '2',
             text: 'Beta update',
             createdAt: '2026-07-15T11:00:00.000Z',
+          },
+          {
+            id: '2020',
+            conversationId: '202',
+            userId: '2',
+            text: 'Cleared update',
+            createdAt: '2026-07-15T09:00:00.000Z',
           },
         ],
       },

@@ -15,7 +15,7 @@
       transform 140ms var(--chat-ease),
       visibility 0s linear;
     visibility: visible;
-    z-index: 1004;
+    z-index: var(--chat-layer-dock);
   }
 
   .windows {

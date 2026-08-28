@@ -682,7 +682,7 @@
 
   .floatingReactionEmojiMenu {
     position: fixed;
-    z-index: 1100;
+    z-index: var(--chat-layer-popover);
   }
 
   .meta {
@@ -764,7 +764,7 @@
     justify-content: center;
     padding: 24px;
     position: fixed;
-    z-index: 1200;
+    z-index: var(--chat-layer-preview);
   }
 
   .previewDialog {

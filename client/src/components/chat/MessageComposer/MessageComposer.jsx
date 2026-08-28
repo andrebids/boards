@@ -74,7 +74,7 @@ const mentionsInputStyle = {
     minWidth: '238px',
     overflow: 'hidden',
     padding: '5px',
-    zIndex: 1013,
+    zIndex: 'var(--chat-layer-popover, 10033)',
     list: {
       listStyleType: 'none',
       margin: 0,

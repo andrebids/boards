@@ -48,8 +48,14 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE: {
         const conversationModel = ChatConversation.withId(payload.historyState.conversationId);
-        if (conversationModel && payload.historyState.conversationType === 'projectGroup') {
-          conversationModel.update({ lastMessage: null, lastMessageAt: null, unreadCount: 0 });
+        if (conversationModel && payload.historyState.historyClearedThroughMessageId) {
+          conversationModel.update({
+            unreadCount: 0,
+            ...(payload.historyState.conversationType === 'projectGroup' && {
+              lastMessage: null,
+              lastMessageAt: null,
+            }),
+          });
         }
         break;
       }

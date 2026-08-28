@@ -834,6 +834,11 @@ describe('Chat domain', () => {
     }
   });
 
+  it('does not resolve a deep link at or before the cleared history boundary', async () => {
+    expect(await ChatMessageQueryMethods.getWindowAroundId('10', '42', '42')).to.equal(null);
+    expect(await ChatMessageQueryMethods.getWindowAroundId('10', '41', '42')).to.equal(null);
+  });
+
   it('lists conversations with batched participants and last messages', async () => {
     const previousGlobals = {
       sails: global.sails,
@@ -850,6 +855,7 @@ describe('Chat domain', () => {
       { id: '20', type: 'projectDirect' },
       { id: '30', type: 'projectDirect' },
       { id: '40', type: 'unsupported' },
+      { id: '50', type: 'projectDirect' },
     ];
     const existingParticipants = [
       { id: '100', conversationId: '10', userId: '9' },
@@ -857,6 +863,13 @@ describe('Chat domain', () => {
       { id: '201', conversationId: '20', userId: '8' },
       { id: '300', conversationId: '30', userId: '4' },
       { id: '301', conversationId: '30', userId: '5' },
+      {
+        id: '500',
+        conversationId: '50',
+        userId: '1',
+        historyClearedThroughMessageId: '5000',
+      },
+      { id: '501', conversationId: '50', userId: '4' },
     ];
     let participantBatchCount = 0;
     let lastMessageBatchCount = 0;
@@ -901,6 +914,7 @@ describe('Chat domain', () => {
           return [
             { id: '1000', conversationId: '10', userId: '1', text: 'group' },
             { id: '2000', conversationId: '20', userId: '8', text: 'direct' },
+            { id: '5000', conversationId: '50', userId: '4', text: 'cleared' },
           ];
         },
       },
@@ -914,7 +928,12 @@ describe('Chat domain', () => {
           getProjectMemberUserIds: async () => ['1', '4', '5'],
           ensureParticipant: async (conversationId, userId) => {
             ensureParticipantCount += 1;
-            return { id: '101', conversationId, userId };
+            return {
+              id: '101',
+              conversationId,
+              userId,
+              historyClearedThroughMessageId: '1000',
+            };
           },
           getUnreadCounts: async () => ({ 10: 2, 20: 3 }),
           presentMessage: (message) => presentMessage.fn({ message }),
@@ -934,11 +953,12 @@ describe('Chat domain', () => {
 
       expect(participantBatchCount).to.equal(1);
       expect(lastMessageBatchCount).to.equal(1);
-      expect(lastMessageConversationIds).to.deep.equal(['10', '20']);
+      expect(lastMessageConversationIds).to.deep.equal(['10', '20', '50']);
       expect(ensureParticipantCount).to.equal(1);
       expect(result.items.map(({ id }) => id)).to.deep.equal(['10', '20']);
       expect(result.items.map(({ isBlocked }) => isBlocked)).to.deep.equal([false, true]);
       expect(result.items.map(({ unreadCount }) => unreadCount)).to.deep.equal([2, 3]);
+      expect(result.items[0].lastMessage).to.equal(null);
       expect(result.included.chatParticipants.map(({ id }) => id)).to.have.members([
         '101',
         '200',

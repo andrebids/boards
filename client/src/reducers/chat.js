@@ -553,6 +553,19 @@ export default (state = initialState, { type, payload }) => {
     case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE: {
       const { historyState } = payload;
       const { conversationId } = historyState;
+      if (!historyState.historyClearedThroughMessageId) {
+        return {
+          ...state,
+          isHistoryClearingByConversation: {
+            ...state.isHistoryClearingByConversation,
+            [conversationId]: false,
+          },
+          historyClearErrorsByConversation: {
+            ...state.historyClearErrorsByConversation,
+            [conversationId]: null,
+          },
+        };
+      }
       const previousInboxItem = state.inboxItemsByConversationId[conversationId];
       const inboxItemsByConversationId = { ...state.inboxItemsByConversationId };
       delete inboxItemsByConversationId[conversationId];

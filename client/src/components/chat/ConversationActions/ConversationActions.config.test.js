@@ -44,4 +44,15 @@ describe('ConversationActions', () => {
     expect(source).toMatch(/isPinned: !isPinned/);
     expect(source).toMatch(/t\(isPinned \? 'chat\.unpin' : 'chat\.pin'\)/);
   });
+
+  test('offers remove history in the row menu and open window header with confirmation', () => {
+    const actionsSource = fs.readFileSync(componentPath, 'utf8');
+    const chatWindowSource = fs.readFileSync(chatWindowPath, 'utf8');
+
+    expect(actionsSource).toMatch(/entryActions\.clearChatConversationHistory\(conversationId\)/);
+    expect(actionsSource).toMatch(/chat\.confirmRemoveConversationHistory/);
+    expect(chatWindowSource).toMatch(/MoreHorizontal/);
+    expect(chatWindowSource).toMatch(/entryActions\.clearChatConversationHistory\(id\)/);
+    expect(chatWindowSource).toMatch(/chat\.confirmRemoveConversationHistory/);
+  });
 });

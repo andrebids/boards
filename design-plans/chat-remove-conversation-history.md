@@ -2,6 +2,21 @@
 
 Written against: `6a1b447ef950aa8b44ab7c962f5f7dfbce162f4b` (o worktree contém alterações não commitadas no chat; reconciliar antes de editar)
 
+## Estado da implementação — 2026-08-28
+
+Implementado no worktree local, sem build e sem deploy:
+
+- migração `history_cleared_through_message_id` em `chat_participant`;
+- endpoint `DELETE /api/chat-conversations/:id/history`;
+- filtragem da fronteira nas mensagens, deep links, contagens de não lidas, lista do projeto e inbox global;
+- sincronização entre sessões com `chatConversationHistoryClear`;
+- ação no menu `...` das linhas e novo menu `...` entre notificações e fechar na janela aberta;
+- confirmação destrutiva com loading, erro e texto explícito de que a remoção é apenas local;
+- preservação de mensagens otimistas pendentes ou falhadas;
+- reaparecimento quando chega uma mensagem com ID posterior à fronteira.
+
+Os testes focados e lint estão registados na validação final da implementação. A migração continua por aplicar até o ambiente de desenvolvimento/produção executar o fluxo normal de migrações.
+
 ## Objetivo
 
 Permitir que um utilizador remova da sua conta o histórico anterior de uma conversa, sem apagar mensagens ou anexos dos restantes participantes.

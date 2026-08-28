@@ -58,14 +58,14 @@ module.exports = {
 
     let messages;
     let meta;
-    const minimumId = access.participant?.historyClearedThroughMessageId;
+    const minimumId = access.participant && access.participant.historyClearedThroughMessageId;
     if (inputs.aroundId) {
       const window = await ChatMessage.qm.getWindowAroundId(
         conversation.id,
         inputs.aroundId,
+        minimumId,
         Math.floor(inputs.limit / 2),
         Math.ceil(inputs.limit / 2),
-        minimumId,
       );
       if (!window) {
         throw Errors.CONVERSATION_NOT_FOUND;

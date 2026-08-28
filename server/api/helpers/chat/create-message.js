@@ -152,8 +152,15 @@ module.exports = {
     );
     const lastMessage = await ChatMessage.qm.getLastByConversationId(inputs.conversation.id);
     const mentionUserIds = new Set(extractMentionIds(inputs.text));
+    const participantPreferences = await ChatParticipant.qm.getByConversationId(
+      inputs.conversation.id,
+    );
+    const preferencesByUserId = new Map(
+      participantPreferences.map((participant) => [participant.userId, participant]),
+    );
 
     uniqueRecipientUserIds.forEach((userId) => {
+      const preferences = preferencesByUserId.get(userId);
       sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', {
         item: {
           id: inputs.conversation.id,
@@ -161,17 +168,15 @@ module.exports = {
           lastMessageAt: lastMessage.createdAt,
           lastMessage: sails.helpers.chat.presentMessage(lastMessage),
           unreadCount: unreadCounts[userId] || 0,
+          ...(preferences &&
+            preferences.historyClearedThroughMessageId && {
+              historyClearedThroughMessageId: preferences.historyClearedThroughMessageId,
+            }),
           ...(mentionUserIds.has(userId) && { hasUnreadMention: true }),
         },
       });
     });
 
-    const participantPreferences = await ChatParticipant.qm.getByConversationId(
-      inputs.conversation.id,
-    );
-    const preferencesByUserId = new Map(
-      participantPreferences.map((participant) => [participant.userId, participant]),
-    );
     uniqueRecipientUserIds.forEach((userId) => {
       if (userId === inputs.user.id) {
         return;
