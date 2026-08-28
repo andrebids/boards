@@ -56,6 +56,9 @@ jobs:
           build-args: |
             VITE_CRYPTPAD_URL=${{ inputs.cryptpad_url || vars.VITE_CRYPTPAD_URL }}
             VITE_CRYPTPAD_SANDBOX_URL=${{ inputs.cryptpad_sandbox_url || vars.VITE_CRYPTPAD_SANDBOX_URL }}
+            VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
+            VITE_SENTRY_ENVIRONMENT=${{ vars.VITE_SENTRY_ENVIRONMENT || 'production' }}
+            VITE_SENTRY_TRACES_SAMPLE_RATE=${{ vars.VITE_SENTRY_TRACES_SAMPLE_RATE || '0.1' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
