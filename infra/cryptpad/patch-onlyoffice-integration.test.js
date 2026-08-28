@@ -281,6 +281,11 @@ test('adds the PowerPoint import action directly to the native Insert toolbar', 
     (patched.match(/const plankaPresentationImportBinaryTransport = true/g) || []).length,
     2,
   );
+  assert.equal(
+    (patched.match(/const plankaPresentationImportMaxBytes = 500 \* 1024 \* 1024/g) || []).length,
+    2,
+  );
+  assert.equal((patched.match(/error: 'file-too-large'/g) || []).length, 2);
   assert.equal((patched.match(/reader\.readAsArrayBuffer\(file\)/g) || []).length, 2);
   assert.equal((patched.match(/bytes: bytes/g) || []).length, 2);
   assert.match(patched, /viewBox="0 0 32 32"/);
@@ -297,6 +302,25 @@ test('adds the PowerPoint import action directly to the native Insert toolbar', 
   assert.match(patched, /fm-btn-planka-presentation-import/);
   assert.match(patched, /saveItem\.insertAdjacentElement\('afterend', menuItem\)/);
   assert.match(patched, /icon\.classList\.add\('btn-open'\)/);
+  assert.equal(patchPresentationImportToolbar(patched), patched);
+});
+
+test('upgrades a cached binary import action with the file-size guard', () => {
+  const source =
+    String.raw`                <div class="group">\n                    <span class="btn-slot text x-huge" id="slot-btn-inserttable"></span>\n                </div>\n                <div class="separator long"></div>\n                <div class="group">\n                    <span class="btn-slot text x-huge slot-insertimg"></span>\n                </div>`;
+  const legacy = patchPresentationImportToolbar(source)
+    .replaceAll("        const plankaPresentationImportMaxBytes = 500 * 1024 * 1024;\n", '')
+    .replaceAll(
+      /        if \(file\.size > plankaPresentationImportMaxBytes\) \{[\s\S]*?            return;\n        \}\n\n/g,
+      '',
+    );
+  const patched = patchPresentationImportToolbar(legacy);
+
+  assert.equal(
+    (patched.match(/const plankaPresentationImportMaxBytes = 500 \* 1024 \* 1024/g) || []).length,
+    2,
+  );
+  assert.equal((patched.match(/error: 'file-too-large'/g) || []).length, 2);
   assert.equal(patchPresentationImportToolbar(patched), patched);
 });
 

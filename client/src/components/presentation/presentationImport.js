@@ -1,9 +1,13 @@
+import { ATTACHMENT_MAX_BYTES, isAttachmentTooLarge } from '../../utils/file-helpers';
+
 export const PRESENTATION_MIME_TYPE =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 export const PRESENTATION_FILE_ACCEPT = `.pptx,${PRESENTATION_MIME_TYPE}`;
 
 export const PRESENTATION_IMPORT_MESSAGE_TYPE = 'planka:presentation-import';
+
+export const PRESENTATION_IMPORT_MAX_MEGABYTES = ATTACHMENT_MAX_BYTES / (1024 * 1024);
 
 export const getPresentationImportOrigins = (cryptPadUrl, cryptPadSandboxUrl) => {
   const cryptPadOrigin = new URL(cryptPadUrl).origin;
@@ -23,6 +27,21 @@ export const getPresentationImportOrigins = (cryptPadUrl, cryptPadSandboxUrl) =>
 };
 
 export const isPptxFile = (file) => Boolean(file && /\.pptx$/i.test(file.name));
+
+export const isPresentationImportTooLarge = (file) => isAttachmentTooLarge(file);
+
+export const getPresentationImportMessageError = (data) => {
+  if (
+    data &&
+    typeof data === 'object' &&
+    data.type === PRESENTATION_IMPORT_MESSAGE_TYPE &&
+    data.error === 'file-too-large'
+  ) {
+    return data.error;
+  }
+
+  return null;
+};
 
 export const isInvalidPresentationImportError = (error) =>
   Boolean(

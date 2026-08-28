@@ -1,9 +1,12 @@
 import {
+  getPresentationImportMessageError,
   getPresentationImportFile,
   getPresentationImportOrigins,
   isInvalidPresentationImportError,
+  isPresentationImportTooLarge,
   isPptxFile,
   PRESENTATION_FILE_ACCEPT,
+  PRESENTATION_IMPORT_MAX_MEGABYTES,
 } from './presentationImport';
 import enUS from '../../locales/en-US/core';
 import frFR from '../../locales/fr-FR/core';
@@ -33,6 +36,26 @@ describe('presentation import', () => {
     expect(PRESENTATION_FILE_ACCEPT).toBe(
       '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation',
     );
+  });
+
+  test('rejects a PowerPoint only when it exceeds the 500 MB limit', () => {
+    const limit = 500 * 1024 * 1024;
+
+    expect(PRESENTATION_IMPORT_MAX_MEGABYTES).toBe(500);
+    expect(isPresentationImportTooLarge({ name: 'campaign.pptx', size: limit })).toBe(false);
+    expect(isPresentationImportTooLarge({ name: 'campaign.pptx', size: limit + 1 })).toBe(true);
+  });
+
+  test('recognizes an oversized-file rejection from the native ONLYOFFICE action', () => {
+    expect(
+      getPresentationImportMessageError({
+        type: 'planka:presentation-import',
+        error: 'file-too-large',
+      }),
+    ).toBe('file-too-large');
+    expect(
+      getPresentationImportMessageError({ type: 'planka:other-action', error: 'file-too-large' }),
+    ).toBeNull();
   });
 
   test('reconstructs byte payloads produced by the native ONLYOFFICE action', async () => {
@@ -98,5 +121,7 @@ describe('presentation import', () => {
     expect(common.presentationImportLoading).toContain('{{name}}');
     expect(common.presentationImportSuccess).toBeTruthy();
     expect(common.presentationImportFailed).toBeTruthy();
+    expect(common.presentationImportFileTooLarge).toContain('{{size}}');
+    expect(common.presentationImportOpenTimedOut).toBeTruthy();
   });
 });

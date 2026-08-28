@@ -6,8 +6,9 @@ const { pipeline } = require('node:stream/promises');
 const fsp = fs.promises;
 
 const marker = 'ONLYOFFICE_LOCAL_NO_CACHE';
-const serviceWorkerCacheMarker = 'document_editor_static_planka_import_20260826_10_';
-const previousServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_9_';
+const serviceWorkerCacheMarker = 'document_editor_static_planka_import_20260828_11_';
+const previousServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260826_10_';
+const priorServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_9_';
 const legacyServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_8_';
 const olderLegacyServiceWorkerCacheMarker = 'document_editor_static_planka_import_20260825_7_';
 const originalCachePolicy = `    if (/[\\?\\&]ver=[^\\/]+$/.test(req.url)) { res.setHeader("Cache-Control", "max-age=31536000"); }
@@ -44,6 +45,7 @@ function patchServiceWorkerCache(source) {
 
   for (const previousMarker of [
     previousServiceWorkerCacheMarker,
+    priorServiceWorkerCacheMarker,
     legacyServiceWorkerCacheMarker,
     olderLegacyServiceWorkerCacheMarker,
   ]) {

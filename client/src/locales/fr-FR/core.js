@@ -278,6 +278,10 @@ export default merge({}, enUSCore, {
       presentationImportLoading: "Importation de {{name}}…",
       presentationImportSuccess: "PowerPoint importé. Ouverture de la présentation…",
       presentationImportFailed: "Impossible d’importer le PowerPoint. Réessayez.",
+      presentationImportFileTooLarge:
+        "Ce PowerPoint dépasse la limite de {{size}} Mo et ne peut pas être importé.",
+      presentationImportOpenTimedOut:
+        "Le PowerPoint a été téléversé, mais l’éditeur a mis trop de temps à l’ouvrir. Réessayez.",
       presentationPreparingTitle: "Préparation de l’éditeur de présentations",
       presentationPreparingDescription:
         "L’éditeur collaboratif sera connecté une fois le service CryptPad configuré.",

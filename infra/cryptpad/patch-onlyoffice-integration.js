@@ -108,6 +108,7 @@ const presentationImportFileMenuRuntimeMarker =
   'window.setInterval(installPlankaPresentationImportFileMenu, 100);';
 const presentationImportBinaryTransportMarker =
   'const plankaPresentationImportBinaryTransport = true';
+const presentationImportMaxBytesMarker = 'const plankaPresentationImportMaxBytes';
 const presentationImportVerticalLayoutMarker = 'const plankaPresentationImportVerticalLayout = true';
 const presentationImportTransparentButtonMarker = 'const plankaPresentationImportTransparentButton = true';
 const presentationImportCompactIconMarker = 'const plankaPresentationImportCompactIcon = true';
@@ -187,8 +188,35 @@ ${presentationImportIcon}
         caption.style.whiteSpace = 'nowrap';
         caption.textContent = captionLabel;`;
 
+const legacyPresentationImportSendFile = `    const plankaPresentationImportBinaryTransport = true;
+    const sendPlankaPresentationImport = function (file) {
+        const reader = new FileReader();
+        reader.addEventListener('load', function () {
+            const bytes = reader.result;
+            if (!(bytes instanceof ArrayBuffer) || bytes.byteLength === 0) { return; }
+            window.top.postMessage({
+                type: plankaPresentationImportMessageType,
+                file: {
+                    name: file.name,
+                    lastModified: file.lastModified,
+                    bytes: bytes,
+                },
+            }, '*', [bytes]);
+        });
+        reader.readAsArrayBuffer(file);
+    };`;
+
 const presentationImportSendFile = `    const plankaPresentationImportBinaryTransport = true;
     const sendPlankaPresentationImport = function (file) {
+        const plankaPresentationImportMaxBytes = 500 * 1024 * 1024;
+        if (file.size > plankaPresentationImportMaxBytes) {
+            window.top.postMessage({
+                type: plankaPresentationImportMessageType,
+                error: 'file-too-large',
+            }, '*');
+            return;
+        }
+
         const reader = new FileReader();
         reader.addEventListener('load', function () {
             const bytes = reader.result;
@@ -595,6 +623,16 @@ function patchPresentationToolbar(source) {
 
 function patchPresentationImportToolbar(source) {
   let patched = source;
+
+  if (
+    patched.includes(presentationImportBinaryTransportMarker) &&
+    !patched.includes(presentationImportMaxBytesMarker)
+  ) {
+    if (!patched.includes(legacyPresentationImportSendFile)) {
+      throw new Error('OnlyOffice presentation import size guard no longer applies');
+    }
+    patched = patched.replaceAll(legacyPresentationImportSendFile, presentationImportSendFile);
+  }
 
   if (
     !patched.includes(presentationImportBinaryTransportMarker) &&

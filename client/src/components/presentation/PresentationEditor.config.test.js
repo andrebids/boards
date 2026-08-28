@@ -78,6 +78,19 @@ describe('Presentation editor permissions', () => {
     expect(source).toMatch(/onDocumentReady:[\s\S]*?toast\.success[\s\S]*?setIsImporting\(false\)/);
   });
 
+  test('rejects oversized PowerPoints before upload and reports native editor rejections', () => {
+    expect(source).toMatch(/isPresentationImportTooLarge\(file\)/);
+    expect(source).toMatch(/getPresentationImportMessageError\(event\.data\)/);
+    expect(source).toMatch(/presentationImportFileTooLarge/);
+  });
+
+  test('stops waiting and shows an error when an imported editor never becomes ready', () => {
+    expect(source).toMatch(/PRESENTATION_IMPORT_READY_TIMEOUT_MS = 120000/);
+    expect(source).toMatch(/window\.setTimeout/);
+    expect(source).toMatch(/presentationImportOpenTimedOut/);
+    expect(source).toMatch(/window\.clearTimeout/);
+  });
+
   test('does not let the replaced editor save its previous document over the import', () => {
     expect(source).toMatch(/editorGenerationRef\.current \+= 1/);
     expect(source).toMatch(/editorGeneration !== editorGenerationRef\.current/);

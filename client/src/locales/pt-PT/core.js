@@ -725,6 +725,10 @@ export default {
       presentationImportLoading: "A importar {{name}}…",
       presentationImportSuccess: "PowerPoint importado. A abrir a apresentação…",
       presentationImportFailed: "Não foi possível importar o PowerPoint. Tente novamente.",
+      presentationImportFileTooLarge:
+        "Este PowerPoint excede o limite de {{size}} MB e não pode ser importado.",
+      presentationImportOpenTimedOut:
+        "O PowerPoint foi carregado, mas o editor demorou demasiado tempo a abri-lo. Tente novamente.",
       presentationPreparingTitle: "Editor de apresentações a preparar",
       presentationPreparingDescription:
         "O editor colaborativo será ligado assim que o serviço CryptPad estiver configurado.",

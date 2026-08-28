@@ -16,16 +16,20 @@ import getPresentationEditorLanguage from './presentationLocale';
 import PresentationImportConfirmModal from './PresentationImportConfirmModal';
 import PresentationMediaPicker from './PresentationMediaPicker';
 import {
+  getPresentationImportMessageError,
   getPresentationImportFile,
   isInvalidPresentationImportError,
+  isPresentationImportTooLarge,
   isPptxFile,
   getPresentationImportOrigins,
+  PRESENTATION_IMPORT_MAX_MEGABYTES,
   PRESENTATION_MIME_TYPE,
 } from './presentationImport';
 
 import styles from './PresentationWorkspace.module.scss';
 
 const getErrorMessage = (response) => `Could not load presentation document (${response.status})`;
+const PRESENTATION_IMPORT_READY_TIMEOUT_MS = 120000;
 
 const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate }) => {
   const [t, i18n] = useTranslation();
@@ -34,6 +38,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
   const editorGenerationRef = useRef(0);
   const presentationRef = useRef(presentation);
   const pendingImportToastRef = useRef(null);
+  const pendingImportTimeoutRef = useRef(null);
   const editorLanguageRef = useRef(
     getPresentationEditorLanguage(i18n.resolvedLanguage || i18n.language),
   );
@@ -67,6 +72,32 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
     setAttempt((previousAttempt) => previousAttempt + 1);
   }, []);
 
+  const clearPendingImportTimeout = useCallback(() => {
+    if (pendingImportTimeoutRef.current !== null) {
+      window.clearTimeout(pendingImportTimeoutRef.current);
+      pendingImportTimeoutRef.current = null;
+    }
+  }, []);
+
+  const getImportErrorMessage = useCallback(
+    (error) => {
+      if (error === 'invalid') {
+        return t('common.presentationImportInvalidFile');
+      }
+      if (error === 'tooLarge') {
+        return t('common.presentationImportFileTooLarge', {
+          size: PRESENTATION_IMPORT_MAX_MEGABYTES,
+        });
+      }
+      if (error === 'openTimeout') {
+        return t('common.presentationImportOpenTimedOut');
+      }
+
+      return t('common.presentationImportFailed');
+    },
+    [t],
+  );
+
   const handlePresentationFileSelect = useCallback(
     (file) => {
       if (isImporting || pendingImportFile) {
@@ -78,10 +109,16 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
         return;
       }
 
+      if (isPresentationImportTooLarge(file)) {
+        setImportError('tooLarge');
+        toast.error(getImportErrorMessage('tooLarge'));
+        return;
+      }
+
       setImportError(null);
       setPendingImportFile(file);
     },
-    [isImporting, pendingImportFile],
+    [getImportErrorMessage, isImporting, pendingImportFile],
   );
 
   const handlePresentationImportCancel = useCallback(() => {
@@ -109,20 +146,38 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
         successMessage: t('common.presentationImportSuccess'),
         failureMessage: t('common.presentationImportFailed'),
       };
+      clearPendingImportTimeout();
+      pendingImportTimeoutRef.current = window.setTimeout(() => {
+        const pendingImportToast = pendingImportToastRef.current;
+        pendingImportTimeoutRef.current = null;
+        if (!pendingImportToast) {
+          return;
+        }
+
+        pendingImportToastRef.current = null;
+        setImportError('openTimeout');
+        setIsImporting(false);
+        toast.error(getImportErrorMessage('openTimeout'), { id: pendingImportToast.id });
+      }, PRESENTATION_IMPORT_READY_TIMEOUT_MS);
       handleRetry();
     } catch (nextError) {
       const nextImportError = isInvalidPresentationImportError(nextError) ? 'invalid' : 'upload';
-      const message = t(
-        nextImportError === 'invalid'
-          ? 'common.presentationImportInvalidFile'
-          : 'common.presentationImportFailed',
-      );
 
       setImportError(nextImportError);
-      toast.error(message, { id: toastId });
+      toast.error(getImportErrorMessage(nextImportError), { id: toastId });
       setIsImporting(false);
     }
-  }, [handleRetry, isImporting, pendingImportFile, presentation.id, t]);
+  }, [
+    clearPendingImportTimeout,
+    getImportErrorMessage,
+    handleRetry,
+    isImporting,
+    pendingImportFile,
+    presentation.id,
+    t,
+  ]);
+
+  useEffect(() => () => clearPendingImportTimeout(), [clearPendingImportTimeout]);
 
   useEffect(() => {
     const cryptPadOrigins = getPresentationImportOrigins(
@@ -131,6 +186,12 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
     );
     const handlePresentationImportMessage = (event) => {
       if (!cryptPadOrigins.has(event.origin) || isImporting || pendingImportFile) {
+        return;
+      }
+
+      if (getPresentationImportMessageError(event.data) === 'file-too-large') {
+        setImportError('tooLarge');
+        toast.error(getImportErrorMessage('tooLarge'));
         return;
       }
 
@@ -147,7 +208,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
     return () => {
       window.removeEventListener('message', handlePresentationImportMessage);
     };
-  }, [handlePresentationFileSelect, isImporting, pendingImportFile]);
+  }, [getImportErrorMessage, handlePresentationFileSelect, isImporting, pendingImportFile]);
 
   const handleImageInsertRequest = useCallback((data, callback) => {
     if (!data || typeof callback !== 'function') {
@@ -219,6 +280,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
 
         const pendingImportToast = pendingImportToastRef.current;
         if (pendingImportToast) {
+          clearPendingImportTimeout();
           pendingImportToastRef.current = null;
           setImportError('upload');
           setIsImporting(false);
@@ -310,12 +372,16 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
 
                   const pendingImportToast = pendingImportToastRef.current;
                   if (pendingImportToast) {
+                    clearPendingImportTimeout();
                     pendingImportToastRef.current = null;
                     toast.success(pendingImportToast.successMessage, {
                       id: pendingImportToast.id,
                     });
                     setIsImporting(false);
                   }
+                  setImportError((currentError) =>
+                    currentError === 'openTimeout' ? null : currentError,
+                  );
                 }
               },
               onError: (nextError) => {
@@ -392,7 +458,14 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
       isEditorInitializedRef.current = false;
       editorElement.replaceChildren();
     };
-  }, [attempt, containerId, handleImageInsertRequest, onSessionUpdate, presentation.isEnabled]);
+  }, [
+    attempt,
+    clearPendingImportTimeout,
+    containerId,
+    handleImageInsertRequest,
+    onSessionUpdate,
+    presentation.isEnabled,
+  ]);
 
   if (editorError) {
     return (
@@ -416,11 +489,7 @@ const PresentationEditor = React.memo(({ boardIds, presentation, onSessionUpdate
         <div ref={editorRef} className={styles.editorMount} />
         {importError && (
           <p className={styles.importError} role="alert">
-            {t(
-              importError === 'invalid'
-                ? 'common.presentationImportInvalidFile'
-                : 'common.presentationImportFailed',
-            )}
+            {getImportErrorMessage(importError)}
           </p>
         )}
       </section>
