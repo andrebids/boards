@@ -433,6 +433,7 @@
     min-width: 0;
     overflow: hidden;
     padding: 0;
+    position: relative;
     width: 100%;
 
     img {
@@ -458,6 +459,21 @@
       position: relative;
       z-index: 1;
     }
+  }
+
+  .imageAttachmentLoading img {
+    opacity: 0;
+  }
+
+  .imageLoadingOverlay {
+    align-items: center;
+    background: var(--chat-default);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    pointer-events: none;
+    position: absolute;
+    z-index: 1;
   }
 
   .imageCaption {

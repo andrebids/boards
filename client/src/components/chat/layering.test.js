@@ -51,4 +51,12 @@ describe('chat layering', () => {
       /\.previewBackdrop[\s\S]*z-index:\s*var\(--chat-layer-preview\)/,
     );
   });
+
+  test('anchors the compact conversation panel above board controls at every viewport', () => {
+    const panelStyles = readChatFile('ChatPanel', 'ChatPanel.module.scss');
+
+    expect(panelStyles).toMatch(
+      /\.discoveryPanel\s*{\s*bottom:\s*auto;\s*height:\s*auto;\s*top:\s*clamp\(16px,\s*calc\(100dvh - 724px\),\s*110px\);/,
+    );
+  });
 });

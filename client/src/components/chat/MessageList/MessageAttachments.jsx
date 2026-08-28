@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Image as ImageIcon, Paperclip, RefreshCw } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { Loader } from 'semantic-ui-react';
 
 import entryActions from '../../../entry-actions';
 import Config from '../../../constants/Config';
@@ -35,6 +36,19 @@ const MessageAttachments = React.memo(
   ({ caption, imageAttachments, messageId, onLoad, onPreview, otherAttachments, pendingFiles }) => {
     const dispatch = useDispatch();
     const [t] = useTranslation();
+    const [loadedImageAttachmentIds, setLoadedImageAttachmentIds] = useState(() => new Set());
+
+    const handleLoad = useCallback(
+      (event) => {
+        const { attachmentId } = event.currentTarget.dataset;
+        setLoadedImageAttachmentIds((current) => {
+          if (current.has(attachmentId)) return current;
+          return new Set(current).add(attachmentId);
+        });
+        onLoad();
+      },
+      [onLoad],
+    );
 
     return (
       <>
@@ -48,12 +62,15 @@ const MessageAttachments = React.memo(
               {imageAttachments.map((attachment) => {
                 const url = getAttachmentUrl(attachment);
                 const previewUrl = attachment.data?.thumbnailUrls?.outside360 || url;
+                const isLoading = !loadedImageAttachmentIds.has(attachment.id);
 
                 return (
                   <button
                     type="button"
                     key={attachment.id}
-                    className={styles.imageAttachment}
+                    className={`${styles.imageAttachment} ${
+                      isLoading ? styles.imageAttachmentLoading : ''
+                    }`}
                     aria-label={attachment.name}
                     onClick={() =>
                       onPreview({
@@ -62,7 +79,22 @@ const MessageAttachments = React.memo(
                       })
                     }
                   >
-                    <img src={previewUrl} alt={attachment.name} onLoad={onLoad} />
+                    {isLoading && (
+                      <span
+                        className={styles.imageLoadingOverlay}
+                        role="status"
+                        aria-label={t('chat.loadingMessages')}
+                      >
+                        <Loader active inline="centered" size="small" />
+                      </span>
+                    )}
+                    <img
+                      src={previewUrl}
+                      alt={attachment.name}
+                      data-attachment-id={attachment.id}
+                      onLoad={handleLoad}
+                      onError={handleLoad}
+                    />
                   </button>
                 );
               })}

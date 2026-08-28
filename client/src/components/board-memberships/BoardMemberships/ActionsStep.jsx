@@ -170,32 +170,37 @@ const ActionsStep = React.memo(
             {user.organization}
           </div>
         )}
-        {canStartChat && (
+        <div className={styles.actions}>
           <Button
-            variant="outline"
-            content={t(
-              directConversation ? 'chat.openConversation' : 'chat.startConversation'
-            )}
-            icon="comments"
+            variant="ghost"
+            fluid
+            content={t('action.showCardsWithThisUser')}
+            icon="filter"
             size="tiny"
-            className={styles.filterButton}
-            disabled={isPending}
-            onClick={handleChatClick}
+            className={styles.actionButton}
+            onClick={handleFilterClick}
           />
-        )}
-        <Button
-          variant="outline"
-          content={t('action.showCardsWithThisUser')}
-          icon="filter"
-          size="tiny"
-          className={styles.filterButton}
-          onClick={handleFilterClick}
-        />
+          {canStartChat && (
+            <Button
+              variant="ghost"
+              fluid
+              content={t(
+                directConversation ? 'chat.openConversation' : 'chat.startConversation'
+              )}
+              icon="comments"
+              size="tiny"
+              className={styles.actionButton}
+              disabled={isPending}
+              onClick={handleChatClick}
+            />
+          )}
+        </div>
         {(isCurrentUser || canEdit) && (
           <>
             <hr className={styles.divider} />
             {canEdit && (
-              <Button variant="secondary"
+              <Button
+                variant="ghost"
                 fluid
                 content={t('action.editPermissions')}
                 className={styles.button}
@@ -203,17 +208,19 @@ const ActionsStep = React.memo(
               />
             )}
             {isCurrentUser ? (
-              <Button variant="secondary"
+              <Button
+                variant="danger-soft"
                 fluid
                 content={t(`action.leaveBoard`)}
-                className={styles.button}
+                className={styles.dangerButton}
                 onClick={handleDeleteClick}
               />
             ) : (
-              <Button variant="secondary"
+              <Button
+                variant="danger-soft"
                 fluid
                 content={t(`action.removeFromBoard`)}
-                className={styles.button}
+                className={styles.dangerButton}
                 onClick={handleDeleteClick}
               />
             )}

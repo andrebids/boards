@@ -4,24 +4,28 @@
  */
 
 :global(#app) {
-  .button {
-    background: transparent;
-    box-shadow: none;
-    color: #cfe3ff; /* links/ações com contraste no vidro */
-    font-weight: normal;
-    margin-top: 8px;
-    padding: 6px 11px;
-    text-align: left;
-    text-decoration: underline;
-    transition: none;
+  .actions {
+    display: grid;
+    gap: 2px;
+    margin-bottom: 4px;
+  }
 
-    &:hover {
-      background: rgba(30, 58, 138, 0.18);
-      color: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22),
-        0 0 0 1px rgba(96, 165, 250, 0.18) inset;
-    }
+  .actionButton,
+  .button {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .actionButton :global(i.icon) {
+    font-size: 14px;
+    margin-right: 6px !important;
+    transform: translateY(2px);
+  }
+
+  .dangerButton {
+    justify-content: flex-start;
+    margin-top: 8px;
+    text-align: left;
   }
 
   .content {
@@ -33,6 +37,7 @@
     background: rgba(255, 255, 255, 0.06);
     border: 0;
     height: 1px;
+    margin: 8px 0 4px;
   }
 
   .information {
@@ -74,20 +79,4 @@
     word-wrap: break-word;
   }
 
-  /* Botão de filtro destacado em estilo vidro suave */
-  .filterButton {
-    background: rgba(59, 130, 246, 0.08) !important;
-    color: #e6edf3 !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: none !important;
-    border-radius: 10px !important;
-    padding: 8px 10px !important;
-
-    &:hover,
-    &:focus {
-      background: rgba(59, 130, 246, 0.18) !important;
-      color: #ffffff !important;
-      box-shadow: 0 0 0 1px rgba(207, 227, 255, 0.35) inset !important;
-    }
-  }
 }
