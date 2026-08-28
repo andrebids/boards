@@ -26,7 +26,7 @@
     flex: 0 0 auto;
     min-height: 0;
     position: relative;
-    width: min(100%, 220px);
+    width: min(100%, clamp(220px, 50cqw, 250px));
   }
 
   .gaugeSvg {
@@ -40,7 +40,7 @@
   .track,
   .fill {
     fill: none;
-    stroke-width: 14;
+    stroke-width: 16;
   }
 
   .track {
@@ -67,7 +67,7 @@
     width: 100%;
 
     strong {
-      font-size: clamp(32px, 4cqw, 40px);
+      font-size: clamp(36px, 7cqw, 44px);
       font-variant-numeric: tabular-nums;
       font-weight: 600;
       line-height: 0.9;
@@ -75,7 +75,7 @@
 
     span {
       color: var(--app-dark-text-muted);
-      font-size: clamp(13px, 1.15vw, 16px);
+      font-size: clamp(15px, 2.6cqw, 17px);
       margin-top: 3px;
     }
   }
@@ -85,7 +85,7 @@
     color: var(--app-dark-text-muted);
     display: flex;
     flex: 0 0 auto;
-    font-size: clamp(11px, 1vw, 14px);
+    font-size: clamp(15px, 3.2cqw, 18px);
     font-variant-numeric: tabular-nums;
     gap: 12px;
     line-height: 1.2;
@@ -104,7 +104,7 @@
 
   .forecast {
     color: var(--app-dark-text-muted);
-    font-size: clamp(10px, 0.9vw, 12px);
+    font-size: clamp(13px, 2.7cqw, 16px);
     font-variant-numeric: tabular-nums;
     line-height: 1.35;
     margin: 12px 0 0;
@@ -279,10 +279,6 @@
   }
 
   @container (max-width: 560px) {
-    .gauge {
-      width: min(100%, 220px);
-    }
-
     .activityStats {
       column-gap: 10px;
       margin-top: 10px;
@@ -307,7 +303,7 @@
 
   @container (min-width: 900px) {
     .gauge {
-      width: min(220px, 25cqw);
+      width: min(280px, 25cqw);
     }
   }
 }
