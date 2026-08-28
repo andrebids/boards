@@ -51,6 +51,7 @@ const ChatLauncher = React.memo(() => {
     isConversationListOpen,
     isEnabled,
     openGlobalConversation,
+    openGlobalPerson,
     openConversationList,
     setInboxScope,
     startConversationListClose,
@@ -288,6 +289,7 @@ const ChatLauncher = React.memo(() => {
           onClose={handleClose}
           onInboxScopeChange={setInboxScope}
           onOpenGlobalConversation={openGlobalConversation}
+          onOpenGlobalPerson={openGlobalPerson}
         />
       )}
       {previewAlert && (

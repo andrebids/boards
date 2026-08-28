@@ -7,18 +7,20 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
-import { AtSign, Bell, BellOff, Clock3, MoreHorizontal } from 'lucide-react';
+import { AtSign, Bell, BellOff, Clock3, LogOut, MoreHorizontal } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import entryActions from '../../../entry-actions';
 
+import confirmLeaveGroup from './leave-group';
 import styles from './ConversationActions.module.scss';
 
 const MENU_GAP = 6;
 const VIEWPORT_GAP = 8;
 
-const ConversationActions = React.memo(({ conversationId, isMuted, participant }) => {
+const ConversationActions = React.memo((props) => {
+  const { canLeave, conversationId, conversationTitle, isMuted, participant } = props;
   const [t] = useTranslation();
   const dispatch = useDispatch();
   const buttonRef = useRef(null);
@@ -124,6 +126,19 @@ const ConversationActions = React.memo(({ conversationId, isMuted, participant }
     );
   }, [participant?.notificationLevel, updatePreferences]);
 
+  const leaveGroup = useCallback(() => {
+    const didConfirm = confirmLeaveGroup(
+      // eslint-disable-next-line no-alert
+      (message) => window.confirm(message),
+      t('chat.confirmLeaveGroup', { group: conversationTitle }),
+      () => dispatch(entryActions.leaveChatConversation(conversationId)),
+    );
+
+    if (didConfirm) {
+      setIsOpen(false);
+    }
+  }, [conversationId, conversationTitle, dispatch, t]);
+
   const portalTarget = document.getElementById('app') || document.body;
 
   return (
@@ -148,7 +163,7 @@ const ConversationActions = React.memo(({ conversationId, isMuted, participant }
             ref={menuRef}
             className={styles.menu}
             role="menu"
-            aria-label={t('chat.notificationPreferences')}
+            aria-label={t('chat.conversationActions')}
             style={{ left: position.left, top: position.top }}
           >
             <span className={styles.menuLabel}>{t('chat.notifications')}</span>
@@ -203,6 +218,20 @@ const ConversationActions = React.memo(({ conversationId, isMuted, participant }
                 {t('chat.unmute')}
               </button>
             )}
+            {canLeave && (
+              <>
+                <span className={styles.menuDivider} aria-hidden="true" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={styles.destructiveAction}
+                  onClick={leaveGroup}
+                >
+                  <LogOut aria-hidden="true" size={15} />
+                  {t('chat.leaveGroup')}
+                </button>
+              </>
+            )}
           </div>,
           portalTarget,
         )}
@@ -211,7 +240,9 @@ const ConversationActions = React.memo(({ conversationId, isMuted, participant }
 });
 
 ConversationActions.propTypes = {
+  canLeave: PropTypes.bool,
   conversationId: PropTypes.string.isRequired,
+  conversationTitle: PropTypes.string,
   isMuted: PropTypes.bool,
   participant: PropTypes.shape({
     notificationLevel: PropTypes.string,
@@ -219,6 +250,8 @@ ConversationActions.propTypes = {
 };
 
 ConversationActions.defaultProps = {
+  canLeave: false,
+  conversationTitle: undefined,
   isMuted: false,
   participant: undefined,
 };

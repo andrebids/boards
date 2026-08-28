@@ -125,6 +125,7 @@ module.exports = {
     if (!hasChatAccess) {
       return {
         items: [],
+        people: [],
         included: { users: [] },
         meta: {
           hasChatAccess: false,
@@ -187,12 +188,43 @@ module.exports = {
     const lastMessagesByConversationId = new Map(
       lastMessages.map((message) => [message.conversationId, message]),
     );
+    const normalizedQuery = normalizeSearchText(inputs.query).trim();
+    const memberUserIds = normalizedQuery
+      ? _.union(...projectAccesses.map((access) => access.memberUserIds))
+      : [];
     const relevantUserIds = _.union(
       sails.helpers.utils.mapRecords(allParticipants, 'userId', true),
       sails.helpers.utils.mapRecords(lastMessages, 'userId', true, true),
+      memberUserIds,
     );
     const users = await User.qm.getByIds(relevantUserIds);
     const userById = new Map(users.map((user) => [user.id, user]));
+
+    const people = normalizedQuery
+      ? projectAccesses
+          .flatMap(({ project, memberUserIds: projectMemberUserIds }) =>
+            projectMemberUserIds.map((userId) => ({ project, userId })),
+          )
+          .filter(({ userId }) => userId !== inputs.user.id && userById.has(userId))
+          .filter(({ userId }) => {
+            const user = userById.get(userId);
+            return normalizeSearchText(`${user.name} ${user.username || ''}`).includes(
+              normalizedQuery,
+            );
+          })
+          .map(({ project, userId }) => ({
+            projectId: project.id,
+            projectName: project.name,
+            user: sails.helpers.users.presentMany([userById.get(userId)], inputs.user)[0],
+            userId,
+          }))
+          .sort(
+            (left, right) =>
+              left.user.name.localeCompare(right.user.name) ||
+              left.projectName.localeCompare(right.projectName),
+          )
+          .slice(0, 20)
+      : [];
 
     const allItems = accessibleConversations
       .map((conversation) => {
@@ -276,7 +308,6 @@ module.exports = {
       filteredItems = unreadItems.filter(({ hasUnreadMention }) => hasUnreadMention);
     }
 
-    const normalizedQuery = normalizeSearchText(inputs.query).trim();
     if (normalizedQuery) {
       filteredItems = filteredItems.filter(({ searchText }) =>
         searchText.includes(normalizedQuery),
@@ -287,6 +318,7 @@ module.exports = {
     if (inputs.before && !cursor) {
       return {
         items: [],
+        people: [],
         included: { users: [] },
         meta: { ...meta, hasMore: false, nextCursor: null },
       };
@@ -307,9 +339,12 @@ module.exports = {
 
     return {
       items,
+      people,
       included: {
         users: sails.helpers.users.presentMany(
-          users.filter(({ id }) => includedUserIds.has(id)),
+          users.filter(
+            ({ id }) => includedUserIds.has(id) || people.some((person) => person.userId === id),
+          ),
           inputs.user,
         ),
       },

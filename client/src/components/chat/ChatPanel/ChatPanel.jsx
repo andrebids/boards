@@ -19,7 +19,14 @@ import GlobalInbox from '../GlobalInbox';
 import styles from './ChatPanel.module.scss';
 
 const ChatPanel = React.memo(
-  ({ inboxScope, isClosing, onClose, onInboxScopeChange, onOpenGlobalConversation }) => {
+  ({
+    inboxScope,
+    isClosing,
+    onClose,
+    onInboxScopeChange,
+    onOpenGlobalConversation,
+    onOpenGlobalPerson,
+  }) => {
     const [t] = useTranslation();
     const panelRef = useRef(null);
     const searchRef = useRef(null);
@@ -237,6 +244,14 @@ const ChatPanel = React.memo(
       [onClose, onOpenGlobalConversation],
     );
 
+    const handleGlobalPersonOpen = useCallback(
+      (person) => {
+        onOpenGlobalPerson(person);
+        onClose();
+      },
+      [onClose, onOpenGlobalPerson],
+    );
+
     const handleScopeChange = useCallback(
       (scope) => {
         if (scope === inboxScope) return;
@@ -380,9 +395,14 @@ const ChatPanel = React.memo(
                         aria-labelledby="chat-start-conversation-heading"
                       >
                         <header className={styles.discoveryHeader}>
-                          <strong id="chat-start-conversation-heading">
+                          <button
+                            id="chat-start-conversation-heading"
+                            type="button"
+                            className={styles.discoveryAction}
+                            onClick={handleNewConversation}
+                          >
                             {t('chat.startConversation')}
-                          </strong>
+                          </button>
                           <button
                             type="button"
                             className={styles.discoveryAction}
@@ -575,7 +595,10 @@ const ChatPanel = React.memo(
               aria-labelledby="chat-scope-global"
               className={`${styles.scopeView} ${styles.globalScopeView} ${styles.content} ${styles.globalContent}`}
             >
-              <GlobalInbox onOpenConversation={handleGlobalConversationOpen} />
+              <GlobalInbox
+                onOpenConversation={handleGlobalConversationOpen}
+                onOpenPerson={handleGlobalPersonOpen}
+              />
             </div>
           )}
         </div>
@@ -590,6 +613,7 @@ ChatPanel.propTypes = {
   onClose: PropTypes.func.isRequired,
   onInboxScopeChange: PropTypes.func,
   onOpenGlobalConversation: PropTypes.func,
+  onOpenGlobalPerson: PropTypes.func,
 };
 
 ChatPanel.defaultProps = {
@@ -597,6 +621,7 @@ ChatPanel.defaultProps = {
   isClosing: false,
   onInboxScopeChange: () => undefined,
   onOpenGlobalConversation: () => undefined,
+  onOpenGlobalPerson: () => undefined,
 };
 
 export default ChatPanel;

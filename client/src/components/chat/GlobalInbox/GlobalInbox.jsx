@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import entryActions from '../../../entry-actions';
 import selectors from '../../../selectors';
+import ChatAvatar from '../ChatAvatar';
 import GlobalInboxRow from '../GlobalInboxRow';
 
 import styles from './GlobalInbox.module.scss';
@@ -20,10 +21,11 @@ const normalizeSearchText = (value) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLocaleLowerCase();
 
-const GlobalInbox = React.memo(({ onOpenConversation }) => {
+const GlobalInbox = React.memo(({ onOpenConversation, onOpenPerson }) => {
   const [t] = useTranslation();
   const dispatch = useDispatch();
   const items = useSelector(selectors.selectChatInboxItems);
+  const people = useSelector(selectors.selectChatInboxPeople);
   const unreadTotal = useSelector(selectors.selectChatInboxUnreadConversationTotal) || 0;
   const isFetching = useSelector(selectors.selectIsChatInboxFetching);
   const isFetchingMore = useSelector(selectors.selectIsChatInboxFetchingMore);
@@ -152,6 +154,7 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
   const showInitialLoading = isFetching && !hasFetched;
   const showInitialError = Boolean(error) && !hasFetched;
   const hasQuery = Boolean(debouncedQuery);
+  const hasResults = filteredItems.length > 0 || people.length > 0;
 
   let contentNode;
   if (showInitialLoading) {
@@ -182,15 +185,46 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
         </button>
       </div>
     );
-  } else if (filteredItems.length > 0) {
-    contentNode = filteredItems.map((item) => (
-      <GlobalInboxRow
-        key={`${item.projectId}:${item.conversationId}`}
-        item={item}
-        onMarkAsRead={handleMarkAsRead}
-        onOpen={onOpenConversation}
-      />
-    ));
+  } else if (hasResults) {
+    contentNode = (
+      <>
+        {people.length > 0 && (
+          <section className={styles.people} aria-labelledby="chat-global-inbox-people-heading">
+            <strong id="chat-global-inbox-people-heading">{t('chat.people')}</strong>
+            {people.map((person) => (
+              <button
+                type="button"
+                key={`${person.projectId}:${person.userId}`}
+                className={styles.person}
+                aria-label={t('chat.startConversationWith', {
+                  name: person.user.name,
+                  project: person.projectName,
+                })}
+                onClick={() => onOpenPerson(person)}
+              >
+                <ChatAvatar user={person.user} isOnline={person.user.isOnline} />
+                <span>
+                  <strong>{person.user.name}</strong>
+                  <small>{person.projectName}</small>
+                </span>
+              </button>
+            ))}
+          </section>
+        )}
+        {filteredItems.length > 0 && (
+          <section className={styles.conversations} aria-label={t('chat.conversations')}>
+            {filteredItems.map((item) => (
+              <GlobalInboxRow
+                key={`${item.projectId}:${item.conversationId}`}
+                item={item}
+                onMarkAsRead={handleMarkAsRead}
+                onOpen={onOpenConversation}
+              />
+            ))}
+          </section>
+        )}
+      </>
+    );
   } else {
     let title = t('chat.globalInboxEmptyTitle');
     let description = t('chat.globalInboxEmptyDescription');
@@ -294,6 +328,7 @@ const GlobalInbox = React.memo(({ onOpenConversation }) => {
 
 GlobalInbox.propTypes = {
   onOpenConversation: PropTypes.func.isRequired,
+  onOpenPerson: PropTypes.func.isRequired,
 };
 
 export default GlobalInbox;

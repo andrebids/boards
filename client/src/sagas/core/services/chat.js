@@ -17,6 +17,13 @@ import {
 } from '../../../utils/chat-message-sound';
 import { reportChatError } from '../../../sentry';
 
+export {
+  fetchChatInbox,
+  handleChatConversationRead,
+  markAllChatInboxAsRead,
+  markChatConversationAsRead,
+} from './chat-inbox';
+
 const getFileSizeBucket = (file) => {
   if (!file?.size) return 'none';
   if (file.size < 1024 * 1024) return 'under-1mb';
@@ -96,88 +103,6 @@ export function* fetchChatMembers(projectId) {
     return;
   }
   yield put(actions.fetchChatMembers.success(projectId, users));
-}
-
-export function* fetchChatInbox(options) {
-  let effectiveOptions = options;
-  if (!effectiveOptions) {
-    const chatState = yield select(selectors.selectChatState);
-    effectiveOptions = chatState.inboxRequest || {};
-  }
-
-  const requestOptions = {
-    filter: effectiveOptions.filter || 'all',
-    limit: effectiveOptions.limit || 50,
-    ...(effectiveOptions.query && { query: effectiveOptions.query }),
-    ...(effectiveOptions.before && { before: effectiveOptions.before }),
-  };
-  const actionOptions = {
-    ...requestOptions,
-    append: Boolean(effectiveOptions.append && effectiveOptions.before),
-  };
-  yield put(actions.fetchChatInbox(actionOptions));
-
-  try {
-    const body = yield call(request, api.getChatInbox, requestOptions);
-    yield put(
-      actions.fetchChatInbox.success(
-        body.items || [],
-        body.meta || {},
-        body.included?.users || [],
-        actionOptions,
-      ),
-    );
-  } catch (error) {
-    yield put(actions.fetchChatInbox.failure(error, actionOptions));
-  }
-}
-
-export function* markAllChatInboxAsRead(conversationIds) {
-  const chatState = yield select(selectors.selectChatState);
-  const targetConversationIds = (
-    conversationIds ||
-    Object.values(chatState.inboxItemsByConversationId)
-      .filter((item) => (item.unreadCount || 0) > 0)
-      .map((item) => item.conversationId)
-  ).filter(Boolean);
-
-  if (targetConversationIds.length === 0) {
-    return;
-  }
-
-  const previousItemsByConversationId = targetConversationIds.reduce(
-    (result, conversationId) => ({
-      ...result,
-      ...(chatState.inboxItemsByConversationId[conversationId] && {
-        [conversationId]: chatState.inboxItemsByConversationId[conversationId],
-      }),
-    }),
-    {},
-  );
-  const previousMeta = chatState.inboxMeta;
-  yield put(
-    actions.markAllChatInboxAsRead(
-      targetConversationIds,
-      previousItemsByConversationId,
-      previousMeta,
-    ),
-  );
-
-  try {
-    const body = yield call(
-      request,
-      api.markAllChatInboxAsRead,
-      conversationIds ? targetConversationIds : undefined,
-    );
-    yield put(actions.markAllChatInboxAsRead.success(body.items || [], body.meta));
-    yield all(
-      (body.items || []).map((readState) => put(actions.handleChatConversationRead(readState))),
-    );
-  } catch (error) {
-    yield put(
-      actions.markAllChatInboxAsRead.failure(previousItemsByConversationId, previousMeta, error),
-    );
-  }
 }
 
 export function* fetchChatConversations(projectId) {
@@ -860,55 +785,6 @@ export function* setChatReplyTarget(conversationId, message) {
   yield put(actions.setChatReplyTarget(conversationId, message));
 }
 
-export function* markChatConversationAsRead(conversationId, messageId) {
-  const conversation = yield select(selectors.selectChatConversationById, conversationId);
-  const chatState = yield select(selectors.selectChatState);
-  const inboxItem = chatState.inboxItemsByConversationId[conversationId];
-  if (!conversation && !inboxItem) {
-    return;
-  }
-  const previousUnreadCount = conversation
-    ? conversation.unreadCount || 0
-    : inboxItem?.unreadCount || 0;
-  if (!messageId) {
-    yield put(actions.markChatConversationAsRead(conversationId, inboxItem));
-  }
-
-  let readState;
-  try {
-    ({ item: readState } = yield call(request, api.markChatConversationAsRead, conversationId, {
-      ...(messageId && { messageId }),
-    }));
-  } catch (error) {
-    const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
-    const currentChatState = yield select(selectors.selectChatState);
-    if (
-      !messageId &&
-      (currentConversation || currentChatState.inboxItemsByConversationId[conversationId])
-    ) {
-      yield put(
-        actions.markChatConversationAsRead.failure(
-          conversationId,
-          previousUnreadCount,
-          error,
-          inboxItem,
-        ),
-      );
-    }
-    return;
-  }
-
-  const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
-  const currentChatState = yield select(selectors.selectChatState);
-  if (currentConversation || currentChatState.inboxItemsByConversationId[conversationId]) {
-    yield put(actions.markChatConversationAsRead.success(readState));
-  }
-}
-
-export function* handleChatConversationRead(readState) {
-  yield put(actions.handleChatConversationRead(readState));
-}
-
 export function* handleChatProjectAccessRevoke(projectId) {
   const conversationIds = yield select(selectors.selectChatConversationIdsByProjectId, projectId);
   yield put(actions.handleChatProjectAccessRevoke(projectId, conversationIds));
@@ -941,8 +817,6 @@ export function* toggleChatConversationMinimized(id) {
 }
 
 export default {
-  fetchChatInbox,
-  markAllChatInboxAsRead,
   fetchChatMembers,
   fetchChatConversations,
   fetchChatForProject,
@@ -976,8 +850,6 @@ export default {
   handleChatConversationAccessRevoke,
   updateChatDraft,
   setChatReplyTarget,
-  markChatConversationAsRead,
-  handleChatConversationRead,
   handleChatProjectAccessRevoke,
   openChatConversation,
   closeChatConversation,

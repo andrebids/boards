@@ -27,6 +27,7 @@ import comments from './comments';
 import activities from './activities';
 import notifications from './notifications';
 import notificationServices from './notification-services';
+import chatInbox from './chat-inbox';
 import chat from './chat';
 
 export default {
@@ -54,5 +55,6 @@ export default {
   ...activities,
   ...notifications,
   ...notificationServices,
+  ...chatInbox,
   ...chat,
 };

@@ -8,6 +8,13 @@ export const isNearBottom = (
 export const shouldScrollToNewestMessage = ({ isAtBottom, message, currentUserId }) =>
   isAtBottom || message.userId === currentUserId;
 
+export const keepBottomAfterContentLoad = (list, isAtBottom) => {
+  if (!list || !isAtBottom) return false;
+
+  list.scrollTo({ top: list.scrollHeight });
+  return true;
+};
+
 export const getMessageIdentity = ({ clientMessageId, id, localId }) =>
   clientMessageId || id || localId;
 

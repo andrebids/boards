@@ -9,9 +9,9 @@ const fetchChatInbox = (options = {}) => ({
   type: ActionTypes.CHAT_INBOX_FETCH,
   payload: { options },
 });
-fetchChatInbox.success = (items, meta, users, options = {}) => ({
+fetchChatInbox.success = (items, meta, users, options = {}, people = []) => ({
   type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,
-  payload: { items, meta, users, options },
+  payload: { items, meta, users, options, people },
 });
 fetchChatInbox.failure = (error, options = {}) => ({
   type: ActionTypes.CHAT_INBOX_FETCH__FAILURE,

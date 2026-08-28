@@ -13,6 +13,8 @@ import { Button, Popup } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useSteps } from '../../../hooks';
+import { useChat } from '../../chat/ChatContext';
+import { getParticipantUserIds, isDirectConversation } from '../../chat/utils';
 import SelectPermissionsStep from './SelectPermissionsStep';
 import ConfirmationStep from '../../common/ConfirmationStep';
 import UserAvatar from '../../users/UserAvatar';
@@ -48,7 +50,29 @@ const ActionsStep = React.memo(
       selectors.selectIsCurrentUserManagerForCurrentProject
     );
 
+    const chatMembers = useSelector(
+      selectors.selectChatMembersForCurrentProject
+    );
+
     const dispatch = useDispatch();
+    const {
+      conversations,
+      isPending,
+      isProjectChatEnabled,
+      openDirectConversation,
+    } = useChat();
+
+    const directConversation = conversations.find(
+      conversation =>
+        isDirectConversation(conversation) &&
+        getParticipantUserIds(conversation).includes(boardMembership.userId)
+    );
+
+    const canStartChat =
+      !isCurrentUser &&
+      isProjectChatEnabled &&
+      chatMembers.some(({ id }) => id === boardMembership.userId);
+
     const [t] = useTranslation();
     const [step, openStep, handleBack] = useSteps();
 
@@ -70,6 +94,11 @@ const ActionsStep = React.memo(
       );
       onClose();
     }, [onClose, boardMembership.userId, dispatch]);
+
+    const handleChatClick = useCallback(() => {
+      openDirectConversation(boardMembership.userId);
+      onClose();
+    }, [onClose, boardMembership.userId, openDirectConversation]);
 
     const handleEditPermissionsClick = useCallback(() => {
       openStep(StepTypes.EDIT_PERMISSIONS);
@@ -140,6 +169,19 @@ const ActionsStep = React.memo(
             <Icon name="briefcase" className={styles.informationIcon} />
             {user.organization}
           </div>
+        )}
+        {canStartChat && (
+          <Button
+            variant="outline"
+            content={t(
+              directConversation ? 'chat.openConversation' : 'chat.startConversation'
+            )}
+            icon="comments"
+            size="tiny"
+            className={styles.filterButton}
+            disabled={isPending}
+            onClick={handleChatClick}
+          />
         )}
         <Button
           variant="outline"

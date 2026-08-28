@@ -64,6 +64,11 @@ describe('Presentation editor permissions', () => {
     expect(source).not.toMatch(/<PresentationImportConfirmModal[\s\S]*?isImporting=/);
   });
 
+  test('uses the shared warning alert dialog before replacing a presentation', () => {
+    expect(modalSource).toMatch(/AlertDialog/);
+    expect(modalSource).toMatch(/tone="warning"/);
+  });
+
   test('defines every French import message only once', () => {
     ['presentationImport', 'presentationImportInvalidFile', 'presentationImportFailed'].forEach(
       (key) => {

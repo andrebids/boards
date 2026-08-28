@@ -286,10 +286,11 @@
 
     .calendar {
       margin-top: 10px;
+      width: min(100%, 270px, var(--calendar-width));
     }
   }
 
-  @container (min-width: 520px) {
+  @container (min-width: 480px) {
     .activityStats {
       grid-template-columns: repeat(5, minmax(0, 1fr));
       row-gap: 0;

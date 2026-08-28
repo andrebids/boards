@@ -15,29 +15,21 @@ import {
   Check,
   CheckCheck,
   ChevronDown,
-  Download,
   ExternalLink,
-  FileText,
   Forward,
-  Image as ImageIcon,
   Link2,
   MessageCircle,
   MoreHorizontal,
-  Paperclip,
   Pencil,
   Quote,
-  RefreshCw,
   SmilePlus,
   Trash2,
   X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { CloseButton } from '../../../lib/custom-ui';
 import entryActions from '../../../entry-actions';
-import VideoPlayer from '../../common/VideoPlayer';
 import UserAvatar from '../../users/UserAvatar';
-import Config from '../../../constants/Config';
 import LazyEmojiPicker, {
   EMOJI_CATEGORY_ICONS,
   EMOJI_PICKER_CLASS_NAME,
@@ -47,81 +39,25 @@ import LazyEmojiPicker, {
 import { getReactionEmojiPickerPosition, QUICK_REACTION_EMOJIS } from '../reaction-utils';
 import { getConversationTitle, getParticipantUserIds, isDirectConversation } from '../utils';
 import { compareIds } from '../../../utils/id-helpers';
-import { getPendingAttachmentCopy, isPendingAttachmentRetryable } from './attachment-state';
-import { getReadHorizonMessageId, getScrollBehavior, shouldScrollToNewestMessage } from './scroll';
+import { getAttachmentDeliveryErrorMessage } from './attachment-state';
+import AttachmentPreview from './AttachmentPreview';
+import MessageAttachments, { SendingStatus } from './MessageAttachments';
+import {
+  classifyMessageAttachments,
+  createMemberNameById,
+  formatMessageDay,
+  formatMessageTime,
+  getMessageGrouping,
+  isEmojiOnlyMessage,
+} from './message-view';
+import {
+  getReadHorizonMessageId,
+  getScrollBehavior,
+  keepBottomAfterContentLoad,
+  shouldScrollToNewestMessage,
+} from './scroll';
 
 import styles from './MessageList.module.scss';
-
-const formatTime = (value) =>
-  new Intl.DateTimeFormat(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value));
-
-const formatDay = (value) =>
-  new Intl.DateTimeFormat(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value));
-
-const getDeliveryErrorMessage = (error, t) => {
-  if (error?.code === 'E_HTTP_TIMEOUT') {
-    return t('chat.uploadTimedOut');
-  }
-  if (error?.code === 'E_HTTP_NETWORK') {
-    return t('chat.uploadNetworkError');
-  }
-  if (
-    typeof error?.message === 'string' &&
-    error.message !== 'HTTP request failed' &&
-    error.message !== 'Invalid HTTP response'
-  ) {
-    return error.message;
-  }
-
-  return t('chat.uploadFailed');
-};
-
-const renderSendingStatus = (label) => (
-  <span className={styles.sendingStatus}>
-    <RefreshCw aria-hidden="true" className={styles.sendingSpinner} size={11} strokeWidth={2} />
-    {label}
-  </span>
-);
-
-const isSameDay = (first, second) => {
-  const firstDate = new Date(first);
-  const secondDate = new Date(second);
-  return (
-    firstDate.getFullYear() === secondDate.getFullYear() &&
-    firstDate.getMonth() === secondDate.getMonth() &&
-    firstDate.getDate() === secondDate.getDate()
-  );
-};
-
-const emojiSegmenter =
-  typeof Intl.Segmenter === 'function'
-    ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
-    : null;
-const emojiGraphemePattern =
-  /^(?:\p{Regional_Indicator}{2}|[#*0-9]\uFE0F?\u20E3|\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E|\p{Emoji_Modifier}|\u200D(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E|\p{Emoji_Modifier})?)*$/u;
-
-const isEmojiOnlyMessage = (text) => {
-  const normalizedText = String(text || '').trim();
-  if (!normalizedText) return false;
-
-  const graphemes = emojiSegmenter
-    ? Array.from(emojiSegmenter.segment(normalizedText), ({ segment }) => segment)
-    : Array.from(normalizedText);
-  const visibleGraphemes = graphemes.filter((grapheme) => !/^\s+$/u.test(grapheme));
-
-  return (
-    visibleGraphemes.length > 0 &&
-    visibleGraphemes.length <= 3 &&
-    visibleGraphemes.every((grapheme) => emojiGraphemePattern.test(grapheme))
-  );
-};
 
 const renderMessageText = (text, currentUserId) => {
   const parts = String(text).split(/(@\[[^\]]+\]\([^)]*\))/g);
@@ -141,89 +77,6 @@ const renderMessageText = (text, currentUserId) => {
       part
     );
   });
-};
-
-function AttachmentPreview({ attachment, onClose }) {
-  const [t] = useTranslation();
-  const url = attachment.data?.url;
-  const mimeType = attachment.data?.mimeType || '';
-  const isImage = !!attachment.data?.image;
-  const isVideo = !!attachment.data?.video || mimeType.startsWith('video/');
-  const isPdf = mimeType === 'application/pdf' || attachment.name.toLowerCase().endsWith('.pdf');
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
-  return createPortal(
-    <div
-      className={styles.previewBackdrop}
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-label={attachment.name}
-        className={styles.previewDialog}
-      >
-        <header>
-          <strong>{attachment.name}</strong>
-          <span>
-            <a href={url} target="_blank" rel="noreferrer" aria-label={t('chat.downloadFile')}>
-              <Download aria-hidden="true" size={17} />
-            </a>
-            <CloseButton ariaLabel={t('chat.close')} onClick={onClose} />
-          </span>
-        </header>
-        <div className={styles.previewBody}>
-          {isImage && <img src={url} alt={attachment.name} />}
-          {isVideo && (
-            <VideoPlayer
-              attachment={attachment}
-              posterUrl={
-                attachment.data?.thumbnailUrls?.outside720 ||
-                attachment.data?.thumbnailUrls?.outside360
-              }
-              className={styles.previewVideo}
-            />
-          )}
-          {isPdf && <iframe src={url} title={attachment.name} />}
-          {!isImage && !isVideo && !isPdf && (
-            <div className={styles.genericPreview}>
-              <FileText aria-hidden="true" size={42} strokeWidth={1.5} />
-              <span>{t('chat.previewUnavailable')}</span>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>,
-    document.getElementById('app') || document.body,
-  );
-}
-
-AttachmentPreview.propTypes = {
-  attachment: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    data: PropTypes.shape({
-      url: PropTypes.string,
-      playbackUrl: PropTypes.string,
-      mimeType: PropTypes.string,
-      thumbnailUrls: PropTypes.shape({
-        outside360: PropTypes.string,
-        outside720: PropTypes.string,
-      }),
-      image: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
-      video: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
-    }),
-  }).isRequired,
-  onClose: PropTypes.func.isRequired,
 };
 
 const MessageList = React.memo(
@@ -269,6 +122,7 @@ const MessageList = React.memo(
     const [isReactionEmojiPickerOpen, setIsReactionEmojiPickerOpen] = useState(false);
     const [reactionEmojiPickerPosition, setReactionEmojiPickerPosition] = useState(null);
     const dispatch = useDispatch();
+    const memberNameById = useMemo(() => createMemberNameById(members), [members]);
 
     const unreadStartIndex = useMemo(() => {
       if (!initialUnreadCount) return -1;
@@ -293,9 +147,9 @@ const MessageList = React.memo(
       () =>
         typingUserIds
           .filter((id) => id !== currentUserId)
-          .map((id) => members.find((member) => member.id === id)?.name)
+          .map((id) => memberNameById.get(id))
           .filter(Boolean),
-      [currentUserId, members, typingUserIds],
+      [currentUserId, memberNameById, typingUserIds],
     );
 
     const directConversationsByUserId = useMemo(() => {
@@ -342,6 +196,10 @@ const MessageList = React.memo(
         isAtBottomRef.current = true;
         setNewMessageCount(0);
       }
+    }, []);
+
+    const handleAttachmentLoad = useCallback(() => {
+      keepBottomAfterContentLoad(listRef.current, isAtBottomRef.current);
     }, []);
 
     const reportReadHorizon = useCallback(() => {
@@ -633,28 +491,15 @@ const MessageList = React.memo(
           {messages.map((message, index) => {
             const previousMessage = messages[index - 1];
             const nextMessage = messages[index + 1];
-            const startsNewDay =
-              !previousMessage || !isSameDay(previousMessage.createdAt, message.createdAt);
+            const { continuesNext, continuesPrevious, startsNewDay } = getMessageGrouping(
+              message,
+              previousMessage,
+              nextMessage,
+            );
             const isOwn = message.userId === currentUserId;
-            const continuesPrevious =
-              previousMessage &&
-              previousMessage.userId === message.userId &&
-              !startsNewDay &&
-              new Date(message.createdAt) - new Date(previousMessage.createdAt) < 5 * 60 * 1000;
-            const continuesNext =
-              nextMessage &&
-              nextMessage.userId === message.userId &&
-              isSameDay(message.createdAt, nextMessage.createdAt) &&
-              new Date(nextMessage.createdAt) - new Date(message.createdAt) < 5 * 60 * 1000;
             const reactions = message.reactions || [];
-            const replyAuthor = members.find(({ id }) => id === message.replyTo?.userId)?.name;
-            const messageAttachments = message.deletedAt ? [] : message.attachments || [];
-            const imageAttachments = messageAttachments.filter(
-              (attachment) => attachment.data?.image,
-            );
-            const otherAttachments = messageAttachments.filter(
-              (attachment) => !attachment.data?.image,
-            );
+            const replyAuthor = memberNameById.get(message.replyTo?.userId);
+            const { imageAttachments, otherAttachments } = classifyMessageAttachments(message);
             const hasImageAttachments = imageAttachments.length > 0;
             const hasTextBubble =
               !hasImageAttachments &&
@@ -708,7 +553,7 @@ const MessageList = React.memo(
               <React.Fragment key={message.id || message.localId}>
                 {startsNewDay && (
                   <div className={styles.dayDivider}>
-                    <span>{formatDay(message.createdAt)}</span>
+                    <span>{formatMessageDay(message.createdAt)}</span>
                   </div>
                 )}
                 {index === unreadStartIndex && (
@@ -729,7 +574,9 @@ const MessageList = React.memo(
                   {!isOwn && continuesNext && <span className={styles.avatarSpacer} />}
                   <div className={styles.messageContent}>
                     {!continuesPrevious && (
-                      <span className={styles.groupTime}>{formatTime(message.createdAt)}</span>
+                      <span className={styles.groupTime}>
+                        {formatMessageTime(message.createdAt)}
+                      </span>
                     )}
                     {!message.deletedAt && !message.localId && (
                       <div
@@ -908,140 +755,27 @@ const MessageList = React.memo(
                         <Forward aria-hidden="true" size={12} /> {t('chat.forwarded')}
                       </span>
                     )}
-                    {hasImageAttachments ? (
-                      <div className={styles.imageMessage}>
-                        <div
-                          className={`${styles.imageGallery} ${
-                            imageAttachments.length > 1 ? styles.imageGalleryMultiple : ''
-                          }`}
-                        >
-                          {imageAttachments.map((attachment) => {
-                            const url =
-                              attachment.data?.url ||
-                              `${Config.SERVER_BASE_URL}/api/chat-message-attachments/${attachment.id}/download`;
-                            const previewUrl = attachment.data?.thumbnailUrls?.outside360 || url;
-                            return (
-                              <button
-                                type="button"
-                                key={attachment.id}
-                                className={styles.imageAttachment}
-                                aria-label={attachment.name}
-                                onClick={() =>
-                                  setSelectedAttachment({
-                                    ...attachment,
-                                    data: { ...attachment.data, url },
-                                  })
-                                }
-                              >
-                                <img src={previewUrl} alt={attachment.name} />
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {(message.text || editingMessageId === message.id) && (
-                          <div className={`${styles.bubble} ${styles.imageCaption}`} dir="auto">
-                            {messageBody}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      hasTextBubble && (
-                        <div
-                          className={`${styles.bubble} ${
-                            isEmojiOnly ? styles.emojiOnlyBubble : ''
-                          }`}
-                          dir="auto"
-                        >
-                          {messageBody}
-                        </div>
-                      )
-                    )}
-                    {otherAttachments.length > 0 && (
-                      <div className={styles.attachments}>
-                        {otherAttachments.map((attachment) => {
-                          const url =
-                            attachment.data?.url ||
-                            `${Config.SERVER_BASE_URL}/api/chat-message-attachments/${attachment.id}/download`;
-                          const thumbnailUrl = attachment.data?.thumbnailUrls?.outside360;
-                          const isVisualPreview =
-                            attachment.data?.image ||
-                            attachment.data?.video ||
-                            attachment.data?.mimeType === 'application/pdf';
-                          let attachmentIcon = <Paperclip aria-hidden="true" size={14} />;
-                          if (thumbnailUrl) {
-                            attachmentIcon = <img src={thumbnailUrl} alt="" />;
-                          } else if (attachment.data?.image) {
-                            attachmentIcon = <ImageIcon aria-hidden="true" size={14} />;
-                          }
-                          return (
-                            <button
-                              type="button"
-                              key={attachment.id}
-                              className={`${styles.attachment} ${thumbnailUrl ? styles.attachmentVisual : ''}`}
-                              onClick={() => {
-                                if (isVisualPreview) {
-                                  setSelectedAttachment({
-                                    ...attachment,
-                                    data: { ...attachment.data, url },
-                                  });
-                                } else {
-                                  window.open(url, '_blank', 'noopener,noreferrer');
-                                }
-                              }}
-                            >
-                              {attachmentIcon}
-                              <span>{attachment.name}</span>
-                            </button>
-                          );
-                        })}
+                    {!hasImageAttachments && hasTextBubble && (
+                      <div
+                        className={`${styles.bubble} ${isEmojiOnly ? styles.emojiOnlyBubble : ''}`}
+                        dir="auto"
+                      >
+                        {messageBody}
                       </div>
                     )}
-                    {message.pendingFiles?.length > 0 && (
-                      <div className={styles.pendingAttachments}>
-                        {message.pendingFiles.map((pendingFile, pendingFileIndex) => {
-                          const status = pendingFile.status || 'uploading';
-                          const copy = getPendingAttachmentCopy(status);
-                          const name =
-                            pendingFile.file?.name || pendingFile.name || t('chat.sentFile');
-                          const isRetryable = isPendingAttachmentRetryable(pendingFile);
-
-                          return (
-                            <div
-                              key={pendingFile.clientAttachmentId || `${name}-${pendingFileIndex}`}
-                              className={styles.pendingAttachment}
-                            >
-                              <Paperclip aria-hidden="true" size={14} />
-                              <span>
-                                <strong>{name}</strong>
-                                {copy && (
-                                  <small>
-                                    {status === 'uploading'
-                                      ? renderSendingStatus(t(copy))
-                                      : t(copy)}
-                                  </small>
-                                )}
-                              </span>
-                              {isRetryable && (
-                                <button
-                                  type="button"
-                                  title={getDeliveryErrorMessage(pendingFile.error, t)}
-                                  onClick={() =>
-                                    dispatch(
-                                      entryActions.retryChatMessageAttachment(
-                                        message.id,
-                                        pendingFile.clientAttachmentId,
-                                      ),
-                                    )
-                                  }
-                                >
-                                  {t('chat.retry')}
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                    <MessageAttachments
+                      caption={
+                        hasImageAttachments && (message.text || editingMessageId === message.id)
+                          ? messageBody
+                          : null
+                      }
+                      imageAttachments={imageAttachments}
+                      messageId={message.id}
+                      otherAttachments={otherAttachments}
+                      pendingFiles={message.pendingFiles}
+                      onLoad={handleAttachmentLoad}
+                      onPreview={setSelectedAttachment}
+                    />
                     {!message.deletedAt && message.linkPreviews?.length > 0 && (
                       <div className={styles.linkPreviews}>
                         {message.linkPreviews.map((preview) => (
@@ -1080,7 +814,7 @@ const MessageList = React.memo(
                         className={`${styles.meta} ${message.isPending || message.isFailed || message.id === lastReadOwnMessageId ? styles.metaImportant : ''}`}
                       >
                         {message.editedAt && t('chat.edited')}
-                        {message.isPending && renderSendingStatus(t('chat.sending'))}
+                        {message.isPending && <SendingStatus label={t('chat.sending')} />}
                         {message.id === lastReadOwnMessageId && (
                           <span
                             className={styles.seenIcon}
@@ -1093,13 +827,13 @@ const MessageList = React.memo(
                         {message.isFailed && (
                           <button
                             type="button"
-                            title={getDeliveryErrorMessage(message.error, t)}
+                            title={getAttachmentDeliveryErrorMessage(message.error, t)}
                             onClick={() =>
                               dispatch(entryActions.retryChatMessage(message.localId || message.id))
                             }
                           >
                             {t('chat.failedRetryWithReason', {
-                              reason: getDeliveryErrorMessage(message.error, t),
+                              reason: getAttachmentDeliveryErrorMessage(message.error, t),
                             })}
                           </button>
                         )}

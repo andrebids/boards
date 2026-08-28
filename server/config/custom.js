@@ -8,8 +8,8 @@
  * https://sailsjs.com/config/custom
  */
 
+const path = require('path');
 const { URL } = require('url');
-const sails = require('sails');
 
 const version = require('../version');
 const { parseWebPushConfig } = require('../utils/web-push-config');
@@ -72,7 +72,7 @@ module.exports.custom = {
 
   // Location to receive uploaded files in. Default (non-string value) is a Sails-specific location.
   uploadsTempPath: null,
-  uploadsBasePath: sails.config.appPath,
+  uploadsBasePath: path.resolve(__dirname, '..'),
 
   preloadedFaviconsPathSegment: 'public/preloaded-favicons',
   faviconsPathSegment: 'public/favicons',
@@ -136,8 +136,7 @@ module.exports.custom = {
   ),
   videoProcessingMaxAttempts: envToPositiveNumber(process.env.VIDEO_PROCESSING_MAX_ATTEMPTS, 3),
 
-  projectPresentationPreviewEnabled:
-    process.env.PROJECT_PRESENTATION_PREVIEW_ENABLED !== 'false',
+  projectPresentationPreviewEnabled: process.env.PROJECT_PRESENTATION_PREVIEW_ENABLED !== 'false',
   projectPresentationPreviewPollIntervalSeconds: envToPositiveNumber(
     process.env.PROJECT_PRESENTATION_PREVIEW_POLL_INTERVAL_SECONDS,
     5,
@@ -190,7 +189,7 @@ module.exports.custom = {
 
   // TODO: move client base url to environment variable?
   oidcRedirectUri: `${
-    sails.config.environment === 'production' ? process.env.BASE_URL : 'http://localhost:3008'
+    process.env.NODE_ENV === 'production' ? process.env.BASE_URL : 'http://localhost:3008'
   }/oidc-callback`,
 
   smtpHost: process.env.SMTP_HOST || process.env.GLOBAL_SMTP_HOST,

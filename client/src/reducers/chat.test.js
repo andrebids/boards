@@ -13,6 +13,14 @@ describe('chat reducer', () => {
             unreadCount: 3,
           },
         ],
+        people: [
+          {
+            projectId: 'project-1',
+            projectName: 'Project one',
+            user: { id: 'user-2', name: 'Rudie' },
+            userId: 'user-2',
+          },
+        ],
         meta: {
           hasChatAccess: true,
           unreadConversationTotal: 1,
@@ -28,6 +36,9 @@ describe('chat reducer', () => {
       unreadCount: 3,
     });
     expect(state.hasFetchedInbox).toBe(true);
+    expect(state.inboxPeople).toEqual([
+      expect.objectContaining({ projectId: 'project-1', userId: 'user-2' }),
+    ]);
     expect(state.inboxMeta.unreadConversationTotal).toBe(1);
   });
 

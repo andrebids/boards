@@ -19,7 +19,11 @@ import { useTranslation } from 'react-i18next';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import history from '../../../history';
-import { getGlobalConversationTarget } from '../navigation';
+import {
+  activateGlobalTarget,
+  getGlobalConversationTarget,
+  getGlobalDirectConversationTarget,
+} from '../navigation';
 import createInitialChatWindows, { setChatWindowMinimized } from './windowState';
 
 import '../theme.scss';
@@ -318,6 +322,25 @@ const ChatProvider = React.memo(({ children }) => {
     [conversations, dispatch, openConversation, projectId],
   );
 
+  useEffect(() => {
+    if (!hasFetchedConversations || !projectId) {
+      return;
+    }
+
+    const parameters = new URLSearchParams(window.location.search);
+    const userId = parameters.get('chatDirectUser');
+    if (!userId) {
+      return;
+    }
+
+    parameters.delete('chatDirectUser');
+    const search = parameters.toString();
+    history.replace(
+      `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`,
+    );
+    openDirectConversation(userId);
+  }, [hasFetchedConversations, openDirectConversation, projectId]);
+
   const closeConversation = useCallback(
     (id) => {
       subscribedWindowIdsRef.current.delete(id);
@@ -405,16 +428,26 @@ const ChatProvider = React.memo(({ children }) => {
         firstBoardId,
         item,
       });
-      if (!target) {
-        return;
-      }
-
-      history.push(target.path);
-      if (target.isCurrentProject) {
-        openConversation(target.conversationId);
-      }
+      activateGlobalTarget(target, history.push, () => openConversation(target.conversationId));
     },
     [openConversation, projectId, store],
+  );
+
+  const openGlobalPerson = useCallback(
+    (person) => {
+      const firstBoardId = person?.projectId
+        ? selectors.selectFirstBoardIdByProjectId(store.getState(), person.projectId)
+        : undefined;
+      const target = getGlobalDirectConversationTarget({
+        currentPathname: window.location.pathname,
+        currentProjectId: projectId,
+        currentSearch: window.location.search,
+        firstBoardId,
+        person,
+      });
+      activateGlobalTarget(target, history.push, () => openDirectConversation(person.userId));
+    },
+    [openDirectConversation, projectId, store],
   );
 
   const value = useMemo(
@@ -434,6 +467,7 @@ const ChatProvider = React.memo(({ children }) => {
       openDirectConversation,
       openGeneralConversation,
       openGlobalConversation,
+      openGlobalPerson,
       setInboxScope,
       startConversationListClose,
       toggleConversationMinimized,
@@ -454,6 +488,7 @@ const ChatProvider = React.memo(({ children }) => {
       openDirectConversation,
       openGeneralConversation,
       openGlobalConversation,
+      openGlobalPerson,
       pendingConversation,
       startConversationListClose,
       toggleConversationMinimized,

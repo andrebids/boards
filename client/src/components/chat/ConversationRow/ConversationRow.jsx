@@ -148,7 +148,9 @@ const ConversationRow = React.memo(
         </button>
         {id && (
           <ConversationActions
+            canLeave={isCustomGroupConversation(conversation)}
             conversationId={id}
+            conversationTitle={title}
             isMuted={isMuted}
             participant={currentParticipant}
           />

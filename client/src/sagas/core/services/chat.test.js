@@ -6,15 +6,18 @@ import selectors from '../../../selectors';
 import request, { requestConcurrent } from '../request';
 import { playChatMessageSound } from '../../../utils/chat-message-sound';
 import chatServices, {
-  fetchChatInbox,
   handleChatConversationUpdate,
   handleChatMessageAttachmentCreate,
   handleChatMessageCreate,
-  markChatConversationAsRead,
   retryChatMessageAttachment,
   uploadChatMessageAttachment,
   uploadChatMessageAttachments,
 } from './chat';
+import chatInboxServices, {
+  fetchChatInbox,
+  handleChatConversationRead,
+  markChatConversationAsRead,
+} from './chat-inbox';
 
 jest.mock('../../../api', () => ({
   __esModule: true,
@@ -43,6 +46,16 @@ jest.mock('../../../sentry', () => ({ reportChatError: jest.fn() }));
 jest.mock('nanoid', () => ({ nanoid: jest.fn() }));
 
 describe('chat inbox services', () => {
+  test('exposes the inbox services used by chat watchers', () => {
+    expect(chatInboxServices).toEqual(
+      expect.objectContaining({
+        fetchChatInbox,
+        handleChatConversationRead,
+        markChatConversationAsRead,
+      }),
+    );
+  });
+
   test('fetches inbox summaries together with included users', () => {
     const generator = fetchChatInbox({});
     const options = { filter: 'all', limit: 50, append: false };
@@ -55,9 +68,18 @@ describe('chat inbox services', () => {
       items: [{ conversationId: 'conversation-1' }],
       meta: { hasChatAccess: true },
       included: { users: [{ id: 'user-2' }] },
+      people: [{ projectId: 'project-1', userId: 'user-2' }],
     };
     expect(generator.next(body).value).toEqual(
-      put(actions.fetchChatInbox.success(body.items, body.meta, body.included.users, options)),
+      put(
+        actions.fetchChatInbox.success(
+          body.items,
+          body.meta,
+          body.included.users,
+          options,
+          body.people,
+        ),
+      ),
     );
     expect(generator.next().done).toBe(true);
   });
@@ -92,7 +114,7 @@ describe('chat inbox services', () => {
       included: { users: [] },
     };
     expect(generator.next(body).value).toEqual(
-      put(actions.fetchChatInbox.success([], body.meta, [], actionOptions)),
+      put(actions.fetchChatInbox.success([], body.meta, [], actionOptions, [])),
     );
     expect(generator.next().done).toBe(true);
   });

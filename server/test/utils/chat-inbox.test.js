@@ -142,7 +142,13 @@ describe('Chat inbox', () => {
           presentMany: (users) => users,
         },
         chat: {
-          getProjectMemberUserIds: async (project) => (project.authorized ? ['1'] : []),
+          getProjectMemberUserIds: async (project) => {
+            if (!project.authorized) {
+              return [];
+            }
+
+            return project.id === '20' ? ['1', '2'] : ['1'];
+          },
           getUnreadDetails: async () => ({
             100: {
               unreadCount: 2,
@@ -227,6 +233,14 @@ describe('Chat inbox', () => {
       });
       expect(search.items.map(({ conversationId }) => conversationId)).to.deep.equal(['200']);
       expect(search.items[0]).not.to.have.property('searchText');
+      expect(search.people).to.deep.equal([
+        {
+          projectId: '20',
+          projectName: 'Beta',
+          user: { id: '2', name: 'Beatriz' },
+          userId: '2',
+        },
+      ]);
     } finally {
       restoreGlobals(previousGlobals);
     }

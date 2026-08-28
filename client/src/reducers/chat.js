@@ -73,6 +73,7 @@ const updateInboxMetaForItemChange = (meta, previousItem, nextItem) => {
 
 const initialState = {
   inboxItemsByConversationId: {},
+  inboxPeople: [],
   isInboxFetching: false,
   isInboxFetchingMore: false,
   hasFetchedInbox: false,
@@ -109,6 +110,7 @@ export default (state = initialState, { type, payload }) => {
         isInboxFetchingMore: false,
         hasFetchedInbox: false,
         inboxError: null,
+        inboxPeople: [],
         memberIdsByProject: {},
         isMembersFetchingByProject: {},
         isConversationsFetchingByProject: {},
@@ -151,6 +153,7 @@ export default (state = initialState, { type, payload }) => {
               ...pageItemsByConversationId,
             }
           : pageItemsByConversationId,
+        inboxPeople: payload.options?.append ? state.inboxPeople : payload.people || [],
         isInboxFetching: false,
         isInboxFetchingMore: false,
         hasFetchedInbox: true,

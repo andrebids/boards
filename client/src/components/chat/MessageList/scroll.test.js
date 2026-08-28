@@ -5,6 +5,7 @@ import {
   getMessageIdentities,
   getMessageIdentity,
   isNearBottom,
+  keepBottomAfterContentLoad,
   shouldScrollToNewestMessage,
 } from './scroll';
 
@@ -44,6 +45,32 @@ describe('chat message list scroll helpers', () => {
         currentUserId: 'user-1',
       }),
     ).toBe(false);
+  });
+
+  test('keeps the viewport pinned when an image finishes loading at the bottom', () => {
+    const list = {
+      scrollHeight: 1200,
+      scrollTop: 600,
+      scrollTo({ top }) {
+        this.scrollTop = top;
+      },
+    };
+
+    expect(keepBottomAfterContentLoad(list, true)).toBe(true);
+    expect(list.scrollTop).toBe(1200);
+  });
+
+  test('preserves the reader position when an image loads away from the bottom', () => {
+    const list = {
+      scrollHeight: 1200,
+      scrollTop: 600,
+      scrollTo({ top }) {
+        this.scrollTop = top;
+      },
+    };
+
+    expect(keepBottomAfterContentLoad(list, false)).toBe(false);
+    expect(list.scrollTop).toBe(600);
   });
 
   test('uses the client message id as the stable optimistic identity', () => {

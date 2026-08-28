@@ -59,6 +59,12 @@
       padding: 6px 8px 5px;
     }
 
+    .menuDivider {
+      border-top: 1px solid var(--chat-border);
+      display: block;
+      margin: 5px 2px;
+    }
+
     button {
       align-items: center;
       background: transparent;
@@ -78,6 +84,15 @@
 
       svg { flex: 0 0 auto; }
       &:hover, &:focus-visible { background: var(--chat-default); color: var(--chat-foreground); outline: none; }
+    }
+
+    .destructiveAction {
+      color: var(--chat-danger);
+
+      &:hover, &:focus-visible {
+        background: color-mix(in srgb, var(--chat-danger) 12%, transparent);
+        color: var(--chat-danger);
+      }
     }
   }
 

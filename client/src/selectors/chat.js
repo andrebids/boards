@@ -39,6 +39,11 @@ export const selectChatInboxItems = createReselector(
     }),
 );
 
+export const selectChatInboxPeople = createReselector(
+  selectChatState,
+  ({ inboxPeople }) => inboxPeople,
+);
+
 export const selectChatInboxNotificationItems = createReselector(selectChatInboxItems, (items) =>
   items.filter((item) => item.unreadCount > 0 && item.hasChatAccess !== false).slice(0, 3),
 );
@@ -240,6 +245,7 @@ export const makeSelectHasMoreNewerChatMessagesByConversationId = () => (state, 
 export default {
   selectChatState,
   selectChatInboxItems,
+  selectChatInboxPeople,
   selectChatInboxNotificationItems,
   selectIsChatInboxFetching,
   selectIsChatInboxFetchingMore,

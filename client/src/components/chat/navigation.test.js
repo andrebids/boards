@@ -1,4 +1,48 @@
-import { getGlobalConversationTarget } from './navigation';
+import {
+  activateGlobalTarget,
+  getGlobalConversationTarget,
+  getGlobalDirectConversationTarget,
+} from './navigation';
+
+describe('activateGlobalTarget', () => {
+  test('does nothing when the target is invalid', () => {
+    const navigate = jest.fn();
+    const openCurrent = jest.fn();
+
+    activateGlobalTarget(null, navigate, openCurrent);
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(openCurrent).not.toHaveBeenCalled();
+  });
+
+  test('navigates and opens immediately inside the current project', () => {
+    const navigate = jest.fn();
+    const openCurrent = jest.fn();
+
+    activateGlobalTarget(
+      { isCurrentProject: true, path: '/boards/current?chatDirectUser=user-2' },
+      navigate,
+      openCurrent,
+    );
+
+    expect(navigate).toHaveBeenCalledWith('/boards/current?chatDirectUser=user-2');
+    expect(openCurrent).toHaveBeenCalledTimes(1);
+  });
+
+  test('only navigates when the target belongs to another project', () => {
+    const navigate = jest.fn();
+    const openCurrent = jest.fn();
+
+    activateGlobalTarget(
+      { isCurrentProject: false, path: '/boards/other?chatDirectUser=user-2' },
+      navigate,
+      openCurrent,
+    );
+
+    expect(navigate).toHaveBeenCalledWith('/boards/other?chatDirectUser=user-2');
+    expect(openCurrent).not.toHaveBeenCalled();
+  });
+});
 
 describe('getGlobalConversationTarget', () => {
   test('keeps the current route when opening a conversation from the current project', () => {
@@ -76,8 +120,7 @@ describe('getGlobalConversationTarget', () => {
     ).toEqual({
       conversationId: 'general-conversation',
       isCurrentProject: true,
-      path:
-        '/boards/current-board?cardModal=details&chatConversation=general-conversation&chatMessage=first-unread-message&reply=1',
+      path: '/boards/current-board?cardModal=details&chatConversation=general-conversation&chatMessage=first-unread-message&reply=1',
     });
   });
 
@@ -93,5 +136,50 @@ describe('getGlobalConversationTarget', () => {
         },
       }),
     ).toBeNull();
+  });
+});
+
+describe('getGlobalDirectConversationTarget', () => {
+  test('routes to a shared project and creates a one-time direct-chat intent', () => {
+    expect(
+      getGlobalDirectConversationTarget({
+        currentPathname: '/boards/current-board',
+        currentProjectId: 'current-project',
+        currentSearch: '?cardModal=details',
+        firstBoardId: 'target-board',
+        person: { projectId: 'target-project', userId: 'user-2' },
+      }),
+    ).toEqual({
+      isCurrentProject: false,
+      path: '/boards/target-board?chatDirectUser=user-2',
+    });
+  });
+
+  test('keeps the current route without leaving a consumed direct-chat intent', () => {
+    expect(
+      getGlobalDirectConversationTarget({
+        currentPathname: '/boards/current-board',
+        currentProjectId: 'current-project',
+        currentSearch: '?cardModal=details&chatConversation=conversation-1',
+        person: { projectId: 'current-project', userId: 'user-2' },
+      }),
+    ).toEqual({
+      isCurrentProject: true,
+      path: '/boards/current-board?cardModal=details',
+    });
+  });
+
+  test('does not leave an empty query string after clearing chat parameters', () => {
+    expect(
+      getGlobalDirectConversationTarget({
+        currentPathname: '/boards/current-board',
+        currentProjectId: 'current-project',
+        currentSearch: '?chatConversation=conversation-1',
+        person: { projectId: 'current-project', userId: 'user-2' },
+      }),
+    ).toEqual({
+      isCurrentProject: true,
+      path: '/boards/current-board',
+    });
   });
 });
