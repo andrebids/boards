@@ -74,6 +74,7 @@ const ChatProvider = React.memo(({ children }) => {
   const [pendingConversation, setPendingConversation] = useState(null);
   const [isConversationListOpen, setIsConversationListOpen] = useState(false);
   const [isConversationListClosing, setIsConversationListClosing] = useState(false);
+  const [groupManagerConversationId, setGroupManagerConversationId] = useState(null);
   const [inboxScope, setInboxScope] = useState(() =>
     projectId && isCurrentUserChatMember ? 'project' : 'global',
   );
@@ -139,6 +140,7 @@ const ChatProvider = React.memo(({ children }) => {
     setPendingConversation(null);
     setIsConversationListOpen(false);
     setIsConversationListClosing(false);
+    setGroupManagerConversationId(null);
     setInboxScope(projectId && isCurrentUserChatMember ? 'project' : 'global');
     handledDeepLinkRef.current = null;
   }, [accessRevocationVersions, dispatch, isCurrentUserChatMember, projectId, scopeKey]);
@@ -175,6 +177,7 @@ const ChatProvider = React.memo(({ children }) => {
     setPendingConversation(null);
     setIsConversationListOpen(false);
     setIsConversationListClosing(false);
+    setGroupManagerConversationId(null);
     setWindows([]);
   }, [accessRevocationVersions, projectId]);
 
@@ -241,6 +244,20 @@ const ChatProvider = React.memo(({ children }) => {
     },
     [dispatch],
   );
+
+  const openGroupManager = useCallback(
+    (id) => {
+      setIsConversationListOpen(false);
+      setIsConversationListClosing(false);
+      setGroupManagerConversationId(id);
+      openConversation(id);
+    },
+    [openConversation],
+  );
+
+  const consumeGroupManager = useCallback((id) => {
+    setGroupManagerConversationId((currentId) => (currentId === id ? null : currentId));
+  }, []);
 
   useEffect(() => {
     if (!hasFetchedConversations || !projectId) {
@@ -454,7 +471,9 @@ const ChatProvider = React.memo(({ children }) => {
     () => ({
       closeConversationList,
       closeConversation,
+      consumeGroupManager,
       conversations,
+      groupManagerConversationId,
       inboxScope,
       isConversationListClosing,
       isConversationListOpen,
@@ -466,6 +485,7 @@ const ChatProvider = React.memo(({ children }) => {
       openConversationList,
       openDirectConversation,
       openGeneralConversation,
+      openGroupManager,
       openGlobalConversation,
       openGlobalPerson,
       setInboxScope,
@@ -476,7 +496,9 @@ const ChatProvider = React.memo(({ children }) => {
     [
       closeConversationList,
       closeConversation,
+      consumeGroupManager,
       conversations,
+      groupManagerConversationId,
       inboxScope,
       isConversationListClosing,
       isConversationListOpen,
@@ -487,6 +509,7 @@ const ChatProvider = React.memo(({ children }) => {
       openConversationList,
       openDirectConversation,
       openGeneralConversation,
+      openGroupManager,
       openGlobalConversation,
       openGlobalPerson,
       pendingConversation,

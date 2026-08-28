@@ -78,7 +78,7 @@ const AlertDialog = React.memo(
         }
         closeOnDimmerClick={isDismissable}
         closeOnEscape={isDismissable}
-        dimmer={{ inverted: true, className: styles.dimmer }}
+        dimmer={{ className: 'glass-dimmer' }}
         open={open}
         role="alertdialog"
         size="tiny"

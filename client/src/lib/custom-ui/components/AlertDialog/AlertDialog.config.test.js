@@ -10,6 +10,8 @@ describe('AlertDialog', () => {
     expect(source).toMatch(/role="alertdialog"/);
     expect(source).toMatch(/closeOnDimmerClick=\{isDismissable\}/);
     expect(source).toMatch(/closeOnEscape=\{isDismissable\}/);
+    expect(source).toMatch(/dimmer=\{\{ className: 'glass-dimmer' \}\}/);
+    expect(source).not.toMatch(/dimmer=\{\{ inverted: true/);
     expect(source).toMatch(/variant=\{tone === 'danger' \? 'danger' : 'primary'\}/);
   });
 });

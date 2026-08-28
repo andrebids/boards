@@ -5,10 +5,6 @@
   width: 420px;
 }
 
-.dimmer:global(.ui.dimmer) {
-  background: rgba(2, 6, 23, 0.68);
-}
-
 .content:global(.content) {
   align-items: flex-start;
   display: flex;

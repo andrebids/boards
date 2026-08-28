@@ -67,7 +67,13 @@ const ChatWindow = React.memo(({ id }) => {
   const typingUserIds = useSelector((state) => selectTypingUserIdsByConversationId(state, id));
 
   const dispatch = useDispatch();
-  const { closeConversation, openConversationList, toggleConversationMinimized } = useChat();
+  const {
+    closeConversation,
+    consumeGroupManager,
+    groupManagerConversationId,
+    openConversationList,
+    toggleConversationMinimized,
+  } = useChat();
   const fetchedConversationIdRef = useRef(null);
   const initialReadStateRef = useRef(null);
   const filesDropHandlerRef = useRef(null);
@@ -121,6 +127,15 @@ const ChatWindow = React.memo(({ id }) => {
       setShouldFocusComposer(true);
     }
   }, [conversation, id]);
+
+  useEffect(() => {
+    if (conversation && groupManagerConversationId === id) {
+      setGroupTitle(conversation.title || '');
+      setIsGroupEditorOpen(true);
+      setIsOptionsOpen(false);
+      consumeGroupManager(id);
+    }
+  }, [consumeGroupManager, conversation, groupManagerConversationId, id]);
 
   const currentParticipant = conversation?.participants?.find(
     ({ userId }) => userId === currentUser.id,
