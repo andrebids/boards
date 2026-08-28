@@ -7,6 +7,7 @@ import { attr, fk } from 'redux-orm';
 
 import BaseModel from './BaseModel';
 import ActionTypes from '../constants/ActionTypes';
+import { isIdAtOrBefore } from '../utils/id-helpers';
 
 const removeMatchingOptimisticMessage = (ChatMessage, message) => {
   if (!message.clientMessageId) {
@@ -75,6 +76,18 @@ export default class extends BaseModel {
         break;
       case ActionTypes.CHAT_CONVERSATION_ACCESS_REVOKE_HANDLE:
         ChatMessage.filter({ conversationId: payload.conversationId }).delete();
+        break;
+      case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
+      case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE:
+        ChatMessage.filter({ conversationId: payload.historyState.conversationId })
+          .toModelArray()
+          .filter(
+            ({ id, isPending, isFailed }) =>
+              !isPending &&
+              !isFailed &&
+              isIdAtOrBefore(id, payload.historyState.historyClearedThroughMessageId),
+          )
+          .forEach((messageModel) => messageModel.delete());
         break;
       case ActionTypes.CHAT_MESSAGES_FETCH__SUCCESS:
         if (payload.replace) {

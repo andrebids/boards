@@ -15,6 +15,7 @@ const presentMessage = require('../../api/helpers/chat/present-message');
 const reconcileProjectRooms = require('../../api/helpers/chat/reconcile-project-rooms');
 const deleteBoard = require('../../api/helpers/boards/delete-one');
 const chatConversationsIndex = require('../../api/controllers/chat-conversations/index');
+const clearChatConversationHistory = require('../../api/controllers/chat-conversations/clear-history');
 const ChatMessageQueryMethods = require('../../api/hooks/query-methods/models/ChatMessage');
 const ChatParticipantQueryMethods = require('../../api/hooks/query-methods/models/ChatParticipant');
 const ProjectQueryMethods = require('../../api/hooks/query-methods/models/Project');
@@ -42,6 +43,9 @@ describe('Chat domain', () => {
     expect(ChatParticipantDefinition.tableName).to.equal('chat_participant');
     expect(ChatMessageDefinition.attributes.clientMessageId.columnName).to.equal(
       'client_message_id',
+    );
+    expect(ChatParticipantDefinition.attributes.historyClearedThroughMessageId.columnName).to.equal(
+      'history_cleared_through_message_id',
     );
   });
 
@@ -481,6 +485,116 @@ describe('Chat domain', () => {
       expect(capturedQuery).to.include('$2 > COALESCE(last_read_message_id, 0)');
       expect(capturedValues).to.deep.equal(['7', '42', '2026-07-13T12:00:00.000Z']);
       expect(participant.lastReadMessageId).to.equal('42');
+    } finally {
+      Object.entries(previousGlobals).forEach(([name, value]) => {
+        if (value === undefined) {
+          delete global[name];
+        } else {
+          global[name] = value;
+        }
+      });
+    }
+  });
+
+  it('clears participant history through a monotonic message boundary', async () => {
+    const previousGlobals = {
+      sails: global.sails,
+      ChatParticipant: global.ChatParticipant,
+    };
+    let capturedQuery;
+    let capturedValues;
+
+    global.sails = {
+      sendNativeQuery: async (query, values) => {
+        capturedQuery = query;
+        capturedValues = values;
+      },
+    };
+    global.ChatParticipant = {
+      findOne: async (id) => ({
+        id,
+        historyClearedThroughMessageId: '42',
+        lastReadMessageId: '42',
+      }),
+    };
+
+    try {
+      const participant = await ChatParticipantQueryMethods.clearHistory(
+        '7',
+        '42',
+        '2026-08-28T12:00:00.000Z',
+      );
+
+      expect(capturedQuery).to.include('history_cleared_through_message_id = GREATEST');
+      expect(capturedQuery).to.include('last_read_message_id = GREATEST');
+      expect(capturedValues).to.deep.equal(['7', '42', '2026-08-28T12:00:00.000Z']);
+      expect(participant.historyClearedThroughMessageId).to.equal('42');
+    } finally {
+      Object.entries(previousGlobals).forEach(([name, value]) => {
+        if (value === undefined) {
+          delete global[name];
+        } else {
+          global[name] = value;
+        }
+      });
+    }
+  });
+
+  it('clears history only for the requesting participant and broadcasts the boundary', async () => {
+    const previousGlobals = {
+      sails: global.sails,
+      ChatConversation: global.ChatConversation,
+      ChatMessage: global.ChatMessage,
+      ChatParticipant: global.ChatParticipant,
+    };
+    const request = { currentUser: { id: '3' } };
+    const broadcasts = [];
+
+    global.ChatConversation = {
+      qm: {
+        getOneById: async () => ({ id: '10', projectId: '20', type: 'projectDirect' }),
+      },
+    };
+    global.ChatMessage = {
+      qm: { getLastByConversationId: async () => ({ id: '42' }) },
+    };
+    global.ChatParticipant = {
+      qm: {
+        clearHistory: async (id, messageId, clearedAt) => ({
+          id,
+          conversationId: '10',
+          userId: '3',
+          historyClearedThroughMessageId: messageId,
+          lastReadMessageId: messageId,
+          lastReadAt: clearedAt,
+        }),
+      },
+    };
+    global.sails = {
+      helpers: {
+        chat: {
+          getConversationAccess: {
+            with: async () => ({ participant: { id: '7' } }),
+          },
+        },
+      },
+      sockets: { broadcast: (...args) => broadcasts.push(args) },
+    };
+
+    try {
+      const result = await clearChatConversationHistory.fn.call({ req: request }, { id: '10' });
+
+      expect(result.item).to.include({
+        conversationId: '10',
+        conversationType: 'projectDirect',
+        projectId: '20',
+        userId: '3',
+        historyClearedThroughMessageId: '42',
+        lastReadMessageId: '42',
+      });
+      expect(broadcasts).to.deep.equal([
+        ['@user:3', 'chatConversationHistoryClear', { item: result.item }, request],
+      ]);
     } finally {
       Object.entries(previousGlobals).forEach(([name, value]) => {
         if (value === undefined) {

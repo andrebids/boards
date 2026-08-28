@@ -293,6 +293,12 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleChatConversationRead(item));
     });
 
+    const handleChatConversationHistoryClear = api.makeHandleChatConversationHistoryClear(
+      ({ item }) => {
+        emit(entryActions.handleChatConversationHistoryClear(item));
+      },
+    );
+
     const handleChatProjectAccessRevoke = ({ item }) => {
       emit(entryActions.handleChatProjectAccessRevoke(item.projectId));
     };
@@ -426,6 +432,7 @@ const createSocketEventsChannel = () =>
     socket.on('chatMessageDelete', handleChatMessageDelete);
     socket.on('chatMessageAttachmentCreate', handleChatMessageAttachmentCreate);
     socket.on('chatConversationRead', handleChatConversationRead);
+    socket.on('chatConversationHistoryClear', handleChatConversationHistoryClear);
     socket.on('chatProjectAccessRevoke', handleChatProjectAccessRevoke);
     socket.on('chatConversationAccessRevoke', handleChatConversationAccessRevoke);
     socket.on('chatParticipantUpdate', handleChatParticipantUpdate);
@@ -529,6 +536,7 @@ const createSocketEventsChannel = () =>
       socket.off('chatMessageDelete', handleChatMessageDelete);
       socket.off('chatMessageAttachmentCreate', handleChatMessageAttachmentCreate);
       socket.off('chatConversationRead', handleChatConversationRead);
+      socket.off('chatConversationHistoryClear', handleChatConversationHistoryClear);
       socket.off('chatProjectAccessRevoke', handleChatProjectAccessRevoke);
       socket.off('chatConversationAccessRevoke', handleChatConversationAccessRevoke);
       socket.off('chatParticipantUpdate', handleChatParticipantUpdate);

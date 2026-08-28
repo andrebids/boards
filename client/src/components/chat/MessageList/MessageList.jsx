@@ -29,6 +29,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import entryActions from '../../../entry-actions';
+import { AlertDialog } from '../../../lib/custom-ui';
 import UserAvatar from '../../users/UserAvatar';
 import LazyEmojiPicker, {
   EMOJI_CATEGORY_ICONS,
@@ -109,6 +110,7 @@ const MessageList = React.memo(
     const [activeActionsMessageId, setActiveActionsMessageId] = useState(null);
     const [forwardingMessageId, setForwardingMessageId] = useState(null);
     const [pendingForward, setPendingForward] = useState(null);
+    const [pendingDeleteMessageId, setPendingDeleteMessageId] = useState(null);
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [editingText, setEditingText] = useState('');
     const [focusedMessageId, setFocusedMessageId] = useState(() => {
@@ -324,11 +326,7 @@ const MessageList = React.memo(
           setEditingMessageId(message.id);
           setEditingText(message.text || '');
         } else if (action === 'delete') {
-          // Keep deletion behind an explicit native confirmation.
-          // eslint-disable-next-line no-alert
-          if (window.confirm(t('chat.confirmDeleteMessage'))) {
-            dispatch(entryActions.deleteChatMessage(message.id));
-          }
+          setPendingDeleteMessageId(message.id);
         } else if (action === 'link') {
           const url = new URL(`/projects/${projectId}`, window.location.origin);
           url.searchParams.set('chatConversation', conversationId);
@@ -342,6 +340,17 @@ const MessageList = React.memo(
       },
       [closeMenus, conversationId, dispatch, projectId, t],
     );
+
+    const handleDeleteMessageCancel = useCallback(() => {
+      setPendingDeleteMessageId(null);
+    }, []);
+
+    const handleDeleteMessageConfirm = useCallback(() => {
+      if (pendingDeleteMessageId) {
+        dispatch(entryActions.deleteChatMessage(pendingDeleteMessageId));
+      }
+      setPendingDeleteMessageId(null);
+    }, [dispatch, pendingDeleteMessageId]);
 
     const saveEdit = useCallback(() => {
       const text = editingText.trim();
@@ -864,6 +873,16 @@ const MessageList = React.memo(
             onClose={() => setSelectedAttachment(null)}
           />
         )}
+        <AlertDialog
+          cancelLabel={t('action.cancel')}
+          confirmLabel={t('chat.deleteMessage')}
+          description={t('chat.confirmDeleteMessage')}
+          open={pendingDeleteMessageId !== null}
+          title={t('chat.deleteMessage')}
+          tone="danger"
+          onCancel={handleDeleteMessageCancel}
+          onConfirm={handleDeleteMessageConfirm}
+        />
       </div>
     );
   },

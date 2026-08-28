@@ -56,6 +56,10 @@ module.exports = {
       defaultsTo: false,
       columnName: 'is_muted',
     },
+    isPinned: {
+      type: 'boolean',
+      columnName: 'is_pinned',
+    },
     notificationLevel: {
       type: 'string',
       isIn: Object.values(NotificationLevels),
@@ -84,6 +88,10 @@ module.exports = {
     lastReadMessageId: {
       model: 'ChatMessage',
       columnName: 'last_read_message_id',
+    },
+    historyClearedThroughMessageId: {
+      model: 'ChatMessage',
+      columnName: 'history_cleared_through_message_id',
     },
   },
 };

@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { isIdAtOrBefore } = require('../../../utils/id-helpers');
 
 const Errors = {
   PROJECT_NOT_FOUND: { projectNotFound: 'Project not found' },
@@ -106,20 +107,39 @@ module.exports = {
     const lastMessagesByConversationId = new Map(
       lastMessages.map((message) => [message.conversationId, message]),
     );
-    const conversations = accessibleConversations.map((conversation) => {
+    const conversations = accessibleConversations.flatMap((conversation) => {
       const lastMessage = lastMessagesByConversationId.get(conversation.id);
-      return {
+      const currentParticipant = (participantsByConversationId.get(conversation.id) || []).find(
+        ({ userId }) => userId === currentUser.id,
+      );
+      const isHistoryCleared = isIdAtOrBefore(
+        lastMessage?.id,
+        currentParticipant?.historyClearedThroughMessageId,
+      );
+
+      if (isHistoryCleared && conversation.type !== ChatConversation.Types.PROJECT_GROUP) {
+        return [];
+      }
+
+      return [{
         ...conversation,
-        lastMessage: lastMessage ? sails.helpers.chat.presentMessage(lastMessage) : null,
-      };
+        lastMessage:
+          lastMessage && !isHistoryCleared
+            ? sails.helpers.chat.presentMessage(lastMessage)
+            : null,
+      }];
     });
     const conversationIds = sails.helpers.utils.mapRecords(conversations);
+    const visibleConversationIds = new Set(conversationIds);
     const participants = allParticipants.filter(
       ({ conversationId, userId }) =>
-        accessibleConversationIds.has(conversationId) &&
+        visibleConversationIds.has(conversationId) &&
         (!groupConversationIds.has(conversationId) || memberUserIdsSet.has(userId)),
     );
     groupConversationIds.forEach((conversationId) => {
+      if (!visibleConversationIds.has(conversationId)) {
+        return;
+      }
       const currentParticipant = participantsByConversationId
         .get(conversationId)
         .find(({ userId }) => userId === currentUser.id);
@@ -135,7 +155,12 @@ module.exports = {
 
     const userIds = _.union(
       sails.helpers.utils.mapRecords(participants, 'userId', true),
-      sails.helpers.utils.mapRecords(lastMessages.filter(Boolean), 'userId', true, true),
+      sails.helpers.utils.mapRecords(
+        conversations.map(({ lastMessage }) => lastMessage).filter(Boolean),
+        'userId',
+        true,
+        true,
+      ),
     );
     const users = await User.qm.getByIds(userIds);
 

@@ -41,4 +41,19 @@ describe('Chat participant notification preferences', () => {
     });
     expect(serialized).not.to.have.property('toJSON');
   });
+
+  it('preserves an explicit unpinned preference when serializing', () => {
+    const serialized = ChatParticipantDefinition.customToJSON.call({
+      id: 'participant-1',
+      notificationLevel: 'all',
+      mutedUntil: null,
+      isPinned: false,
+      toJSON: () => null,
+    });
+
+    expect(serialized).to.include({
+      id: 'participant-1',
+      isPinned: false,
+    });
+  });
 });

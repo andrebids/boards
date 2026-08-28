@@ -32,6 +32,23 @@ const advanceReadCursor = async (id, messageId, lastReadAt) => {
   return ChatParticipant.findOne(id);
 };
 
+const clearHistory = async (id, messageId, clearedAt) => {
+  await sails.sendNativeQuery(
+    `UPDATE chat_participant
+     SET history_cleared_through_message_id = GREATEST(
+           COALESCE(history_cleared_through_message_id, 0),
+           $2
+         ),
+         last_read_message_id = GREATEST(COALESCE(last_read_message_id, 0), $2),
+         last_read_at = $3,
+         updated_at = $3
+     WHERE id = $1`,
+    [id, messageId, clearedAt],
+  );
+
+  return ChatParticipant.findOne(id);
+};
+
 module.exports = {
   createOne,
   getByConversationId,
@@ -41,4 +58,5 @@ module.exports = {
   updateOne,
   deleteOne,
   advanceReadCursor,
+  clearHistory,
 };

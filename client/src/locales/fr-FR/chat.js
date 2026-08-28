@@ -62,6 +62,8 @@ export default {
       createGroup: 'Créer un groupe',
       createGroupDescription: 'Nommez le groupe et choisissez ses participants.',
       confirmDeleteMessage: 'Voulez-vous vraiment supprimer ce message ?',
+      confirmRemoveConversationHistory:
+        'Supprimer l’historique de « {{conversation}} » uniquement pour vous ? Les autres personnes continueront à le voir. Cette action est irréversible.',
       deleteMessage: 'Supprimer le message',
       directConversations: 'Conversations directes',
       downloadFile: 'Télécharger le fichier',
@@ -117,6 +119,7 @@ export default {
       pendingMessageLeaveWarning:
         'Des messages sont encore en cours d’envoi. Si vous quittez maintenant, ils risquent d’être perdus. Voulez-vous continuer ?',
       peopleTyping: '{{count}} personnes écrivent…',
+      pin: 'Épingler',
       pinned: 'Épinglée',
       previewUnavailable: 'Aperçu indisponible',
       project: 'Projet',
@@ -124,6 +127,8 @@ export default {
       recent: 'Récentes',
       removeAttachment: 'Supprimer {{name}}',
       removeFromGroup: 'Retirer',
+      removeConversationHistory: 'Supprimer l’historique',
+      removeConversationHistoryFailed: 'Impossible de supprimer l’historique. Réessayez.',
       reply: 'Répondre',
       replyingTo: 'Réponse à {{name}}',
       restore: 'Restaurer',
@@ -145,6 +150,7 @@ export default {
       startConversation: 'Démarrer une conversation',
       viewAllMembers: 'Voir les {{count}} membres',
       unavailable: 'Indisponible',
+      unpin: 'Retirer des épinglées',
       unmute: 'Réactiver les notifications',
       attachmentTooLarge: 'La taille d’un fichier ne peut pas dépasser {{size}} Mo.',
       attachmentUploading: 'Envoi de la pièce jointe…',

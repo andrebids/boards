@@ -149,6 +149,7 @@ module.exports.routes = {
   'POST /api/projects/:projectId/chat-conversations/groups': 'chat-conversations/create-group',
   'PATCH /api/chat-conversations/:id': 'chat-conversations/update',
   'PATCH /api/chat-conversations/:id/preferences': 'chat-conversations/update-preferences',
+  'DELETE /api/chat-conversations/:id/history': 'chat-conversations/clear-history',
   'POST /api/chat-conversations/:id/typing': 'chat-conversations/typing',
   'POST /api/chat-conversations/:conversationId/participants':
     'chat-conversation-participants/create',

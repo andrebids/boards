@@ -2,6 +2,46 @@ import ChatMessage from './ChatMessage';
 import ActionTypes from '../constants/ActionTypes';
 
 describe('ChatMessage optimistic reconciliation', () => {
+  test('removes persisted history while preserving pending and failed local messages', () => {
+    const messages = [
+      { id: '41', conversationId: 'conversation-1', delete: jest.fn() },
+      {
+        id: 'local:pending',
+        conversationId: 'conversation-1',
+        isPending: true,
+        delete: jest.fn(),
+      },
+      {
+        id: 'local:failed',
+        conversationId: 'conversation-1',
+        isFailed: true,
+        delete: jest.fn(),
+      },
+      { id: '43', conversationId: 'conversation-1', delete: jest.fn() },
+    ];
+    const model = {
+      filter: jest.fn(() => ({ toModelArray: () => messages })),
+    };
+
+    ChatMessage.reducer(
+      {
+        type: ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS,
+        payload: {
+          historyState: {
+            conversationId: 'conversation-1',
+            historyClearedThroughMessageId: '42',
+          },
+        },
+      },
+      model,
+    );
+
+    expect(messages[0].delete).toHaveBeenCalledTimes(1);
+    expect(messages[1].delete).not.toHaveBeenCalled();
+    expect(messages[2].delete).not.toHaveBeenCalled();
+    expect(messages[3].delete).not.toHaveBeenCalled();
+  });
+
   test('adds the latest message received through a conversation summary update', () => {
     const lastMessage = {
       id: 'message-1',

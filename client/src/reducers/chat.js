@@ -98,6 +98,9 @@ const initialState = {
   replyTargetsByConversation: {},
   typingByConversation: {},
   isPreferencesUpdatingByConversation: {},
+  isHistoryClearingByConversation: {},
+  historyClearErrorsByConversation: {},
+  historyClearedThroughByConversation: {},
 };
 
 // eslint-disable-next-line default-param-last
@@ -170,6 +173,14 @@ export default (state = initialState, { type, payload }) => {
       };
     case ActionTypes.CHAT_INBOX_ITEM_UPDATE_HANDLE: {
       const conversationId = getInboxConversationId(payload.item);
+      const historyBoundary = state.historyClearedThroughByConversation[conversationId];
+      if (
+        payload.item.lastMessage?.id &&
+        historyBoundary &&
+        isIdAtOrBefore(payload.item.lastMessage.id, historyBoundary)
+      ) {
+        return state;
+      }
       const previousItem = state.inboxItemsByConversationId[conversationId];
       const canInsertItem = conversationId && payload.item.projectId;
       if (!conversationId || (!previousItem && !canInsertItem)) {
@@ -526,6 +537,75 @@ export default (state = initialState, { type, payload }) => {
         inboxMeta: updateInboxMetaForItemChange(state.inboxMeta, currentItem, restoredItem),
       };
     }
+    case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR:
+      return {
+        ...state,
+        isHistoryClearingByConversation: {
+          ...state.isHistoryClearingByConversation,
+          [payload.conversationId]: true,
+        },
+        historyClearErrorsByConversation: {
+          ...state.historyClearErrorsByConversation,
+          [payload.conversationId]: null,
+        },
+      };
+    case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
+    case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE: {
+      const { historyState } = payload;
+      const { conversationId } = historyState;
+      const previousInboxItem = state.inboxItemsByConversationId[conversationId];
+      const inboxItemsByConversationId = { ...state.inboxItemsByConversationId };
+      delete inboxItemsByConversationId[conversationId];
+      return {
+        ...state,
+        inboxItemsByConversationId,
+        inboxMeta: previousInboxItem
+          ? updateInboxMetaForItemChange(state.inboxMeta, previousInboxItem, null)
+          : state.inboxMeta,
+        openConversationIds:
+          historyState.conversationType === 'projectGroup'
+            ? state.openConversationIds
+            : state.openConversationIds.filter((id) => id !== conversationId),
+        minimizedConversationIds:
+          historyState.conversationType === 'projectGroup'
+            ? state.minimizedConversationIds
+            : state.minimizedConversationIds.filter((id) => id !== conversationId),
+        hasMoreMessagesByConversation: {
+          ...state.hasMoreMessagesByConversation,
+          [conversationId]: false,
+        },
+        hasMoreNewerMessagesByConversation: {
+          ...state.hasMoreNewerMessagesByConversation,
+          [conversationId]: false,
+        },
+        historyClearedThroughByConversation: {
+          ...state.historyClearedThroughByConversation,
+          [conversationId]: historyState.historyClearedThroughMessageId,
+        },
+        isHistoryClearingByConversation: {
+          ...state.isHistoryClearingByConversation,
+          [conversationId]: false,
+        },
+        historyClearErrorsByConversation: {
+          ...state.historyClearErrorsByConversation,
+          [conversationId]: null,
+        },
+        lastMessageAlert:
+          state.lastMessageAlert?.conversationId === conversationId ? null : state.lastMessageAlert,
+      };
+    }
+    case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__FAILURE:
+      return {
+        ...state,
+        isHistoryClearingByConversation: {
+          ...state.isHistoryClearingByConversation,
+          [payload.conversationId]: false,
+        },
+        historyClearErrorsByConversation: {
+          ...state.historyClearErrorsByConversation,
+          [payload.conversationId]: payload.error,
+        },
+      };
     case ActionTypes.CHAT_CONVERSATION_CREATE: {
       const nextCreationErrors = { ...state.conversationCreationErrorsByKey };
       delete nextCreationErrors[payload.requestKey];
@@ -651,6 +731,14 @@ export default (state = initialState, { type, payload }) => {
       };
     }
     case ActionTypes.CHAT_MESSAGE_ALERT_HANDLE: {
+      if (
+        isIdAtOrBefore(
+          payload.alert.messageId,
+          state.historyClearedThroughByConversation[payload.alert.conversationId],
+        )
+      ) {
+        return state;
+      }
       const inboxItem = state.inboxItemsByConversationId[payload.alert.conversationId];
       if (isAlertCoveredByReadState(payload.alert, inboxItem)) {
         return state;
@@ -689,6 +777,7 @@ export default (state = initialState, { type, payload }) => {
               ...state.inboxItemsByConversationId,
               [participant.conversationId]: {
                 ...previousItem,
+                isPinned: participant.isPinned,
                 notificationLevel: participant.notificationLevel,
                 mutedUntil: participant.mutedUntil,
                 isMuted: participant.isMuted,

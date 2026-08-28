@@ -195,6 +195,14 @@ const markChatConversationAsRead = (conversationId, data, headers) =>
     item: transformDates(body.item, ['lastReadAt']),
   }));
 
+const clearChatConversationHistory = (conversationId, headers) =>
+  socket
+    .delete(`/chat-conversations/${conversationId}/history`, undefined, headers)
+    .then((body) => ({
+      ...body,
+      item: transformDates(body.item, ['lastReadAt']),
+    }));
+
 const makeHandleChatConversationCreate = (next) => (body) => {
   next({
     ...body,
@@ -229,6 +237,8 @@ const makeHandleChatConversationRead = (next) => (body) => {
   });
 };
 
+const makeHandleChatConversationHistoryClear = makeHandleChatConversationRead;
+
 const makeHandleChatParticipantUpdate = (next) => (body) => {
   next({ ...body, item: transformChatParticipant(body.item) });
 };
@@ -258,6 +268,7 @@ export default {
   deleteChatMessage,
   forwardChatMessage,
   markChatConversationAsRead,
+  clearChatConversationHistory,
   makeHandleChatConversationCreate,
   makeHandleChatConversationUpdate,
   makeHandleChatMessageCreate,
@@ -265,5 +276,6 @@ export default {
   makeHandleChatMessageDelete,
   makeHandleChatMessageAttachmentCreate,
   makeHandleChatConversationRead,
+  makeHandleChatConversationHistoryClear,
   makeHandleChatParticipantUpdate,
 };

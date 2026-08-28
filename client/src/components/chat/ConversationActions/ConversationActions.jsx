@@ -1,11 +1,23 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
-import { AtSign, Bell, BellOff, Clock3, LogOut, MoreHorizontal, Users } from 'lucide-react';
-import { useDispatch } from 'react-redux';
+import {
+  AtSign,
+  Bell,
+  BellOff,
+  Clock3,
+  LogOut,
+  MoreHorizontal,
+  Pin,
+  PinOff,
+  Trash2,
+  Users,
+} from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import entryActions from '../../../entry-actions';
+import selectors from '../../../selectors';
 import { AlertDialog } from '../../../lib/custom-ui';
 import { useChat } from '../ChatContext';
 
@@ -15,15 +27,25 @@ const MENU_GAP = 6;
 const VIEWPORT_GAP = 8;
 
 const ConversationActions = React.memo((props) => {
-  const { canLeave, conversationId, conversationTitle, isMuted, participant } = props;
+  const { canLeave, conversationId, conversationTitle, isMuted, isPinned, participant } = props;
   const [t] = useTranslation();
   const dispatch = useDispatch();
   const { openGroupManager } = useChat();
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
+  const wasHistoryClearingRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [position, setPosition] = useState({ left: 0, top: 0 });
+  const isHistoryClearing = useSelector(
+    (state) =>
+      selectors.selectChatState(state).isHistoryClearingByConversation[conversationId] || false,
+  );
+  const historyClearError = useSelector(
+    (state) =>
+      selectors.selectChatState(state).historyClearErrorsByConversation[conversationId] || null,
+  );
   const canManage = canLeave && participant?.role === 'owner';
 
   const updatePosition = useCallback(() => {
@@ -97,11 +119,12 @@ const ConversationActions = React.memo((props) => {
   }, [isOpen]);
 
   const updatePreferences = useCallback(
-    (notificationLevel, mutedUntil = null) => {
+    (notificationLevel, mutedUntil = null, extraPreferences = {}) => {
       dispatch(
         entryActions.updateChatConversationPreferences(conversationId, {
           notificationLevel,
           mutedUntil,
+          ...extraPreferences,
         }),
       );
       setIsOpen(false);
@@ -120,10 +143,32 @@ const ConversationActions = React.memo((props) => {
     setIsLeaveDialogOpen(true);
   }, []);
 
+  const handleClearHistoryClick = useCallback(() => {
+    setIsOpen(false);
+    setIsHistoryDialogOpen(true);
+  }, []);
+
   const handleManageGroupClick = useCallback(() => {
     setIsOpen(false);
     openGroupManager(conversationId);
   }, [conversationId, openGroupManager]);
+
+  const handleTogglePinnedClick = useCallback(() => {
+    const mutedUntil =
+      isMuted && participant?.notificationLevel !== 'none'
+        ? new Date(participant.mutedUntil).toISOString()
+        : null;
+
+    updatePreferences(participant?.notificationLevel || 'all', mutedUntil, {
+      isPinned: !isPinned,
+    });
+  }, [
+    isMuted,
+    isPinned,
+    participant?.mutedUntil,
+    participant?.notificationLevel,
+    updatePreferences,
+  ]);
 
   const handleLeaveGroupCancel = useCallback(() => {
     setIsLeaveDialogOpen(false);
@@ -134,6 +179,26 @@ const ConversationActions = React.memo((props) => {
     setIsLeaveDialogOpen(false);
     dispatch(entryActions.leaveChatConversation(conversationId));
   }, [conversationId, dispatch]);
+
+  const handleClearHistoryCancel = useCallback(() => {
+    setIsHistoryDialogOpen(false);
+    window.requestAnimationFrame(() => buttonRef.current?.focus());
+  }, []);
+
+  const handleClearHistoryConfirm = useCallback(() => {
+    dispatch(entryActions.clearChatConversationHistory(conversationId));
+  }, [conversationId, dispatch]);
+
+  useEffect(() => {
+    if (isHistoryClearing) {
+      wasHistoryClearingRef.current = true;
+    } else if (wasHistoryClearingRef.current) {
+      wasHistoryClearingRef.current = false;
+      if (!historyClearError) {
+        setIsHistoryDialogOpen(false);
+      }
+    }
+  }, [historyClearError, isHistoryClearing]);
 
   const portalTarget = document.getElementById('app') || document.body;
 
@@ -196,9 +261,17 @@ const ConversationActions = React.memo((props) => {
                   {t('chat.unmute')}
                 </button>
               )}
+              <span className={styles.menuDivider} aria-hidden="true" />
+              <button type="button" role="menuitem" onClick={handleTogglePinnedClick}>
+                {isPinned ? (
+                  <PinOff aria-hidden="true" size={15} />
+                ) : (
+                  <Pin aria-hidden="true" size={15} />
+                )}
+                {t(isPinned ? 'chat.unpin' : 'chat.pin')}
+              </button>
               {canLeave && (
                 <>
-                  <span className={styles.menuDivider} aria-hidden="true" />
                   {canManage && (
                     <button type="button" role="menuitem" onClick={handleManageGroupClick}>
                       <Users aria-hidden="true" size={15} />
@@ -216,6 +289,15 @@ const ConversationActions = React.memo((props) => {
                   </button>
                 </>
               )}
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.destructiveAction}
+                onClick={handleClearHistoryClick}
+              >
+                <Trash2 aria-hidden="true" size={15} />
+                {t('chat.removeConversationHistory')}
+              </button>
             </div>,
             portalTarget,
           )}
@@ -230,6 +312,21 @@ const ConversationActions = React.memo((props) => {
         onCancel={handleLeaveGroupCancel}
         onConfirm={handleLeaveGroupConfirm}
       />
+      <AlertDialog
+        cancelLabel={t('action.cancel')}
+        confirmLabel={t('chat.removeConversationHistory')}
+        description={t('chat.confirmRemoveConversationHistory', {
+          conversation: conversationTitle,
+        })}
+        isPending={isHistoryClearing}
+        open={isHistoryDialogOpen}
+        title={t('chat.removeConversationHistory')}
+        tone="danger"
+        onCancel={handleClearHistoryCancel}
+        onConfirm={handleClearHistoryConfirm}
+      >
+        {historyClearError && <span role="alert">{t('chat.removeConversationHistoryFailed')}</span>}
+      </AlertDialog>
     </>
   );
 });
@@ -239,7 +336,10 @@ ConversationActions.propTypes = {
   conversationId: PropTypes.string.isRequired,
   conversationTitle: PropTypes.string,
   isMuted: PropTypes.bool,
+  isPinned: PropTypes.bool,
   participant: PropTypes.shape({
+    isPinned: PropTypes.bool,
+    mutedUntil: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
     notificationLevel: PropTypes.string,
     role: PropTypes.string,
   }),
@@ -249,6 +349,7 @@ ConversationActions.defaultProps = {
   canLeave: false,
   conversationTitle: undefined,
   isMuted: false,
+  isPinned: false,
   participant: undefined,
 };
 

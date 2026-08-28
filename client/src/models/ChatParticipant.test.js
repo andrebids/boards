@@ -49,6 +49,7 @@ describe('ChatParticipant notification preferences', () => {
     {
       notificationLevel: 'none',
       mutedUntil: null,
+      isPinned: false,
     },
   ])('shows the muted state optimistically for %#', (data) => {
     const participant = {
@@ -81,5 +82,36 @@ describe('ChatParticipant notification preferences', () => {
     });
 
     expect(participant.update).toHaveBeenCalledWith(previousData);
+  });
+});
+
+describe('ChatParticipant history boundary', () => {
+  test('stores the confirmed boundary for the current participant', () => {
+    const participant = { update: jest.fn() };
+    const model = {
+      filter: jest.fn(() => ({ first: () => participant })),
+    };
+
+    ChatParticipant.reducer(
+      {
+        type: ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS,
+        payload: {
+          historyState: {
+            conversationId: 'conversation-1',
+            userId: 'user-1',
+            historyClearedThroughMessageId: '42',
+            lastReadMessageId: '42',
+            lastReadAt: '2026-08-28T12:00:00.000Z',
+          },
+        },
+      },
+      model,
+    );
+
+    expect(participant.update).toHaveBeenCalledWith({
+      historyClearedThroughMessageId: '42',
+      lastReadMessageId: '42',
+      lastReadAt: '2026-08-28T12:00:00.000Z',
+    });
   });
 });

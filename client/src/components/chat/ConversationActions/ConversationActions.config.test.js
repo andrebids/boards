@@ -36,4 +36,12 @@ describe('ConversationActions', () => {
     expect(actionsSource).toMatch(/t\('chat\.manageGroup'\)/);
     expect(chatWindowSource).toMatch(/groupManagerConversationId === id/);
   });
+
+  test('offers the pinned toggle for every conversation', () => {
+    const source = fs.readFileSync(componentPath, 'utf8');
+
+    expect(source).not.toMatch(/isPinnable/);
+    expect(source).toMatch(/isPinned: !isPinned/);
+    expect(source).toMatch(/t\(isPinned \? 'chat\.unpin' : 'chat\.pin'\)/);
+  });
 });

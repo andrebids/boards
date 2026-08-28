@@ -1,11 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { ArrowLeft, AtSign, Bell, BellOff, LogOut, UserPlus } from 'lucide-react';
+import {
+  ArrowLeft,
+  AtSign,
+  Bell,
+  BellOff,
+  LogOut,
+  MoreHorizontal,
+  Trash2,
+  UserPlus,
+  Users,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDropzone } from 'react-dropzone';
 
-import { CloseButton } from '../../../lib/custom-ui';
+import { AlertDialog, CloseButton } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useChat } from '../ChatContext';
@@ -50,6 +60,14 @@ const ChatWindow = React.memo(({ id }) => {
     () => selectors.makeSelectChatTypingUserIdsByConversationId(),
     [],
   );
+  const selectIsHistoryClearingByConversationId = useMemo(
+    () => selectors.makeSelectIsChatHistoryClearingByConversationId(),
+    [],
+  );
+  const selectHistoryClearErrorByConversationId = useMemo(
+    () => selectors.makeSelectChatHistoryClearErrorByConversationId(),
+    [],
+  );
 
   const conversation = useSelector((state) => selectConversationById(state, id));
   const messages = useSelector((state) => selectMessagesByConversationId(state, id)) || [];
@@ -65,6 +83,12 @@ const ChatWindow = React.memo(({ id }) => {
   const members = useSelector(selectors.selectChatMembersForCurrentProject) || [];
   const conversations = useSelector(selectors.selectChatConversationsForCurrentProject) || [];
   const typingUserIds = useSelector((state) => selectTypingUserIdsByConversationId(state, id));
+  const isHistoryClearing = useSelector((state) =>
+    selectIsHistoryClearingByConversationId(state, id),
+  );
+  const historyClearError = useSelector((state) =>
+    selectHistoryClearErrorByConversationId(state, id),
+  );
 
   const dispatch = useDispatch();
   const {
@@ -81,7 +105,10 @@ const ChatWindow = React.memo(({ id }) => {
   const pendingReadMessageIdRef = useRef(null);
   const readHorizonTimeoutRef = useRef(null);
   const lastReadMessageIdRef = useRef(null);
+  const wasHistoryClearingRef = useRef(false);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [isGroupEditorOpen, setIsGroupEditorOpen] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
   const [shouldFocusComposer, setShouldFocusComposer] = useState(false);
@@ -133,9 +160,21 @@ const ChatWindow = React.memo(({ id }) => {
       setGroupTitle(conversation.title || '');
       setIsGroupEditorOpen(true);
       setIsOptionsOpen(false);
+      setIsActionsOpen(false);
       consumeGroupManager(id);
     }
   }, [consumeGroupManager, conversation, groupManagerConversationId, id]);
+
+  useEffect(() => {
+    if (isHistoryClearing) {
+      wasHistoryClearingRef.current = true;
+    } else if (wasHistoryClearingRef.current) {
+      wasHistoryClearingRef.current = false;
+      if (!historyClearError) {
+        setIsHistoryDialogOpen(false);
+      }
+    }
+  }, [historyClearError, isHistoryClearing]);
 
   const currentParticipant = conversation?.participants?.find(
     ({ userId }) => userId === currentUser.id,
@@ -323,11 +362,14 @@ const ChatWindow = React.memo(({ id }) => {
           {isCustomGroup && (
             <button
               type="button"
+              className={isGroupEditorOpen ? styles.actionButtonActive : undefined}
               aria-label={t('chat.manageGroup')}
+              aria-expanded={isGroupEditorOpen}
               onClick={() => {
                 setGroupTitle(conversation.title || '');
                 setIsGroupEditorOpen((value) => !value);
                 setIsOptionsOpen(false);
+                setIsActionsOpen(false);
               }}
             >
               <UserPlus aria-hidden="true" size={17} strokeWidth={2} />
@@ -346,6 +388,7 @@ const ChatWindow = React.memo(({ id }) => {
             onClick={() => {
               setIsOptionsOpen((value) => !value);
               setIsGroupEditorOpen(false);
+              setIsActionsOpen(false);
             }}
           >
             <NotificationIcon
@@ -353,6 +396,18 @@ const ChatWindow = React.memo(({ id }) => {
               size={hasConfiguredNotifications ? 18 : 17}
               strokeWidth={hasConfiguredNotifications ? 2.2 : 2}
             />
+          </button>
+          <button
+            type="button"
+            aria-label={t('chat.conversationActions')}
+            aria-expanded={isActionsOpen}
+            onClick={() => {
+              setIsActionsOpen((value) => !value);
+              setIsOptionsOpen(false);
+              setIsGroupEditorOpen(false);
+            }}
+          >
+            <MoreHorizontal aria-hidden="true" size={17} strokeWidth={2} />
           </button>
           <CloseButton ariaLabel={t('chat.close')} onClick={handleCloseClick} />
         </div>
@@ -389,9 +444,42 @@ const ChatWindow = React.memo(({ id }) => {
             )}
           </div>
         )}
+        {isActionsOpen && (
+          <div className={`${styles.headerMenu} ${styles.actionsMenu}`} role="menu">
+            <button
+              type="button"
+              className={styles.destructiveAction}
+              onClick={() => {
+                setIsActionsOpen(false);
+                setIsHistoryDialogOpen(true);
+              }}
+            >
+              <Trash2 aria-hidden="true" size={15} />
+              {t('chat.removeConversationHistory')}
+            </button>
+          </div>
+        )}
         {isGroupEditorOpen && (
-          <div className={styles.groupEditor}>
-            <strong>{t('chat.manageGroup')}</strong>
+          <div className={styles.groupEditor} role="dialog" aria-label={t('chat.manageGroup')}>
+            <div className={styles.groupEditorHeader}>
+              <span className={styles.groupEditorIcon}>
+                <Users aria-hidden="true" size={17} strokeWidth={2} />
+              </span>
+              <span className={styles.groupEditorHeading}>
+                <strong>{t('chat.manageGroup')}</strong>
+                <small>
+                  {t('chat.groupMemberCount', {
+                    count: conversation.participants?.length || 0,
+                  })}
+                </small>
+              </span>
+              <CloseButton
+                ariaLabel={t('chat.close')}
+                className={styles.groupEditorClose}
+                title={t('chat.close')}
+                onClick={() => setIsGroupEditorOpen(false)}
+              />
+            </div>
             {isGroupOwner && (
               <div className={styles.groupTitleEditor}>
                 <input
@@ -400,7 +488,11 @@ const ChatWindow = React.memo(({ id }) => {
                   aria-label={t('chat.groupName')}
                   onChange={(event) => setGroupTitle(event.target.value)}
                 />
-                <button type="button" onClick={handleGroupTitleSave}>
+                <button
+                  type="button"
+                  disabled={!groupTitle.trim() || groupTitle.trim() === conversation.title}
+                  onClick={handleGroupTitleSave}
+                >
                   {t('chat.save')}
                 </button>
               </div>
@@ -409,11 +501,18 @@ const ChatWindow = React.memo(({ id }) => {
               {members.map((member) => {
                 const isParticipant = participantUserIds.has(member.id);
                 return (
-                  <div key={member.id}>
-                    <span>{member.name}</span>
+                  <div key={member.id} className={styles.groupMember}>
+                    <ChatAvatar user={member} isOnline={member.isOnline} />
+                    <span className={styles.groupMemberCopy}>
+                      <strong>{member.name}</strong>
+                      <small>{member.username || t('chat.memberOfProject')}</small>
+                    </span>
                     {isGroupOwner && member.id !== currentUser.id && (
                       <button
                         type="button"
+                        className={
+                          isParticipant ? styles.removeMemberButton : styles.addMemberButton
+                        }
                         onClick={() =>
                           dispatch(
                             isParticipant
@@ -470,6 +569,19 @@ const ChatWindow = React.memo(({ id }) => {
         isDisabled={conversation.isBlocked}
         onFilesDropHandlerChange={handleFilesDropHandlerChange}
       />
+      <AlertDialog
+        cancelLabel={t('action.cancel')}
+        confirmLabel={t('chat.removeConversationHistory')}
+        description={t('chat.confirmRemoveConversationHistory', { conversation: title })}
+        isPending={isHistoryClearing}
+        open={isHistoryDialogOpen}
+        title={t('chat.removeConversationHistory')}
+        tone="danger"
+        onCancel={() => setIsHistoryDialogOpen(false)}
+        onConfirm={() => dispatch(entryActions.clearChatConversationHistory(id))}
+      >
+        {historyClearError && <span role="alert">{t('chat.removeConversationHistoryFailed')}</span>}
+      </AlertDialog>
     </section>
   );
 });

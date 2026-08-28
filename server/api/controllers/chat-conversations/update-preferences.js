@@ -13,6 +13,7 @@ const Errors = {
 module.exports = {
   inputs: {
     id: { ...idInput, required: true },
+    isPinned: { type: 'boolean' },
     notificationLevel: {
       type: 'string',
       isIn: Object.values(ChatParticipant.NotificationLevels),
@@ -48,6 +49,7 @@ module.exports = {
     }
 
     const item = await ChatParticipant.qm.updateOne(access.participant.id, {
+      ...(!_.isUndefined(inputs.isPinned) && { isPinned: inputs.isPinned }),
       notificationLevel: inputs.notificationLevel,
       mutedUntil,
       isMuted: inputs.notificationLevel === ChatParticipant.NotificationLevels.NONE || !!mutedUntil,

@@ -339,6 +339,8 @@ describe('Chat inbox', () => {
       expect(query).to.include('m.user_id <> $1');
       expect(query).to.include('m.deleted_at IS NULL');
       expect(query).to.include('MIN(m.id)');
+      expect(query).to.include('GREATEST(');
+      expect(query).to.include('COALESCE(p.history_cleared_through_message_id, 0)');
       expect(values).to.deep.equal(['3', ['10'], '](3)']);
       expect(result).to.deep.equal({
         10: {

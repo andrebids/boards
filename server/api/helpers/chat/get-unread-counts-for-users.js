@@ -30,7 +30,10 @@ module.exports = {
         AND participant.user_id = recipients.user_id
        LEFT JOIN chat_message message
          ON message.conversation_id = $1
-        AND message.id > COALESCE(participant.last_read_message_id, 0)
+        AND message.id > GREATEST(
+          COALESCE(participant.last_read_message_id, 0),
+          COALESCE(participant.history_cleared_through_message_id, 0)
+        )
         AND (message.user_id IS NULL OR message.user_id <> recipients.user_id)
         AND message.deleted_at IS NULL
        GROUP BY recipients.user_id`,

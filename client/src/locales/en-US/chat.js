@@ -61,6 +61,8 @@ export default {
       createGroup: 'Create group',
       createGroupDescription: 'Name the group and choose who takes part.',
       confirmDeleteMessage: 'Are you sure you want to delete this message?',
+      confirmRemoveConversationHistory:
+        'Remove the history of "{{conversation}}" for you only? Other people will still see it. This action cannot be undone.',
       deleteMessage: 'Delete message',
       directConversations: 'Direct conversations',
       downloadFile: 'Download file',
@@ -116,6 +118,7 @@ export default {
       pendingMessageLeaveWarning:
         'Some messages are still being sent. If you leave now, these messages may be lost. Do you want to continue?',
       peopleTyping: '{{count}} people are typing…',
+      pin: 'Pin',
       pinned: 'Pinned',
       previewUnavailable: 'Preview unavailable',
       project: 'Project',
@@ -123,6 +126,8 @@ export default {
       recent: 'Recent',
       removeAttachment: 'Remove {{name}}',
       removeFromGroup: 'Remove',
+      removeConversationHistory: 'Remove history',
+      removeConversationHistoryFailed: 'The history could not be removed. Try again.',
       reply: 'Reply',
       replyingTo: 'Replying to {{name}}',
       restore: 'Restore',
@@ -144,6 +149,7 @@ export default {
       startConversation: 'Start conversation',
       viewAllMembers: 'View all {{count}} members',
       unavailable: 'Unavailable',
+      unpin: 'Remove from pinned',
       unmute: 'Turn notifications back on',
       attachmentTooLarge: 'Files cannot be larger than {{size}} MB.',
       attachmentUploading: 'Uploading attachment…',

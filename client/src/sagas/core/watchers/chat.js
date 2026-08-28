@@ -112,6 +112,13 @@ export default function* chatWatchers() {
     takeEvery(EntryActionTypes.CHAT_CONVERSATION_READ_HANDLE, ({ payload: { readState } }) =>
       services.handleChatConversationRead(readState),
     ),
+    takeEvery(EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR, ({ payload: { id } }) =>
+      services.clearChatConversationHistory(id),
+    ),
+    takeEvery(
+      EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE,
+      ({ payload: { historyState } }) => services.handleChatConversationHistoryClear(historyState),
+    ),
     takeEvery(EntryActionTypes.CHAT_PROJECT_ACCESS_REVOKE_HANDLE, ({ payload: { projectId } }) =>
       services.handleChatProjectAccessRevoke(projectId),
     ),

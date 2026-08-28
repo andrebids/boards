@@ -4,6 +4,9 @@ export const isGeneralConversation = (conversation) =>
 export const isCustomGroupConversation = (conversation) =>
   conversation?.type === 'projectCustomGroup';
 
+export const isChatParticipantPinned = (participant, isPinnedByDefault = false) =>
+  participant?.isPinned ?? isPinnedByDefault;
+
 export const isDirectConversation = (conversation) => conversation?.type === 'projectDirect';
 
 export const hasUnreadMessages = (conversation) => (conversation?.unreadCount || 0) > 0;

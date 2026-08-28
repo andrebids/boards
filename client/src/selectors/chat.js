@@ -9,6 +9,7 @@ import { createSelector as createReselector } from 'reselect';
 import orm from '../orm';
 import { selectPath } from './router';
 import { isLocalId } from '../utils/local-id';
+import { isIdAtOrBefore } from '../utils/id-helpers';
 
 const enrichConversation = (conversationModel) => {
   const participantModels = conversationModel.participants.toModelArray();
@@ -157,7 +158,8 @@ export const selectChatMembersForCurrentProject = createSelector(
 export const selectChatConversationsForCurrentProject = createSelector(
   orm,
   (state) => selectPath(state).projectId,
-  ({ ChatConversation }, projectId) => {
+  (state) => selectChatState(state).historyClearedThroughByConversation,
+  ({ ChatConversation }, projectId, historyBoundaries) => {
     if (!projectId) {
       return [];
     }
@@ -165,6 +167,11 @@ export const selectChatConversationsForCurrentProject = createSelector(
     return ChatConversation.filter({ projectId })
       .toModelArray()
       .map(enrichConversation)
+      .filter(
+        (conversation) =>
+          conversation.type === 'projectGroup' ||
+          !isIdAtOrBefore(conversation.lastMessage?.id, historyBoundaries[conversation.id]),
+      )
       .sort((left, right) => {
         const leftTime = left.lastMessageAt ? new Date(left.lastMessageAt).getTime() : 0;
         const rightTime = right.lastMessageAt ? new Date(right.lastMessageAt).getTime() : 0;
@@ -236,6 +243,12 @@ export const selectChatUnreadTotal = createSelector(
 export const makeSelectIsChatMessagesFetchingByConversationId = () => (state, conversationId) =>
   Boolean(selectChatState(state).isMessagesFetchingByConversation[conversationId]);
 
+export const makeSelectIsChatHistoryClearingByConversationId = () => (state, conversationId) =>
+  Boolean(selectChatState(state).isHistoryClearingByConversation[conversationId]);
+
+export const makeSelectChatHistoryClearErrorByConversationId = () => (state, conversationId) =>
+  selectChatState(state).historyClearErrorsByConversation[conversationId] || null;
+
 export const makeSelectHasMoreChatMessagesByConversationId = () => (state, conversationId) =>
   selectChatState(state).hasMoreMessagesByConversation[conversationId] !== false;
 
@@ -275,6 +288,8 @@ export default {
   selectChatMessageById,
   makeSelectChatMessagesByConversationId,
   selectChatMessagesByConversationId,
+  makeSelectIsChatHistoryClearingByConversationId,
+  makeSelectChatHistoryClearErrorByConversationId,
   selectHasPendingChatMessages,
   selectChatUnreadTotal,
   makeSelectIsChatMessagesFetchingByConversationId,

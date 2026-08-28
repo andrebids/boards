@@ -61,6 +61,8 @@ export default {
       createGroup: 'Criar grupo',
       createGroupDescription: 'Dá um nome ao grupo e escolhe quem participa.',
       confirmDeleteMessage: 'Tens a certeza de que queres eliminar esta mensagem?',
+      confirmRemoveConversationHistory:
+        'Queres remover o histórico de "{{conversation}}" apenas para ti? As outras pessoas continuarão a vê-lo. Esta ação não pode ser anulada.',
       deleteMessage: 'Eliminar mensagem',
       directConversations: 'Conversas diretas',
       downloadFile: 'Transferir ficheiro',
@@ -116,6 +118,7 @@ export default {
       pendingMessageLeaveWarning:
         'Ainda existem mensagens a enviar. Se sair agora, estas mensagens podem perder-se. Deseja continuar?',
       peopleTyping: '{{count}} pessoas estão a escrever…',
+      pin: 'Fixar',
       pinned: 'Fixada',
       previewUnavailable: 'Pré-visualização indisponível',
       project: 'Projeto',
@@ -123,6 +126,8 @@ export default {
       recent: 'Recentes',
       removeAttachment: 'Remover {{name}}',
       removeFromGroup: 'Remover',
+      removeConversationHistory: 'Remover histórico',
+      removeConversationHistoryFailed: 'Não foi possível remover o histórico. Tenta novamente.',
       reply: 'Responder',
       replyingTo: 'A responder a {{name}}',
       restore: 'Restaurar',
@@ -144,6 +149,7 @@ export default {
       startConversation: 'Iniciar conversa',
       viewAllMembers: 'Ver todos os {{count}} membros',
       unavailable: 'Indisponível',
+      unpin: 'Remover das fixadas',
       unmute: 'Voltar a ativar notificações',
       attachmentTooLarge: 'O ficheiro não pode ter mais de {{size}} MB.',
       attachmentUploading: 'A enviar anexo…',

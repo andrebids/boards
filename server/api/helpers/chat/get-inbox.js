@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const { isIdAtOrBefore } = require('../../../utils/id-helpers');
+
 const encodeCursor = (item) =>
   Buffer.from(
     JSON.stringify({
@@ -237,6 +239,14 @@ module.exports = {
             : null;
         const avatarUserId = avatarUser ? avatarUser.userId : null;
         const lastMessage = lastMessagesByConversationId.get(conversation.id);
+        if (
+          isIdAtOrBefore(
+            lastMessage?.id,
+            currentParticipant?.historyClearedThroughMessageId,
+          )
+        ) {
+          return null;
+        }
         const unreadDetails = unreadDetailsByConversationId[conversation.id] || {
           unreadCount: 0,
           firstUnreadMessageId: null,
@@ -260,7 +270,11 @@ module.exports = {
           unreadCount: unreadDetails.unreadCount,
           hasUnreadMention: unreadDetails.hasUnreadMention,
           lastReadMessageId: currentParticipant ? currentParticipant.lastReadMessageId : null,
+          historyClearedThroughMessageId: currentParticipant
+            ? currentParticipant.historyClearedThroughMessageId
+            : null,
           lastReadAt: currentParticipant ? currentParticipant.lastReadAt : null,
+          isPinned: currentParticipant ? currentParticipant.isPinned : null,
           notificationLevel: currentParticipant
             ? currentParticipant.notificationLevel
             : ChatParticipant.NotificationLevels.ALL,
@@ -281,6 +295,7 @@ module.exports = {
           ),
         };
       })
+      .filter(Boolean)
       .sort(compareInboxItems);
 
     const unreadItems = allItems.filter(({ unreadCount }) => unreadCount > 0);

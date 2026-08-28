@@ -122,6 +122,14 @@ const handleChatConversationRead = (readState) => ({
   type: EntryActionTypes.CHAT_CONVERSATION_READ_HANDLE,
   payload: { readState },
 });
+const clearChatConversationHistory = (id) => ({
+  type: EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR,
+  payload: { id },
+});
+const handleChatConversationHistoryClear = (historyState) => ({
+  type: EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE,
+  payload: { historyState },
+});
 const handleChatProjectAccessRevoke = (projectId) => ({
   type: EntryActionTypes.CHAT_PROJECT_ACCESS_REVOKE_HANDLE,
   payload: { projectId },
@@ -197,6 +205,8 @@ export default {
   toggleChatMessageReaction,
   markChatConversationAsRead,
   handleChatConversationRead,
+  clearChatConversationHistory,
+  handleChatConversationHistoryClear,
   handleChatProjectAccessRevoke,
   handleChatConversationAccessRevoke,
   handleChatParticipantUpdate,

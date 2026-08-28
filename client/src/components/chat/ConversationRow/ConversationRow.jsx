@@ -9,6 +9,7 @@ import ConversationActions from '../ConversationActions';
 import useChatParticipantMuteState from '../useChatParticipantMuteState';
 import {
   hasUnreadMessages,
+  isChatParticipantPinned,
   isChatParticipantMentionsOnly,
   isCustomGroupConversation,
 } from '../utils';
@@ -74,6 +75,7 @@ const ConversationRow = React.memo(
     const hasUnread = hasUnreadMessages(conversation);
     const isMuted = useChatParticipantMuteState(currentParticipant);
     const isMentionsOnly = isChatParticipantMentionsOnly(currentParticipant);
+    const isPinned = isChatParticipantPinned(currentParticipant, isGeneral);
     const notificationStateLabel = isMuted
       ? t('chat.notificationsMuted')
       : t('chat.notifyMentions');
@@ -151,6 +153,7 @@ const ConversationRow = React.memo(
             canLeave={isCustomGroupConversation(conversation)}
             conversationId={id}
             conversationTitle={title}
+            isPinned={isPinned}
             isMuted={isMuted}
             participant={currentParticipant}
           />
@@ -175,6 +178,7 @@ ConversationRow.propTypes = {
   }),
   currentParticipant: PropTypes.shape({
     isMuted: PropTypes.bool,
+    isPinned: PropTypes.bool,
     mutedUntil: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
     notificationLevel: PropTypes.string,
   }),

@@ -163,7 +163,8 @@
       }
     }
 
-    .notificationButtonConfigured {
+    .notificationButtonConfigured,
+    .actionButtonActive {
       background: var(--chat-accent-soft);
       color: var(--chat-accent);
 
@@ -251,15 +252,101 @@
     }
   }
 
+  .actionsMenu {
+    right: 42px;
+    width: 238px;
+
+    button {
+      gap: 8px;
+    }
+
+    .destructiveAction {
+      color: var(--chat-danger);
+
+      &:hover,
+      &:focus-visible {
+        background: color-mix(in srgb, var(--chat-danger) 12%, transparent);
+        color: var(--chat-danger);
+        outline: none;
+      }
+    }
+  }
+
   .groupEditor {
-    right: 88px;
-    width: 285px;
+    background: var(--chat-surface);
+    box-sizing: border-box;
+    max-height: min(410px, calc(100dvh - 116px));
+    overflow: hidden;
+    right: 8px;
+    width: min(320px, calc(100% - 16px));
+  }
+
+  .groupEditorHeader {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 9px;
+    padding: 5px 6px 9px;
+  }
+
+  .groupEditorIcon {
+    align-items: center;
+    color: var(--chat-accent);
+    display: inline-flex;
+    flex: 0 0 28px;
+    height: 28px;
+    justify-content: center;
+  }
+
+  .groupEditorHeading {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+
+    strong {
+      color: var(--chat-foreground);
+      font-size: var(--chat-font-body);
+      font-weight: 650;
+      line-height: 17px;
+      padding: 0;
+    }
+
+    small {
+      color: var(--chat-muted);
+      font-size: var(--chat-font-meta);
+      line-height: 15px;
+    }
+  }
+
+  .groupEditorHeader .groupEditorClose {
+    background: transparent !important;
+    border-radius: var(--chat-radius-control) !important;
+    color: var(--chat-muted) !important;
+    height: 28px !important;
+    margin-left: auto !important;
+    min-height: 28px !important;
+    min-width: 28px !important;
+    padding: 0 !important;
+    width: 28px !important;
+
+    &:hover {
+      background: var(--chat-default) !important;
+      color: var(--chat-foreground) !important;
+    }
+
+    &:focus-visible {
+      box-shadow: none !important;
+      outline: 2px solid var(--chat-accent);
+      outline-offset: -1px;
+    }
   }
 
   .groupTitleEditor {
     display: flex;
-    gap: 5px;
-    padding: 2px 5px 8px;
+    flex: 0 0 auto;
+    gap: 7px;
+    padding: 0 4px 10px;
 
     input {
       background: var(--chat-default);
@@ -267,40 +354,140 @@
       border-radius: var(--chat-radius-control);
       color: var(--chat-foreground);
       flex: 1 1 auto;
+      font-family: inherit;
+      font-size: var(--chat-font-body);
+      height: 36px;
       min-width: 0;
-      padding: 7px 8px;
+      outline: none;
+      padding: 0 10px;
+      transition:
+        background-color var(--chat-motion-fast) var(--chat-ease),
+        border-color var(--chat-motion-fast) var(--chat-ease),
+        box-shadow var(--chat-motion-fast) var(--chat-ease);
+
+      &:focus {
+        background: var(--chat-surface-secondary);
+        border-color: var(--chat-accent);
+        box-shadow: 0 0 0 2px var(--chat-focus-ring);
+      }
+    }
+
+    button {
+      background: var(--chat-accent);
+      color: var(--chat-accent-foreground);
+      flex: 0 0 auto;
+      font-weight: 650;
+      height: 36px;
+      justify-content: center;
+      padding: 0 12px;
+
+      &:hover:not(:disabled) {
+        background: var(--chat-accent-hover);
+      }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 2px var(--chat-focus-ring);
+        outline: none;
+      }
+
+      &:disabled {
+        background: var(--chat-default);
+        color: var(--chat-muted-subtle);
+        cursor: default;
+      }
     }
   }
 
   .groupMembers {
     border-bottom: 1px solid var(--chat-separator);
     border-top: 1px solid var(--chat-separator);
-    max-height: 210px;
-    overflow: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
     padding: 5px 0;
+    scrollbar-color: var(--chat-scrollbar) transparent;
+    scrollbar-width: thin;
+  }
 
-    > div {
-      align-items: center;
-      display: flex;
-      gap: 6px;
-      justify-content: space-between;
-      min-height: 34px;
-      padding-left: 8px;
+  .groupMember {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 9px;
+    min-height: 48px;
+    padding: 5px 4px;
+  }
 
-      span {
-        font-size: var(--chat-font-body);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
+  .groupMemberCopy {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+
+    strong,
+    small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    strong {
+      color: var(--chat-foreground);
+      font-size: var(--chat-font-body);
+      font-weight: 650;
+      line-height: 17px;
+      padding: 0;
+    }
+
+    small {
+      color: var(--chat-muted);
+      font-size: var(--chat-font-meta);
+      line-height: 15px;
+    }
+  }
+
+  .groupMember .addMemberButton,
+  .groupMember .removeMemberButton {
+    flex: 0 0 auto;
+    font-size: var(--chat-font-meta);
+    font-weight: 650;
+    min-height: 30px;
+    padding: 5px 9px;
+  }
+
+  .groupMember .addMemberButton {
+    background: var(--chat-accent-soft);
+    color: var(--chat-accent);
+
+    &:hover,
+    &:focus-visible {
+      background: var(--chat-accent-soft-hover);
+      outline: none;
+    }
+  }
+
+  .groupMember .removeMemberButton {
+    color: var(--chat-danger);
+
+    &:hover,
+    &:focus-visible {
+      background: color-mix(in srgb, var(--chat-danger) 12%, transparent);
+      outline: none;
     }
   }
 
   .headerMenu .leaveGroup,
   .groupEditor .leaveGroup {
-    color: var(--chat-warning);
+    color: var(--chat-danger);
+    flex: 0 0 auto;
     gap: 7px;
-    margin-top: 5px;
+    margin-top: 4px;
+
+    &:hover,
+    &:focus-visible {
+      background: color-mix(in srgb, var(--chat-danger) 12%, transparent);
+      outline: none;
+    }
   }
 
   @media only screen and (max-width: 767px) {
@@ -309,6 +496,12 @@
       flex-basis: auto;
       height: min(580px, calc(100dvh - 100px));
       width: 100%;
+    }
+  }
+
+  @media only screen and (max-width: 420px) {
+    .groupEditor {
+      width: calc(100% - 16px);
     }
   }
 

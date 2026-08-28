@@ -298,6 +298,9 @@ export function* handleChatConversationUpdate(conversation, chatParticipants, us
   yield put(actions.handleChatInboxItemUpdate(conversation));
   const currentConversation = yield select(selectors.selectChatConversationById, conversation.id);
   if (!currentConversation) {
+    if (conversation.projectId) {
+      yield call(fetchChatConversations, conversation.projectId);
+    }
     return;
   }
   yield put(actions.handleChatConversationUpdate(conversation, chatParticipants, users));
@@ -673,6 +676,7 @@ export function* updateChatConversationPreferences(id, data) {
   const participant = conversation?.participants?.find(({ userId }) => userId === currentUserId);
   const preferencesSource = participant || inboxItem;
   const previousData = preferencesSource && {
+    isPinned: preferencesSource.isPinned,
     notificationLevel: preferencesSource.notificationLevel,
     mutedUntil: preferencesSource.mutedUntil,
     isMuted: preferencesSource.isMuted,
@@ -689,6 +693,7 @@ export function* updateChatConversationPreferences(id, data) {
         actions.handleChatInboxItemUpdate(
           {
             conversationId: item.conversationId,
+            isPinned: item.isPinned,
             notificationLevel: item.notificationLevel,
             mutedUntil: item.mutedUntil,
             isMuted: item.isMuted,
@@ -708,6 +713,21 @@ export function* updateChatConversationPreferences(id, data) {
   }
 }
 
+export function* clearChatConversationHistory(id) {
+  yield put(actions.clearChatConversationHistory(id));
+  try {
+    const { item } = yield call(request, api.clearChatConversationHistory, id);
+    yield put(actions.clearChatConversationHistory.success(item));
+  } catch (error) {
+    yield put(actions.clearChatConversationHistory.failure(id, error));
+    reportChatError(error, 'clear-conversation-history');
+  }
+}
+
+export function* handleChatConversationHistoryClear(historyState) {
+  yield put(actions.handleChatConversationHistoryClear(historyState));
+}
+
 export function* updateChatTyping(id, isTyping) {
   try {
     yield call(request, api.updateChatTyping, id, isTyping);
@@ -721,6 +741,7 @@ export function* handleChatParticipantUpdate(participant) {
   yield put(
     actions.handleChatInboxItemUpdate({
       conversationId: participant.conversationId,
+      isPinned: participant.isPinned,
       notificationLevel: participant.notificationLevel,
       mutedUntil: participant.mutedUntil,
       isMuted: participant.isMuted,
@@ -843,6 +864,8 @@ export default {
   toggleChatMessageReaction,
   forwardChatMessage,
   updateChatConversationPreferences,
+  clearChatConversationHistory,
+  handleChatConversationHistoryClear,
   updateChatTyping,
   handleChatParticipantUpdate,
   handleChatTypingUpdate,

@@ -45,6 +45,14 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_CONVERSATION_ACCESS_REVOKE_HANDLE:
         ChatConversation.withId(payload.conversationId)?.delete();
         break;
+      case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
+      case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE: {
+        const conversationModel = ChatConversation.withId(payload.historyState.conversationId);
+        if (conversationModel && payload.historyState.conversationType === 'projectGroup') {
+          conversationModel.update({ lastMessage: null, lastMessageAt: null, unreadCount: 0 });
+        }
+        break;
+      }
       case ActionTypes.CHAT_CONVERSATIONS_FETCH__SUCCESS:
         ChatConversation.filter({ projectId: payload.projectId })
           .toModelArray()

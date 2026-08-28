@@ -7,6 +7,7 @@ import {
   hasUnreadMessages,
   isChatParticipantMentionsOnly,
   isChatParticipantMuted,
+  isChatParticipantPinned,
   isDirectConversation,
   isGeneralConversation,
   prepareChatAttachmentFiles,
@@ -32,6 +33,15 @@ describe('chat utils', () => {
   test('recognizes the project group conversation', () => {
     expect(isGeneralConversation({ type: 'projectGroup' })).toBeTruthy();
     expect(isGeneralConversation({ type: 'projectDirect' })).toBeFalsy();
+  });
+
+  test('uses the conversation default until the participant chooses a pinned state', () => {
+    expect(isChatParticipantPinned()).toBeFalsy();
+    expect(isChatParticipantPinned(undefined, true)).toBeTruthy();
+    expect(isChatParticipantPinned({ isPinned: null })).toBeFalsy();
+    expect(isChatParticipantPinned({ isPinned: null }, true)).toBeTruthy();
+    expect(isChatParticipantPinned({ isPinned: true })).toBeTruthy();
+    expect(isChatParticipantPinned({ isPinned: false })).toBeFalsy();
   });
 
   test('recognizes unread conversations from their unread count', () => {

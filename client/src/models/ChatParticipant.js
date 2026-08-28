@@ -15,8 +15,10 @@ export default class extends BaseModel {
   static fields = {
     id: attr(),
     lastReadMessageId: attr(),
+    historyClearedThroughMessageId: attr(),
     lastReadAt: attr(),
     isMuted: attr(),
+    isPinned: attr(),
     notificationLevel: attr({ getDefault: () => 'all' }),
     mutedUntil: attr(),
     role: attr({ getDefault: () => 'member' }),
@@ -86,6 +88,21 @@ export default class extends BaseModel {
           participantModel.update({
             lastReadMessageId: payload.readState.lastReadMessageId,
             lastReadAt: payload.readState.lastReadAt,
+          });
+        }
+        break;
+      }
+      case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
+      case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE: {
+        const participantModel = ChatParticipant.filter({
+          conversationId: payload.historyState.conversationId,
+          userId: payload.historyState.userId,
+        }).first();
+        if (participantModel) {
+          participantModel.update({
+            historyClearedThroughMessageId: payload.historyState.historyClearedThroughMessageId,
+            lastReadMessageId: payload.historyState.lastReadMessageId,
+            lastReadAt: payload.historyState.lastReadAt,
           });
         }
         break;

@@ -32,7 +32,10 @@ module.exports = {
          ON p.conversation_id = c.id AND p.user_id = $1
        LEFT JOIN chat_message m
          ON m.conversation_id = c.id
-        AND m.id > COALESCE(p.last_read_message_id, 0)
+        AND m.id > GREATEST(
+          COALESCE(p.last_read_message_id, 0),
+          COALESCE(p.history_cleared_through_message_id, 0)
+        )
         AND (m.user_id IS NULL OR m.user_id <> $1)
         AND m.deleted_at IS NULL
        WHERE c.id = ANY($2::bigint[])

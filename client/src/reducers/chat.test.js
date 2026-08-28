@@ -341,6 +341,45 @@ describe('chat reducer', () => {
     expect(nextState.inboxItemsByConversationId['conversation-1'].lastReadMessageId).toBe('43');
   });
 
+  test('removes a cleared direct conversation from visible chat state after confirmation', () => {
+    const state = {
+      ...reducer(undefined, { type: '@@INIT' }),
+      inboxItemsByConversationId: {
+        'conversation-1': {
+          conversationId: 'conversation-1',
+          projectId: 'project-1',
+          unreadCount: 3,
+        },
+      },
+      openConversationIds: ['conversation-1'],
+      minimizedConversationIds: ['conversation-1'],
+      lastMessageAlert: { conversationId: 'conversation-1', messageId: '42' },
+    };
+
+    const pendingState = reducer(state, {
+      type: ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR,
+      payload: { conversationId: 'conversation-1' },
+    });
+    const nextState = reducer(pendingState, {
+      type: ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS,
+      payload: {
+        historyState: {
+          conversationId: 'conversation-1',
+          conversationType: 'projectDirect',
+          historyClearedThroughMessageId: '42',
+        },
+      },
+    });
+
+    expect(pendingState.isHistoryClearingByConversation['conversation-1']).toBe(true);
+    expect(nextState.inboxItemsByConversationId['conversation-1']).toBeUndefined();
+    expect(nextState.openConversationIds).toEqual([]);
+    expect(nextState.minimizedConversationIds).toEqual([]);
+    expect(nextState.historyClearedThroughByConversation['conversation-1']).toBe('42');
+    expect(nextState.lastMessageAlert).toBeNull();
+    expect(nextState.isHistoryClearingByConversation['conversation-1']).toBe(false);
+  });
+
   test('purges revoked conversations from window and pagination state', () => {
     const state = {
       ...reducer(undefined, { type: '@@INIT' }),

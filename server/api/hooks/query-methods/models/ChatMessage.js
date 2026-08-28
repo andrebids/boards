@@ -4,16 +4,23 @@
  */
 
 const DEFAULT_LIMIT = 50;
+const { getGreaterId, isIdAtOrBefore } = require('../../../../utils/id-helpers');
 
 const createOne = (values) => ChatMessage.create({ ...values }).fetch();
 
-const getByConversationId = (conversationId, { beforeId, afterId, limit = DEFAULT_LIMIT } = {}) => {
+const getByConversationId = (
+  conversationId,
+  { beforeId, afterId, minimumId, limit = DEFAULT_LIMIT } = {},
+) => {
   const criteria = { conversationId };
 
   if (beforeId) {
-    criteria.id = { '<': beforeId };
-  } else if (afterId) {
-    criteria.id = { '>': afterId };
+    criteria.id = {
+      '<': beforeId,
+      ...(minimumId && { '>': minimumId }),
+    };
+  } else if (afterId || minimumId) {
+    criteria.id = { '>': getGreaterId(afterId, minimumId) };
   }
 
   return ChatMessage.find(criteria)
@@ -21,14 +28,27 @@ const getByConversationId = (conversationId, { beforeId, afterId, limit = DEFAUL
     .limit(limit);
 };
 
-const getWindowAroundId = async (conversationId, aroundId, beforeLimit = 25, afterLimit = 25) => {
+const getWindowAroundId = async (
+  conversationId,
+  aroundId,
+  beforeLimit = 25,
+  afterLimit = 25,
+  minimumId,
+) => {
+  if (isIdAtOrBefore(aroundId, minimumId)) {
+    return null;
+  }
+
   const anchor = await ChatMessage.findOne({ id: aroundId, conversationId });
   if (!anchor) {
     return null;
   }
 
   const [before, after] = await Promise.all([
-    ChatMessage.find({ conversationId, id: { '<': aroundId } })
+    ChatMessage.find({
+      conversationId,
+      id: { '<': aroundId, ...(minimumId && { '>': minimumId }) },
+    })
       .sort('id DESC')
       .limit(beforeLimit + 1),
     ChatMessage.find({ conversationId, id: { '>': aroundId } })
