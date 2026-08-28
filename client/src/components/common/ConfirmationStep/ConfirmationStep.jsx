@@ -7,11 +7,9 @@ import React, { useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Form, Input } from 'semantic-ui-react';
-import { Button, Popup } from '../../../lib/custom-ui';
+import { AlertDialog } from '../../../lib/custom-ui';
 
 import { useForm, useNestedRef } from '../../../hooks';
-
-import styles from './ConfirmationStep.module.scss';
 
 const ButtonVariants = {
   DANGER: 'danger',
@@ -29,6 +27,7 @@ const ConfirmationStep = React.memo(
     typeContent,
     onConfirm,
     onBack,
+    onClose,
   }) => {
     const [t] = useTranslation();
 
@@ -61,32 +60,38 @@ const ConfirmationStep = React.memo(
     }, [typeValue, nameFieldRef]);
 
     return (
-      <>
-        <Popup.Header onBack={onBack}>
-          {t(title, {
-            context: 'title',
-          })}
-        </Popup.Header>
-        <Popup.Content>
-          <div className={styles.content}>{t(content, contentValues)}</div>
-          {typeContent && <div className={styles.content}>{t(typeContent)}</div>}
+      <AlertDialog
+        cancelLabel={t('action.cancel')}
+        confirmLabel={t(buttonContent)}
+        description={
+          <>
+            <p>{t(content, contentValues)}</p>
+            {typeContent && <p>{t(typeContent)}</p>}
+          </>
+        }
+        initialFocusRef={typeValue ? nameFieldRef : undefined}
+        open
+        title={t(title, {
+          context: 'title',
+        })}
+        tone={variant === ButtonVariants.DANGER ? 'danger' : 'accent'}
+        onCancel={onBack || onClose}
+        onConfirm={handleSubmit}
+      >
+        {typeValue && (
           <Form onSubmit={handleSubmit}>
-            {typeValue && (
-              <Input
-                fluid
-                ref={handleNameFieldRef}
-                name="typeValue"
-                value={data.typeValue}
-                placeholder={typeValue}
-                maxLength={128}
-                className={styles.field}
-                onChange={handleFieldChange}
-              />
-            )}
-            <Button fullWidth type="submit" variant={variant} content={t(buttonContent)} />
+            <Input
+              fluid
+              ref={handleNameFieldRef}
+              name="typeValue"
+              value={data.typeValue}
+              placeholder={typeValue}
+              maxLength={128}
+              onChange={handleFieldChange}
+            />
           </Form>
-        </Popup.Content>
-      </>
+        )}
+      </AlertDialog>
     );
   },
 );
@@ -102,6 +107,7 @@ ConfirmationStep.propTypes = {
   typeContent: PropTypes.string,
   onConfirm: PropTypes.func.isRequired,
   onBack: PropTypes.func,
+  onClose: PropTypes.func,
   variant: PropTypes.oneOf(Object.values(ButtonVariants)),
 };
 
@@ -110,6 +116,7 @@ ConfirmationStep.defaultProps = {
   typeValue: undefined,
   typeContent: undefined,
   onBack: undefined,
+  onClose: undefined,
   variant: ButtonVariants.DANGER,
 };
 

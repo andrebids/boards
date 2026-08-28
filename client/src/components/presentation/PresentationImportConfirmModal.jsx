@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '../../lib/custom-ui';
+import { AlertDialog } from '../../lib/custom-ui';
 
 const PresentationImportConfirmModal = React.memo(({ file, open, onCancel, onConfirm }) => {
   const [t] = useTranslation();
@@ -13,18 +12,16 @@ const PresentationImportConfirmModal = React.memo(({ file, open, onCancel, onCon
   }
 
   return (
-    <Modal open={open} onClose={onCancel} size="tiny">
-      <Modal.Header>{t('common.presentationImport')}</Modal.Header>
-      <Modal.Content>
-        <p>{t('common.presentationImportConfirm', { name: file.name })}</p>
-      </Modal.Content>
-      <Modal.Actions>
-        <Button variant="secondary" onClick={onCancel}>
-          {t('action.cancel')}
-        </Button>
-        <Button onClick={onConfirm}>{t('action.import')}</Button>
-      </Modal.Actions>
-    </Modal>
+    <AlertDialog
+      cancelLabel={t('action.cancel')}
+      confirmLabel={t('action.import')}
+      description={t('common.presentationImportConfirm', { name: file.name })}
+      open={open}
+      title={t('common.presentationImport')}
+      tone="warning"
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+    />
   );
 });
 

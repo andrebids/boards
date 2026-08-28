@@ -143,7 +143,6 @@ export default {
       seen: 'vu',
       showOtherConversations: 'Afficher les autres conversations',
       startConversation: 'Démarrer une conversation',
-      allMembersHaveConversations: 'Vous avez déjà une conversation avec chaque membre.',
       viewAllMembers: 'Voir les {{count}} membres',
       unavailable: 'Indisponible',
       unmute: 'Réactiver les notifications',

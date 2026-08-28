@@ -142,7 +142,6 @@ export default {
       seen: 'vista',
       showOtherConversations: 'Mostrar outras conversas',
       startConversation: 'Iniciar conversa',
-      allMembersHaveConversations: 'Já tens uma conversa com todos os membros.',
       viewAllMembers: 'Ver todos os {{count}} membros',
       unavailable: 'Indisponível',
       unmute: 'Voltar a ativar notificações',

@@ -295,7 +295,7 @@ const ChatPanel = React.memo(
         aria-label={t(isGlobalScope ? 'chat.globalInbox' : 'chat.openConversations')}
         aria-modal="false"
         tabIndex="-1"
-        className={`${styles.panel} ${isClosing ? styles.closing : ''}`}
+        className={`${styles.panel} ${!isGlobalScope && activeTab === 'conversations' ? styles.discoveryPanel : ''} ${isClosing ? styles.closing : ''}`}
       >
         <ChatHeader
           memberCount={members.length}
@@ -371,11 +371,8 @@ const ChatPanel = React.memo(
                     {(!isSearching || filteredConversations.length > 0) && (
                       <section
                         className={styles.discoverySection}
-                        aria-labelledby="chat-conversations-heading"
+                        aria-label={t('chat.conversations')}
                       >
-                        <header className={styles.discoveryHeader}>
-                          <strong id="chat-conversations-heading">{t('chat.conversations')}</strong>
-                        </header>
                         <ConversationList
                           conversations={filteredConversations}
                           currentUser={currentUser}
@@ -392,17 +389,18 @@ const ChatPanel = React.memo(
                     {(!isSearching || suggestedMembers.length > 0) && (
                       <section
                         className={styles.discoverySection}
-                        aria-labelledby="chat-start-conversation-heading"
+                        aria-label={t('chat.startConversation')}
                       >
                         <header className={styles.discoveryHeader}>
-                          <button
-                            id="chat-start-conversation-heading"
-                            type="button"
-                            className={styles.discoveryAction}
-                            onClick={handleNewConversation}
-                          >
-                            {t('chat.startConversation')}
-                          </button>
+                          {availableMembers.length > 0 && (
+                            <button
+                              type="button"
+                              className={styles.discoveryAction}
+                              onClick={handleNewConversation}
+                            >
+                              {t('chat.startConversation')}
+                            </button>
+                          )}
                           <button
                             type="button"
                             className={styles.discoveryAction}
@@ -412,17 +410,13 @@ const ChatPanel = React.memo(
                             {t('chat.createGroup')}
                           </button>
                         </header>
-                        {suggestedMembers.length > 0 ? (
+                        {suggestedMembers.length > 0 && (
                           <MemberList
                             isCompact
                             members={suggestedMembers}
                             isPending={isPending}
                             onMemberOpen={handleMemberOpen}
                           />
-                        ) : (
-                          <div className={styles.discoveryEmpty}>
-                            {t('chat.allMembersHaveConversations')}
-                          </div>
                         )}
                         {!isSearching && availableMembers.length > 5 && (
                           <button

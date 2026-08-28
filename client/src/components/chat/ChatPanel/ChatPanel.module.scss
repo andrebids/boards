@@ -24,6 +24,30 @@
     animation: panelExit 160ms var(--chat-ease) both;
     pointer-events: none;
   }
+
+  .discoveryPanel {
+    height: auto;
+
+    .discoveryContent {
+      padding-bottom: 4px;
+    }
+
+    .scopeViewport {
+      display: flex;
+      flex: 0 1 auto;
+    }
+
+    .scopeView {
+      bottom: auto;
+      flex: 1 1 auto;
+      left: auto;
+      overflow: hidden;
+      position: relative;
+      right: auto;
+      top: auto;
+    }
+  }
+
   .content {
     flex: 1 1 auto;
     min-height: 0;
@@ -722,6 +746,10 @@
       top: 16px;
       transform-origin: calc(100% - 30px) calc(100% + 34px);
       width: auto;
+    }
+
+    .discoveryPanel {
+      top: auto;
     }
   }
 

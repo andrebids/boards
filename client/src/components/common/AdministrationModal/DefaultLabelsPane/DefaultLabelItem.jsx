@@ -6,8 +6,8 @@
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Icon, Label, Modal } from 'semantic-ui-react';
-import { Button } from '../../../../lib/custom-ui';
+import { Icon, Label } from 'semantic-ui-react';
+import { AlertDialog, Button } from '../../../../lib/custom-ui';
 
 import styles from './DefaultLabelItem.module.scss';
 import globalStyles from '../../../../styles.module.scss';
@@ -79,33 +79,21 @@ const DefaultLabelItem = React.memo(({ label, onEdit, onDelete }) => {
       </div>
       </div>
 
-      <Modal
+      <AlertDialog
         open={isConfirmOpen}
-        onClose={handleDeleteCancel}
-        size="small"
-        className={styles.confirmModal}
-      >
-        <Modal.Header>
-          {t('common.deleteDefaultLabel', 'Eliminar Etiqueta Padrão')}
-        </Modal.Header>
-        <Modal.Content>
-          <p>
-            {t('common.areYouSureYouWantToDeleteThisDefaultLabel', { name: label.name })}
-          </p>
-          <p>
-            {t('common.deleteDefaultLabelWarning')}
-          </p>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button variant="secondary" onClick={handleDeleteCancel}>
-            {t('action.cancel', 'Cancelar')}
-          </Button>
-          <Button variant="danger" onClick={handleDeleteConfirm}>
-            <Icon name="trash" />
-            {t('action.delete', 'Eliminar')}
-          </Button>
-        </Modal.Actions>
-      </Modal>
+        cancelLabel={t('action.cancel', 'Cancelar')}
+        confirmLabel={t('action.delete', 'Eliminar')}
+        description={
+          <>
+            <p>{t('common.areYouSureYouWantToDeleteThisDefaultLabel', { name: label.name })}</p>
+            <p>{t('common.deleteDefaultLabelWarning')}</p>
+          </>
+        }
+        title={t('common.deleteDefaultLabel', 'Eliminar Etiqueta Padrão')}
+        tone="danger"
+        onCancel={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+      />
     </>
   );
 });

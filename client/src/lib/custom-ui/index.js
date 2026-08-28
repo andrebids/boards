@@ -10,5 +10,6 @@ import FilePicker from './components/FilePicker';
 import CloseButton from './components/CloseButton';
 import Button from './components/Button';
 import ButtonGroup from './components/ButtonGroup';
+import AlertDialog from './components/AlertDialog';
 
-export { Button, ButtonGroup, CloseButton, FilePicker, Input, Masonry, Popup };
+export { AlertDialog, Button, ButtonGroup, CloseButton, FilePicker, Input, Masonry, Popup };

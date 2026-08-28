@@ -9,7 +9,7 @@ import { Dropdown, Icon } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { Button } from '../../lib/custom-ui';
+import { AlertDialog, Button } from '../../lib/custom-ui';
 import { usePopup } from '../../lib/popup';
 import { GANTT_STATUS_COLORS } from '../../constants/GanttColors';
 import GANTT_STATUSES, { getEffectiveGanttStatus } from '../../constants/GanttStatuses';
@@ -58,6 +58,7 @@ const GanttItemPanel = React.memo(
       predecessorIds,
     }));
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deleteConfirmation, setDeleteConfirmation] = useState(null);
     const [error, setError] = useState(null);
     const [showAdvancedOptions, setShowAdvancedOptions] = useState(Boolean(item));
     const [timeMode, setTimeMode] = useState(
@@ -71,6 +72,7 @@ const GanttItemPanel = React.memo(
       setData({ ...initialData, predecessorIds });
       setShowAdvancedOptions(Boolean(item));
       setTimeMode(item?.startDate && item?.endDate ? 'schedule' : 'estimate');
+      setDeleteConfirmation(null);
       setError(null);
     }, [defaultStatus, initialParentId, item, predecessorIds]);
 
@@ -80,14 +82,14 @@ const GanttItemPanel = React.memo(
 
     useEffect(() => {
       const handleKeyDown = (event) => {
-        if (event.key === 'Escape' && !isSubmitting) {
+        if (event.key === 'Escape' && !deleteConfirmation && !isSubmitting) {
           onClose();
         }
       };
 
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [isSubmitting, onClose]);
+    }, [deleteConfirmation, isSubmitting, onClose]);
 
     const peopleItems = useMemo(
       () => users.map((user) => ({ id: user.id, user, isPersisted: true })),
@@ -245,7 +247,7 @@ const GanttItemPanel = React.memo(
       [data, isLinked, item, onClose, onSave, t, timeMode],
     );
 
-    const handleDelete = useCallback(async () => {
+    const handleDeleteClick = useCallback(() => {
       let confirmation = t('common.ganttDeleteTaskConfirmation');
       if (item.itemType === 'summary' && childCount > 0) {
         confirmation = t('common.ganttDeleteGeneralTaskConfirmation', { count: childCount });
@@ -253,20 +255,20 @@ const GanttItemPanel = React.memo(
         confirmation = t('common.ganttRemoveLinkedTaskConfirmation');
       }
 
-      // eslint-disable-next-line no-alert
-      if (!window.confirm(confirmation)) {
-        return;
-      }
+      setDeleteConfirmation(confirmation);
+    }, [childCount, isLinked, item, t]);
 
+    const handleDeleteConfirm = useCallback(async () => {
       setIsSubmitting(true);
       try {
         await onDelete(item.id);
         onClose();
       } catch {
         setError(t('common.ganttTaskDeleteFailed'));
+        setDeleteConfirmation(null);
         setIsSubmitting(false);
       }
-    }, [childCount, isLinked, item, onClose, onDelete, t]);
+    }, [item, onClose, onDelete, t]);
 
     const isSummary = data.itemType === 'summary';
     const calculatedDuration =
@@ -277,7 +279,8 @@ const GanttItemPanel = React.memo(
     );
 
     return (
-      <aside className={styles.panel} role="dialog" aria-labelledby="gantt-item-panel-title">
+      <>
+        <aside className={styles.panel} role="dialog" aria-labelledby="gantt-item-panel-title">
         <header className={styles.header}>
           <div>
             <span className={styles.eyebrow}>{t('common.ganttPlanningEyebrow')}</span>
@@ -641,7 +644,7 @@ const GanttItemPanel = React.memo(
                 title={t('common.delete')}
                 aria-label={t('common.delete')}
                 disabled={isSubmitting}
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
               >
                 <Icon fitted name="trash alternate outline" aria-hidden="true" />
               </Button>
@@ -661,7 +664,21 @@ const GanttItemPanel = React.memo(
             </Button>
           </footer>
         </form>
-      </aside>
+        </aside>
+        {deleteConfirmation && (
+          <AlertDialog
+            cancelLabel={t('action.cancel')}
+            confirmLabel={t('action.delete')}
+            description={deleteConfirmation}
+            isPending={isSubmitting}
+            open
+            title={t('common.deleteTask', { context: 'title' })}
+            tone="danger"
+            onCancel={() => setDeleteConfirmation(null)}
+            onConfirm={handleDeleteConfirm}
+          />
+        )}
+      </>
     );
   },
 );

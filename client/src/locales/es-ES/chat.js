@@ -135,7 +135,6 @@ export default {
       sentFile: 'Envió un archivo',
       showOtherConversations: 'Mostrar otras conversaciones',
       startConversation: 'Iniciar conversación',
-      allMembersHaveConversations: 'Ya tienes una conversación con todos los miembros.',
       viewAllMembers: 'Ver los {{count}} miembros',
       tryAnotherSearch: 'Prueba con otro nombre de conversación o proyecto.',
       unavailable: 'No disponible',

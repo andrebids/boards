@@ -142,7 +142,6 @@ export default {
       seen: 'seen',
       showOtherConversations: 'Show other conversations',
       startConversation: 'Start conversation',
-      allMembersHaveConversations: 'You already have a conversation with every member.',
       viewAllMembers: 'View all {{count}} members',
       unavailable: 'Unavailable',
       unmute: 'Turn notifications back on',
