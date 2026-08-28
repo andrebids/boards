@@ -6,6 +6,7 @@ import selectors from '../../../selectors';
 import request, { requestConcurrent } from '../request';
 import { playChatMessageSound } from '../../../utils/chat-message-sound';
 import chatServices, {
+  fetchChatConversations,
   handleChatConversationUpdate,
   handleChatMessageAttachmentCreate,
   handleChatMessageCreate,
@@ -132,6 +133,25 @@ describe('chat inbox services', () => {
       select(selectors.selectChatConversationById, conversation.id),
     );
     expect(generator.next(undefined).done).toBe(true);
+  });
+
+  test('refetches a cleared conversation when a newer message makes it visible again', () => {
+    const conversation = {
+      id: 'conversation-1',
+      projectId: 'project-1',
+      historyClearedThroughMessageId: '42',
+      lastMessage: { id: '43' },
+    };
+    const generator = handleChatConversationUpdate(conversation, [], []);
+
+    expect(generator.next().value).toEqual(put(actions.handleChatInboxItemUpdate(conversation)));
+    expect(generator.next().value).toEqual(
+      select(selectors.selectChatConversationById, conversation.id),
+    );
+    expect(generator.next(undefined).value).toEqual(
+      call(fetchChatConversations, conversation.projectId),
+    );
+    expect(generator.next().done).toBe(true);
   });
 
   test('marks an inbox-only conversation as read', () => {

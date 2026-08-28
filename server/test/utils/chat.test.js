@@ -367,6 +367,7 @@ describe('Chat domain', () => {
     const previousGlobals = {
       sails: global.sails,
       Board: global.Board,
+      ProjectPresentation: global.ProjectPresentation,
     };
     let reconcileInputs;
     const board = { id: 'board-1', projectId: 'project-1' };
@@ -377,6 +378,7 @@ describe('Chat domain', () => {
     ];
 
     global.Board = { qm: { deleteOne: async () => board } };
+    global.ProjectPresentation = { qm: { getOneByBoardId: async () => null } };
     global.sails = {
       helpers: {
         boards: { deleteRelated: async () => ({ boardMemberships }) },
