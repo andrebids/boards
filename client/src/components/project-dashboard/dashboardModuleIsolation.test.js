@@ -68,8 +68,11 @@ describe('dashboard module isolation', () => {
     const styles = readSource('./widgets/DashboardTaskListPanel.module.scss');
 
     expect(panelSource).toContain('name="check square outline"');
+    expect(panelSource).toContain("import UserAvatar from '../../users/UserAvatar';");
+    expect(panelSource).toContain('id={task.assigneeUserId}');
     expect(styles).toContain('--card-modal-background: var(--app-dark-canvas);');
     expect(styles).toContain('background: var(--card-modal-background);');
+    expect(styles).toContain('.assigneeUserAvatar');
     expect(styles).toContain('border-radius: 5px;');
     expect(styles).toContain('height: 16px;');
     expect(styles).not.toContain('color-mix(in oklab, var(--app-dark-border) 65%, transparent)');

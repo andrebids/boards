@@ -170,7 +170,14 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     min-height: 34px;
-    padding: 0 8px 0 40px;
+    padding: 0 34px 0 40px;
+  }
+
+  .assigneeUserAvatar {
+    padding: 2px;
+    position: absolute;
+    right: 4px;
+    top: 3px;
   }
 
   .taskText {

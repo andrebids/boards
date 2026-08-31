@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { Popup as SemanticUIPopup } from 'semantic-ui-react';
 
 import CloseButton from '../custom-ui/components/CloseButton';
+import shouldClosePopup from './popup-close';
 
 import styles from './Popup.module.css';
 
@@ -30,7 +31,11 @@ export default (Step, { position, onOpen, onClose, variantClass } = {}) => {
         }
       }, []);
 
-      const handleClose = useCallback(() => {
+      const handleClose = useCallback((event) => {
+        if (!shouldClosePopup(event)) {
+          return;
+        }
+
         setIsOpened(false);
       }, []);
 
