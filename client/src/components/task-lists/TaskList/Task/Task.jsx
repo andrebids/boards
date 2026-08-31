@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
@@ -28,7 +28,7 @@ import UserAvatar from '../../../users/UserAvatar';
 import { useGantt } from '../../../gantt';
 import AddTask from '../AddTask';
 import TaskDragContext from '../TaskDragContext';
-import buildTaskDragStyle from './task-drag-style';
+import buildTaskDragStyle, { getTaskVisualDepth } from './task-drag-style';
 
 import styles from './Task.module.scss';
 
@@ -72,6 +72,11 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
   const [isAddSubtaskOpened, setIsAddSubtaskOpened] = useState(false);
   const [, , setIsClosableActive] = useContext(ClosableContext);
   const taskDragPreview = useContext(TaskDragContext);
+  const previewDepthRef = useRef(depth);
+
+  if (taskDragPreview?.taskId === id && !taskDragPreview.isCancelled) {
+    previewDepthRef.current = taskDragPreview.depth;
+  }
 
   const handleToggleChange = useCallback(() => {
     dispatch(
@@ -154,7 +159,10 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
         index={index}
         isDragDisabled={isEditNameOpened || !isEditable}
       >
-        {({ innerRef, draggableProps, dragHandleProps }, { isDragging, combineTargetFor }) => {
+        {(
+          { innerRef, draggableProps, dragHandleProps },
+          { isDragging, isDropAnimating, combineTargetFor },
+        ) => {
           let assigneeControl = null;
           if (isEditable) {
             assigneeControl = (
@@ -192,12 +200,21 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
             );
           }
 
-          const visualDepth = taskDragPreview?.taskId === id ? taskDragPreview.depth : depth;
+          const visualDepth = getTaskVisualDepth(
+            id,
+            depth,
+            previewDepthRef.current,
+            taskDragPreview,
+            isDropAnimating,
+          );
           const dropIndicator =
             taskDragPreview?.indicator?.taskListId === task.taskListId &&
             taskDragPreview.indicator.targetTaskId === id
               ? taskDragPreview.indicator
               : null;
+          const isCombineTarget = Boolean(
+            combineTargetFor || taskDragPreview?.combineTargetTaskId === id,
+          );
           const contentNode = (
             <div
               {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
@@ -221,8 +238,7 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
                 visualDepth > 0 && styles.wrapperNested,
                 visualDepth > 0 && childTasks.length > 0 && styles.wrapperNestedCollapsible,
                 isAddSubtaskOpened && styles.wrapperAddingSubtask,
-                (combineTargetFor || taskDragPreview?.combineTargetTaskId === id) &&
-                  styles.wrapperCombineTarget,
+                isCombineTarget && styles.wrapperCombineTarget,
                 dropIndicator?.position === 'before' && styles.wrapperDropBefore,
                 dropIndicator?.position === 'after' && styles.wrapperDropAfter,
                 isDragging && styles.wrapperDragging,
@@ -324,6 +340,12 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
                     </div>
                   )}
                 </div>
+              )}
+              {dropIndicator?.position === 'inside' && (
+                <span className={styles.dropPreview} aria-hidden="true">
+                  <span className={styles.dropPreviewCheckbox} />
+                  <span className={styles.dropPreviewText} />
+                </span>
               )}
             </div>
           );

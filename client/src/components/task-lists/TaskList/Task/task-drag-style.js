@@ -5,9 +5,28 @@
 
 const TASK_INDENT_SIZE = 24;
 const MAX_TASK_INDENT = 120;
-const DEPTH_TRANSITION = 'margin-left 160ms ease, width 160ms ease';
+const DEPTH_TRANSITION =
+  'margin-left 140ms cubic-bezier(0.2, 0, 0, 1), width 140ms cubic-bezier(0.2, 0, 0, 1)';
 
 const getTaskIndent = (depth) => Math.min(depth * TASK_INDENT_SIZE, MAX_TASK_INDENT);
+
+export const getTaskVisualDepth = (
+  taskId,
+  depth,
+  previewDepth,
+  taskDragPreview,
+  isDropAnimating,
+) => {
+  if (taskDragPreview?.taskId === taskId && !taskDragPreview.isCancelled) {
+    return taskDragPreview.depth;
+  }
+
+  if (isDropAnimating && !taskDragPreview?.isCancelled) {
+    return previewDepth;
+  }
+
+  return depth;
+};
 
 const buildTaskDragStyle = (style, sourceDepth, previewDepth) => ({
   ...style,

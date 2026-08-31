@@ -3,12 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import {
-  buildTaskRows,
-  getTaskDepth,
-  getTaskDropIndicator,
-  resolveTaskDrop,
-} from './task-tree';
+import { buildTaskRows, getTaskDepth, getTaskDropIndicator, resolveTaskDrop } from './task-tree';
 
 describe('buildTaskRows', () => {
   it('returns every nested task in depth-first order with its depth', () => {
@@ -78,6 +73,24 @@ describe('getTaskDropIndicator', () => {
       targetTaskId: 'grandchild-1',
       position: 'after',
       depth: 1,
+    });
+  });
+
+  it('uses a distinct inside marker when combining into a nested parent', () => {
+    expect(
+      getTaskDropIndicator({
+        taskId: 'root-2',
+        sourceTaskListId: 'list-1',
+        destinationTaskListId: 'list-1',
+        combineTaskId: 'child-1',
+        result: { taskListId: 'list-1', parentTaskId: 'child-1', index: 1 },
+        tasksByTaskListId,
+      }),
+    ).toEqual({
+      taskListId: 'list-1',
+      targetTaskId: 'grandchild-1',
+      position: 'inside',
+      depth: 2,
     });
   });
 

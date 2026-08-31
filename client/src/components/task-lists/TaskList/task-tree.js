@@ -104,6 +104,7 @@ export const getTaskDropIndicator = ({
   taskId,
   sourceTaskListId,
   destinationTaskListId,
+  combineTaskId,
   result,
   tasksByTaskListId,
   collapsedTaskIdsByTaskListId = {},
@@ -134,7 +135,7 @@ export const getTaskDropIndicator = ({
     return {
       taskListId: destinationTaskListId,
       targetTaskId: nextSibling.id,
-      position: 'before',
+      position: combineTaskId ? 'inside' : 'before',
       depth: result.parentTaskId ? getTaskDepth(destinationTasks, result.parentTaskId) + 1 : 0,
     };
   }
@@ -155,7 +156,7 @@ export const getTaskDropIndicator = ({
     return {
       taskListId: destinationTaskListId,
       targetTaskId,
-      position: 'after',
+      position: combineTaskId ? 'inside' : 'after',
       depth: result.parentTaskId ? getTaskDepth(destinationTasks, result.parentTaskId) + 1 : 0,
     };
   }
@@ -164,7 +165,7 @@ export const getTaskDropIndicator = ({
     return {
       taskListId: destinationTaskListId,
       targetTaskId: result.parentTaskId,
-      position: 'after',
+      position: combineTaskId ? 'inside' : 'after',
       depth: getTaskDepth(destinationTasks, result.parentTaskId) + 1,
     };
   }

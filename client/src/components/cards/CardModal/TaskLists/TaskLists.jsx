@@ -91,6 +91,7 @@ const TaskLists = React.memo(() => {
 
       const taskId = parseDndId(draggableId);
       const sourceTaskListId = parseDndId(source.droppableId);
+      const combineTaskId = combine && parseDndId(combine.draggableId);
       const destinationTaskListId =
         (combine && parseDndId(combine.droppableId)) ||
         (destination && parseDndId(destination.droppableId));
@@ -102,7 +103,7 @@ const TaskLists = React.memo(() => {
           sourceIndex: source.index,
           destinationTaskListId,
           destinationIndex: destination && destination.index,
-          combineTaskId: combine && parseDndId(combine.draggableId),
+          combineTaskId,
           tasksByTaskListId,
           collapsedTaskIdsByTaskListId,
         });
@@ -111,17 +112,17 @@ const TaskLists = React.memo(() => {
         result && result.parentTaskId
           ? getTaskDepth(tasksByTaskListId[result.taskListId] || [], result.parentTaskId) + 1
           : 0;
-      const combineTargetTaskId = combine && parseDndId(combine.draggableId);
       const indicator = getTaskDropIndicator({
         taskId,
         sourceTaskListId,
         destinationTaskListId,
+        combineTaskId,
         result,
         tasksByTaskListId,
         collapsedTaskIdsByTaskListId,
       });
       const nextPreview = result
-        ? { taskId, depth: previewDepth, combineTargetTaskId, indicator }
+        ? { taskId, depth: previewDepth, combineTargetTaskId: combineTaskId, indicator }
         : null;
       setTaskDragPreview((currentPreview) =>
         currentPreview?.taskId === nextPreview?.taskId &&
@@ -140,7 +141,6 @@ const TaskLists = React.memo(() => {
       }
 
       const taskListId = parseDndId(combine.droppableId);
-      const combineTaskId = parseDndId(combine.draggableId);
       const nextTarget = `${taskListId}:${combineTaskId}`;
       if (combineTargetRef.current === nextTarget) {
         return;
@@ -159,13 +159,13 @@ const TaskLists = React.memo(() => {
   const handleDragEnd = useCallback(
     ({ draggableId, type, source, destination, combine }) => {
       clearExpandTimeout();
-      setTaskDragPreview(null);
       document.body.classList.remove(globalStyles.dragging);
 
       const id = parseDndId(draggableId);
 
       switch (type) {
         case DroppableTypes.TASK_LIST: {
+          setTaskDragPreview(null);
           if (!destination) {
             return;
           }
@@ -182,6 +182,7 @@ const TaskLists = React.memo(() => {
         }
         case DroppableTypes.TASK: {
           if (!destination && !combine) {
+            setTaskDragPreview({ taskId: id, isCancelled: true });
             return;
           }
 
@@ -201,8 +202,11 @@ const TaskLists = React.memo(() => {
           });
 
           if (!result) {
+            setTaskDragPreview({ taskId: id, isCancelled: true });
             return;
           }
+
+          setTaskDragPreview(null);
 
           if (result.parentTaskId) {
             expandTask(result.taskListId, result.parentTaskId);
