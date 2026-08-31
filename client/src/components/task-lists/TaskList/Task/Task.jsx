@@ -193,6 +193,11 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
           }
 
           const visualDepth = taskDragPreview?.taskId === id ? taskDragPreview.depth : depth;
+          const dropIndicator =
+            taskDragPreview?.indicator?.taskListId === task.taskListId &&
+            taskDragPreview.indicator.targetTaskId === id
+              ? taskDragPreview.indicator
+              : null;
           const contentNode = (
             <div
               {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
@@ -200,10 +205,14 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
               ref={innerRef}
               style={
                 isDragging
-                  ? buildTaskDragStyle(draggableProps.style, depth, visualDepth)
+                  ? {
+                      ...buildTaskDragStyle(draggableProps.style, depth, visualDepth),
+                      '--task-drop-depth': dropIndicator?.depth ?? visualDepth,
+                    }
                   : {
                       ...draggableProps.style,
                       '--task-depth': visualDepth,
+                      '--task-drop-depth': dropIndicator?.depth ?? visualDepth,
                     }
               }
               className={classNames(
@@ -212,7 +221,10 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
                 visualDepth > 0 && styles.wrapperNested,
                 visualDepth > 0 && childTasks.length > 0 && styles.wrapperNestedCollapsible,
                 isAddSubtaskOpened && styles.wrapperAddingSubtask,
-                combineTargetFor && styles.wrapperCombineTarget,
+                (combineTargetFor || taskDragPreview?.combineTargetTaskId === id) &&
+                  styles.wrapperCombineTarget,
+                dropIndicator?.position === 'before' && styles.wrapperDropBefore,
+                dropIndicator?.position === 'after' && styles.wrapperDropAfter,
                 isDragging && styles.wrapperDragging,
               )}
             >

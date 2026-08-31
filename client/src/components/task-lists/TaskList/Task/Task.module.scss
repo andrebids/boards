@@ -219,6 +219,9 @@
   }
 
   .wrapper {
+    --task-indent: min(calc(var(--task-depth) * 24px), 120px);
+    --task-drop-indent: min(calc(var(--task-drop-depth) * 24px), 120px);
+
     background: transparent;
     border: 1px solid transparent;
     border-radius: 8px;
@@ -231,6 +234,24 @@
       border-color 120ms ease,
       box-shadow 120ms ease;
     width: 100%;
+
+    &:after {
+      background: var(--card-modal-accent, #2563eb);
+      border-radius: 999px;
+      content: '';
+      height: 2px;
+      left: calc(var(--task-drop-indent) - var(--task-indent) + 12px);
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      right: 8px;
+      transform: scaleX(0.96);
+      transform-origin: left center;
+      transition:
+        opacity 120ms ease,
+        transform 120ms ease;
+      z-index: 4;
+    }
 
     &:hover {
       background: var(--card-modal-surface-hover, #fff);
@@ -263,8 +284,23 @@
   }
 
   .wrapperCombineTarget {
+    background: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.08));
     border-color: var(--card-modal-accent, #2563eb);
     box-shadow: 0 0 0 3px var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16));
+  }
+
+  .wrapperDropBefore:after,
+  .wrapperDropAfter:after {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .wrapperDropBefore:after {
+    top: -2px;
+  }
+
+  .wrapperDropAfter:after {
+    bottom: -2px;
   }
 
   .wrapperAddingSubtask {
@@ -278,7 +314,6 @@
   }
 
   .wrapperNested {
-    --task-indent: min(calc(var(--task-depth) * 24px), 120px);
     --task-tree-line: color-mix(
       in srgb,
       var(--card-modal-muted, #8a94a3) 48%,

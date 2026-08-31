@@ -47,6 +47,13 @@
     min-height: 1px;
   }
 
+  .emptyDropIndicator {
+    background: var(--card-modal-accent, #2563eb);
+    border-radius: 999px;
+    height: 2px;
+    margin: 3px 8px 3px 12px;
+  }
+
   .taskButton {
     align-items: center;
     background: transparent;

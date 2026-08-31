@@ -3,7 +3,12 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import { buildTaskRows, getTaskDepth, resolveTaskDrop } from './task-tree';
+import {
+  buildTaskRows,
+  getTaskDepth,
+  getTaskDropIndicator,
+  resolveTaskDrop,
+} from './task-tree';
 
 describe('buildTaskRows', () => {
   it('returns every nested task in depth-first order with its depth', () => {
@@ -46,6 +51,51 @@ describe('getTaskDepth', () => {
     ];
 
     expect(getTaskDepth(tasks, 'grandchild')).toBe(2);
+  });
+});
+
+describe('getTaskDropIndicator', () => {
+  const tasksByTaskListId = {
+    'list-1': [
+      { id: 'root-1', parentTaskId: null },
+      { id: 'child-1', parentTaskId: 'root-1' },
+      { id: 'grandchild-1', parentTaskId: 'child-1' },
+      { id: 'root-2', parentTaskId: null },
+    ],
+  };
+
+  it('places a new last child after the complete previous child subtree', () => {
+    expect(
+      getTaskDropIndicator({
+        taskId: 'root-2',
+        sourceTaskListId: 'list-1',
+        destinationTaskListId: 'list-1',
+        result: { taskListId: 'list-1', parentTaskId: 'root-1', index: 1 },
+        tasksByTaskListId,
+      }),
+    ).toEqual({
+      taskListId: 'list-1',
+      targetTaskId: 'grandchild-1',
+      position: 'after',
+      depth: 1,
+    });
+  });
+
+  it('places an inserted sibling before its next sibling', () => {
+    expect(
+      getTaskDropIndicator({
+        taskId: 'root-2',
+        sourceTaskListId: 'list-1',
+        destinationTaskListId: 'list-1',
+        result: { taskListId: 'list-1', parentTaskId: 'child-1', index: 0 },
+        tasksByTaskListId,
+      }),
+    ).toEqual({
+      taskListId: 'list-1',
+      targetTaskId: 'grandchild-1',
+      position: 'before',
+      depth: 2,
+    });
   });
 });
 

@@ -19,6 +19,7 @@ import { ClosableContext } from '../../../contexts';
 import Task from './Task';
 import AddTask from './AddTask';
 import { buildTaskRows } from './task-tree';
+import TaskDragContext from './TaskDragContext';
 
 import styles from './TaskList.module.scss';
 
@@ -45,6 +46,10 @@ const TaskList = React.memo(({ id, collapsedTaskIds, onCollapseToggle }) => {
   const [t] = useTranslation();
   const [isAddOpened, setIsAddOpened] = useState(false);
   const [, , setIsClosableActive] = useContext(ClosableContext);
+  const taskDragPreview = useContext(TaskDragContext);
+  const showsEmptyDropIndicator =
+    taskDragPreview?.indicator?.taskListId === id &&
+    taskDragPreview.indicator.position === 'empty';
 
   const leafTasks = useMemo(
     () => tasks.filter((task) => !tasks.some((childTask) => childTask.parentTaskId === task.id)),
@@ -117,6 +122,7 @@ const TaskList = React.memo(({ id, collapsedTaskIds, onCollapseToggle }) => {
                 onCollapseToggle={onCollapseToggle}
               />
             ))}
+            {showsEmptyDropIndicator && <div className={styles.emptyDropIndicator} />}
             {placeholder}
           </div>
         )}

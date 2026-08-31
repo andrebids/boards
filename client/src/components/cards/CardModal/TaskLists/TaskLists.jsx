@@ -12,7 +12,11 @@ import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import parseDndId from '../../../../utils/parse-dnd-id';
 import DroppableTypes from '../../../../constants/DroppableTypes';
-import { getTaskDepth, resolveTaskDrop } from '../../../task-lists/TaskList/task-tree';
+import {
+  getTaskDepth,
+  getTaskDropIndicator,
+  resolveTaskDrop,
+} from '../../../task-lists/TaskList/task-tree';
 import TaskDragContext from '../../../task-lists/TaskList/TaskDragContext';
 import Item from './Item';
 
@@ -107,10 +111,25 @@ const TaskLists = React.memo(() => {
         result && result.parentTaskId
           ? getTaskDepth(tasksByTaskListId[result.taskListId] || [], result.parentTaskId) + 1
           : 0;
-      const nextPreview = result ? { taskId, depth: previewDepth } : null;
+      const combineTargetTaskId = combine && parseDndId(combine.draggableId);
+      const indicator = getTaskDropIndicator({
+        taskId,
+        sourceTaskListId,
+        destinationTaskListId,
+        result,
+        tasksByTaskListId,
+        collapsedTaskIdsByTaskListId,
+      });
+      const nextPreview = result
+        ? { taskId, depth: previewDepth, combineTargetTaskId, indicator }
+        : null;
       setTaskDragPreview((currentPreview) =>
         currentPreview?.taskId === nextPreview?.taskId &&
-        currentPreview?.depth === nextPreview?.depth
+        currentPreview?.depth === nextPreview?.depth &&
+        currentPreview?.combineTargetTaskId === nextPreview?.combineTargetTaskId &&
+        currentPreview?.indicator?.targetTaskId === nextPreview?.indicator?.targetTaskId &&
+        currentPreview?.indicator?.position === nextPreview?.indicator?.position &&
+        currentPreview?.indicator?.depth === nextPreview?.indicator?.depth
           ? currentPreview
           : nextPreview,
       );

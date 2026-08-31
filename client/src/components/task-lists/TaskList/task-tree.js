@@ -100,6 +100,83 @@ export const getTaskDepth = (tasks, taskId) => {
   return depth;
 };
 
+export const getTaskDropIndicator = ({
+  taskId,
+  sourceTaskListId,
+  destinationTaskListId,
+  result,
+  tasksByTaskListId,
+  collapsedTaskIdsByTaskListId = {},
+}) => {
+  if (!result) {
+    return null;
+  }
+
+  const sourceTasks = tasksByTaskListId[sourceTaskListId] || [];
+  const destinationTasks = tasksByTaskListId[destinationTaskListId] || [];
+  const excludedTaskIds =
+    sourceTaskListId === destinationTaskListId
+      ? new Set([taskId, ...getDescendantTaskIds(sourceTasks, taskId)])
+      : new Set();
+  const rows = buildTaskRows(
+    destinationTasks,
+    collapsedTaskIdsByTaskListId[destinationTaskListId],
+  ).filter(({ task }) => !excludedTaskIds.has(task.id));
+  const siblings = destinationTasks.filter(
+    (task) =>
+      (task.parentTaskId || null) === (result.parentTaskId || null) &&
+      !excludedTaskIds.has(task.id),
+  );
+  const index = Math.min(result.index, siblings.length);
+  const nextSibling = siblings[index];
+
+  if (nextSibling) {
+    return {
+      taskListId: destinationTaskListId,
+      targetTaskId: nextSibling.id,
+      position: 'before',
+      depth: result.parentTaskId ? getTaskDepth(destinationTasks, result.parentTaskId) + 1 : 0,
+    };
+  }
+
+  const previousSibling = siblings[index - 1];
+  if (previousSibling) {
+    const rowIndex = rows.findIndex(({ task }) => task.id === previousSibling.id);
+    const siblingDepth = rowIndex >= 0 ? rows[rowIndex].depth : 0;
+    let targetTaskId = previousSibling.id;
+
+    for (let indexOffset = rowIndex + 1; indexOffset < rows.length; indexOffset += 1) {
+      if (rows[indexOffset].depth <= siblingDepth) {
+        break;
+      }
+      targetTaskId = rows[indexOffset].task.id;
+    }
+
+    return {
+      taskListId: destinationTaskListId,
+      targetTaskId,
+      position: 'after',
+      depth: result.parentTaskId ? getTaskDepth(destinationTasks, result.parentTaskId) + 1 : 0,
+    };
+  }
+
+  if (result.parentTaskId) {
+    return {
+      taskListId: destinationTaskListId,
+      targetTaskId: result.parentTaskId,
+      position: 'after',
+      depth: getTaskDepth(destinationTasks, result.parentTaskId) + 1,
+    };
+  }
+
+  return {
+    taskListId: destinationTaskListId,
+    targetTaskId: null,
+    position: 'empty',
+    depth: 0,
+  };
+};
+
 export const resolveTaskDrop = ({
   taskId,
   sourceTaskListId,
