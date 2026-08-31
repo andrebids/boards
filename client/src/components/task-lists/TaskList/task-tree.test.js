@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import { buildTaskRows, resolveTaskDrop } from './task-tree';
+import { buildTaskRows, getTaskDepth, resolveTaskDrop } from './task-tree';
 
 describe('buildTaskRows', () => {
   it('returns every nested task in depth-first order with its depth', () => {
@@ -34,6 +34,18 @@ describe('buildTaskRows', () => {
       { task: tasks[0], depth: 0 },
       { task: tasks[3], depth: 0 },
     ]);
+  });
+});
+
+describe('getTaskDepth', () => {
+  it('returns the visible nesting level of a task', () => {
+    const tasks = [
+      { id: 'root', parentTaskId: null },
+      { id: 'child', parentTaskId: 'root' },
+      { id: 'grandchild', parentTaskId: 'child' },
+    ];
+
+    expect(getTaskDepth(tasks, 'grandchild')).toBe(2);
   });
 });
 

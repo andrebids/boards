@@ -80,6 +80,26 @@ export const getDescendantTaskIds = (tasks, taskId) => {
   return descendantTaskIds;
 };
 
+export const getTaskDepth = (tasks, taskId) => {
+  const tasksById = new Map(tasks.map((task) => [task.id, task]));
+  const visitedTaskIds = new Set([taskId]);
+  let task = tasksById.get(taskId);
+  let depth = 0;
+
+  while (task && task.parentTaskId && !visitedTaskIds.has(task.parentTaskId)) {
+    const parentTask = tasksById.get(task.parentTaskId);
+    if (!parentTask) {
+      break;
+    }
+
+    visitedTaskIds.add(parentTask.id);
+    task = parentTask;
+    depth += 1;
+  }
+
+  return depth;
+};
+
 export const resolveTaskDrop = ({
   taskId,
   sourceTaskListId,

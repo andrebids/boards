@@ -27,6 +27,8 @@ import Markdown from '../../../common/Markdown';
 import UserAvatar from '../../../users/UserAvatar';
 import { useGantt } from '../../../gantt';
 import AddTask from '../AddTask';
+import TaskDragContext from '../TaskDragContext';
+import buildTaskDragStyle from './task-drag-style';
 
 import styles from './Task.module.scss';
 
@@ -69,6 +71,7 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
   const [isEditNameOpened, setIsEditNameOpened] = useState(false);
   const [isAddSubtaskOpened, setIsAddSubtaskOpened] = useState(false);
   const [, , setIsClosableActive] = useContext(ClosableContext);
+  const taskDragPreview = useContext(TaskDragContext);
 
   const handleToggleChange = useCallback(() => {
     dispatch(
@@ -189,19 +192,25 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
             );
           }
 
+          const visualDepth = taskDragPreview?.taskId === id ? taskDragPreview.depth : depth;
           const contentNode = (
             <div
               {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
               {...dragHandleProps} // eslint-disable-line react/jsx-props-no-spreading
               ref={innerRef}
-              style={{
-                ...draggableProps.style,
-                '--task-depth': depth,
-              }}
+              style={
+                isDragging
+                  ? buildTaskDragStyle(draggableProps.style, depth, visualDepth)
+                  : {
+                      ...draggableProps.style,
+                      '--task-depth': visualDepth,
+                    }
+              }
               className={classNames(
                 isDragging && 'card-modal-theme',
                 styles.wrapper,
-                depth > 0 && styles.wrapperNested,
+                visualDepth > 0 && styles.wrapperNested,
+                visualDepth > 0 && childTasks.length > 0 && styles.wrapperNestedCollapsible,
                 isAddSubtaskOpened && styles.wrapperAddingSubtask,
                 combineTargetFor && styles.wrapperCombineTarget,
                 isDragging && styles.wrapperDragging,

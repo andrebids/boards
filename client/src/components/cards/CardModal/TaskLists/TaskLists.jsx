@@ -12,7 +12,8 @@ import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import parseDndId from '../../../../utils/parse-dnd-id';
 import DroppableTypes from '../../../../constants/DroppableTypes';
-import { resolveTaskDrop } from '../../../task-lists/TaskList/task-tree';
+import { getTaskDepth, resolveTaskDrop } from '../../../task-lists/TaskList/task-tree';
+import TaskDragContext from '../../../task-lists/TaskList/TaskDragContext';
 import Item from './Item';
 
 import globalStyles from '../../../../styles.module.scss';
@@ -23,6 +24,7 @@ const TaskLists = React.memo(() => {
   const taskListIds = useSelector(selectors.selectTaskListIdsForCurrentCard);
   const tasksByTaskListId = useSelector(selectors.selectTasksByTaskListIdForCurrentCard);
   const [collapsedTaskIdsByTaskListId, setCollapsedTaskIdsByTaskListId] = useState({});
+  const [taskDragPreview, setTaskDragPreview] = useState(null);
   const combineTargetRef = useRef(null);
   const expandTimeoutRef = useRef(null);
 
@@ -70,20 +72,57 @@ const TaskLists = React.memo(() => {
 
   const handleDragStart = useCallback(() => {
     clearExpandTimeout();
+    setTaskDragPreview(null);
     document.body.classList.add(globalStyles.dragging);
     closePopup();
   }, [clearExpandTimeout]);
 
   const handleDragUpdate = useCallback(
-    ({ type, combine }) => {
-      if (type !== DroppableTypes.TASK || !combine) {
+    ({ draggableId, type, source, destination, combine }) => {
+      if (type !== DroppableTypes.TASK) {
+        setTaskDragPreview(null);
+        clearExpandTimeout();
+        return;
+      }
+
+      const taskId = parseDndId(draggableId);
+      const sourceTaskListId = parseDndId(source.droppableId);
+      const destinationTaskListId =
+        (combine && parseDndId(combine.droppableId)) ||
+        (destination && parseDndId(destination.droppableId));
+      const result =
+        destinationTaskListId &&
+        resolveTaskDrop({
+          taskId,
+          sourceTaskListId,
+          sourceIndex: source.index,
+          destinationTaskListId,
+          destinationIndex: destination && destination.index,
+          combineTaskId: combine && parseDndId(combine.draggableId),
+          tasksByTaskListId,
+          collapsedTaskIdsByTaskListId,
+        });
+
+      const previewDepth =
+        result && result.parentTaskId
+          ? getTaskDepth(tasksByTaskListId[result.taskListId] || [], result.parentTaskId) + 1
+          : 0;
+      const nextPreview = result ? { taskId, depth: previewDepth } : null;
+      setTaskDragPreview((currentPreview) =>
+        currentPreview?.taskId === nextPreview?.taskId &&
+        currentPreview?.depth === nextPreview?.depth
+          ? currentPreview
+          : nextPreview,
+      );
+
+      if (!combine) {
         clearExpandTimeout();
         return;
       }
 
       const taskListId = parseDndId(combine.droppableId);
-      const taskId = parseDndId(combine.draggableId);
-      const nextTarget = `${taskListId}:${taskId}`;
+      const combineTaskId = parseDndId(combine.draggableId);
+      const nextTarget = `${taskListId}:${combineTaskId}`;
       if (combineTargetRef.current === nextTarget) {
         return;
       }
@@ -91,16 +130,17 @@ const TaskLists = React.memo(() => {
       clearExpandTimeout();
       combineTargetRef.current = nextTarget;
       expandTimeoutRef.current = setTimeout(() => {
-        expandTask(taskListId, taskId);
+        expandTask(taskListId, combineTaskId);
         expandTimeoutRef.current = null;
       }, 500);
     },
-    [clearExpandTimeout, expandTask],
+    [clearExpandTimeout, collapsedTaskIdsByTaskListId, expandTask, tasksByTaskListId],
   );
 
   const handleDragEnd = useCallback(
     ({ draggableId, type, source, destination, combine }) => {
       clearExpandTimeout();
+      setTaskDragPreview(null);
       document.body.classList.remove(globalStyles.dragging);
 
       const id = parseDndId(draggableId);
@@ -160,29 +200,31 @@ const TaskLists = React.memo(() => {
   );
 
   return (
-    <DragDropContext
-      onDragStart={handleDragStart}
-      onDragUpdate={handleDragUpdate}
-      onDragEnd={handleDragEnd}
-    >
-      <Droppable droppableId="card" type={DroppableTypes.TASK_LIST} direction="vertical">
-        {({ innerRef, droppableProps, placeholder }) => (
-          // eslint-disable-next-line react/jsx-props-no-spreading
-          <div {...droppableProps} ref={innerRef}>
-            {taskListIds.map((taskListId, index) => (
-              <Item
-                key={taskListId}
-                id={taskListId}
-                index={index}
-                collapsedTaskIds={collapsedTaskIdsByTaskListId[taskListId] || EMPTY_TASK_IDS}
-                onTaskCollapseToggle={handleTaskCollapseToggle}
-              />
-            ))}
-            {placeholder}
-          </div>
-        )}
-      </Droppable>
-    </DragDropContext>
+    <TaskDragContext.Provider value={taskDragPreview}>
+      <DragDropContext
+        onDragStart={handleDragStart}
+        onDragUpdate={handleDragUpdate}
+        onDragEnd={handleDragEnd}
+      >
+        <Droppable droppableId="card" type={DroppableTypes.TASK_LIST} direction="vertical">
+          {({ innerRef, droppableProps, placeholder }) => (
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            <div {...droppableProps} ref={innerRef}>
+              {taskListIds.map((taskListId, index) => (
+                <Item
+                  key={taskListId}
+                  id={taskListId}
+                  index={index}
+                  collapsedTaskIds={collapsedTaskIdsByTaskListId[taskListId] || EMPTY_TASK_IDS}
+                  onTaskCollapseToggle={handleTaskCollapseToggle}
+                />
+              ))}
+              {placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </TaskDragContext.Provider>
   );
 });
 
