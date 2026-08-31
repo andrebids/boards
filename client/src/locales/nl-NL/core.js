@@ -62,6 +62,7 @@ export default {
         'Weet u zeker dat u dit lid uit het bord wilt verwijderen?',
       attachment: 'Bijlage',
       attachments: 'Bijlagen',
+      noAttachments: 'Nog geen bijlagen.',
       authentication: 'Authenticatie',
       background: 'Achtergrond',
       board: 'Bord',

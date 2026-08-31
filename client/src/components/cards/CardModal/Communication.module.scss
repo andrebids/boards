@@ -6,6 +6,7 @@
 :global(#app) {
   .wrapper {
     margin-left: -36px;
+    min-height: min(500px, 60dvh);
 
     :global(.ui.segment) {
       background: transparent;

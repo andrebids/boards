@@ -71,6 +71,7 @@ export default merge({}, enUSCore, {
         "Êtes-vous sûr de vouloir supprimer ce membre du tableau ?",
       attachment: "Pièce jointe",
       attachments: "Pièces jointes",
+      noAttachments: "Aucune pièce jointe pour le moment.",
       authentication: "Authentification",
       background: "Arrière-plan",
       board: "Tableau",

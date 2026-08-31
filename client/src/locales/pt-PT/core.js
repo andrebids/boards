@@ -363,6 +363,7 @@ export default {
       atLeastOneListMustBePresent: "Pelo menos uma lista deve estar presente",
       attachment: "Anexo",
       attachments: "Anexos",
+      noAttachments: "Ainda não existem anexos.",
       authentication: "Autenticação",
       background: "Fundo",
       baseCustomFields_title: "Campos Personalizados Base",

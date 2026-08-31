@@ -58,6 +58,7 @@ export default {
         'Bu üyeyi panodan çıkarmak istediğinizden emin misiniz?',
       attachment: 'ek',
       attachments: 'ekler',
+      noAttachments: 'Henüz ek yok.',
       authentication: 'kimlik doğrulama',
       background: 'arka plan',
       board: 'pano',

@@ -1,43 +1,94 @@
 :global(#app) {
   .wrapper {
-    background: var(--app-dark-surface);
-    color: var(--app-dark-text);
+    --card-modal-background: var(--app-dark-canvas);
+    --card-modal-surface: var(--app-dark-surface);
+    --card-modal-surface-hover: var(--app-dark-surface-hover);
+    --card-modal-border: var(--app-dark-border);
+    --card-modal-text: var(--app-dark-text);
+    --card-modal-muted: var(--app-dark-text-muted);
+    --card-modal-accent: var(--app-accent);
+    --card-modal-accent-soft: var(--app-accent-soft);
+
+    background: var(--card-modal-background);
+    color: var(--card-modal-text);
     container-type: inline-size;
+    color-scheme: dark;
     display: flex;
     flex-direction: column;
     height: 100%;
     min-height: 0;
   }
 
-  .header {
-    align-items: center;
-    border-bottom: 1px solid var(--app-dark-border);
+  .module {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0 16px 16px 52px;
+    position: relative;
+  }
+
+  .moduleHeader {
+    color: var(--card-modal-text);
     display: flex;
     flex: 0 0 auto;
-    justify-content: space-between;
-    min-height: 44px;
-    padding: 8px 12px;
-
-    div {
-      align-items: baseline;
-      display: flex;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    span,
-    small {
-      color: var(--app-dark-text-muted);
-      font-size: 11px;
-      white-space: nowrap;
-    }
+    font-size: 16px;
+    line-height: 24px;
+    margin: 0 0 4px;
+    padding: 6px 0;
 
     strong {
-      font-size: 13px;
+      font-size: inherit;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+  }
+
+  .moduleIcon {
+    color: var(--card-modal-muted);
+    font-size: 17px;
+    height: 32px;
+    left: 16px;
+    line-height: 32px;
+    margin: 0;
+    position: absolute;
+    top: 2px;
+    width: 32px;
+  }
+
+  .count {
+    color: var(--card-modal-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 16px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  :global(.ui.progress).progress {
+    background: var(--card-modal-surface-hover) !important;
+    border-radius: 999px !important;
+    height: 5px !important;
+    margin: 0 !important;
+    overflow: hidden;
+    width: 100% !important;
+
+    :global(.bar) {
+      background: var(--card-modal-accent) !important;
+      border-radius: 999px !important;
+      min-width: 0 !important;
+    }
+  }
+
+  .progressRow {
+    align-items: center;
+    display: grid;
+    flex: 0 0 auto;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin: 2px 0 10px;
   }
 
   .content {
@@ -47,54 +98,105 @@
   }
 
   .tasks {
+    align-content: start;
+    display: grid;
+    gap: 2px;
     height: 100%;
     list-style: none;
     margin: 0;
     overflow: auto;
-    padding: 4px 0;
+    padding: 0;
+  }
 
-    li {
-      align-items: flex-start;
-      border-bottom: 1px solid color-mix(in oklab, var(--app-dark-border) 65%, transparent);
-      display: flex;
-      gap: 8px;
-      min-width: 0;
-      padding: 8px 12px 8px calc(12px + var(--task-depth) * 14px);
+  .taskRow {
+    --task-indent: min(calc(var(--task-depth) * 24px), 96px);
+    --task-tree-line: color-mix(
+      in srgb,
+      var(--card-modal-muted) 48%,
+      transparent
+    );
 
-      :global(i.icon) {
-        color: var(--app-accent);
-        flex: 0 0 auto;
-        margin-top: 2px;
-      }
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    box-sizing: border-box;
+    margin-left: var(--task-indent);
+    min-height: 34px;
+    position: relative;
+    width: calc(100% - var(--task-indent));
+  }
+
+  .taskRowNested {
+    &::before {
+      border-bottom: 1px solid var(--task-tree-line);
+      border-bottom-left-radius: 6px;
+      border-left: 1px solid var(--task-tree-line);
+      bottom: 50%;
+      content: '';
+      left: -5px;
+      position: absolute;
+      top: -18px;
+      width: 20px;
     }
   }
 
+  .checkbox {
+    background: var(--card-modal-surface-hover);
+    border-radius: 5px;
+    height: 16px;
+    left: 10px;
+    position: absolute;
+    top: 8px;
+    width: 16px;
+  }
+
+  .checkboxCompleted {
+    background: var(--card-modal-accent);
+
+    &::after {
+      border: solid var(--app-accent-foreground);
+      border-width: 0 2px 2px 0;
+      content: '';
+      height: 8px;
+      left: 6px;
+      position: absolute;
+      top: 3px;
+      transform: rotate(45deg);
+      width: 4px;
+    }
+  }
+
+  .taskContent {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 34px;
+    padding: 0 8px 0 40px;
+  }
+
   .taskText {
-    display: -webkit-box;
-    font-size: 12px;
-    line-height: 1.35;
+    color: var(--card-modal-text);
+    display: block;
+    font-size: 14px;
+    line-height: 20px;
     min-width: 0;
     overflow: hidden;
-    overflow-wrap: anywhere;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    overflow-wrap: break-word;
+    padding: 7px 0;
 
     p {
       margin: 0;
     }
   }
 
-  .completed {
-    color: var(--app-dark-text-muted);
-
-    .taskText {
-      text-decoration: line-through;
-    }
+  .taskCompleted {
+    color: var(--card-modal-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--card-modal-muted);
   }
 
   .state {
     align-items: center;
-    color: var(--app-dark-text-muted);
+    color: var(--card-modal-muted);
     display: flex;
     flex-direction: column;
     font-size: 12px;
@@ -105,21 +207,20 @@
     text-align: center;
 
     :global(i.icon) {
-      color: var(--app-accent);
+      color: var(--card-modal-accent);
       font-size: 18px;
       margin: 0;
     }
   }
 
   @container (min-width: 560px) {
-    .tasks li {
-      gap: 10px;
-      padding-bottom: 10px;
-      padding-top: 10px;
+    .module {
+      padding-left: 60px;
+      padding-right: 24px;
     }
 
-    .taskText {
-      font-size: 13px;
+    .moduleIcon {
+      left: 24px;
     }
   }
 }

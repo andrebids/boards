@@ -106,6 +106,7 @@ export default {
       atLeastOneListMustBePresent: "At least one list must be present",
       attachment: "Attachment",
       attachments: "Attachments",
+      noAttachments: "No attachments yet.",
       authentication: "Authentication",
       background: "Background",
       baseCustomFields_title: "Base Custom Fields",

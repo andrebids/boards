@@ -61,6 +61,7 @@ export default {
         'Apakah anda ingin menghapus anggota ini dari papan ini?',
       attachment: 'Lampiran',
       attachments: 'Lampiran-lampiran',
+      noAttachments: 'Belum ada lampiran.',
       authentication: 'Autentikasi',
       background: 'Latar belakang',
       board: 'Papan',

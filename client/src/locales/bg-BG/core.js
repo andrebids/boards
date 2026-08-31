@@ -62,6 +62,7 @@ export default {
         'Сигурни ли сте, че искате да премахнете този член от таблото?',
       attachment: 'Прикачен файл',
       attachments: 'Прикачени файлове',
+      noAttachments: 'Все още няма прикачени файлове.',
       authentication: 'Удостоверяване',
       background: 'Фон',
       board: 'Табло',

@@ -161,27 +161,65 @@ module.exports = {
       Object.assign(values, taskContentValues);
     }
 
-    task = await sails.helpers.tasks.updateOne.with({
-      project,
-      board,
-      list,
-      card,
-      taskList,
-      record: task,
-      values: {
-        ...values,
-        taskList: nextTaskList,
-      },
-      actorUser: currentUser,
-      request: this.req,
-    });
+    let includedTasks;
+    const isMove =
+      !_.isUndefined(inputs.position) &&
+      ['assigneeUserId', 'name', 'content', 'isCompleted'].every((key) =>
+        _.isUndefined(inputs[key]),
+      );
+
+    if (isMove) {
+      const result = await sails.helpers.tasks.moveTree
+        .with({
+          project,
+          board,
+          list,
+          card,
+          taskList,
+          nextTaskList: nextTaskList || taskList,
+          record: task,
+          values: {
+            ...values,
+            taskListId: (nextTaskList || taskList).id,
+          },
+          actorUser: currentUser,
+          request: this.req,
+        })
+        .intercept('invalidParentTask', () => Errors.PARENT_TASK_NOT_FOUND);
+
+      task = result.task;
+      includedTasks = result.updatedTasks.slice(1);
+    } else {
+      task = await sails.helpers.tasks.updateOne.with({
+        project,
+        board,
+        list,
+        card,
+        taskList,
+        record: task,
+        values: {
+          ...values,
+          taskList: nextTaskList,
+        },
+        actorUser: currentUser,
+        request: this.req,
+      });
+    }
 
     if (!task) {
       throw Errors.TASK_NOT_FOUND;
     }
 
-    return {
+    const result = {
       item: task,
     };
+
+    if (includedTasks && includedTasks.length > 0) {
+      result.included = {
+        tasks: includedTasks,
+      };
+    }
+
+    return result;
   },
 };

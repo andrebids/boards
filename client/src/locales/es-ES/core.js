@@ -102,6 +102,7 @@ export default {
       atLeastOneListMustBePresent: 'Debe haber al menos una lista',
       attachment: 'Adjunto',
       attachments: 'Adjuntos',
+      noAttachments: 'Aún no hay archivos adjuntos.',
       authentication: 'Autenticación',
       background: 'Fondo',
       baseCustomFields_title: 'Campos personalizados base',

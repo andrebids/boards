@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
@@ -21,7 +21,7 @@ import TaskList from '../../../task-lists/TaskList';
 
 import styles from './Item.module.scss';
 
-const Item = React.memo(({ id, index }) => {
+const Item = React.memo(({ id, index, collapsedTaskIds, onTaskCollapseToggle }) => {
   const [t] = useTranslation();
   const selectTaskListById = useMemo(
     () => selectors.makeSelectTaskListById(),
@@ -39,6 +39,12 @@ const Item = React.memo(({ id, index }) => {
   });
 
   const EditPopup = usePopupInClosableContext(EditStep);
+  const handleTaskCollapseToggle = useCallback(
+    taskId => {
+      onTaskCollapseToggle(id, taskId);
+    },
+    [id, onTaskCollapseToggle],
+  );
 
   return (
     <Draggable
@@ -52,8 +58,9 @@ const Item = React.memo(({ id, index }) => {
             {...draggableProps} // eslint-disable-line react/jsx-props-no-spreading
             ref={innerRef}
             className={classNames(
+              isDragging && 'card-modal-theme',
               styles.wrapper,
-              isDragging && styles.wrapperDragging
+              isDragging && styles.wrapperDragging,
             )}
           >
             <div className={styles.moduleWrapper}>
@@ -84,7 +91,11 @@ const Item = React.memo(({ id, index }) => {
                   </span>
                 </div>
               </div>
-              <TaskList id={id} />
+              <TaskList
+                id={id}
+                collapsedTaskIds={collapsedTaskIds}
+                onCollapseToggle={handleTaskCollapseToggle}
+              />
             </div>
           </div>
         );
@@ -100,6 +111,8 @@ const Item = React.memo(({ id, index }) => {
 Item.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
+  collapsedTaskIds: PropTypes.instanceOf(Set).isRequired,
+  onTaskCollapseToggle: PropTypes.func.isRequired,
 };
 
 export default Item;

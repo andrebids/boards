@@ -149,9 +149,12 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
       <Draggable
         draggableId={`task:${id}`}
         index={index}
-        isDragDisabled={depth > 0 || isEditNameOpened || !isEditable}
+        isDragDisabled={isEditNameOpened || !isEditable}
       >
-        {({ innerRef, draggableProps, dragHandleProps }, { isDragging }) => {
+        {(
+          { innerRef, draggableProps, dragHandleProps },
+          { isDragging, combineTargetFor },
+        ) => {
           let assigneeControl = null;
           if (isEditable) {
             assigneeControl = (
@@ -199,9 +202,11 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
                 '--task-depth': depth,
               }}
               className={classNames(
+                isDragging && 'card-modal-theme',
                 styles.wrapper,
                 depth > 0 && styles.wrapperNested,
                 isAddSubtaskOpened && styles.wrapperAddingSubtask,
+                combineTargetFor && styles.wrapperCombineTarget,
                 isDragging && styles.wrapperDragging,
               )}
             >

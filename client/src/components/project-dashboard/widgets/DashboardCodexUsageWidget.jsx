@@ -17,7 +17,7 @@ const TOKEN_UNITS = [
   { threshold: 1e6, suffix: 'M', divisor: 1e6 },
   { threshold: 1e3, suffix: 'K', divisor: 1e3 },
 ];
-const WEEKDAY_LABELS = ['D0', 'S1', 'T2', 'Q3', 'Q4', 'S5', 'S6'];
+const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 const normalizeUsagePercent = (usagePercent) => {
   if (!Number.isFinite(usagePercent)) {
@@ -173,7 +173,7 @@ function TokenActivity({ activity }) {
             <div className={styles.calendarGrid} role="img" aria-label={calendarAriaLabel}>
               <div className={styles.weekdayLabels} aria-hidden="true">
                 {WEEKDAY_LABELS.map((label) => (
-                  <span key={label}>{label[0]}</span>
+                  <span key={label}>{label}</span>
                 ))}
               </div>
               {calendar.weeks.map((week) => (

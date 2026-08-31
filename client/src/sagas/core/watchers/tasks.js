@@ -26,8 +26,8 @@ export default function* tasksWatchers() {
     ),
     takeEvery(
       EntryActionTypes.TASK_MOVE,
-      ({ payload: { id, taskListId, index } }) =>
-        services.moveTask(id, taskListId, index)
+      ({ payload: { id, taskListId, parentTaskId, index } }) =>
+        services.moveTask(id, taskListId, parentTaskId, index)
     ),
     takeEvery(EntryActionTypes.TASK_DELETE, ({ payload: { id } }) =>
       services.deleteTask(id)

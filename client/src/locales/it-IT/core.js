@@ -101,6 +101,7 @@ export default {
       atLeastOneListMustBePresent: 'Deve essere presente almeno una lista',
       attachment: 'Allegato',
       attachments: 'Allegati',
+      noAttachments: 'Non ci sono ancora allegati.',
       authentication: 'Autenticazione',
       background: 'Sfondo',
       baseCustomFields_title: 'Campi personalizzati base',

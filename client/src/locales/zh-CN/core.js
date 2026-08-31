@@ -47,6 +47,7 @@ export default {
       areYouSureYouWantToRemoveThisMemberFromBoard: '确认本面板删除该成员吗？',
       attachment: '附件',
       attachments: '多个附件',
+      noAttachments: '暂无附件。',
       authentication: '认证',
       background: '背景',
       board: '面板',

@@ -94,6 +94,7 @@ export default {
       atLeastOneListMustBePresent: 'Musí být k dispozici alespoň jeden seznam',
       attachment: 'Příloha',
       attachments: 'Přílohy',
+      noAttachments: 'Zatím nejsou žádné přílohy.',
       authentication: 'Ověření',
       background: 'Pozadí',
       baseCustomFields_title: 'Základní vlastní pole',

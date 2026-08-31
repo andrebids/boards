@@ -1,7 +1,7 @@
 :global(#app) {
   .wrapper {
     --codex-usage-accent: oklch(0.69 0.13 185);
-    --codex-activity-level-1: oklch(0.32 0.045 255);
+    --codex-activity-level-1: oklch(0.37 0.065 255);
     --codex-activity-level-2: oklch(0.43 0.08 245);
     --codex-activity-level-3: oklch(0.54 0.11 222);
     --codex-activity-level-4: oklch(0.64 0.13 192);
@@ -227,6 +227,7 @@
   }
 
   .weekdayLabels {
+    align-items: center;
     color: var(--app-dark-text-muted);
     font-size: 8px;
     line-height: 1;

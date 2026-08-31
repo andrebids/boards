@@ -102,6 +102,7 @@ export default {
       atLeastOneListMustBePresent: 'Mindestens eine Liste muss vorhanden sein',
       attachment: 'Anhang',
       attachments: 'Anhänge',
+      noAttachments: 'Noch keine Anhänge vorhanden.',
       authentication: 'Authentifizierung',
       background: 'Hintergrund',
       baseCustomFields_title: 'Feldgruppe',

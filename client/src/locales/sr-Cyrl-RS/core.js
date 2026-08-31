@@ -62,6 +62,7 @@ export default {
         'Да ли заиста желите да уклоните овог члана из ове табле?',
       attachment: 'Прилог',
       attachments: 'Прилози',
+      noAttachments: 'Још увек нема прилога.',
       authentication: 'Аутентификација',
       background: 'Позадина',
       board: 'Табла',

@@ -69,6 +69,7 @@ export default {
         "Tem certeza de que deseja remover este membro do quadro?",
       attachment: "Anexo",
       attachments: "Anexos",
+      noAttachments: "Ainda não há anexos.",
       authentication: "Autenticação",
       background: "Fundo",
       board: "Quadro",

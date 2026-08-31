@@ -60,6 +60,7 @@ export default {
         'Biztosan eltávolítja ezt a tagot a tábláról?',
       attachment: 'Melléklet',
       attachments: 'Mellékletek',
+      noAttachments: 'Még nincsenek mellékletek.',
       authentication: 'Hitelesítés',
       background: 'Háttér',
       board: 'Tábla',

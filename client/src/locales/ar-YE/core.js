@@ -57,6 +57,7 @@ export default {
         'هل أنت متأكد أنك تريد إزالة هذا العضو من اللوحة؟',
       attachment: 'مرفق',
       attachments: 'مرفقات',
+      noAttachments: 'لا توجد مرفقات بعد.',
       authentication: 'المصادقة',
       background: 'الخلفية',
       board: 'لوحة',

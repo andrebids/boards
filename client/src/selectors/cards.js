@@ -377,6 +377,27 @@ export const selectTaskListIdsForCurrentCard = createSelector(
   }
 );
 
+export const selectTasksByTaskListIdForCurrentCard = createSelector(
+  orm,
+  state => selectPath(state).cardId,
+  ({ Card }, id) => {
+    if (!id) {
+      return {};
+    }
+
+    const cardModel = Card.withId(id);
+    if (!cardModel) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      cardModel.taskLists
+        .toModelArray()
+        .map(taskListModel => [taskListModel.id, taskListModel.tasks.toRefArray()]),
+    );
+  },
+);
+
 export const selectAttachmentIdsForCurrentCard = createSelector(
   orm,
   state => selectPath(state).cardId,
@@ -571,6 +592,7 @@ export default {
   selectUserIdsForCurrentCard,
   selectLabelIdsForCurrentCard,
   selectTaskListIdsForCurrentCard,
+  selectTasksByTaskListIdForCurrentCard,
   selectAttachmentIdsForCurrentCard,
   selectImageAttachmentIdsExceptCoverForCurrentCard,
   selectAttachmentsForCurrentCard,

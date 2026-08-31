@@ -22,7 +22,7 @@ import { buildTaskRows } from './task-tree';
 
 import styles from './TaskList.module.scss';
 
-const TaskList = React.memo(({ id }) => {
+const TaskList = React.memo(({ id, collapsedTaskIds, onCollapseToggle }) => {
   const selectTaskListById = useMemo(() => selectors.makeSelectTaskListById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
   const selectTasksByTaskListId = useMemo(() => selectors.makeSelectTasksByTaskListId(), []);
@@ -44,7 +44,6 @@ const TaskList = React.memo(({ id }) => {
 
   const [t] = useTranslation();
   const [isAddOpened, setIsAddOpened] = useState(false);
-  const [collapsedTaskIds, setCollapsedTaskIds] = useState(() => new Set());
   const [, , setIsClosableActive] = useContext(ClosableContext);
 
   const leafTasks = useMemo(
@@ -65,20 +64,6 @@ const TaskList = React.memo(({ id }) => {
 
   const handleAddClose = useCallback(() => {
     setIsAddOpened(false);
-  }, []);
-
-  const handleCollapseToggle = useCallback((taskId) => {
-    setCollapsedTaskIds((previousTaskIds) => {
-      const nextTaskIds = new Set(previousTaskIds);
-
-      if (nextTaskIds.has(taskId)) {
-        nextTaskIds.delete(taskId);
-      } else {
-        nextTaskIds.add(taskId);
-      }
-
-      return nextTaskIds;
-    });
   }, []);
 
   useDidUpdate(() => {
@@ -110,6 +95,7 @@ const TaskList = React.memo(({ id }) => {
       <Droppable
         droppableId={`task-list:${id}`}
         type={DroppableTypes.TASK}
+        isCombineEnabled
         isDropDisabled={!taskList.isPersisted || !canEdit}
       >
         {({ innerRef, droppableProps, placeholder }) => (
@@ -128,7 +114,7 @@ const TaskList = React.memo(({ id }) => {
                 index={index}
                 depth={depth}
                 isCollapsed={collapsedTaskIds.has(task.id)}
-                onCollapseToggle={handleCollapseToggle}
+                onCollapseToggle={onCollapseToggle}
               />
             ))}
             {placeholder}
@@ -156,6 +142,8 @@ const TaskList = React.memo(({ id }) => {
 
 TaskList.propTypes = {
   id: PropTypes.string.isRequired,
+  collapsedTaskIds: PropTypes.instanceOf(Set).isRequired,
+  onCollapseToggle: PropTypes.func.isRequired,
 };
 
 export default TaskList;

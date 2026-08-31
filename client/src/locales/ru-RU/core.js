@@ -101,6 +101,7 @@ export default {
       atLeastOneListMustBePresent: 'Должен быть хотя бы один список',
       attachment: 'Вложение',
       attachments: 'Вложения',
+      noAttachments: 'Вложений пока нет.',
       authentication: 'Аутентификация',
       background: 'Фон',
       baseCustomFields_title: 'Основные настраиваемые поля',

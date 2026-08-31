@@ -98,6 +98,7 @@ export default {
         'Принаймні один список повинен бути присутнім',
       attachment: 'Вкладення',
       attachments: 'Вкладення',
+      noAttachments: 'Вкладень поки немає.',
       authentication: 'Аутентифікація',
       background: 'Фон',
       baseCustomFields_title: 'Базові користувацькі поля',

@@ -57,6 +57,7 @@ export default {
         'Är du säker på att du vill ta bort den här medlemmen från tavlan?',
       attachment: 'Bilaga',
       attachments: 'Bilagor',
+      noAttachments: 'Det finns inga bilagor ännu.',
       authentication: 'Autentisering',
       background: 'Bakgrund',
       board: 'Tavla',

@@ -49,6 +49,7 @@ export default {
         "Ushbu a'zoni doskadan o'chirmoqchimisiz?",
       attachment: 'Ilova',
       attachments: 'Ilovalar',
+      noAttachments: 'Hozircha ilovalar yo‘q.',
       authentication: 'Autentifikatsiya',
       background: 'Orqa fon',
       board: 'Doska',

@@ -102,6 +102,7 @@ export default {
       atLeastOneListMustBePresent: 'Πρέπει να υπάρχει τουλάχιστον μία λίστα',
       attachment: 'Συνημμένο',
       attachments: 'Συνημμένα',
+      noAttachments: 'Δεν υπάρχουν ακόμη συνημμένα.',
       authentication: 'Ταυτοποίηση',
       background: 'Φόντο',
       baseCustomFields_title: 'Βασικά προσαρμοσμένα πεδία',

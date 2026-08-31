@@ -98,6 +98,7 @@ export default {
       atLeastOneListMustBePresent: 'Vähintään yksi lista vaaditaan',
       attachment: 'Liite',
       attachments: 'Liitteet',
+      noAttachments: 'Ei vielä liitteitä.',
       authentication: 'Tunnistautuminen',
       background: 'Tausta',
       baseCustomFields_title: 'Perusmukautetut kentät',

@@ -48,6 +48,7 @@ export default {
         '確認從此看板中刪除該成員嗎？',
       attachment: '附件',
       attachments: '附件',
+      noAttachments: '尚無附件。',
       authentication: '驗證',
       background: '背景',
       board: '看板',

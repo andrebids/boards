@@ -4,6 +4,26 @@
  */
 
 :global(#app) {
+  .emptyState {
+    align-items: center;
+    color: var(--card-modal-muted, #6b808c);
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    font-weight: 600;
+    gap: 10px;
+    justify-content: center;
+    min-height: min(360px, 42dvh);
+    padding: 32px 16px;
+    text-align: center;
+  }
+
+  .emptyIcon {
+    font-size: 22px !important;
+    margin: 0 !important;
+    opacity: 0.75;
+  }
+
   .toggleButton {
     min-height: 40px;
     margin: 8px 0 !important;

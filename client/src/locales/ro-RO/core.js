@@ -60,6 +60,7 @@ export default {
         'Sigur doriți să eliminați acest membru din consiliu?',
       attachment: 'Atașament',
       attachments: 'Atasamente',
+      noAttachments: 'Nu există încă atașamente.',
       authentication: 'Autentificare',
       background: 'Fundal',
       board: 'Tabla',

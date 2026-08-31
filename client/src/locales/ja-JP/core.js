@@ -61,6 +61,7 @@ export default {
         'このメンバーをボードから外してもよろしいですか？',
       attachment: '添付ファイル',
       attachments: '添付ファイル',
+      noAttachments: 'まだ添付ファイルはありません。',
       authentication: '認証',
       background: '背景',
       board: 'ボード',

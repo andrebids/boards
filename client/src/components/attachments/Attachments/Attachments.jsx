@@ -41,6 +41,15 @@ const Attachments = React.memo(() => {
     toggleAllVisible();
   }, [toggleAllVisible]);
 
+  if (attachments.length === 0) {
+    return (
+      <div className={styles.emptyState} role="status">
+        <Icon aria-hidden="true" className={styles.emptyIcon} name="paperclip" />
+        <span>{t('common.noAttachments')}</span>
+      </div>
+    );
+  }
+
   const visibleTotal = isAllVisible
     ? attachments.length
     : Math.min(attachments.length, INITIALLY_VISIBLE);

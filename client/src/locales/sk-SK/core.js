@@ -54,6 +54,7 @@ export default {
         'Naozaj chcete odstrániť tohoto člena z tabule?',
       attachment: 'Príloha',
       attachments: 'Prílohy',
+      noAttachments: 'Zatiaľ nie sú žiadne prílohy.',
       authentication: 'Overenie',
       background: 'Pozadie',
       board: 'Tabuľa',

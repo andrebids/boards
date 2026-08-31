@@ -3,13 +3,14 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import { call, put, select } from 'redux-saga/effects';
+import { all, call, put, select } from 'redux-saga/effects';
 
 import request from '../request';
 import selectors from '../../../selectors';
 import actions from '../../../actions';
 import api from '../../../api';
 import { createLocalId } from '../../../utils/local-id';
+import { getDescendantTaskIds } from '../../../components/task-lists/TaskList/task-tree';
 
 export function* createTask(taskListId, data) {
   const localId = yield call(createLocalId);
@@ -66,13 +67,50 @@ export function* handleTaskUpdate(task) {
   yield put(actions.handleTaskUpdate(task));
 }
 
-export function* moveTask(id, taskListId, index) {
-  const position = yield select(selectors.selectNextTaskPosition, taskListId, index, id);
-
-  yield call(updateTask, id, {
+export function* moveTask(id, taskListId, parentTaskId, index) {
+  const task = yield select(selectors.selectTaskById, id);
+  const sourceTasks = yield select(selectors.selectTasksByTaskListId, task.taskListId);
+  const descendantTaskIds = getDescendantTaskIds(sourceTasks, id);
+  const previousTasks = sourceTasks
+    .filter((currentTask) => currentTask.id === id || descendantTaskIds.has(currentTask.id))
+    .map((currentTask) => ({ ...currentTask }));
+  const position = yield select(
+    selectors.selectNextTaskPosition,
     taskListId,
+    index,
+    id,
+    parentTaskId,
+  );
+  const data = {
+    taskListId,
+    parentTaskId,
     position,
-  });
+  };
+
+  yield put(actions.updateTask(id, data));
+  if (task.taskListId !== taskListId) {
+    yield all(
+      [...descendantTaskIds].map((descendantTaskId) =>
+        put(actions.updateTask(descendantTaskId, { taskListId })),
+      ),
+    );
+  }
+
+  let response;
+  try {
+    response = yield call(request, api.updateTask, id, data);
+  } catch (error) {
+    yield all(previousTasks.map((previousTask) => put(actions.handleTaskUpdate(previousTask))));
+    yield put(actions.updateTask.failure(id, error));
+    return;
+  }
+
+  yield put(actions.updateTask.success(response.item));
+  if (response.included && response.included.tasks) {
+    yield all(
+      response.included.tasks.map((includedTask) => put(actions.updateTask.success(includedTask))),
+    );
+  }
 }
 
 export function* deleteTask(id) {

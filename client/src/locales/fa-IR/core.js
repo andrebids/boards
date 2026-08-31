@@ -59,6 +59,7 @@ export default {
         'آیا مطمئن هستید که می‌خواهید این عضو را از برد حذف کنید؟',
       attachment: 'پیوست',
       attachments: 'پیوست‌ها',
+      noAttachments: 'هنوز پیوستی وجود ندارد.',
       authentication: 'احراز هویت',
       background: 'پس‌زمینه',
       board: 'برد',

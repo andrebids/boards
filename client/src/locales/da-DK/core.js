@@ -102,6 +102,7 @@ export default {
       atLeastOneListMustBePresent: 'Mindst én liste skal være til stede',
       attachment: 'Vedhæft fil',
       attachments: 'Vedhæftede filer',
+      noAttachments: 'Der er ingen vedhæftede filer endnu.',
       authentication: 'Autentificering',
       background: 'Baggrundsbillede',
       baseCustomFields_title: 'Standard brugerdefinerede felter',

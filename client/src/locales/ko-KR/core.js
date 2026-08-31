@@ -52,6 +52,7 @@ export default {
         '이 멤버를 보드에서 제거하시겠습니까?',
       attachment: '첨부 파일',
       attachments: '첨부 파일들',
+      noAttachments: '아직 첨부 파일이 없습니다.',
       authentication: '인증',
       background: '배경',
       board: '보드',

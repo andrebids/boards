@@ -5,8 +5,11 @@
 
 const _ = require('lodash');
 
-const defaultFind = (criteria, { sort = 'id', limit } = {}) =>
-  Task.find(criteria).sort(sort).limit(limit);
+const useConnection = (query, connection) =>
+  connection ? query.usingConnection(connection) : query;
+
+const defaultFind = (criteria, { sort = 'id', limit, connection } = {}) =>
+  useConnection(Task.find(criteria).sort(sort).limit(limit), connection);
 
 /* Query methods */
 
@@ -37,12 +40,15 @@ const getByTaskListId = async (
   return defaultFind(criteria, { sort });
 };
 
-const getByTaskListIds = async (taskListIds, { sort = ['position', 'id'] } = {}) =>
+const getByTaskListIds = async (
+  taskListIds,
+  { sort = ['position', 'id'], connection } = {},
+) =>
   defaultFind(
     {
       taskListId: taskListIds,
     },
-    { sort },
+    { sort, connection },
   );
 
 const getOneById = (id, { taskListId } = {}) => {
@@ -57,9 +63,11 @@ const getOneById = (id, { taskListId } = {}) => {
   return Task.findOne(criteria);
 };
 
-const update = (criteria, values) => Task.update(criteria).set(values).fetch();
+const update = (criteria, values, { connection } = {}) =>
+  useConnection(Task.update(criteria).set(values).fetch(), connection);
 
-const updateOne = (criteria, values) => Task.updateOne(criteria).set({ ...values });
+const updateOne = (criteria, values, { connection } = {}) =>
+  useConnection(Task.updateOne(criteria).set({ ...values }), connection);
 
 // eslint-disable-next-line no-underscore-dangle
 const delete_ = (criteria) => Task.destroy(criteria).fetch();

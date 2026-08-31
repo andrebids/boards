@@ -196,7 +196,8 @@
 }
 
 /* Cartões usam uma superfície de aplicação limpa em vez do efeito de vidro. */
-.ui.modal.glass.card-modal {
+.ui.modal.glass.card-modal,
+.card-modal-theme {
   --card-modal-background: var(--app-dark-canvas);
   --card-modal-surface: var(--app-dark-surface);
   --card-modal-surface-hover: var(--app-dark-surface-hover);

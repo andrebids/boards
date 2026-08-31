@@ -70,6 +70,7 @@ export default {
       atLeastOneListMustBePresent: 'Przynajmniej jedna lista musi istnieć',
       attachment: 'Załącznik',
       attachments: 'Załączniki',
+      noAttachments: 'Nie ma jeszcze załączników.',
       authentication: 'Uwierzytelnianie',
       background: 'Tło',
       baseCustomFields_title: 'Bazowe Pola Własne',
