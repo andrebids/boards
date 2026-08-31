@@ -9,25 +9,50 @@ import DashboardFactorialEntranceQrWidget from './DashboardFactorialEntranceQrWi
 
 import styles from './DashboardWidgetContent.module.scss';
 
-const DeferredDashboardGanttWidget = React.memo(({ projectId, zoomLevel }) => {
-  const [ref, isInView] = useInView({ triggerOnce: true });
+const DeferredDashboardGanttWidget = React.memo(
+  ({ cardId, projectId, rotationSeconds, taskListId, zoomLevel }) => {
+    const [ref, isInView] = useInView({ triggerOnce: true });
 
-  return (
-    <div ref={ref} className={styles.deferredGantt}>
-      {isInView ? (
-        <DashboardGanttWidget projectId={projectId} zoomLevel={zoomLevel} />
-      ) : (
-        <span className={styles.deferredGanttPlaceholder}>A carregar Gantt…</span>
-      )}
-    </div>
-  );
-});
+    return (
+      <div ref={ref} className={styles.deferredGantt}>
+        {isInView ? (
+          <DashboardGanttWidget
+            cardId={cardId}
+            projectId={projectId}
+            rotationSeconds={rotationSeconds}
+            taskListId={taskListId}
+            zoomLevel={zoomLevel}
+          />
+        ) : (
+          <span className={styles.deferredGanttPlaceholder}>A carregar Gantt…</span>
+        )}
+      </div>
+    );
+  },
+);
+
+DeferredDashboardGanttWidget.propTypes = {
+  cardId: PropTypes.string,
+  projectId: PropTypes.string.isRequired,
+  rotationSeconds: PropTypes.number,
+  taskListId: PropTypes.string,
+  zoomLevel: PropTypes.oneOf(['day', 'week', 'month', 'quarter']).isRequired,
+};
+
+DeferredDashboardGanttWidget.defaultProps = {
+  cardId: undefined,
+  rotationSeconds: undefined,
+  taskListId: undefined,
+};
 
 const DashboardWidgetContent = React.memo(({ isEditable, onToggleTask, widget }) => {
   if (widget.type === 'gantt') {
     return (
       <DeferredDashboardGanttWidget
+        cardId={widget.config.cardId}
         projectId={widget.config.projectId}
+        rotationSeconds={widget.config.rotationSeconds}
+        taskListId={widget.config.taskListId}
         zoomLevel={widget.config.zoomLevel}
       />
     );
@@ -77,13 +102,16 @@ DashboardWidgetContent.propTypes = {
     id: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     config: PropTypes.shape({
+      cardId: PropTypes.string,
       projectId: PropTypes.string,
+      rotationSeconds: PropTypes.number,
       taskStates: PropTypes.objectOf(
         PropTypes.shape({
           twoD: PropTypes.oneOf(['done', 'pending']),
           threeD: PropTypes.oneOf(['done', 'pending']),
         }),
       ),
+      taskListId: PropTypes.string,
       zoomLevel: PropTypes.oneOf(['day', 'week', 'month', 'quarter']),
     }),
   }).isRequired,

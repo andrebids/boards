@@ -37,6 +37,7 @@ describe('Task parent completion', () => {
 
   it('reopens the parent when one child is reopened', async () => {
     const updates = [];
+    const broadcasts = [];
     global.Task = {
       qm: {
         getOneById: async () => ({ ...parent, isCompleted: true }),
@@ -50,13 +51,18 @@ describe('Task parent completion', () => {
         },
       },
     };
+    global.sails.sockets.broadcast = (...args) => broadcasts.push(args);
 
     await syncParentCompletion.fn({
       parentTaskId: parent.id,
       board: { id: 'board-1' },
+      request: { socket: 'requesting-client' },
     });
 
     expect(updates).to.deep.equal([{ id: parent.id, values: { isCompleted: false } }]);
+    expect(broadcasts).to.deep.equal([
+      ['board:board-1', 'taskUpdate', { item: { ...parent, isCompleted: false } }],
+    ]);
   });
 
   it('propagates completion through every ancestor', async () => {

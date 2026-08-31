@@ -68,15 +68,20 @@ const createCard = (listId, data, headers) =>
       item: transformCard(body.item),
     }));
 
+const transformCardResponse = (body) => ({
+  ...body,
+  item: transformCard(body.item),
+  included: {
+    ...body.included,
+    attachments: body.included.attachments.map(transformAttachment),
+  },
+});
+
 const getCard = (id, headers) =>
-  socket.get(`/cards/${id}`, undefined, headers).then(body => ({
-    ...body,
-    item: transformCard(body.item),
-    included: {
-      ...body.included,
-      attachments: body.included.attachments.map(transformAttachment),
-    },
-  }));
+  socket.get(`/cards/${id}`, undefined, headers).then(transformCardResponse);
+
+const getSubscribedCard = (id, headers) =>
+  socket.get(`/cards/${id}`, { subscribe: true }, headers).then(transformCardResponse);
 
 const updateCard = (id, data, headers) =>
   socket.patch(`/cards/${id}`, transformCardData(data), headers).then(body => ({
@@ -140,6 +145,7 @@ export default {
   getCards,
   createCard,
   getCard,
+  getSubscribedCard,
   updateCard,
   duplicateCard,
   readCardNotifications,

@@ -178,6 +178,8 @@ const MarkdownEditor = React.forwardRef(
     useImperativeHandle(
       ref,
       () => ({
+        contains: (element) => wrapperRef.current.contains(element),
+        focus: () => editor.focus(),
         insertText: (text) => {
           const { currentEditor } = editor;
 

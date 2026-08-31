@@ -41,6 +41,26 @@ describe('dashboard module isolation', () => {
     expect(widgetContentSource).toContain('<DeferredDashboardGanttWidget');
   });
 
+  it('rotates the Gantt with a configured task list and clears its timer', () => {
+    const ganttSource = readSource('./widgets/DashboardGanttWidget.jsx');
+    const widgetContentSource = readSource('./widgets/DashboardWidgetContent.jsx');
+
+    expect(widgetContentSource).toContain('cardId={widget.config.cardId}');
+    expect(widgetContentSource).toContain('rotationSeconds={widget.config.rotationSeconds}');
+    expect(widgetContentSource).toContain('taskListId={widget.config.taskListId}');
+    expect(ganttSource).toContain('window.setInterval');
+    expect(ganttSource).toContain('window.clearInterval');
+    expect(ganttSource).toContain('<DashboardTaskListPanel');
+  });
+
+  it('sizes the rotating task list from its widget container', () => {
+    const styles = readSource('./widgets/DashboardTaskListPanel.module.scss');
+
+    expect(styles).toContain('container-type: inline-size');
+    expect(styles).toContain('@container');
+    expect(styles).not.toContain('@media');
+  });
+
   it('sizes the Codex usage layout from the widget container instead of the viewport', () => {
     const styles = readSource('./widgets/DashboardCodexUsageWidget.module.scss');
 

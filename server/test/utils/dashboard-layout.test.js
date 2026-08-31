@@ -202,4 +202,62 @@ describe("dashboard layout", () => {
       ]),
     ).to.throw("invalid zoom level");
   });
+
+  it("keeps a complete rotating task list configuration and rejects invalid rotation", () => {
+    expect(
+      normalizeDashboardLayout([
+        {
+          id: "gantt-alpha",
+          type: "gantt",
+          x: 0,
+          y: 0,
+          w: 12,
+          h: 7,
+          config: {
+            projectId: "project-alpha",
+            zoomLevel: "week",
+            cardId: "card-alpha",
+            taskListId: "task-list-alpha",
+            rotationSeconds: 30,
+          },
+        },
+      ]),
+    ).to.deep.equal([
+      {
+        id: "gantt-alpha",
+        type: "gantt",
+        x: 0,
+        y: 0,
+        w: 12,
+        h: 7,
+        config: {
+          projectId: "project-alpha",
+          zoomLevel: "week",
+          cardId: "card-alpha",
+          taskListId: "task-list-alpha",
+          rotationSeconds: 30,
+        },
+      },
+    ]);
+
+    expect(() =>
+      normalizeDashboardLayout([
+        {
+          id: "gantt-alpha",
+          type: "gantt",
+          x: 0,
+          y: 0,
+          w: 12,
+          h: 7,
+          config: {
+            projectId: "project-alpha",
+            zoomLevel: "week",
+            cardId: "card-alpha",
+            taskListId: "task-list-alpha",
+            rotationSeconds: 301,
+          },
+        },
+      ]),
+    ).to.throw("invalid rotation");
+  });
 });

@@ -14,8 +14,21 @@ export const DASHBOARD_WIDGETS = {
 };
 
 export const GANTT_ZOOM_LEVELS = ['day', 'week', 'month', 'quarter'];
+export const GANTT_ROTATION_MIN_SECONDS = 5;
+export const GANTT_ROTATION_MAX_SECONDS = 300;
 
 export const GRIDSTACK_DASHBOARD_COMPONENT = 'DashboardWidget';
+
+export const parseDashboardCardId = (value) => {
+  const normalizedValue = String(value || '').trim();
+  const urlMatch = normalizedValue.match(/\/cards\/([^/?#]+)/);
+
+  if (urlMatch) {
+    return decodeURIComponent(urlMatch[1]);
+  }
+
+  return /^[\w-]+$/.test(normalizedValue) ? normalizedValue : null;
+};
 
 const BLACHERE_WIDGET_TYPES = new Set(['blachereProducts', 'blachereStatic', 'blachereAnimated']);
 const HIDDEN_WIDGET_TYPES = new Set(['blachereProducts']);
@@ -88,9 +101,37 @@ const normalizeWidgetConfig = (type, config) => {
     throw new Error('Gantt dashboard widget has an invalid zoom level');
   }
 
-  return {
+  const normalizedConfig = {
     projectId: config.projectId,
     zoomLevel: config.zoomLevel,
+  };
+
+  const hasRotationConfig =
+    config.cardId !== undefined ||
+    config.taskListId !== undefined ||
+    config.rotationSeconds !== undefined;
+
+  if (!hasRotationConfig) {
+    return normalizedConfig;
+  }
+
+  if (
+    typeof config.cardId !== 'string' ||
+    config.cardId.trim() === '' ||
+    typeof config.taskListId !== 'string' ||
+    config.taskListId.trim() === '' ||
+    !Number.isInteger(config.rotationSeconds) ||
+    config.rotationSeconds < GANTT_ROTATION_MIN_SECONDS ||
+    config.rotationSeconds > GANTT_ROTATION_MAX_SECONDS
+  ) {
+    throw new Error('Gantt dashboard widget has an invalid rotation configuration');
+  }
+
+  return {
+    ...normalizedConfig,
+    cardId: config.cardId,
+    taskListId: config.taskListId,
+    rotationSeconds: config.rotationSeconds,
   };
 };
 

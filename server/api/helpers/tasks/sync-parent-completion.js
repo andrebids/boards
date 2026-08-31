@@ -28,12 +28,7 @@ module.exports = {
       if (parentTask.isCompleted !== isCompleted) {
         // eslint-disable-next-line no-await-in-loop
         parentTask = await Task.qm.updateOne(parentTask.id, { isCompleted });
-        sails.sockets.broadcast(
-          `board:${inputs.board.id}`,
-          'taskUpdate',
-          { item: parentTask },
-          inputs.request,
-        );
+        sails.sockets.broadcast(`board:${inputs.board.id}`, 'taskUpdate', { item: parentTask });
       }
 
       lastParentTask = parentTask;

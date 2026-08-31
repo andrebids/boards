@@ -4,12 +4,21 @@ import {
   hasDashboardGridChanged,
   mergeDashboardLayoutGeometry,
   normalizeDashboardLayout,
+  parseDashboardCardId,
   placeDashboardWidget,
   removeDashboardWidget,
   toGridStackDashboardWidget,
 } from './dashboardLayout';
 
 describe('project dashboard layout', () => {
+  it('extracts a card id from a Boards URL or a raw local id', () => {
+    expect(parseDashboardCardId('https://boards.example.test/cards/1848563196261042005')).toBe(
+      '1848563196261042005',
+    );
+    expect(parseDashboardCardId(' local-card-id ')).toBe('local-card-id');
+    expect(parseDashboardCardId('https://boards.example.test/boards/board-id')).toBeNull();
+  });
+
   it('creates a non-overlapping default layout for the initial widgets', () => {
     const layout = createDefaultDashboardLayout();
 
@@ -194,6 +203,64 @@ describe('project dashboard layout', () => {
         },
       ]),
     ).toThrow('invalid zoom level');
+  });
+
+  it('keeps an optional rotating task list configuration for a Gantt widget', () => {
+    expect(
+      normalizeDashboardLayout([
+        {
+          id: 'gantt-alpha',
+          type: 'gantt',
+          x: 0,
+          y: 0,
+          w: 12,
+          h: 7,
+          config: {
+            projectId: 'project-alpha',
+            zoomLevel: 'week',
+            cardId: 'card-alpha',
+            taskListId: 'task-list-alpha',
+            rotationSeconds: 30,
+          },
+        },
+      ]),
+    ).toEqual([
+      {
+        id: 'gantt-alpha',
+        type: 'gantt',
+        x: 0,
+        y: 0,
+        w: 12,
+        h: 7,
+        config: {
+          projectId: 'project-alpha',
+          zoomLevel: 'week',
+          cardId: 'card-alpha',
+          taskListId: 'task-list-alpha',
+          rotationSeconds: 30,
+        },
+      },
+    ]);
+
+    expect(() =>
+      normalizeDashboardLayout([
+        {
+          id: 'gantt-alpha',
+          type: 'gantt',
+          x: 0,
+          y: 0,
+          w: 12,
+          h: 7,
+          config: {
+            projectId: 'project-alpha',
+            zoomLevel: 'week',
+            cardId: 'card-alpha',
+            taskListId: 'task-list-alpha',
+            rotationSeconds: 4,
+          },
+        },
+      ]),
+    ).toThrow('invalid rotation');
   });
 
   it('merges the complete GridStack serialization without losing widget configuration', () => {

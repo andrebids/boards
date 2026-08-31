@@ -70,9 +70,13 @@ const AddTask = React.memo((props) => {
       }),
     );
 
-    setData(DEFAULT_DATA);
-    setEditorKey((key) => key + 1);
-  }, [data.content, dispatch, isExceeded, parentTaskId, setData, taskListId]);
+    if (parentTaskId) {
+      onClose();
+    } else {
+      setData(DEFAULT_DATA);
+      setEditorKey((key) => key + 1);
+    }
+  }, [data.content, dispatch, isExceeded, onClose, parentTaskId, setData, taskListId]);
 
   const handleSubmit = useCallback(() => {
     submit();

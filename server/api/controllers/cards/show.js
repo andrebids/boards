@@ -17,6 +17,9 @@ module.exports = {
       ...idInput,
       required: true,
     },
+    subscribe: {
+      type: 'boolean',
+    },
   },
 
   exits: {
@@ -67,6 +70,10 @@ module.exports = {
 
     const customFields = await CustomField.qm.getByCustomFieldGroupIds(customFieldGroupIds);
     const customFieldValues = await CustomFieldValue.qm.getByCardId(card.id);
+
+    if (inputs.subscribe && this.req.isSocket) {
+      sails.sockets.join(this.req, `board:${card.boardId}`);
+    }
 
     return {
       item: card,
