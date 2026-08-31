@@ -1,6 +1,7 @@
 const CALENDAR_DAYS = 365;
 const CALENDAR_WEEKS = 53;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const ACTIVITY_LEVEL_THRESHOLDS = [0.01, 0.04, 0.12, 0.3, 0.6];
 
 const toDateKey = (date) => date.toISOString().slice(0, 10);
 
@@ -67,7 +68,10 @@ const getActivityLevel = (tokens, peak) => {
     return 0;
   }
 
-  return Math.max(1, Math.ceil((Math.log1p(tokens) / Math.log1p(peak)) * 4));
+  const ratio = tokens / peak;
+  const thresholdIndex = ACTIVITY_LEVEL_THRESHOLDS.findIndex((threshold) => ratio <= threshold);
+
+  return thresholdIndex === -1 ? ACTIVITY_LEVEL_THRESHOLDS.length + 1 : thresholdIndex + 1;
 };
 
 export { buildActivityCalendar, getActivityLevel };

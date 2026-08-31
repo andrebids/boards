@@ -1,4 +1,4 @@
-import { buildActivityCalendar } from './codex-usage-activity';
+import { buildActivityCalendar, getActivityLevel } from './codex-usage-activity';
 
 describe('DashboardCodexUsageWidget token activity', () => {
   beforeEach(() => {
@@ -20,5 +20,15 @@ describe('DashboardCodexUsageWidget token activity', () => {
     expect(calendar.monthMarks.map(({ label }) => label)).toEqual(['mai', 'jun', 'jul', 'ago']);
     expect(calendar.weeks.flat().some(({ dateKey }) => dateKey === '2026-05-01')).toBe(true);
     expect(calendar.weeks.flat().some(({ dateKey }) => dateKey === '2026-04-01')).toBe(false);
+  });
+
+  it('keeps low token days distinct from the peak', () => {
+    expect(getActivityLevel(0, 10_000)).toBe(0);
+    expect(getActivityLevel(50, 10_000)).toBe(1);
+    expect(getActivityLevel(200, 10_000)).toBe(2);
+    expect(getActivityLevel(1_000, 10_000)).toBe(3);
+    expect(getActivityLevel(2_000, 10_000)).toBe(4);
+    expect(getActivityLevel(5_000, 10_000)).toBe(5);
+    expect(getActivityLevel(10_000, 10_000)).toBe(6);
   });
 });

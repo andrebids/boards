@@ -1,12 +1,18 @@
 :global(#app) {
   .wrapper {
     --codex-usage-accent: oklch(0.69 0.13 185);
+    --codex-activity-level-1: oklch(0.32 0.045 255);
+    --codex-activity-level-2: oklch(0.43 0.08 245);
+    --codex-activity-level-3: oklch(0.54 0.11 222);
+    --codex-activity-level-4: oklch(0.64 0.13 192);
+    --codex-activity-level-5: oklch(0.73 0.14 155);
+    --codex-activity-level-6: oklch(0.8 0.15 98);
 
     background: var(--app-dark-surface);
     container-type: inline-size;
     color: var(--app-dark-text);
     display: grid;
-    gap: 20px;
+    row-gap: 36px;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
     height: 100%;
@@ -241,19 +247,27 @@
   }
 
   .level1 {
-    background: color-mix(in oklab, var(--codex-usage-accent) 25%, var(--app-dark-surface));
+    background: var(--codex-activity-level-1);
   }
 
   .level2 {
-    background: color-mix(in oklab, var(--codex-usage-accent) 45%, var(--app-dark-surface));
+    background: var(--codex-activity-level-2);
   }
 
   .level3 {
-    background: color-mix(in oklab, var(--codex-usage-accent) 68%, var(--app-dark-surface));
+    background: var(--codex-activity-level-3);
   }
 
   .level4 {
-    background: var(--codex-usage-accent);
+    background: var(--codex-activity-level-4);
+  }
+
+  .level5 {
+    background: var(--codex-activity-level-5);
+  }
+
+  .level6 {
+    background: var(--codex-activity-level-6);
   }
 
   .legend {
@@ -279,6 +293,10 @@
   }
 
   @container (max-width: 560px) {
+    .wrapper {
+      row-gap: 24px;
+    }
+
     .activityStats {
       column-gap: 10px;
       margin-top: 10px;

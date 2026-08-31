@@ -167,7 +167,7 @@ function TokenActivity({ activity }) {
             </div>
             <div className={styles.legend} aria-hidden="true">
               <span>menos</span>
-              {[0, 1, 2, 3, 4].map((level) => (
+              {[0, 1, 2, 3, 4, 5, 6].map((level) => (
                 <i className={`${styles.day} ${styles[`level${level}`]}`} key={level} />
               ))}
               <span>mais</span>
