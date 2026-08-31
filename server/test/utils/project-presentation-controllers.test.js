@@ -535,8 +535,8 @@ describe('Project presentation controllers', () => {
       helpers: {
         presentations: {
           getProjectAccess: async () => ({
-            canEdit: true,
             accessibleBoardIds: ['board-1'],
+            editableBoardIds: ['board-1'],
           }),
         },
         projects: {

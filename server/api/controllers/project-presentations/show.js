@@ -41,7 +41,10 @@ module.exports = {
 
     return {
       items: accessiblePresentations.map((presentation) =>
-        sails.helpers.projectPresentations.presentOne(presentation, access.canEdit),
+        sails.helpers.projectPresentations.presentOne(
+          presentation,
+          access.editableBoardIds.includes(presentation.boardId),
+        ),
       ),
       meta: { canEdit: access.canEdit },
     };

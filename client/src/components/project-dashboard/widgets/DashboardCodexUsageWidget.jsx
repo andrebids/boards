@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import api from '../../../api';
 
-import { buildActivityCalendar, getActivityLevel } from './codex-usage-activity';
+import {
+  buildActivityCalendar,
+  getActivityCalendarWeeks,
+  getActivityLevel,
+} from './codex-usage-activity';
 import getCodexUsageForecast from './codex-usage-forecast';
 import styles from './DashboardCodexUsageWidget.module.scss';
 
@@ -90,12 +94,14 @@ const formatDuration = (seconds) => {
 };
 
 function TokenActivity({ activity }) {
-  const calendar = buildActivityCalendar(activity?.dailyUsageBuckets);
+  const activityRef = useRef(null);
+  const [maximumWeeks, setMaximumWeeks] = useState(() => getActivityCalendarWeeks(600));
+  const calendar = buildActivityCalendar(activity?.dailyUsageBuckets, maximumWeeks);
   const summary = activity?.summary;
   const hasActivity = summary && Number.isSafeInteger(summary.lifetimeTokens);
   const calendarStyle = {
     '--calendar-columns': calendar.weeks.length,
-    '--calendar-width': `${20 + calendar.weeks.length * 17}px`,
+    '--calendar-width': `${20 + calendar.weeks.length * 24}px`,
   };
   const focusedPeriodLabel = calendar.focusedMonthLabel
     ? `desde ${calendar.focusedMonthLabel}`
@@ -104,8 +110,29 @@ function TokenActivity({ activity }) {
     focusedPeriodLabel || 'nos últimos 12 meses'
   }`;
 
+  useEffect(() => {
+    const activityElement = activityRef.current;
+    if (!activityElement) {
+      return undefined;
+    }
+
+    const updateMaximumWeeks = () => {
+      setMaximumWeeks(getActivityCalendarWeeks(activityElement.clientWidth));
+    };
+    updateMaximumWeeks();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const resizeObserver = new ResizeObserver(updateMaximumWeeks);
+    resizeObserver.observe(activityElement);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
   return (
-    <div className={styles.activity}>
+    <div className={styles.activity} ref={activityRef}>
       <div className={styles.activityHeading}>
         <span>Atividade de tokens</span>
         <small>{focusedPeriodLabel || 'últimos 12 meses'}</small>

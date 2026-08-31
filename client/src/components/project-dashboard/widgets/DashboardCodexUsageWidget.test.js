@@ -1,4 +1,8 @@
-import { buildActivityCalendar, getActivityLevel } from './codex-usage-activity';
+import {
+  buildActivityCalendar,
+  getActivityCalendarWeeks,
+  getActivityLevel,
+} from './codex-usage-activity';
 
 describe('DashboardCodexUsageWidget token activity', () => {
   beforeEach(() => {
@@ -30,5 +34,25 @@ describe('DashboardCodexUsageWidget token activity', () => {
     expect(getActivityLevel(2_000, 10_000)).toBe(4);
     expect(getActivityLevel(5_000, 10_000)).toBe(5);
     expect(getActivityLevel(10_000, 10_000)).toBe(6);
+  });
+
+  it('keeps calendar cells readable by reducing the visible period', () => {
+    expect(getActivityCalendarWeeks(320)).toBe(14);
+    expect(getActivityCalendarWeeks(605)).toBe(27);
+    expect(getActivityCalendarWeeks(950)).toBe(53);
+  });
+
+  it('keeps only the most recent calendar weeks', () => {
+    const calendar = buildActivityCalendar(
+      [
+        { startDate: '2026-05-11', tokens: 100 },
+        { startDate: '2026-08-26', tokens: 300 },
+      ],
+      14,
+    );
+
+    expect(calendar.weeks).toHaveLength(14);
+    expect(calendar.weeks.flat().some(({ dateKey }) => dateKey === '2026-05-11')).toBe(false);
+    expect(calendar.weeks.flat().some(({ dateKey }) => dateKey === '2026-08-26')).toBe(true);
   });
 });

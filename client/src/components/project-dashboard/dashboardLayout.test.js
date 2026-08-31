@@ -115,6 +115,19 @@ describe('project dashboard layout', () => {
     ).toEqual([{ id: 'codex-usage', type: 'codexUsage', x: 0, y: 0, w: 4, h: 4 }]);
   });
 
+  it('keeps the Codex usage widget tall enough to show its activity calendar', () => {
+    expect(
+      toGridStackDashboardWidget({
+        id: 'codex-usage',
+        type: 'codexUsage',
+        x: 0,
+        y: 0,
+        w: 4,
+        h: 4,
+      }).minH,
+    ).toBe(7);
+  });
+
   it('accepts the fixed-size Factorial entrance QR widget', () => {
     expect(
       normalizeDashboardLayout([

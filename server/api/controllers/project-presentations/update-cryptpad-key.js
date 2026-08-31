@@ -40,7 +40,7 @@ module.exports = {
     ) {
       throw Errors.PRESENTATION_NOT_FOUND;
     }
-    if (!access.canEdit) {
+    if (!access.editableBoardIds.includes(presentation.boardId)) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 

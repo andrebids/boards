@@ -25,7 +25,7 @@ const frenchLocaleSource = fs.readFileSync(
 );
 
 describe('Presentation editor permissions', () => {
-  test('shows PowerPoint import to every board member with access', () => {
+  test('keeps PowerPoint import available to board editors', () => {
     expect(source).not.toMatch(/\{canEdit && \(/);
   });
 

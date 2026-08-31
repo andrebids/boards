@@ -9,7 +9,7 @@ export const DASHBOARD_WIDGETS = {
   blachereProducts: { minW: 3, editorMinW: 3, minH: 4, maxW: 12, maxH: 10 },
   blachereStatic: { minW: 3, editorMinW: 3, minH: 4, maxW: 12, maxH: 10 },
   blachereAnimated: { minW: 3, editorMinW: 3, minH: 4, maxW: 12, maxH: 10 },
-  codexUsage: { minW: 4, editorMinW: 4, minH: 4, maxW: 12, maxH: 10 },
+  codexUsage: { minW: 4, editorMinW: 4, minH: 4, gridMinH: 7, maxW: 12, maxH: 10 },
   factorialEntrance: { minW: 2, editorMinW: 2, minH: 2, maxW: 2, maxH: 2 },
 };
 
@@ -234,7 +234,7 @@ export const toGridStackDashboardWidget = (widget) => {
     component: GRIDSTACK_DASHBOARD_COMPONENT,
     maxH: constraints.maxH,
     maxW: constraints.maxW,
-    minH: constraints.minH,
+    minH: constraints.gridMinH || constraints.minH,
     minW: constraints.editorMinW || constraints.minW,
     props: { widget },
   };
