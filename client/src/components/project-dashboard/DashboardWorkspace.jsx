@@ -10,7 +10,7 @@ import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import { UserRoles } from '../../constants/Enums';
 import * as dashboardLayoutHelpers from './dashboardLayout';
-import DashboardNewsTicker from './DashboardNewsTicker.jsx';
+import DashboardNewsTicker from './DashboardNewsTicker';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
 
 import styles from './DashboardWorkspace.module.scss';
@@ -108,13 +108,19 @@ const DashboardWorkspace = React.memo(() => {
   const projects = useSelector(
     (state) =>
       (projectIds || [])
-      .map((projectId) => selectors.selectProjectById(state, projectId))
+        .map((projectId) => selectors.selectProjectById(state, projectId))
         .filter(Boolean),
     shallowEqual,
   );
   const isTvMode = searchParams.get('tv') === '1';
   const isPreviewAllowed = user?.role === UserRoles.ADMIN;
   const [ganttProjectId, setGanttProjectId] = useState('');
+  const [ganttCardReference, setGanttCardReference] = useState('');
+  const [ganttCardId, setGanttCardId] = useState('');
+  const [ganttTaskLists, setGanttTaskLists] = useState([]);
+  const [ganttTaskListId, setGanttTaskListId] = useState('');
+  const [ganttRotationSeconds, setGanttRotationSeconds] = useState(30);
+  const [ganttSourceStatus, setGanttSourceStatus] = useState('idle');
   const [dashboardLayout, setDashboardLayout] = useState(
     dashboardLayoutHelpers.createDefaultDashboardLayout,
   );
@@ -338,14 +344,94 @@ const DashboardWorkspace = React.memo(() => {
     [canEditDashboard, scheduleLayoutSave, setCurrentDashboardLayout],
   );
 
-  const handleAddGantt = useCallback(() => {
-    if (ganttProjectId) {
-      handleAddWidget('gantt', {
-        projectId: ganttProjectId,
-        zoomLevel: 'week',
-      });
+  const handleLoadGanttTaskLists = useCallback(async () => {
+    const cardId = dashboardLayoutHelpers.parseDashboardCardId(ganttCardReference);
+
+    if (!cardId) {
+      setGanttSourceStatus('error');
+      return;
     }
-  }, [ganttProjectId, handleAddWidget]);
+
+    setGanttSourceStatus('loading');
+
+    try {
+      const body = await api.getCard(cardId);
+      const taskLists = body.included?.taskLists || [];
+      const decorsList = taskLists.find(({ name }) => name.trim().toLowerCase() === 'decors list');
+
+      setGanttCardId(cardId);
+      setGanttTaskLists(taskLists);
+      setGanttTaskListId(decorsList?.id || taskLists[0]?.id || '');
+      setGanttSourceStatus('loaded');
+    } catch {
+      setGanttCardId('');
+      setGanttTaskLists([]);
+      setGanttTaskListId('');
+      setGanttSourceStatus('error');
+    }
+  }, [ganttCardReference]);
+
+  const handleGanttCardReferenceChange = useCallback((event) => {
+    setGanttCardReference(event.target.value);
+    setGanttCardId('');
+    setGanttTaskLists([]);
+    setGanttTaskListId('');
+    setGanttSourceStatus('idle');
+  }, []);
+
+  const handleAddGantt = useCallback(() => {
+    if (!ganttProjectId) {
+      return;
+    }
+
+    const rotationSeconds = Number(ganttRotationSeconds);
+    const hasTaskListSource = Boolean(ganttCardReference.trim());
+
+    if (
+      hasTaskListSource &&
+      (!ganttCardId ||
+        !ganttTaskListId ||
+        !Number.isInteger(rotationSeconds) ||
+        rotationSeconds < dashboardLayoutHelpers.GANTT_ROTATION_MIN_SECONDS ||
+        rotationSeconds > dashboardLayoutHelpers.GANTT_ROTATION_MAX_SECONDS)
+    ) {
+      return;
+    }
+
+    const config = {
+      projectId: ganttProjectId,
+      zoomLevel: 'week',
+      ...(hasTaskListSource && {
+        cardId: ganttCardId,
+        taskListId: ganttTaskListId,
+        rotationSeconds,
+      }),
+    };
+    const currentLayout = dashboardLayoutRef.current;
+    const existingWidget = currentLayout.find(
+      (widget) => widget.type === 'gantt' && widget.config?.projectId === ganttProjectId,
+    );
+
+    if (!existingWidget) {
+      handleAddWidget('gantt', config);
+      return;
+    }
+
+    const nextLayout = currentLayout.map((widget) =>
+      widget.id === existingWidget.id ? { ...widget, config } : widget,
+    );
+    setCurrentDashboardLayout(nextLayout);
+    scheduleLayoutSave(nextLayout);
+  }, [
+    ganttCardId,
+    ganttCardReference,
+    ganttProjectId,
+    ganttRotationSeconds,
+    ganttTaskListId,
+    handleAddWidget,
+    scheduleLayoutSave,
+    setCurrentDashboardLayout,
+  ]);
 
   const handleRemoveWidget = useCallback(
     (widgetId) => {
@@ -502,13 +588,73 @@ const DashboardWorkspace = React.memo(() => {
                     </option>
                   ))}
                 </select>
+                <label htmlFor="dashboard-gantt-card">
+                  <span>Cartão da task list (opcional)</span>
+                  <input
+                    aria-label="URL ou ID do cartão da task list"
+                    id="dashboard-gantt-card"
+                    placeholder="URL ou ID do cartão"
+                    type="text"
+                    value={ganttCardReference}
+                    onChange={handleGanttCardReferenceChange}
+                  />
+                </label>
+                {ganttCardReference.trim() && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={ganttSourceStatus === 'loading'}
+                    onClick={handleLoadGanttTaskLists}
+                  >
+                    {ganttSourceStatus === 'loading' ? 'A carregar…' : 'Carregar listas'}
+                  </Button>
+                )}
+                {ganttSourceStatus === 'error' && (
+                  <small className={styles.ganttSourceHint} role="alert">
+                    Não foi possível carregar esse cartão.
+                  </small>
+                )}
+                {ganttSourceStatus === 'loaded' && ganttTaskLists.length === 0 && (
+                  <small className={styles.ganttSourceHint}>O cartão não tem task lists.</small>
+                )}
+                {ganttTaskLists.length > 0 && (
+                  <>
+                    <select
+                      aria-label="Task list para alternar com o Gantt"
+                      value={ganttTaskListId}
+                      onChange={(event) => setGanttTaskListId(event.target.value)}
+                    >
+                      {ganttTaskLists.map((taskList) => (
+                        <option key={taskList.id} value={taskList.id}>
+                          {taskList.name}
+                        </option>
+                      ))}
+                    </select>
+                    <label htmlFor="dashboard-gantt-rotation-seconds">
+                      <span>Segundos por vista</span>
+                      <input
+                        aria-label="Segundos por vista"
+                        id="dashboard-gantt-rotation-seconds"
+                        max={dashboardLayoutHelpers.GANTT_ROTATION_MAX_SECONDS}
+                        min={dashboardLayoutHelpers.GANTT_ROTATION_MIN_SECONDS}
+                        type="number"
+                        value={ganttRotationSeconds}
+                        onChange={(event) => setGanttRotationSeconds(event.target.value)}
+                      />
+                    </label>
+                  </>
+                )}
                 <Button
                   size="sm"
                   variant="secondary"
-                  disabled={!ganttProjectId}
+                  disabled={
+                    !ganttProjectId ||
+                    (Boolean(ganttCardReference.trim()) &&
+                      (!ganttCardId || !ganttTaskListId || ganttSourceStatus !== 'loaded'))
+                  }
                   onClick={handleAddGantt}
                 >
-                  Adicionar Gantt
+                  Guardar Gantt
                 </Button>
               </div>
             )}

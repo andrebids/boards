@@ -13,6 +13,6 @@ describe('card show socket subscription', () => {
 
     expect(controller.inputs.subscribe).to.deep.equal({ type: 'boolean' });
     expect(source).to.include('if (inputs.subscribe && this.req.isSocket)');
-    expect(source).to.include("sails.sockets.join(this.req, `board:${card.boardId}`)");
+    expect(source).to.include('sails.sockets.join(this.req, `board:${card.boardId}`)');
   });
 });

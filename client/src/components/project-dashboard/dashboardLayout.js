@@ -230,10 +230,16 @@ export const hasDashboardGridChanged = (previousLayout, nextLayout) => {
 
   return nextLayout.some((widget) => {
     const previousWidget = previousWidgetsById.get(widget.id);
+    const hasGanttConfigChanged =
+      widget.type === 'gantt' &&
+      ['projectId', 'zoomLevel', 'cardId', 'taskListId', 'rotationSeconds'].some(
+        (key) => previousWidget?.config?.[key] !== widget.config?.[key],
+      );
 
     return (
       !previousWidget ||
       previousWidget.type !== widget.type ||
+      hasGanttConfigChanged ||
       previousWidget.x !== widget.x ||
       previousWidget.y !== widget.y ||
       previousWidget.w !== widget.w ||

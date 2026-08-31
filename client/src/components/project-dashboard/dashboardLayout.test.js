@@ -381,6 +381,33 @@ describe('project dashboard layout', () => {
     expect(hasDashboardGridChanged(previousLayout, [{ ...previousLayout[0], x: 3 }])).toBe(true);
   });
 
+  it('reloads the GridStack widget when a Gantt rotation configuration changes', () => {
+    const previousLayout = [
+      {
+        id: 'gantt-alpha',
+        type: 'gantt',
+        x: 0,
+        y: 0,
+        w: 12,
+        h: 7,
+        config: { projectId: 'project-alpha', zoomLevel: 'week' },
+      },
+    ];
+    const nextLayout = [
+      {
+        ...previousLayout[0],
+        config: {
+          ...previousLayout[0].config,
+          cardId: 'card-alpha',
+          taskListId: 'task-list-alpha',
+          rotationSeconds: 30,
+        },
+      },
+    ];
+
+    expect(hasDashboardGridChanged(previousLayout, nextLayout)).toBe(true);
+  });
+
   it('restores dimensions omitted by GridStack when they equal minimum constraints', () => {
     expect(
       fromGridStackDashboardWidgets([
