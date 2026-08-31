@@ -39,22 +39,15 @@ import LazyEmojiPicker, {
   EMOJI_PICKER_WIDTH,
 } from '../../chat/LazyEmojiPicker';
 import { getReactionEmojiPickerPosition, QUICK_REACTION_EMOJIS } from '../../chat/reaction-utils';
+import {
+  formatMessageDay,
+  formatMessageTime,
+  isSameDay,
+} from '../../chat/MessageList/message-view';
 
 import styles from './Item.module.scss';
 
 const GROUP_WINDOW = 5 * 60 * 1000;
-
-const padDatePart = (value) => String(value).padStart(2, '0');
-
-const formatCommentTimestamp = (date) =>
-  `${padDatePart(date.getDate())}/${padDatePart(date.getMonth() + 1)} ${padDatePart(
-    date.getHours(),
-  )}:${padDatePart(date.getMinutes())}`;
-
-const isSameDay = (firstDate, secondDate) =>
-  firstDate.getFullYear() === secondDate.getFullYear() &&
-  firstDate.getMonth() === secondDate.getMonth() &&
-  firstDate.getDate() === secondDate.getDate();
 
 const areCommentsGrouped = (newerComment, olderComment) => {
   if (!newerComment || !olderComment || newerComment.userId !== olderComment.userId) {
@@ -203,6 +196,7 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
   const ConfirmationPopup = usePopupInClosableContext(ConfirmationStep);
   const continuesAbove = areCommentsGrouped(aboveComment, comment);
   const continuesBelow = areCommentsGrouped(comment, belowComment);
+  const startsNewDay = !aboveComment || !isSameDay(aboveComment.createdAt, comment.createdAt);
   const userName =
     user.id === StaticUserIds.DELETED
       ? t(`common.${user.name}`, {
@@ -210,14 +204,13 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
         })
       : user.name;
   const commentDate = new Date(comment.createdAt);
-  const commentTimestamp = formatCommentTimestamp(commentDate);
   const commentTimestampTitle = t('format:fullDateTime', {
     value: commentDate,
     postProcess: 'formatDate',
   });
   const reactions = comment.reactions || [];
 
-  return (
+  const commentElement = (
     <Comment
       data-comment-id={id}
       className={classNames(
@@ -238,17 +231,10 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
       <div className={classNames(styles.content, isEditOpened && styles.contentEditing)}>
         {!continuesAbove && (
           <div className={styles.meta}>
-            {!isCurrentUser && (
-              <>
-                <span className={styles.author}>{userName}</span>
-                <span aria-hidden="true" className={styles.metaSeparator}>
-                  ·
-                </span>
-              </>
-            )}
+            {!isCurrentUser && <span className={styles.author}>{userName}</span>}
             <span className={styles.date}>
               <time dateTime={commentDate.toISOString()} title={commentTimestampTitle}>
-                {commentTimestamp}
+                {formatMessageTime(comment.createdAt)}
               </time>
             </span>
           </div>
@@ -388,6 +374,19 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
         )}
       </div>
     </Comment>
+  );
+
+  if (!startsNewDay) {
+    return commentElement;
+  }
+
+  return (
+    <>
+      <div className={styles.dayDivider}>
+        <span>{formatMessageDay(comment.createdAt)}</span>
+      </div>
+      {commentElement}
+    </>
   );
 });
 

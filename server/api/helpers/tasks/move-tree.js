@@ -2,19 +2,16 @@ const _ = require('lodash');
 
 const getDescendantTaskIds = (tasks, taskId) => {
   const descendantTaskIds = new Set();
-  let parentTaskIds = new Set([taskId]);
+  const parentTaskIds = [taskId];
 
-  while (parentTaskIds.size > 0) {
-    const nextParentTaskIds = new Set();
-
-    tasks.forEach((task) => {
-      if (parentTaskIds.has(task.parentTaskId) && !descendantTaskIds.has(task.id)) {
+  for (let parentIndex = 0; parentIndex < parentTaskIds.length; parentIndex += 1) {
+    for (let taskIndex = 0; taskIndex < tasks.length; taskIndex += 1) {
+      const task = tasks[taskIndex];
+      if (task.parentTaskId === parentTaskIds[parentIndex] && !descendantTaskIds.has(task.id)) {
         descendantTaskIds.add(task.id);
-        nextParentTaskIds.add(task.id);
+        parentTaskIds.push(task.id);
       }
-    });
-
-    parentTaskIds = nextParentTaskIds;
+    }
   }
 
   return [...descendantTaskIds];
@@ -70,10 +67,9 @@ module.exports = {
   async fn(inputs) {
     const targetTaskListId = inputs.nextTaskList.id;
     const result = await sails.getDatastore().transaction(async (db) => {
-      const tasks = await Task.qm.getByTaskListIds(
-        _.uniq([inputs.taskList.id, targetTaskListId]),
-        { connection: db },
-      );
+      const tasks = await Task.qm.getByTaskListIds(_.uniq([inputs.taskList.id, targetTaskListId]), {
+        connection: db,
+      });
       const descendantTaskIds = getDescendantTaskIds(tasks, inputs.record.id);
       const excludedTaskIds = new Set([inputs.record.id, ...descendantTaskIds]);
       const parentTaskId = !_.isUndefined(inputs.values.parentTaskId)
@@ -97,10 +93,7 @@ module.exports = {
           (task.parentTaskId || null) === (parentTaskId || null) &&
           !excludedTaskIds.has(task.id),
       );
-      const insertion = sails.helpers.utils.insertToPositionables(
-        inputs.values.position,
-        siblings,
-      );
+      const insertion = sails.helpers.utils.insertToPositionables(inputs.values.position, siblings);
       const repositionedTasks = [];
 
       // eslint-disable-next-line no-restricted-syntax
@@ -141,7 +134,9 @@ module.exports = {
     });
 
     [...result.updatedTasks, ...result.repositionedTasks].forEach((task) => {
-      sails.sockets.broadcast(`board:${inputs.board.id}`, 'taskUpdate', { item: task });
+      sails.sockets.broadcast(`board:${inputs.board.id}`, 'taskUpdate', {
+        item: task,
+      });
     });
 
     sails.helpers.utils.sendWebhooks.with({
@@ -182,4 +177,3 @@ module.exports = {
     return result;
   },
 };
-

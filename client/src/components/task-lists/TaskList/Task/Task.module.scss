@@ -259,6 +259,7 @@
     background: var(--card-modal-surface, #fff);
     border-color: var(--card-modal-accent, #bfdbfe);
     box-shadow: 0 8px 24px rgba(31, 41, 55, 0.12);
+    z-index: 10010 !important;
   }
 
   .wrapperCombineTarget {

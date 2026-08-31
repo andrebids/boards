@@ -151,10 +151,7 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
         index={index}
         isDragDisabled={isEditNameOpened || !isEditable}
       >
-        {(
-          { innerRef, draggableProps, dragHandleProps },
-          { isDragging, combineTargetFor },
-        ) => {
+        {({ innerRef, draggableProps, dragHandleProps }, { isDragging, combineTargetFor }) => {
           let assigneeControl = null;
           if (isEditable) {
             assigneeControl = (
@@ -310,7 +307,9 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
             </div>
           );
 
-          return isDragging ? ReactDOM.createPortal(contentNode, document.body) : contentNode;
+          return isDragging
+            ? ReactDOM.createPortal(contentNode, document.getElementById('app'))
+            : contentNode;
         }}
       </Draggable>
       {isAddSubtaskOpened && (

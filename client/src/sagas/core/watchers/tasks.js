@@ -10,30 +10,24 @@ import EntryActionTypes from '../../../constants/EntryActionTypes';
 
 export default function* tasksWatchers() {
   yield all([
-    takeEvery(
-      EntryActionTypes.TASK_CREATE,
-      ({ payload: { taskListId, data } }) =>
-        services.createTask(taskListId, data)
+    takeEvery(EntryActionTypes.TASK_CREATE, ({ payload: { taskListId, data } }) =>
+      services.createTask(taskListId, data),
     ),
     takeEvery(EntryActionTypes.TASK_CREATE_HANDLE, ({ payload: { task } }) =>
-      services.handleTaskCreate(task)
+      services.handleTaskCreate(task),
     ),
     takeEvery(EntryActionTypes.TASK_UPDATE, ({ payload: { id, data } }) =>
-      services.updateTask(id, data)
+      services.updateTask(id, data),
     ),
     takeEvery(EntryActionTypes.TASK_UPDATE_HANDLE, ({ payload: { task } }) =>
-      services.handleTaskUpdate(task)
+      services.handleTaskUpdate(task),
     ),
-    takeEvery(
-      EntryActionTypes.TASK_MOVE,
-      ({ payload: { id, taskListId, parentTaskId, index } }) =>
-        services.moveTask(id, taskListId, parentTaskId, index)
+    takeEvery(EntryActionTypes.TASK_MOVE, ({ payload: { id, taskListId, parentTaskId, index } }) =>
+      services.moveTask(id, taskListId, parentTaskId, index),
     ),
-    takeEvery(EntryActionTypes.TASK_DELETE, ({ payload: { id } }) =>
-      services.deleteTask(id)
-    ),
+    takeEvery(EntryActionTypes.TASK_DELETE, ({ payload: { id } }) => services.deleteTask(id)),
     takeEvery(EntryActionTypes.TASK_DELETE_HANDLE, ({ payload: { task } }) =>
-      services.handleTaskDelete(task)
+      services.handleTaskDelete(task),
     ),
   ]);
 }

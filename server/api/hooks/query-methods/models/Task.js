@@ -40,10 +40,7 @@ const getByTaskListId = async (
   return defaultFind(criteria, { sort });
 };
 
-const getByTaskListIds = async (
-  taskListIds,
-  { sort = ['position', 'id'], connection } = {},
-) =>
+const getByTaskListIds = async (taskListIds, { sort = ['position', 'id'], connection } = {}) =>
   defaultFind(
     {
       taskListId: taskListIds,

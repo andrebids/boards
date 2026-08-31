@@ -200,6 +200,19 @@
     font-variant-numeric: tabular-nums;
   }
 
+  .dayDivider {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin: 12px 0 8px;
+
+    span {
+      color: var(--chat-muted-subtle, var(--card-modal-muted, #6b808c));
+      font-size: var(--chat-font-meta, 11px);
+      padding: 2px 8px;
+    }
+  }
+
   .item:global(.comment) {
     align-items: flex-start;
     display: flex;
@@ -297,10 +310,6 @@
     gap: 4px;
     line-height: 13px;
     margin: 0 4px 2px;
-  }
-
-  .metaSeparator {
-    color: var(--card-modal-muted, #6b808c);
   }
 
   .reactionControl {

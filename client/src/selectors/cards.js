@@ -393,7 +393,7 @@ export const selectTasksByTaskListIdForCurrentCard = createSelector(
     return Object.fromEntries(
       cardModel.taskLists
         .toModelArray()
-        .map(taskListModel => [taskListModel.id, taskListModel.tasks.toRefArray()]),
+        .map(taskListModel => [taskListModel.id, taskListModel.getTasksQuerySet().toRefArray()]),
     );
   },
 );

@@ -13,7 +13,7 @@ const createTask = (taskListId, data) => ({
   },
 });
 
-const handleTaskCreate = task => ({
+const handleTaskCreate = (task) => ({
   type: EntryActionTypes.TASK_CREATE_HANDLE,
   payload: {
     task,
@@ -28,7 +28,7 @@ const updateTask = (id, data) => ({
   },
 });
 
-const handleTaskUpdate = task => ({
+const handleTaskUpdate = (task) => ({
   type: EntryActionTypes.TASK_UPDATE_HANDLE,
   payload: {
     task,
@@ -45,14 +45,14 @@ const moveTask = (id, taskListId, parentTaskId, index) => ({
   },
 });
 
-const deleteTask = id => ({
+const deleteTask = (id) => ({
   type: EntryActionTypes.TASK_DELETE,
   payload: {
     id,
   },
 });
 
-const handleTaskDelete = task => ({
+const handleTaskDelete = (task) => ({
   type: EntryActionTypes.TASK_DELETE_HANDLE,
   payload: {
     task,

@@ -65,19 +65,16 @@ export const buildTaskRows = (tasks, collapsedTaskIds = new Set()) => {
 
 export const getDescendantTaskIds = (tasks, taskId) => {
   const descendantTaskIds = new Set();
-  let parentTaskIds = new Set([taskId]);
+  const parentTaskIds = [taskId];
 
-  while (parentTaskIds.size > 0) {
-    const nextParentTaskIds = new Set();
-
-    tasks.forEach((task) => {
-      if (parentTaskIds.has(task.parentTaskId) && !descendantTaskIds.has(task.id)) {
+  for (let parentIndex = 0; parentIndex < parentTaskIds.length; parentIndex += 1) {
+    for (let taskIndex = 0; taskIndex < tasks.length; taskIndex += 1) {
+      const task = tasks[taskIndex];
+      if (task.parentTaskId === parentTaskIds[parentIndex] && !descendantTaskIds.has(task.id)) {
         descendantTaskIds.add(task.id);
-        nextParentTaskIds.add(task.id);
+        parentTaskIds.push(task.id);
       }
-    });
-
-    parentTaskIds = nextParentTaskIds;
+    }
   }
 
   return descendantTaskIds;
@@ -143,13 +140,16 @@ export const resolveTaskDrop = ({
       );
       const anchorIndex = siblings.findIndex((currentTask) => currentTask.id === anchorRow.task.id);
 
-      index = anchorIndex + (sourceTaskListId === destinationTaskListId && sourceIndex < destinationIndex ? 1 : 0);
+      index =
+        anchorIndex +
+        (sourceTaskListId === destinationTaskListId && sourceIndex < destinationIndex ? 1 : 0);
     }
   }
 
   const currentSiblings = sourceTasks.filter(
     (currentTask) =>
-      (currentTask.parentTaskId || null) === (task.parentTaskId || null) && currentTask.id !== taskId,
+      (currentTask.parentTaskId || null) === (task.parentTaskId || null) &&
+      currentTask.id !== taskId,
   );
   const currentIndex = sourceTasks
     .filter((currentTask) => (currentTask.parentTaskId || null) === (task.parentTaskId || null))

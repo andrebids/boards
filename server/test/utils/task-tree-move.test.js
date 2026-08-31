@@ -188,5 +188,35 @@ describe('Task tree move', () => {
     expect(state.getTasks()).to.deep.equal(originalTasks);
     expect(state.broadcasts).to.deep.equal([]);
   });
-});
 
+  it('rejects moving a task below one of its own descendants', async () => {
+    const state = createState();
+    const originalTasks = lodash.cloneDeep(state.getTasks());
+
+    let error;
+    try {
+      await moveTaskTree.fn({
+        record: state.getTasks()[0],
+        values: {
+          taskListId: 'list-1',
+          parentTaskId: 'grandchild-1',
+          position: 200,
+        },
+        project: { id: 'project-1' },
+        board: { id: 'board-1' },
+        list: { id: 'board-list-1' },
+        card: { id: 'card-1' },
+        taskList: { id: 'list-1' },
+        nextTaskList: { id: 'list-1' },
+        actorUser: { id: 'user-1' },
+        request: { id: 'request-1' },
+      });
+    } catch (currentError) {
+      error = currentError;
+    }
+
+    expect(error).to.equal('invalidParentTask');
+    expect(state.getTasks()).to.deep.equal(originalTasks);
+    expect(state.broadcasts).to.deep.equal([]);
+  });
+});

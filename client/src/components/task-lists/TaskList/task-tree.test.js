@@ -129,4 +129,24 @@ describe('resolveTaskDrop', () => {
       index: 1,
     });
   });
+
+  it('treats the space below a collapsed parent as the root-list ending', () => {
+    expect(
+      resolveTaskDrop({
+        taskId: 'root-2',
+        sourceTaskListId: 'list-1',
+        sourceIndex: 3,
+        destinationTaskListId: 'list-2',
+        destinationIndex: 1,
+        tasksByTaskListId,
+        collapsedTaskIdsByTaskListId: {
+          'list-2': new Set(['root-3']),
+        },
+      }),
+    ).toEqual({
+      taskListId: 'list-2',
+      parentTaskId: null,
+      index: 1,
+    });
+  });
 });

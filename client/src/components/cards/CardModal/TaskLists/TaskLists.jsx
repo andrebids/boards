@@ -17,6 +17,8 @@ import Item from './Item';
 
 import globalStyles from '../../../../styles.module.scss';
 
+const EMPTY_TASK_IDS = new Set();
+
 const TaskLists = React.memo(() => {
   const taskListIds = useSelector(selectors.selectTaskListIdsForCurrentCard);
   const tasksByTaskListId = useSelector(selectors.selectTasksByTaskListIdForCurrentCard);
@@ -147,22 +149,14 @@ const TaskLists = React.memo(() => {
             expandTask(result.taskListId, result.parentTaskId);
           }
 
-          dispatch(
-            entryActions.moveTask(id, result.taskListId, result.parentTaskId, result.index),
-          );
+          dispatch(entryActions.moveTask(id, result.taskListId, result.parentTaskId, result.index));
 
           break;
         }
         default:
       }
     },
-    [
-      clearExpandTimeout,
-      collapsedTaskIdsByTaskListId,
-      dispatch,
-      expandTask,
-      tasksByTaskListId,
-    ],
+    [clearExpandTimeout, collapsedTaskIdsByTaskListId, dispatch, expandTask, tasksByTaskListId],
   );
 
   return (
@@ -171,11 +165,7 @@ const TaskLists = React.memo(() => {
       onDragUpdate={handleDragUpdate}
       onDragEnd={handleDragEnd}
     >
-      <Droppable
-        droppableId="card"
-        type={DroppableTypes.TASK_LIST}
-        direction="vertical"
-      >
+      <Droppable droppableId="card" type={DroppableTypes.TASK_LIST} direction="vertical">
         {({ innerRef, droppableProps, placeholder }) => (
           // eslint-disable-next-line react/jsx-props-no-spreading
           <div {...droppableProps} ref={innerRef}>
@@ -184,7 +174,7 @@ const TaskLists = React.memo(() => {
                 key={taskListId}
                 id={taskListId}
                 index={index}
-                collapsedTaskIds={collapsedTaskIdsByTaskListId[taskListId] || new Set()}
+                collapsedTaskIds={collapsedTaskIdsByTaskListId[taskListId] || EMPTY_TASK_IDS}
                 onTaskCollapseToggle={handleTaskCollapseToggle}
               />
             ))}
