@@ -191,6 +191,7 @@ export default {
       detectAutomatically: "Detect automatically",
       download: "Download",
       display: "Display",
+      dropAsMainTask: "Drop as main task",
       dropFileToUpload: "Drop file to upload",
       unknownFileType: "an unrecognized file type",
       unnamedFile: "Unnamed file",

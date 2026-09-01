@@ -1,15 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Progress } from 'semantic-ui-react';
 
 import Markdown from '../../common/Markdown';
 import { buildTaskRows } from '../../task-lists/TaskList/task-tree';
 import UserAvatar from '../../users/UserAvatar';
+import { getDashboardTaskListLayout } from './dashboardTaskList';
 
 import styles from './DashboardTaskListPanel.module.scss';
 
 const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }) => {
+  const contentRef = useRef(null);
   const rows = useMemo(() => buildTaskRows(tasks), [tasks]);
+  const [taskLayout, setTaskLayout] = useState(() => getDashboardTaskListLayout(rows.length, 0));
   const parentTaskIds = useMemo(
     () => new Set(tasks.map(({ parentTaskId }) => parentTaskId).filter(Boolean)),
     [tasks],
@@ -19,6 +22,31 @@ const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }
     [parentTaskIds, tasks],
   );
   const completedTasks = leafTasks.filter(({ isCompleted }) => isCompleted).length;
+
+  useLayoutEffect(() => {
+    const contentNode = contentRef.current;
+
+    if (!contentNode) {
+      return undefined;
+    }
+
+    const updateLayout = () => {
+      setTaskLayout(getDashboardTaskListLayout(rows.length, contentNode.clientHeight));
+    };
+
+    updateLayout();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateLayout);
+
+      return () => window.removeEventListener('resize', updateLayout);
+    }
+
+    const resizeObserver = new ResizeObserver(updateLayout);
+    resizeObserver.observe(contentNode);
+
+    return () => resizeObserver.disconnect();
+  }, [rows.length]);
 
   return (
     <section className={styles.wrapper} aria-label={taskList?.name || 'Task list do dashboard'}>
@@ -45,7 +73,7 @@ const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }
             </span>
           </div>
         )}
-        <div className={styles.content}>
+        <div ref={contentRef} className={styles.content}>
           {isLoading && (
             <div className={styles.state} role="status">
               A carregar lista…
@@ -69,7 +97,13 @@ const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }
             </div>
           )}
           {!isLoading && !error && taskList && tasks.length > 0 && (
-            <ul className={styles.tasks}>
+            <ul
+              className={styles.tasks}
+              style={{
+                '--task-list-columns': taskLayout.columns,
+                '--task-list-rows': taskLayout.rows,
+              }}
+            >
               {rows.map(({ task, depth }) => (
                 <li
                   className={`${styles.taskRow} ${depth > 0 ? styles.taskRowNested : ''}`}

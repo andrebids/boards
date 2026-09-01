@@ -317,7 +317,6 @@ const Task = React.memo(({ id, index, depth, isCollapsed, onCollapseToggle }) =>
                             childTaskCount={childTasks.length}
                             canEditTask={isEditable}
                             onNameEdit={handleNameEdit}
-                            onAddSubtask={handleAddSubtask}
                           >
                             <Button
                               variant="secondary"

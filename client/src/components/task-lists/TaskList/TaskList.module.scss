@@ -47,11 +47,28 @@
     min-height: 1px;
   }
 
-  .emptyDropIndicator {
-    background: var(--card-modal-accent, #2563eb);
-    border-radius: 999px;
-    height: 2px;
-    margin: 3px 8px 3px 12px;
+  .rootDropZone {
+    align-items: center;
+    border: 1px dashed color-mix(in srgb, var(--card-modal-muted, #667085) 48%, transparent);
+    border-radius: 8px;
+    color: var(--card-modal-muted, #667085);
+    display: flex;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 8px;
+    margin-top: 4px;
+    min-height: 32px;
+    padding: 6px 10px;
+    transition:
+      background 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease;
+  }
+
+  .rootDropZoneActive {
+    background: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.12));
+    border-color: var(--card-modal-accent, #2563eb);
+    color: var(--card-modal-accent, #2563eb);
   }
 
   .taskButton {

@@ -27,7 +27,7 @@ const StepTypes = {
 };
 
 const ActionsStep = React.memo((props) => {
-  const { taskId, childTaskCount, canEditTask, onNameEdit, onAddSubtask, onClose } = props;
+  const { taskId, childTaskCount, canEditTask, onNameEdit, onClose } = props;
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [step, openStep, handleBack] = useSteps();
@@ -52,11 +52,6 @@ const ActionsStep = React.memo((props) => {
   const handleDeleteClick = useCallback(() => {
     openStep(StepTypes.DELETE);
   }, [openStep]);
-
-  const handleAddSubtaskClick = useCallback(() => {
-    onAddSubtask();
-    onClose();
-  }, [onAddSubtask, onClose]);
 
   const handleGanttClick = useCallback(async () => {
     if (linkedItem) {
@@ -105,11 +100,6 @@ const ActionsStep = React.memo((props) => {
               })}
             </Menu.Item>
           )}
-          {canEditTask && onAddSubtask && (
-            <Menu.Item className={styles.menuItem} onClick={handleAddSubtaskClick}>
-              {t('action.addSubtask')}
-            </Menu.Item>
-          )}
           {canUseGantt && (
             <Menu.Item
               className={styles.menuItem}
@@ -137,12 +127,7 @@ ActionsStep.propTypes = {
   childTaskCount: PropTypes.number.isRequired,
   canEditTask: PropTypes.bool.isRequired,
   onNameEdit: PropTypes.func.isRequired,
-  onAddSubtask: PropTypes.func,
   onClose: PropTypes.func.isRequired,
-};
-
-ActionsStep.defaultProps = {
-  onAddSubtask: undefined,
 };
 
 export default ActionsStep;

@@ -1,9 +1,16 @@
 import {
   createDashboardTaskListSnapshot,
+  getDashboardTaskListLayout,
   reduceDashboardTaskListEvent,
 } from './dashboardTaskList';
 
 describe('dashboard task list state', () => {
+  it('distributes every task across columns that fit the available height', () => {
+    expect(getDashboardTaskListLayout(18, 340)).toEqual({ columns: 2, rows: 9 });
+    expect(getDashboardTaskListLayout(4, 340)).toEqual({ columns: 1, rows: 4 });
+    expect(getDashboardTaskListLayout(0, 340)).toEqual({ columns: 1, rows: 1 });
+  });
+
   it('selects the configured list and sorts only its tasks', () => {
     expect(
       createDashboardTaskListSnapshot(
@@ -80,8 +87,9 @@ describe('dashboard task list state', () => {
       }).taskList.name,
     ).toBe('Decors 2027');
 
-    expect(
-      reduceDashboardTaskListEvent(state, 'taskListDelete', { id: 'target-list' }),
-    ).toEqual({ taskList: null, tasks: [] });
+    expect(reduceDashboardTaskListEvent(state, 'taskListDelete', { id: 'target-list' })).toEqual({
+      taskList: null,
+      tasks: [],
+    });
   });
 });

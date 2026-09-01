@@ -171,6 +171,23 @@ describe('resolveTaskDrop', () => {
     });
   });
 
+  it('moves a root task to the final top-level slot after an expanded subtree', () => {
+    expect(
+      resolveTaskDrop({
+        taskId: 'root-1',
+        sourceTaskListId: 'list-1',
+        sourceIndex: 0,
+        destinationTaskListId: 'list-1',
+        destinationIndex: 4,
+        tasksByTaskListId,
+      }),
+    ).toEqual({
+      taskListId: 'list-1',
+      parentTaskId: null,
+      index: 1,
+    });
+  });
+
   it('moves a root before a nested task and adopts the nested task parent', () => {
     expect(
       resolveTaskDrop({

@@ -449,6 +449,7 @@ export default {
       detectAutomatically: "Detectar automaticamente",
       download: "Descarregar",
       display: "Exibir",
+      dropAsMainTask: "Largar como tarefa principal",
       dropFileToUpload: "Solte o ficheiro para enviar",
       unknownFileType: "um tipo de ficheiro não reconhecido",
       unnamedFile: "Ficheiro sem nome",

@@ -5,6 +5,7 @@
 
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Droppable } from '@hello-pangea/dnd';
@@ -47,15 +48,16 @@ const TaskList = React.memo(({ id, collapsedTaskIds, onCollapseToggle }) => {
   const [isAddOpened, setIsAddOpened] = useState(false);
   const [, , setIsClosableActive] = useContext(ClosableContext);
   const taskDragPreview = useContext(TaskDragContext);
-  const showsEmptyDropIndicator =
-    taskDragPreview?.indicator?.taskListId === id &&
-    taskDragPreview.indicator.position === 'empty';
 
   const leafTasks = useMemo(
     () => tasks.filter((task) => !tasks.some((childTask) => childTask.parentTaskId === task.id)),
     [tasks],
   );
   const taskRows = useMemo(() => buildTaskRows(tasks, collapsedTaskIds), [collapsedTaskIds, tasks]);
+  const showsRootEndDropIndicator =
+    taskDragPreview?.indicator?.taskListId === id &&
+    taskDragPreview.indicator.depth === 0 &&
+    ['empty', 'after'].includes(taskDragPreview.indicator.position);
 
   // TODO: move to selector?
   const completedTasksTotal = useMemo(
@@ -103,7 +105,7 @@ const TaskList = React.memo(({ id, collapsedTaskIds, onCollapseToggle }) => {
         isCombineEnabled
         isDropDisabled={!taskList.isPersisted || !canEdit}
       >
-        {({ innerRef, droppableProps, placeholder }) => (
+        {({ innerRef, droppableProps, placeholder }, { isDraggingOver }) => (
           <div
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...droppableProps}
@@ -122,26 +124,37 @@ const TaskList = React.memo(({ id, collapsedTaskIds, onCollapseToggle }) => {
                 onCollapseToggle={onCollapseToggle}
               />
             ))}
-            {showsEmptyDropIndicator && <div className={styles.emptyDropIndicator} />}
             {placeholder}
+            {canEdit &&
+              (isDraggingOver ? (
+                <div
+                  role="status"
+                  className={classNames(
+                    styles.rootDropZone,
+                    showsRootEndDropIndicator && styles.rootDropZoneActive,
+                  )}
+                >
+                  <Icon fitted name="level up alternate" size="small" />
+                  <span>{t('common.dropAsMainTask')}</span>
+                </div>
+              ) : (
+                <AddTask taskListId={id} isOpened={isAddOpened} onClose={handleAddClose}>
+                  <button
+                    type="button"
+                    disabled={!taskList.isPersisted}
+                    className={styles.taskButton}
+                    onClick={handleAddClick}
+                  >
+                    <Icon fitted name="add" size="small" />
+                    <span className={styles.taskButtonText}>
+                      {tasks.length > 0 ? t('action.addAnotherTask') : t('action.addTask')}
+                    </span>
+                  </button>
+                </AddTask>
+              ))}
           </div>
         )}
       </Droppable>
-      {canEdit && (
-        <AddTask taskListId={id} isOpened={isAddOpened} onClose={handleAddClose}>
-          <button
-            type="button"
-            disabled={!taskList.isPersisted}
-            className={styles.taskButton}
-            onClick={handleAddClick}
-          >
-            <Icon fitted name="add" size="small" />
-            <span className={styles.taskButtonText}>
-              {tasks.length > 0 ? t('action.addAnotherTask') : t('action.addTask')}
-            </span>
-          </button>
-        </AddTask>
-      )}
     </>
   );
 });

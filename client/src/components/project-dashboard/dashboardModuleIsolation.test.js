@@ -56,10 +56,18 @@ describe('dashboard module isolation', () => {
   });
 
   it('sizes the rotating task list from its widget container', () => {
+    const panelSource = readSource('./widgets/DashboardTaskListPanel.jsx');
     const styles = readSource('./widgets/DashboardTaskListPanel.module.scss');
 
+    expect(panelSource).toContain('ResizeObserver');
+    expect(panelSource).toContain("window.addEventListener('resize', updateLayout)");
+    expect(panelSource).toContain("window.removeEventListener('resize', updateLayout)");
+    expect(panelSource).toContain("'--task-list-columns'");
+    expect(panelSource).toContain("'--task-list-rows'");
     expect(styles).toContain('container-type: inline-size');
     expect(styles).toContain('@container');
+    expect(styles).toContain('grid-auto-flow: column');
+    expect(styles).not.toContain('overflow: auto');
     expect(styles).not.toContain('@media');
   });
 

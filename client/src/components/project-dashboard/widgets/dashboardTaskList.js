@@ -5,6 +5,22 @@ const sortTasks = (tasks) =>
       String(first.id).localeCompare(String(second.id)),
   );
 
+const TASK_ROW_HEIGHT = 34;
+const TASK_ROW_GAP = 2;
+
+export const getDashboardTaskListLayout = (taskCount, availableHeight) => {
+  const availableRows = Math.max(
+    1,
+    Math.floor((availableHeight + TASK_ROW_GAP) / (TASK_ROW_HEIGHT + TASK_ROW_GAP)),
+  );
+  const columns = Math.max(1, Math.ceil(taskCount / availableRows));
+
+  return {
+    columns,
+    rows: Math.max(1, Math.ceil(taskCount / columns)),
+  };
+};
+
 export const createDashboardTaskListSnapshot = (body, taskListId) => {
   const taskList = body.included?.taskLists?.find(({ id }) => id === taskListId) || null;
 
