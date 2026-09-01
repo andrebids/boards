@@ -14,13 +14,20 @@ const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }
   const contentRef = useRef(null);
   const rows = useMemo(() => buildTaskRows(tasks), [tasks]);
   const [taskLayout, setTaskLayout] = useState(() => getDashboardTaskListLayout(rows.length, 0));
-  const parentTaskIds = useMemo(
-    () => new Set(tasks.map(({ parentTaskId }) => parentTaskId).filter(Boolean)),
+  const childTasksByParentId = useMemo(
+    () =>
+      tasks.reduce((result, task) => {
+        if (task.parentTaskId) {
+          result.set(task.parentTaskId, [...(result.get(task.parentTaskId) || []), task]);
+        }
+
+        return result;
+      }, new Map()),
     [tasks],
   );
   const leafTasks = useMemo(
-    () => tasks.filter(({ id }) => !parentTaskIds.has(id)),
-    [parentTaskIds, tasks],
+    () => tasks.filter(({ id }) => !childTasksByParentId.has(id)),
+    [childTasksByParentId, tasks],
   );
   const completedTasks = leafTasks.filter(({ isCompleted }) => isCompleted).length;
 
@@ -105,28 +112,52 @@ const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }
                 '--task-list-rows': taskLayout.rows,
               }}
             >
-              {rows.map(({ task, depth }) => (
-                <li
-                  className={`${styles.taskRow} ${depth > 0 ? styles.taskRowNested : ''}`}
-                  key={task.id}
-                  style={{ '--task-depth': Math.min(depth, 4) }}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`${styles.checkbox} ${task.isCompleted ? styles.checkboxCompleted : ''}`}
-                  />
-                  <div className={styles.taskContent}>
-                    <div
-                      className={`${styles.taskText} ${task.isCompleted ? styles.taskCompleted : ''}`}
-                    >
-                      <Markdown>{task.content || task.name}</Markdown>
+              {rows.map(({ task, depth }) => {
+                const childTasks = childTasksByParentId.get(task.id) || [];
+                const assigneeUserIds = getTaskAssigneeUserIds(task);
+
+                return (
+                  <li
+                    className={styles.taskRow}
+                    key={task.id}
+                    style={{ '--task-depth': Math.min(depth, 5) }}
+                  >
+                    <span className={styles.checkboxWrapper} aria-hidden="true">
+                      {childTasks.length > 0 && (
+                        <Icon
+                          fitted
+                          name="caret down"
+                          size="small"
+                          className={styles.collapseIcon}
+                        />
+                      )}
+                      <span
+                        className={`${styles.checkbox} ${task.isCompleted ? styles.checkboxCompleted : ''}`}
+                      />
+                    </span>
+                    <div className={styles.taskContent}>
+                      <div className={styles.taskText}>
+                        <div
+                          className={`${styles.taskName} ${task.isCompleted ? styles.taskCompleted : ''}`}
+                        >
+                          <Markdown>{task.content || task.name}</Markdown>
+                        </div>
+                        {childTasks.length > 0 && (
+                          <span className={styles.subtaskProgress}>
+                            {childTasks.filter(({ isCompleted }) => isCompleted).length}/
+                            {childTasks.length}
+                          </span>
+                        )}
+                      </div>
+                      {assigneeUserIds.length > 0 && (
+                        <span className={styles.actions}>
+                          <CardMembers userIds={assigneeUserIds} />
+                        </span>
+                      )}
                     </div>
-                  </div>
-                  {getTaskAssigneeUserIds(task).length > 0 && (
-                    <CardMembers userIds={getTaskAssigneeUserIds(task)} />
-                  )}
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
