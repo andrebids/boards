@@ -39,6 +39,7 @@ module.exports = {
               name: task.name,
               isCompleted: task.isCompleted,
               assigneeUserId: task.assigneeUserId || null,
+              assigneeUserIds: task.assigneeUserIds,
               taskListId: taskList.id,
               taskListName: taskList.name,
               cardId: card.id,

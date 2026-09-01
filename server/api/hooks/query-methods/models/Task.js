@@ -4,12 +4,20 @@
  */
 
 const _ = require('lodash');
+const { attachTaskAssigneeUserIds } = require('../../../../utils/task-assignees');
 
 const useConnection = (query, connection) =>
   connection ? query.usingConnection(connection) : query;
 
-const defaultFind = (criteria, { sort = 'id', limit, connection } = {}) =>
-  useConnection(Task.find(criteria).sort(sort).limit(limit), connection);
+const defaultFind = async (criteria, { sort = 'id', limit, connection } = {}) => {
+  const tasks = await useConnection(Task.find(criteria).sort(sort).limit(limit), connection);
+  const taskAssignees = await TaskAssignee.qm.getByTaskIds(
+    tasks.map(({ id }) => id),
+    { connection },
+  );
+
+  return attachTaskAssigneeUserIds(tasks, taskAssignees);
+};
 
 /* Query methods */
 
@@ -48,7 +56,7 @@ const getByTaskListIds = async (taskListIds, { sort = ['position', 'id'], connec
     { sort, connection },
   );
 
-const getOneById = (id, { taskListId } = {}) => {
+const getOneById = async (id, { taskListId } = {}) => {
   const criteria = {
     id,
   };
@@ -57,7 +65,13 @@ const getOneById = (id, { taskListId } = {}) => {
     criteria.taskListId = taskListId;
   }
 
-  return Task.findOne(criteria);
+  const task = await Task.findOne(criteria);
+  if (!task) {
+    return task;
+  }
+
+  const taskAssignees = await TaskAssignee.qm.getByTaskIds([task.id]);
+  return attachTaskAssigneeUserIds([task], taskAssignees)[0];
 };
 
 const update = (criteria, values, { connection } = {}) =>

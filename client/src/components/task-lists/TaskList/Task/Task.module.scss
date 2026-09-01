@@ -3,7 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-:global(#app) {
+:global(#app),
+:global(.card-modal-theme) {
   .actions {
     display: flex;
     gap: 4px;
@@ -16,8 +17,24 @@
     right: 4px;
   }
 
-  .assigneeUserAvatar {
-    padding: 2px;
+  .assigneesButton {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    display: inline-flex;
+    min-height: 28px;
+    padding: 0;
+
+    &:hover {
+      background: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.16));
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px var(--card-modal-accent-soft, rgba(37, 99, 235, 0.2));
+      outline: none;
+    }
   }
 
   .button {
@@ -66,6 +83,46 @@
     top: 0;
     width: 36px;
     z-index: 2;
+  }
+
+  .dragHandle {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: var(--card-modal-muted, #8a94a3);
+    cursor: grab;
+    display: flex;
+    height: 28px;
+    justify-content: center;
+    left: -26px;
+    opacity: 0.22;
+    padding: 0;
+    position: absolute;
+    top: 2px;
+    touch-action: none;
+    transition:
+      background 120ms ease,
+      color 120ms ease,
+      opacity 120ms ease;
+    width: 24px;
+    z-index: 5;
+
+    &:hover {
+      background: var(--card-modal-surface-hover, #e8ecf1);
+      color: var(--card-modal-text, #344054);
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--card-modal-accent-soft, rgba(37, 99, 235, 0.2));
+      opacity: 1;
+      outline: none;
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
   }
 
   .collapseButton {
@@ -255,6 +312,10 @@
       .button {
         opacity: 1;
       }
+
+      .dragHandle {
+        opacity: 0.72;
+      }
     }
 
     &:focus-within {
@@ -276,6 +337,17 @@
     border-color: var(--card-modal-accent, #bfdbfe);
     box-shadow: 0 8px 24px rgba(31, 41, 55, 0.12);
     z-index: 10010 !important;
+  }
+
+  .wrapperEditing,
+  .wrapperEditing:hover,
+  .wrapperEditing:focus-within {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .wrapperRecentlyDropped {
+    animation: taskDropSettled 360ms ease-out;
   }
 
   .dropPreview {
@@ -349,12 +421,6 @@
   }
 
   .wrapperNested {
-    --task-tree-line: color-mix(
-      in srgb,
-      var(--card-modal-muted, #8a94a3) 48%,
-      transparent
-    );
-
     margin-left: var(--task-indent);
     width: calc(100% - var(--task-indent));
 
@@ -367,22 +433,6 @@
     &.wrapperCombineTarget:hover,
     &.wrapperCombineTarget:focus-within {
       background: var(--card-modal-accent-soft, rgba(37, 99, 235, 0.12));
-    }
-
-    &:before {
-      border-bottom: 1px solid var(--task-tree-line);
-      border-bottom-left-radius: 6px;
-      border-left: 1px solid var(--task-tree-line);
-      bottom: 50%;
-      content: '';
-      left: -5px;
-      position: absolute;
-      top: -18px;
-      width: 20px;
-    }
-
-    &.wrapperNestedCollapsible:before {
-      width: 5px;
     }
   }
 
@@ -405,6 +455,31 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes taskDropSettled {
+    from {
+      background: color-mix(in srgb, var(--card-modal-accent, #2563eb) 16%, transparent);
+      border-color: var(--card-modal-accent, #2563eb);
+      box-shadow: 0 0 0 3px var(--card-modal-accent-soft, rgba(37, 99, 235, 0.12));
+    }
+
+    to {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button,
+    .checkbox,
+    .dragHandle,
+    .wrapper,
+    .wrapperRecentlyDropped {
+      animation: none;
+      transition: none;
     }
   }
 }

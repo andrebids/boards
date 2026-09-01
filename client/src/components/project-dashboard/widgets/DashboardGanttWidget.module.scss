@@ -1,4 +1,15 @@
 :global(#app) {
+  .header[hidden],
+  .content[hidden],
+  .taskListView[hidden] {
+    display: none;
+  }
+
+  .taskListView {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
   .wrapper {
     background: var(--app-dark-surface);
     color: var(--app-dark-text);

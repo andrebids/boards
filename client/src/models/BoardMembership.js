@@ -127,8 +127,16 @@ export default class extends BaseModel {
         /* empty */
       }
 
-      cardModel.taskLists.toModelArray().forEach(taskListModel => {
-        taskListModel.tasks.toModelArray().forEach(taskModel => {
+      cardModel.taskLists.toModelArray().forEach((taskListModel) => {
+        taskListModel.tasks.toModelArray().forEach((taskModel) => {
+          if (taskModel.assigneeUserIds?.includes(this.userId)) {
+            taskModel.update({
+              assigneeUserIds: taskModel.assigneeUserIds.filter(
+                (userId) => userId !== this.userId,
+              ),
+            });
+          }
+
           if (taskModel.assigneeUserId === this.userId) {
             taskModel.update({
               assigneeUserId: null,

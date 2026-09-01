@@ -29,6 +29,9 @@ export default class extends BaseModel {
       as: 'user',
       relatedName: 'assignedTasks',
     }),
+    assigneeUserIds: attr({
+      getDefault: () => [],
+    }),
     parentTaskId: attr(),
   };
 
@@ -110,6 +113,7 @@ export default class extends BaseModel {
       id,
       taskListId: this.taskListId,
       assigneeUserId: this.assigneeUserId,
+      assigneeUserIds: this.assigneeUserIds,
       position: this.position,
       name: this.name,
       content: this.content,

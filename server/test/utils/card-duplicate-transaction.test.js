@@ -24,6 +24,7 @@ describe('Card duplication transaction', () => {
       CardLabel: global.CardLabel,
       TaskList: global.TaskList,
       Task: global.Task,
+      TaskAssignee: global.TaskAssignee,
       CustomFieldGroup: global.CustomFieldGroup,
       CustomField: global.CustomField,
       CustomFieldValue: global.CustomFieldValue,
@@ -99,9 +100,22 @@ describe('Card duplication transaction', () => {
     global.Task = {
       qm: {
         getByTaskListIds: async () => [
-          { id: 'task-1', taskListId: 'task-list-1', position: 1, name: 'Task' },
+          {
+            id: 'task-1',
+            taskListId: 'task-list-1',
+            position: 1,
+            name: 'Task',
+            assigneeUserId: 'member-1',
+            assigneeUserIds: ['member-1'],
+          },
         ],
         create: (values) => write('tasks:create', values),
+      },
+    };
+    global.TaskAssignee = {
+      qm: {
+        create: (values, { connection }) =>
+          write('task-assignees:create', values).usingConnection(connection),
       },
     };
     global.CustomFieldGroup = {
@@ -285,6 +299,7 @@ describe('Card duplication transaction', () => {
     expect(state.committedWrites).to.include.members([
       'card:create',
       'attachments:create',
+      'task-assignees:create',
       'custom-field-values:create',
       'subscription:create',
     ]);

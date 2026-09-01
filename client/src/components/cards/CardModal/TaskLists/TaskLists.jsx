@@ -3,251 +3,173 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { DragDropContext, Droppable } from '@hello-pangea/dnd';
-import { closePopup } from '../../../../lib/popup';
+import { useTranslation } from 'react-i18next';
+import { SortableTree } from 'dnd-kit-sortable-tree';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
-import parseDndId from '../../../../utils/parse-dnd-id';
-import DroppableTypes from '../../../../constants/DroppableTypes';
-import {
-  getTaskDepth,
-  getTaskDropIndicator,
-  resolveTaskDrop,
-} from '../../../task-lists/TaskList/task-tree';
-import TaskDragContext from '../../../task-lists/TaskList/TaskDragContext';
-import Item from './Item';
+import SortableTaskTreeItem from './SortableTaskTreeItem';
+import { buildSortableTaskTree, getSortableTreeMove } from './sortable-task-tree';
 
-import globalStyles from '../../../../styles.module.scss';
-
-const EMPTY_TASK_IDS = new Set();
+import styles from './SortableTaskTree.module.scss';
 
 const TaskLists = React.memo(() => {
+  const [t] = useTranslation();
+  const dispatch = useDispatch();
   const taskListIds = useSelector(selectors.selectTaskListIdsForCurrentCard);
   const tasksByTaskListId = useSelector(selectors.selectTasksByTaskListIdForCurrentCard);
   const [collapsedTaskIdsByTaskListId, setCollapsedTaskIdsByTaskListId] = useState({});
-  const [taskDragPreview, setTaskDragPreview] = useState(null);
-  const combineTargetRef = useRef(null);
-  const expandTimeoutRef = useRef(null);
-
-  const dispatch = useDispatch();
-
-  const clearExpandTimeout = useCallback(() => {
-    if (expandTimeoutRef.current) {
-      clearTimeout(expandTimeoutRef.current);
-      expandTimeoutRef.current = null;
-    }
-    combineTargetRef.current = null;
-  }, []);
-
-  const handleTaskCollapseToggle = useCallback((taskListId, taskId) => {
-    setCollapsedTaskIdsByTaskListId((previousValue) => {
-      const collapsedTaskIds = new Set(previousValue[taskListId] || []);
-      if (collapsedTaskIds.has(taskId)) {
-        collapsedTaskIds.delete(taskId);
-      } else {
-        collapsedTaskIds.add(taskId);
-      }
-
-      return {
-        ...previousValue,
-        [taskListId]: collapsedTaskIds,
-      };
-    });
-  }, []);
-
-  const expandTask = useCallback((taskListId, taskId) => {
-    setCollapsedTaskIdsByTaskListId((previousValue) => {
-      const collapsedTaskIds = previousValue[taskListId];
-      if (!collapsedTaskIds || !collapsedTaskIds.has(taskId)) {
-        return previousValue;
-      }
-
-      const nextCollapsedTaskIds = new Set(collapsedTaskIds);
-      nextCollapsedTaskIds.delete(taskId);
-      return {
-        ...previousValue,
-        [taskListId]: nextCollapsedTaskIds,
-      };
-    });
-  }, []);
-
-  const handleDragStart = useCallback(() => {
-    clearExpandTimeout();
-    setTaskDragPreview(null);
-    document.body.classList.add(globalStyles.dragging);
-    closePopup();
-  }, [clearExpandTimeout]);
-
-  const handleDragUpdate = useCallback(
-    ({ draggableId, type, source, destination, combine }) => {
-      if (type !== DroppableTypes.TASK) {
-        setTaskDragPreview(null);
-        clearExpandTimeout();
-        return;
-      }
-
-      const taskId = parseDndId(draggableId);
-      const sourceTaskListId = parseDndId(source.droppableId);
-      const combineTaskId = combine && parseDndId(combine.draggableId);
-      const destinationTaskListId =
-        (combine && parseDndId(combine.droppableId)) ||
-        (destination && parseDndId(destination.droppableId));
-      const result =
-        destinationTaskListId &&
-        resolveTaskDrop({
-          taskId,
-          sourceTaskListId,
-          sourceIndex: source.index,
-          destinationTaskListId,
-          destinationIndex: destination && destination.index,
-          combineTaskId,
-          tasksByTaskListId,
-          collapsedTaskIdsByTaskListId,
-        });
-
-      const previewDepth =
-        result && result.parentTaskId
-          ? getTaskDepth(tasksByTaskListId[result.taskListId] || [], result.parentTaskId) + 1
-          : 0;
-      const indicator = getTaskDropIndicator({
-        taskId,
-        sourceTaskListId,
-        destinationTaskListId,
-        combineTaskId,
-        result,
+  const [recentlyDroppedId, setRecentlyDroppedId] = useState(null);
+  const settledTimeoutRef = useRef(null);
+  const prefersReducedMotion =
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false;
+  const items = useMemo(
+    () =>
+      buildSortableTaskTree({
+        taskListIds,
         tasksByTaskListId,
         collapsedTaskIdsByTaskListId,
-      });
-      const nextPreview = result
-        ? { taskId, depth: previewDepth, combineTargetTaskId: combineTaskId, indicator }
-        : null;
-      setTaskDragPreview((currentPreview) =>
-        currentPreview?.taskId === nextPreview?.taskId &&
-        currentPreview?.depth === nextPreview?.depth &&
-        currentPreview?.combineTargetTaskId === nextPreview?.combineTargetTaskId &&
-        currentPreview?.indicator?.targetTaskId === nextPreview?.indicator?.targetTaskId &&
-        currentPreview?.indicator?.position === nextPreview?.indicator?.position &&
-        currentPreview?.indicator?.depth === nextPreview?.indicator?.depth
-          ? currentPreview
-          : nextPreview,
-      );
-
-      if (!combine) {
-        clearExpandTimeout();
-        return;
-      }
-
-      const taskListId = parseDndId(combine.droppableId);
-      const nextTarget = `${taskListId}:${combineTaskId}`;
-      if (combineTargetRef.current === nextTarget) {
-        return;
-      }
-
-      clearExpandTimeout();
-      combineTargetRef.current = nextTarget;
-      expandTimeoutRef.current = setTimeout(() => {
-        expandTask(taskListId, combineTaskId);
-        expandTimeoutRef.current = null;
-      }, 500);
-    },
-    [clearExpandTimeout, collapsedTaskIdsByTaskListId, expandTask, tasksByTaskListId],
+      }),
+    [collapsedTaskIdsByTaskListId, taskListIds, tasksByTaskListId],
   );
 
-  const handleDragEnd = useCallback(
-    ({ draggableId, type, source, destination, combine }) => {
-      clearExpandTimeout();
-      document.body.classList.remove(globalStyles.dragging);
+  const setTaskCollapsed = useCallback((taskListId, taskId, isCollapsed) => {
+    setCollapsedTaskIdsByTaskListId((previousValue) => {
+      const nextTaskIds = new Set(previousValue[taskListId] || []);
 
-      const id = parseDndId(draggableId);
+      if (isCollapsed) {
+        nextTaskIds.add(taskId);
+      } else {
+        nextTaskIds.delete(taskId);
+      }
 
-      switch (type) {
-        case DroppableTypes.TASK_LIST: {
-          setTaskDragPreview(null);
-          if (!destination) {
-            return;
-          }
-          if (
-            source.droppableId === destination.droppableId &&
-            source.index === destination.index
-          ) {
-            return;
-          }
+      return {
+        ...previousValue,
+        [taskListId]: nextTaskIds,
+      };
+    });
+  }, []);
 
-          dispatch(entryActions.moveTaskList(id, destination.index));
+  const markDropSettled = useCallback((nodeId) => {
+    if (settledTimeoutRef.current) {
+      clearTimeout(settledTimeoutRef.current);
+    }
 
-          break;
-        }
-        case DroppableTypes.TASK: {
-          if (!destination && !combine) {
-            setTaskDragPreview({ taskId: id, isCancelled: true });
-            return;
-          }
+    setRecentlyDroppedId(nodeId);
+    settledTimeoutRef.current = setTimeout(() => {
+      setRecentlyDroppedId(null);
+      settledTimeoutRef.current = null;
+    }, 420);
+  }, []);
 
-          const sourceTaskListId = parseDndId(source.droppableId);
-          const destinationTaskListId = parseDndId(
-            combine ? combine.droppableId : destination.droppableId,
-          );
-          const result = resolveTaskDrop({
-            taskId: id,
-            sourceTaskListId,
-            sourceIndex: source.index,
-            destinationTaskListId,
-            destinationIndex: destination && destination.index,
-            combineTaskId: combine && parseDndId(combine.draggableId),
-            tasksByTaskListId,
-            collapsedTaskIdsByTaskListId,
-          });
-
-          if (!result) {
-            setTaskDragPreview({ taskId: id, isCancelled: true });
-            return;
-          }
-
-          setTaskDragPreview(null);
-
-          if (result.parentTaskId) {
-            expandTask(result.taskListId, result.parentTaskId);
-          }
-
-          dispatch(entryActions.moveTask(id, result.taskListId, result.parentTaskId, result.index));
-
-          break;
-        }
-        default:
+  useEffect(
+    () => () => {
+      if (settledTimeoutRef.current) {
+        clearTimeout(settledTimeoutRef.current);
       }
     },
-    [clearExpandTimeout, collapsedTaskIdsByTaskListId, dispatch, expandTask, tasksByTaskListId],
+    [],
+  );
+
+  const handleItemsChanged = useCallback(
+    (nextItems, reason) => {
+      if (reason.type === 'collapsed' || reason.type === 'expanded') {
+        if (reason.item.kind === 'task') {
+          setTaskCollapsed(
+            reason.item.taskListId,
+            reason.item.recordId,
+            reason.type === 'collapsed',
+          );
+        }
+        return;
+      }
+
+      const move = getSortableTreeMove(nextItems, reason);
+      if (!move) {
+        return;
+      }
+
+      if (move.type === 'taskList') {
+        if (taskListIds.indexOf(move.id) !== move.index) {
+          dispatch(entryActions.moveTaskList(move.id, move.index));
+          markDropSettled(reason.draggedItem.id);
+        }
+        return;
+      }
+
+      const sourceTasks = tasksByTaskListId[reason.draggedItem.taskListId] || [];
+      const task = sourceTasks.find((currentTask) => currentTask.id === move.id);
+      const sourceIndex = sourceTasks
+        .filter(
+          (currentTask) => (currentTask.parentTaskId || null) === (task?.parentTaskId || null),
+        )
+        .findIndex((currentTask) => currentTask.id === move.id);
+      const isSameLocation =
+        task &&
+        task.taskListId === move.taskListId &&
+        (task.parentTaskId || null) === move.parentTaskId &&
+        sourceIndex === move.index;
+
+      if (isSameLocation) {
+        return;
+      }
+
+      if (move.parentTaskId) {
+        setTaskCollapsed(move.taskListId, move.parentTaskId, false);
+      }
+
+      dispatch(entryActions.moveTask(move.id, move.taskListId, move.parentTaskId, move.index));
+      markDropSettled(reason.draggedItem.id);
+    },
+    [dispatch, markDropSettled, setTaskCollapsed, taskListIds, tasksByTaskListId],
+  );
+
+  const handleKeyboardMove = useCallback(
+    (taskId, move) => {
+      if (move.parentTaskId) {
+        setTaskCollapsed(move.taskListId, move.parentTaskId, false);
+      }
+
+      dispatch(entryActions.moveTask(taskId, move.taskListId, move.parentTaskId, move.index));
+    },
+    [dispatch, setTaskCollapsed],
+  );
+
+  const handleTaskListKeyboardMove = useCallback(
+    (taskListId, direction) => {
+      const currentIndex = taskListIds.indexOf(taskListId);
+      const nextIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+      if (nextIndex >= 0 && nextIndex < taskListIds.length) {
+        dispatch(entryActions.moveTaskList(taskListId, nextIndex));
+      }
+    },
+    [dispatch, taskListIds],
   );
 
   return (
-    <TaskDragContext.Provider value={taskDragPreview}>
-      <DragDropContext
-        onDragStart={handleDragStart}
-        onDragUpdate={handleDragUpdate}
-        onDragEnd={handleDragEnd}
-      >
-        <Droppable droppableId="card" type={DroppableTypes.TASK_LIST} direction="vertical">
-          {({ innerRef, droppableProps, placeholder }) => (
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            <div {...droppableProps} ref={innerRef}>
-              {taskListIds.map((taskListId, index) => (
-                <Item
-                  key={taskListId}
-                  id={taskListId}
-                  index={index}
-                  collapsedTaskIds={collapsedTaskIdsByTaskListId[taskListId] || EMPTY_TASK_IDS}
-                  onTaskCollapseToggle={handleTaskCollapseToggle}
-                />
-              ))}
-              {placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-    </TaskDragContext.Provider>
+    <ul role="tree" aria-label={t('common.taskTree')} className={styles.tree}>
+      <SortableTree
+        items={items}
+        onItemsChanged={handleItemsChanged}
+        TreeItemComponent={SortableTaskTreeItem}
+        indentationWidth={24}
+        manualDrag
+        showDragHandle
+        pointerSensorOptions={{
+          activationConstraint: {
+            distance: 4,
+          },
+        }}
+        dropAnimation={prefersReducedMotion ? null : undefined}
+        canRootHaveChildren={(draggedItem) => draggedItem.kind === 'taskList'}
+        recentlyDroppedId={recentlyDroppedId}
+        onKeyboardMove={handleKeyboardMove}
+        onTaskListKeyboardMove={handleTaskListKeyboardMove}
+      />
+    </ul>
   );
 });
 

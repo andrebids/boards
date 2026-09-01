@@ -271,6 +271,11 @@ export default {
 
   translation: {
     common: {
+      dragTask: "Arrastar tarefa",
+      dragTaskKeyboardHint: "Mover tarefa (Alt + teclas de seta)",
+      dragTaskList: "Arrastar lista de tarefas",
+      dragTaskListKeyboardHint: "Mover lista de tarefas (Alt + seta para cima/baixo)",
+      taskTree: "Listas de tarefas e subtarefas",
       aboutPlanka: "Sobre o Bids",
       account: "Conta",
       actions: "Ações",

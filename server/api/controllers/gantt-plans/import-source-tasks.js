@@ -121,10 +121,9 @@ module.exports = {
 
         itemsByTaskId[path.task.id] = item;
         if (!existingItems.some(({ id }) => id === item.id)) {
-          const assigneeUserIds =
-            path.task.assigneeUserId && access.memberUserIds.includes(path.task.assigneeUserId)
-              ? [path.task.assigneeUserId]
-              : [];
+          const assigneeUserIds = path.task.assigneeUserIds.filter((userId) =>
+            access.memberUserIds.includes(userId),
+          );
           // eslint-disable-next-line no-await-in-loop
           const assignees = await sails.helpers.gantt.syncItemAssignees(item.id, assigneeUserIds);
           const sourceTask = {
@@ -132,6 +131,7 @@ module.exports = {
             name: path.task.name,
             isCompleted: path.task.isCompleted,
             assigneeUserId: path.task.assigneeUserId || null,
+            assigneeUserIds: path.task.assigneeUserIds,
             taskListId: path.taskList.id,
             taskListName: path.taskList.name,
             cardId: path.card.id,

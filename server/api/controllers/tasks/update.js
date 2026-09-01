@@ -39,6 +39,9 @@ module.exports = {
       ...idInput,
       allowNull: true,
     },
+    assigneeUserIds: {
+      type: 'json',
+    },
     position: {
       type: 'number',
       min: 0,
@@ -139,18 +142,31 @@ module.exports = {
       }
     }
 
-    if (inputs.assigneeUserId) {
-      const isBoardMember = await sails.helpers.users.isBoardMember(
-        inputs.assigneeUserId,
-        board.id,
+    let assigneeUserIds;
+    if (!_.isUndefined(inputs.assigneeUserIds)) {
+      if (!Array.isArray(inputs.assigneeUserIds)) {
+        throw Errors.USER_NOT_FOUND;
+      }
+
+      assigneeUserIds = _.uniq(inputs.assigneeUserIds);
+    } else if (!_.isUndefined(inputs.assigneeUserId)) {
+      assigneeUserIds = inputs.assigneeUserId ? [inputs.assigneeUserId] : [];
+    }
+
+    if (assigneeUserIds) {
+      const areBoardMembers = await Promise.all(
+        assigneeUserIds.map((userId) => sails.helpers.users.isBoardMember(userId, board.id)),
       );
 
-      if (!isBoardMember) {
+      if (areBoardMembers.includes(false)) {
         throw Errors.USER_NOT_FOUND;
       }
     }
 
-    const values = _.pick(inputs, ['assigneeUserId', 'position', 'isCompleted', 'parentTaskId']);
+    const values = _.pick(inputs, ['position', 'isCompleted', 'parentTaskId']);
+    if (assigneeUserIds) {
+      values.assigneeUserId = assigneeUserIds[0] || null;
+    }
 
     if (!_.isUndefined(inputs.content) || !_.isUndefined(inputs.name)) {
       const taskContentValues = getTaskContentValues(inputs);
@@ -164,7 +180,7 @@ module.exports = {
     let includedTasks;
     const isMove =
       !_.isUndefined(inputs.position) &&
-      ['assigneeUserId', 'name', 'content', 'isCompleted'].every((key) =>
+      ['assigneeUserId', 'assigneeUserIds', 'name', 'content', 'isCompleted'].every((key) =>
         _.isUndefined(inputs[key]),
       );
 
@@ -201,6 +217,7 @@ module.exports = {
           ...values,
           taskList: nextTaskList,
         },
+        assigneeUserIds,
         actorUser: currentUser,
         request: this.req,
       });

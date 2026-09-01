@@ -36,27 +36,16 @@ const DashboardGanttContent = React.memo(
       return () => window.clearInterval(intervalId);
     }, [cardId, rotationSeconds, taskListId]);
 
-    if (activeView === 'taskList') {
-      return (
-        <DashboardTaskListPanel
-          error={taskListState.error}
-          isLoading={taskListState.isLoading}
-          taskList={taskListState.taskList}
-          tasks={taskListState.tasks}
-        />
-      );
-    }
-
     return (
       <section className={styles.wrapper} aria-label={`Gantt: ${projectName}`}>
-        <header className={styles.header}>
+        <header className={styles.header} hidden={activeView !== 'gantt'}>
           <div>
             <span>Gantt</span>
             <strong>{projectName}</strong>
           </div>
           {!isLoading && plan?.isEnabled && <small>{timelineItems.length} tarefas planeadas</small>}
         </header>
-        <div className={styles.content}>
+        <div className={styles.content} hidden={activeView !== 'gantt'}>
           {isLoading && <Loader active inverted size="small" />}
           {!isLoading && error && (
             <div className={styles.state} role="alert">
@@ -84,6 +73,14 @@ const DashboardGanttContent = React.memo(
               variant="dashboard"
             />
           )}
+        </div>
+        <div className={styles.taskListView} hidden={activeView !== 'taskList'}>
+          <DashboardTaskListPanel
+            error={taskListState.error}
+            isLoading={taskListState.isLoading}
+            taskList={taskListState.taskList}
+            tasks={taskListState.tasks}
+          />
         </div>
       </section>
     );

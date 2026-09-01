@@ -77,6 +77,7 @@ module.exports = {
       position,
       taskListId: values.taskList.id,
     });
+    task.assigneeUserIds = [];
 
     sails.sockets.broadcast(
       `board:${inputs.board.id}`,

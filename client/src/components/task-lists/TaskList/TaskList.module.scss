@@ -3,7 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-:global(#app) {
+:global(#app),
+:global(.card-modal-theme) {
   .count {
     color: var(--card-modal-muted, #7b8494);
     font-size: 12px;

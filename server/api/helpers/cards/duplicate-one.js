@@ -4,6 +4,7 @@
  */
 
 const { remapTaskAttachmentUrls } = require('../../../utils/task-content');
+const { attachTaskAssigneeUserIds } = require('../../../utils/task-assignees');
 
 module.exports = {
   inputs: {
@@ -155,7 +156,17 @@ module.exports = {
         taskListId: nextTaskListIdByTaskListId[task.taskListId],
         parentTaskId: task.parentTaskId ? nextTaskIdByTaskId[task.parentTaskId] : null,
       }));
-      const nextTasks = await Task.qm.create(nextTasksValues).usingConnection(db);
+      const createdTasks = await Task.qm.create(nextTasksValues).usingConnection(db);
+      const nextTaskAssignees = await TaskAssignee.qm.create(
+        tasks.flatMap((task) =>
+          task.assigneeUserIds.map((userId) => ({
+            taskId: nextTaskIdByTaskId[task.id],
+            userId,
+          })),
+        ),
+        { connection: db },
+      );
+      const nextTasks = attachTaskAssigneeUserIds(createdTasks, nextTaskAssignees);
 
       const nextAttachmentsValues = attachments.map((attachment) => ({
         ..._.pick(attachment, ['type', 'data', 'name']),

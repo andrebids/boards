@@ -5,6 +5,7 @@
 
 const _ = require('lodash');
 const Action = require('../../models/Action');
+const { getTaskAssigneeUserIds } = require('../../../utils/task-assignees');
 
 module.exports = {
   inputs: {
@@ -15,6 +16,9 @@ module.exports = {
     values: {
       type: 'json',
       required: true,
+    },
+    assigneeUserIds: {
+      type: 'ref',
     },
     project: {
       type: 'ref',
@@ -108,7 +112,38 @@ module.exports = {
       }
     }
 
-    const task = await sails.models.task.qm.updateOne(inputs.record.id, values);
+    let task;
+    if (inputs.assigneeUserIds) {
+      task = await sails.getDatastore().transaction(async (db) => {
+        const updatedTask = await sails.models.task.qm.updateOne(inputs.record.id, values, {
+          connection: db,
+        });
+
+        await TaskAssignee.qm.delete(
+          {
+            taskId: inputs.record.id,
+          },
+          { connection: db },
+        );
+        await TaskAssignee.qm.create(
+          inputs.assigneeUserIds.map((userId) => ({
+            taskId: inputs.record.id,
+            userId,
+          })),
+          { connection: db },
+        );
+
+        return updatedTask;
+      });
+      if (task) {
+        task.assigneeUserIds = inputs.assigneeUserIds;
+      }
+    } else {
+      task = await sails.models.task.qm.updateOne(inputs.record.id, values);
+      if (task) {
+        task.assigneeUserIds = getTaskAssigneeUserIds(inputs.record);
+      }
+    }
 
     if (task) {
       sails.sockets.broadcast(
@@ -176,7 +211,7 @@ module.exports = {
 
       if (
         inputs.record.name !== task.name ||
-        inputs.record.assigneeUserId !== task.assigneeUserId ||
+        !_.isEqual(getTaskAssigneeUserIds(inputs.record), task.assigneeUserIds) ||
         inputs.record.isCompleted !== task.isCompleted
       ) {
         await sails.helpers.gantt.syncLinkedItemFromTask.with({

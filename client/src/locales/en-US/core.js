@@ -16,6 +16,11 @@ export default {
   translation: {
     common: {
       aboutPlanka: "About Bids",
+      dragTask: "Drag task",
+      dragTaskKeyboardHint: "Move task (Alt + arrow keys)",
+      dragTaskList: "Drag task list",
+      dragTaskListKeyboardHint: "Move task list (Alt + up/down arrow)",
+      taskTree: "Task lists and subtasks",
       account: "Account",
       actions: "Actions",
       cancel: "Cancel",

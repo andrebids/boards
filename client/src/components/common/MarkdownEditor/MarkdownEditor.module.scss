@@ -69,7 +69,13 @@
   }
 
   .editorCompact {
-    min-height: 116px;
+    min-height: 80px;
+
+    :global(.g-md-wysiwyg-editor_toolbar .yfm-editor) {
+      height: auto;
+      padding-bottom: 4px;
+      padding-top: 4px;
+    }
   }
 
   .wrapper {

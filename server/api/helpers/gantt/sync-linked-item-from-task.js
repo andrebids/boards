@@ -1,3 +1,5 @@
+const { getTaskAssigneeUserIds } = require('../../../utils/task-assignees');
+
 module.exports = {
   inputs: {
     task: { type: 'ref', required: true },
@@ -19,13 +21,14 @@ module.exports = {
     });
     const assignees = await sails.helpers.gantt.syncItemAssignees(
       item.id,
-      inputs.task.assigneeUserId ? [inputs.task.assigneeUserId] : [],
+      getTaskAssigneeUserIds(inputs.task),
     );
     const sourceTask = {
       id: inputs.task.id,
       name: inputs.task.name,
       isCompleted: inputs.task.isCompleted,
       assigneeUserId: inputs.task.assigneeUserId || null,
+      assigneeUserIds: getTaskAssigneeUserIds(inputs.task),
       taskListId: inputs.taskList.id,
       taskListName: inputs.taskList.name,
       cardId: inputs.card.id,

@@ -55,6 +55,16 @@ describe('dashboard module isolation', () => {
     expect(ganttSource).toContain('<DashboardTaskListPanel');
   });
 
+  it('keeps the Gantt mounted while the rotating task list is visible', () => {
+    const ganttSource = readSource('./widgets/DashboardGanttWidget.jsx');
+    const styles = readSource('./widgets/DashboardGanttWidget.module.scss');
+
+    expect(ganttSource).not.toContain("if (activeView === 'taskList')");
+    expect(ganttSource).toContain("hidden={activeView !== 'gantt'}");
+    expect(ganttSource).toContain("hidden={activeView !== 'taskList'}");
+    expect(styles).toMatch(/\.taskListView\[hidden\]\s*\{[^}]*display: none;/s);
+  });
+
   it('sizes the rotating task list from its widget container', () => {
     const panelSource = readSource('./widgets/DashboardTaskListPanel.jsx');
     const styles = readSource('./widgets/DashboardTaskListPanel.module.scss');
@@ -76,8 +86,8 @@ describe('dashboard module isolation', () => {
     const styles = readSource('./widgets/DashboardTaskListPanel.module.scss');
 
     expect(panelSource).toContain('name="check square outline"');
-    expect(panelSource).toContain("import UserAvatar from '../../users/UserAvatar';");
-    expect(panelSource).toContain('id={task.assigneeUserId}');
+    expect(panelSource).toContain("import CardMembers from '../../cards/Card/CardMembers';");
+    expect(panelSource).toContain('userIds={getTaskAssigneeUserIds(task)}');
     expect(styles).toContain('--card-modal-background: var(--app-dark-canvas);');
     expect(styles).toContain('background: var(--card-modal-background);');
     expect(styles).toContain('.assigneeUserAvatar');

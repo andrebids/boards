@@ -64,6 +64,7 @@ describe('Gantt source task', () => {
         name: 'New name',
         isCompleted: true,
         assigneeUserId: 'user-1',
+        assigneeUserIds: ['user-1', 'user-2'],
       },
       taskList: { id: 'task-list-1', name: 'Checklist' },
       card: { id: 'card-1', name: 'Card' },
@@ -83,5 +84,9 @@ describe('Gantt source task', () => {
       isCompleted: true,
       assigneeUserId: 'user-1',
     });
+    expect(broadcasts[0][2].item.assignees.map(({ userId }) => userId)).to.deep.equal([
+      'user-1',
+      'user-2',
+    ]);
   });
 });

@@ -52,6 +52,12 @@ module.exports = {
 
     const taskLists = await TaskList.qm.getByCardIds(cardIds);
     const taskListIds = sails.helpers.utils.mapRecords(taskLists);
+    const tasks = await Task.qm.getByTaskListIds(taskListIds);
+
+    await TaskAssignee.qm.delete({
+      taskId: sails.helpers.utils.mapRecords(tasks),
+      userId: inputs.user.id,
+    });
 
     await Task.qm.update(
       {

@@ -4,7 +4,8 @@ import { Icon, Progress } from 'semantic-ui-react';
 
 import Markdown from '../../common/Markdown';
 import { buildTaskRows } from '../../task-lists/TaskList/task-tree';
-import UserAvatar from '../../users/UserAvatar';
+import CardMembers from '../../cards/Card/CardMembers';
+import { getTaskAssigneeUserIds } from '../../../utils/task-assignees';
 import { getDashboardTaskListLayout } from './dashboardTaskList';
 
 import styles from './DashboardTaskListPanel.module.scss';
@@ -121,12 +122,8 @@ const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }
                       <Markdown>{task.content || task.name}</Markdown>
                     </div>
                   </div>
-                  {task.assigneeUserId && (
-                    <UserAvatar
-                      id={task.assigneeUserId}
-                      size="tiny"
-                      className={styles.assigneeUserAvatar}
-                    />
+                  {getTaskAssigneeUserIds(task).length > 0 && (
+                    <CardMembers userIds={getTaskAssigneeUserIds(task)} />
                   )}
                 </li>
               ))}
@@ -148,6 +145,7 @@ DashboardTaskListPanel.propTypes = {
   tasks: PropTypes.arrayOf(
     PropTypes.shape({
       assigneeUserId: PropTypes.string,
+      assigneeUserIds: PropTypes.arrayOf(PropTypes.string),
       content: PropTypes.string,
       id: PropTypes.string.isRequired,
       isCompleted: PropTypes.bool,
