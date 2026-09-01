@@ -43,6 +43,18 @@ describe('dashboard module isolation', () => {
     expect(widgetContentSource).toContain('<DeferredDashboardGanttWidget');
   });
 
+  it('keeps the TV ticker compositor layers lightweight', () => {
+    const tickerSource = readSource('./DashboardNewsTicker.jsx');
+    const styles = readSource('./DashboardNewsTicker.module.scss');
+
+    expect(tickerSource).toContain("import { useInView } from 'react-intersection-observer';");
+    expect(tickerSource).toContain("useInView({ rootMargin: '160px' })");
+    expect(tickerSource).toContain('<DashboardNewsTickerThumbnail imageUrl={item.imageUrl} />');
+    expect(styles).toContain('animation: news-ticker-sequence 200s linear infinite;');
+    expect(styles).toContain('animation-delay: -100s;');
+    expect(styles).toContain('width: 420px;');
+  });
+
   it('rotates the Gantt with a configured task list and clears its timer', () => {
     const ganttSource = readSource('./widgets/DashboardGanttWidget.jsx');
     const widgetContentSource = readSource('./widgets/DashboardWidgetContent.jsx');
@@ -60,9 +72,11 @@ describe('dashboard module isolation', () => {
     const styles = readSource('./widgets/DashboardGanttWidget.module.scss');
 
     expect(ganttSource).not.toContain("if (activeView === 'taskList')");
-    expect(ganttSource).toContain("hidden={activeView !== 'gantt'}");
-    expect(ganttSource).toContain("hidden={activeView !== 'taskList'}");
-    expect(styles).toMatch(/\.taskListView\[hidden\]\s*\{[^}]*display: none;/s);
+    expect(ganttSource).not.toContain(' hidden=');
+    expect(ganttSource).toContain("activeView !== 'gantt' ? styles.viewHidden");
+    expect(ganttSource).toContain("activeView !== 'taskList' ? styles.viewHidden");
+    expect(styles).toMatch(/\.viewHidden\s*\{[^}]*visibility: hidden;/s);
+    expect(styles).toMatch(/\.taskListView\s*\{[^}]*position: absolute;/s);
   });
 
   it('sizes the rotating task list from its widget container', () => {

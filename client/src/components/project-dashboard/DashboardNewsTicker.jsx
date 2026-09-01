@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
+import { useInView } from 'react-intersection-observer';
 
 import api from '../../api';
 import {
@@ -9,6 +11,34 @@ import {
 import styles from './DashboardNewsTicker.module.scss';
 
 const NEWS_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+const DashboardNewsTickerThumbnail = React.memo(({ imageUrl }) => {
+  const [ref, isInView] = useInView({ rootMargin: '160px' });
+
+  return (
+    <span ref={ref} className={styles.thumbnailFrame}>
+      {isInView && (
+        <img
+          alt=""
+          className={styles.thumbnail}
+          decoding="async"
+          height="72"
+          referrerPolicy="no-referrer"
+          src={imageUrl}
+          width="104"
+          onError={(event) => {
+            const image = event.currentTarget;
+            image.hidden = true;
+          }}
+        />
+      )}
+    </span>
+  );
+});
+
+DashboardNewsTickerThumbnail.propTypes = {
+  imageUrl: PropTypes.string.isRequired,
+};
 
 const DashboardNewsTicker = React.memo(() => {
   const [items, setItems] = useState([]);
@@ -65,20 +95,7 @@ const DashboardNewsTicker = React.memo(() => {
                     target="_blank"
                   >
                     {shouldRenderDashboardTickerThumbnail(item) && (
-                      <img
-                        alt=""
-                        className={styles.thumbnail}
-                        decoding="async"
-                        height="72"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        src={item.imageUrl}
-                        width="104"
-                        onError={(event) => {
-                          const image = event.currentTarget;
-                          image.hidden = true;
-                        }}
-                      />
+                      <DashboardNewsTickerThumbnail imageUrl={item.imageUrl} />
                     )}
                     <span className={styles.copy}>
                       <span className={styles.source}>{item.source}</span>

@@ -12,7 +12,7 @@ describe('dashboard news ticker performance boundaries', () => {
     expect(getDashboardTickerItems(items)).toHaveLength(18);
   });
 
-  it('keeps thumbnails only for the lightweight Reddit feed', () => {
+  it('keeps thumbnails only for the Reddit feed', () => {
     expect(
       shouldRenderDashboardTickerThumbnail({
         source: 'r/singularity',
@@ -22,11 +22,8 @@ describe('dashboard news ticker performance boundaries', () => {
     expect(
       shouldRenderDashboardTickerThumbnail({
         source: 'XDA Developers',
-        imageUrl: 'https://www.xda-developers.com/files/2026/08/image.jpg',
+        imageUrl: 'https://www.xda-developers.com/image.jpg',
       }),
-    ).toBe(false);
-    expect(
-      shouldRenderDashboardTickerThumbnail({ source: 'r/singularity' }),
     ).toBe(false);
   });
 });

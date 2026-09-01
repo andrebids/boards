@@ -1,13 +1,13 @@
 :global(#app) {
-  .header[hidden],
-  .content[hidden],
-  .taskListView[hidden] {
-    display: none;
+  .viewHidden {
+    pointer-events: none;
+    visibility: hidden;
   }
 
   .taskListView {
-    flex: 1 1 auto;
+    inset: 0;
     min-height: 0;
+    position: absolute;
   }
 
   .wrapper {
@@ -17,6 +17,7 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
+    position: relative;
   }
 
   .header {

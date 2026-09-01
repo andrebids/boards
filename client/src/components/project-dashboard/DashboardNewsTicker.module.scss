@@ -52,7 +52,7 @@
 
   .sequence {
     align-items: center;
-    animation: news-ticker-sequence 220s linear infinite;
+    animation: news-ticker-sequence 200s linear infinite;
     display: flex;
     height: 100%;
     left: 0;
@@ -61,7 +61,7 @@
     will-change: transform;
 
     &:first-child {
-      animation-delay: -110s;
+      animation-delay: -100s;
     }
   }
 
@@ -74,7 +74,7 @@
     gap: 14px;
     padding: 0 16px;
     text-decoration: none;
-    width: 460px;
+    width: 420px;
 
     &::before {
       background: color-mix(in oklab, var(--app-dark-border) 84%, transparent);
@@ -91,13 +91,20 @@
     }
   }
 
-  .thumbnail {
+  .thumbnailFrame {
     background: var(--app-dark-surface-hover);
     border-radius: 5px;
     flex: 0 0 auto;
     height: 72px;
-    object-fit: cover;
+    overflow: hidden;
     width: 104px;
+  }
+
+  .thumbnail {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
   }
 
   .copy {
