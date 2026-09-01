@@ -96,6 +96,9 @@
   .wrapperCompact {
     --g-md-editor-padding: 8px 10px;
     --g-md-toolbar-padding: 4px 6px;
+
+    max-width: 760px;
+    width: 100%;
   }
 
   .wrapper:focus-within {
