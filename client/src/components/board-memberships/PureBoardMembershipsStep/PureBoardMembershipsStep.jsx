@@ -21,6 +21,7 @@ const PureBoardMembershipsStep = React.memo(
     currentUserIds,
     title,
     clearButtonContent,
+    isAction,
     onUserSelect,
     onUserDeselect,
     onClear,
@@ -93,6 +94,7 @@ const PureBoardMembershipsStep = React.memo(
                 <Item
                   key={boardMembership.id}
                   user={boardMembership.user}
+                  isAction={isAction}
                   isActive={currentUserIds.includes(boardMembership.user.id)}
                   isDisabled={boardMembership.isPersisted === false}
                   onUserSelect={onUserSelect}
@@ -110,7 +112,8 @@ const PureBoardMembershipsStep = React.memo(
             </div>
           )}
           {currentUserIds.length > 0 && onClear && (
-            <Button variant="secondary"
+            <Button
+              variant="secondary"
               fluid
               content={t(clearButtonContent)}
               className={styles.clearButton}
@@ -130,6 +133,7 @@ PureBoardMembershipsStep.propTypes = {
   /* eslint-enable react/forbid-prop-types */
   title: PropTypes.string,
   clearButtonContent: PropTypes.string,
+  isAction: PropTypes.bool,
   onUserSelect: PropTypes.func.isRequired,
   onUserDeselect: PropTypes.func,
   onClear: PropTypes.func,
@@ -140,6 +144,7 @@ PureBoardMembershipsStep.defaultProps = {
   currentUserIds: [],
   title: 'common.members',
   clearButtonContent: 'action.clear',
+  isAction: false,
   onUserDeselect: undefined,
   onClear: undefined,
   onBack: undefined,
