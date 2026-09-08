@@ -122,7 +122,7 @@ const GeneralPane = React.memo(() => {
           />
         </div>
       </section>
-      {canEdit && project.autoAddBoardMembersToCards && (
+      {canEdit && (
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>
             {t('common.cards', {
@@ -140,7 +140,13 @@ const GeneralPane = React.memo(() => {
               onChange={handleToggleChange}
             />
           </div>
-          <p className={styles.hint}>{t('common.bulkCardMembersDisableAutomatic')}</p>
+          <p className={styles.hint}>
+            {t(
+              project.autoAddBoardMembersToCards
+                ? 'common.bulkCardMembersDisableAutomatic'
+                : 'common.autoAddBoardMembersToCardsHint',
+            )}
+          </p>
         </section>
       )}
       {canEdit && !project.autoAddBoardMembersToCards && <CardMembersSection key={project.id} />}
