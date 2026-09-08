@@ -36,11 +36,11 @@
   }
 
   .wrapperBoard {
-    margin-top: 174px;
+    margin-top: 181px;
   }
 
   .wrapperBoardWithFavorites {
-    margin-top: 264px;
+    margin-top: 271px;
   }
 
   .wrapperFlex {
@@ -52,11 +52,11 @@
   }
 
   .wrapperProject {
-    margin-top: 98px;
+    margin-top: 105px;
   }
 
   .wrapperProjectWithFavorites {
-    margin-top: 188px;
+    margin-top: 195px;
   }
 
   .wrapperGantt {
@@ -64,19 +64,24 @@
     margin-top: 116px;
   }
 
+  .wrapperGanttWithBoardTabs {
+    height: calc(100% - 123px);
+    margin-top: 123px;
+  }
+
   .wrapperGanttWithFavorites {
-    height: calc(100% - 206px);
-    margin-top: 206px;
+    height: calc(100% - 213px);
+    margin-top: 213px;
   }
 
   .wrapperPresentation {
-    height: calc(100% - 110px);
-    margin-top: 110px;
+    height: calc(100% - 117px);
+    margin-top: 117px;
   }
 
   .wrapperPresentationWithFavorites {
-    height: calc(100% - 200px);
-    margin-top: 200px;
+    height: calc(100% - 207px);
+    margin-top: 207px;
   }
 
   .presentationHost {

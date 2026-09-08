@@ -15,6 +15,7 @@ import entryActions from '../../../../entry-actions';
 import { usePopupInClosableContext } from '../../../../hooks';
 import EditInformation from './EditInformation';
 import ArchiveSection from './ArchiveSection';
+import CardMembersSection from './CardMembersSection';
 import ConfirmationStep from '../../../common/ConfirmationStep';
 import { useGantt } from '../../../gantt';
 
@@ -121,7 +122,7 @@ const GeneralPane = React.memo(() => {
           />
         </div>
       </section>
-      {canEdit && (
+      {canEdit && project.autoAddBoardMembersToCards && (
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>
             {t('common.cards', {
@@ -139,9 +140,10 @@ const GeneralPane = React.memo(() => {
               onChange={handleToggleChange}
             />
           </div>
-          <p className={styles.hint}>{t('common.autoAddBoardMembersToCardsHint')}</p>
+          <p className={styles.hint}>{t('common.bulkCardMembersDisableAutomatic')}</p>
         </section>
       )}
+      {canEdit && !project.autoAddBoardMembersToCards && <CardMembersSection key={project.id} />}
       {canManageGantt && (
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>{t('common.projectChat')}</h3>

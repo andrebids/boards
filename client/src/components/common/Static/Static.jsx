@@ -135,7 +135,7 @@ const Static = React.memo(() => {
     );
   } else if (pathsMatch?.pattern.path === Paths.GANTT) {
     wrapperClassNames = [
-      isFavoritesActive ? styles.wrapperGanttWithFavorites : styles.wrapperGantt,
+      isFavoritesActive ? styles.wrapperGanttWithFavorites : styles.wrapperGanttWithBoardTabs,
       styles.wrapperFlex,
     ];
     contentNode = <GanttWorkspace />;

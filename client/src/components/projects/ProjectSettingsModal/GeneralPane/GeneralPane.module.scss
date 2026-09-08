@@ -186,6 +186,76 @@
     margin: 4px 0 0;
   }
 
+  .memberField {
+    margin-top: 16px;
+
+    :global(.ui.multiple.selection.dropdown) {
+      display: block;
+      min-width: 0;
+    }
+
+    :global(.ui.multiple.selection.dropdown > .label) {
+      align-items: center;
+      background: var(--project-settings-field-hover);
+      color: var(--project-settings-text);
+      display: inline-flex;
+      max-width: 100%;
+      white-space: normal;
+    }
+
+    :global(.ui.multiple.search.dropdown > input.search) {
+      color: var(--project-settings-text);
+      max-width: 100%;
+    }
+  }
+
+  .memberIdentity {
+    align-items: center;
+    display: inline-flex;
+    gap: 8px;
+    max-width: 100%;
+    min-width: 0;
+    vertical-align: middle;
+
+    > :first-child {
+      flex-shrink: 0;
+    }
+  }
+
+  .memberName {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .archiveCheckbox {
+    margin-top: 12px;
+
+    &:global(.ui.checkbox) label,
+    &:global(.ui.checkbox) input:focus ~ label {
+      color: var(--project-settings-text);
+      font-size: 13px;
+    }
+  }
+
+  .bulkSummary {
+    border-left: 2px solid var(--app-accent);
+    color: var(--project-settings-text);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 16px;
+    padding-left: 12px;
+
+    p {
+      margin: 0 0 4px;
+    }
+  }
+
+  .bulkIssues {
+    max-height: 140px;
+    overflow: auto;
+    padding-left: 20px;
+  }
+
   .retryButton:global(.ui.button) {
     margin-top: 12px;
   }

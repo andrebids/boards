@@ -530,6 +530,10 @@ module.exports = {
     request: {
       type: 'ref',
     },
+    skipNotifications: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
   },
 
   async fn(inputs) {
@@ -573,7 +577,10 @@ module.exports = {
       user: values.user,
     });
 
-    if (sails.models.action.INTERNAL_NOTIFIABLE_TYPES.includes(action.type)) {
+    if (
+      !inputs.skipNotifications &&
+      sails.models.action.INTERNAL_NOTIFIABLE_TYPES.includes(action.type)
+    ) {
       if (sails.models.action.PERSONAL_NOTIFIABLE_TYPES.includes(action.type)) {
         // Verificar se action.data.user existe antes de acessar
         if (action.data && action.data.user && values.user.id !== action.data.user.id) {
@@ -626,7 +633,10 @@ module.exports = {
       }
     }
 
-    if (sails.models.action.EXTERNAL_NOTIFIABLE_TYPES.includes(action.type)) {
+    if (
+      !inputs.skipNotifications &&
+      sails.models.action.EXTERNAL_NOTIFIABLE_TYPES.includes(action.type)
+    ) {
       const notificationServices = await NotificationService.qm.getByBoardId(inputs.board.id);
 
       if (notificationServices.length > 0) {

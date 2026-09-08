@@ -26,11 +26,17 @@
   .tabsWrapper {
     display: flex;
     flex: 0 0 auto;
-    height: 50px;
+    height: 57px;
     overflow-x: auto;
     overflow-y: hidden;
+    padding-bottom: 2px;
     scrollbar-color: rgba(0, 0, 0, 0.32) transparent;
     scrollbar-width: thin;
+
+    @supports selector(::-webkit-scrollbar) {
+      scrollbar-color: auto;
+      scrollbar-width: auto;
+    }
 
     &::-webkit-scrollbar {
       height: 5px;
@@ -41,17 +47,20 @@
     }
 
     &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.32);
       border-radius: 3px;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.5);
+      }
     }
   }
 
   .wrapper {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    height: 50px; // reduzido
+    height: 57px;
     overflow: visible; // permitir que a barra de progresso seja totalmente visível
-    padding-bottom: 4px; // ligeiramente menor
   }
 }

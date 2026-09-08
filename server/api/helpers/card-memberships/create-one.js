@@ -28,6 +28,10 @@ module.exports = {
     request: {
       type: 'ref',
     },
+    skipNotifications: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
   },
 
   exits: {
@@ -124,6 +128,7 @@ module.exports = {
     }
 
     await sails.helpers.actions.createOne.with({
+      skipNotifications: inputs.skipNotifications,
       values: {
         type: Action.Types.ADD_MEMBER_TO_CARD,
         data: {

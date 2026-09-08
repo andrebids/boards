@@ -4,6 +4,7 @@
  */
 
 import socket from './socket';
+import http from './http';
 
 /* Actions */
 
@@ -21,10 +22,18 @@ const updateProject = (id, data, headers) =>
 const deleteProject = (id, headers) =>
   socket.delete(`/projects/${id}`, undefined, headers);
 
+const getProjectCardMemberOptions = (id, headers) =>
+  socket.get(`/projects/${id}/card-member-options`, undefined, headers);
+
+const addProjectCardMembers = (id, data, headers) =>
+  http.post(`/projects/${id}/card-memberships/bulk`, data, headers);
+
 export default {
   getProjects,
   createProject,
   getProject,
   updateProject,
   deleteProject,
+  getProjectCardMemberOptions,
+  addProjectCardMembers,
 };

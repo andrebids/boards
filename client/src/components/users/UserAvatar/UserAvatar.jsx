@@ -50,10 +50,20 @@ const getColor = (name) => {
 };
 
 const UserAvatar = React.memo(
-  ({ id, size, variant, isDisabled, withCreatorIndicator, withTitle, className, onClick }) => {
+  ({
+    id,
+    fallbackUser,
+    size,
+    variant,
+    isDisabled,
+    withCreatorIndicator,
+    withTitle,
+    className,
+    onClick,
+  }) => {
     const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
 
-    const user = useSelector((state) => selectUserById(state, id));
+    const user = useSelector((state) => selectUserById(state, id)) || fallbackUser;
     const [t] = useTranslation();
     const title =
       user.id === StaticUserIds.DELETED
@@ -100,6 +110,15 @@ const UserAvatar = React.memo(
 
 UserAvatar.propTypes = {
   id: PropTypes.string,
+  fallbackUser: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    avatar: PropTypes.shape({
+      thumbnailUrls: PropTypes.shape({
+        cover180: PropTypes.string.isRequired,
+      }).isRequired,
+    }),
+  }),
   size: PropTypes.oneOf(Object.values(Sizes)),
   variant: PropTypes.oneOf(Object.values(Variants)),
   isDisabled: PropTypes.bool,
@@ -111,6 +130,7 @@ UserAvatar.propTypes = {
 
 UserAvatar.defaultProps = {
   id: undefined,
+  fallbackUser: undefined,
   size: Sizes.MEDIUM,
   variant: Variants.DEFAULT,
   isDisabled: false,

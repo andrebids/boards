@@ -119,6 +119,8 @@ module.exports.routes = {
   'GET /api/projects': 'projects/index',
   'POST /api/projects': 'projects/create',
   'GET /api/projects/:id': 'projects/show',
+  'GET /api/projects/:projectId/card-member-options': 'projects/card-member-options',
+  'POST /api/projects/:projectId/card-memberships/bulk': 'projects/add-card-members',
   'PATCH /api/projects/:id': 'projects/update',
   'DELETE /api/projects/:id': 'projects/delete',
 
