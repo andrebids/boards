@@ -69,6 +69,9 @@ export default {
       dropFilesHere: 'Larga os ficheiros aqui',
       dropOrPasteFiles: 'Larga ficheiros aqui ou cola uma imagem',
       editMessage: 'Editar mensagem',
+      editMessageFailed:
+        'Não foi possível guardar. As tuas alterações continuam aqui; tenta novamente.',
+      savingMessage: 'A guardar…',
       edited: 'editada',
       emptyConversationDescription: 'As mensagens deste projeto ficam reunidas aqui.',
       emptyConversationTitle: 'Começa a conversa',

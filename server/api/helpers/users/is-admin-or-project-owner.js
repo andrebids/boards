@@ -14,6 +14,8 @@ module.exports = {
   },
 
   fn(inputs) {
-    return [User.Roles.ADMIN, User.Roles.PROJECT_OWNER].includes(inputs.record.role);
+    return [User.Roles.ADMIN, User.Roles.USER_MANAGER, User.Roles.PROJECT_OWNER].includes(
+      inputs.record.role,
+    );
   },
 };

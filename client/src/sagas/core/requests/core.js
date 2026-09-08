@@ -9,7 +9,7 @@ import { fetchBoardByCurrentPath } from './boards';
 import request from '../request';
 import api from '../../../api';
 import mergeRecords from '../../../utils/merge-records';
-import { isUserAdminOrProjectOwner } from '../../../utils/record-helpers';
+import { canUserListUsers } from '../../../utils/record-helpers';
 
 export function* fetchCore() {
   const {
@@ -18,7 +18,7 @@ export function* fetchCore() {
   } = yield call(request, api.getCurrentUser, true);
 
   let users1;
-  if (isUserAdminOrProjectOwner(user)) {
+  if (canUserListUsers(user)) {
     ({ items: users1 } = yield call(request, api.getUsers));
   }
 

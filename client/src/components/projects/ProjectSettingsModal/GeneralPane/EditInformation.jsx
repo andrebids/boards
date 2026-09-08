@@ -105,7 +105,9 @@ const EditInformation = React.memo(() => {
           onChange={handleFieldChange}
         />
       </div>
-      <Button variant="secondary"
+      <Button
+        variant="primary"
+        size="sm"
         type="submit"
         disabled={dequal(cleanData, defaultData)}
         content={t('action.save')}

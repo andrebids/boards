@@ -23,6 +23,7 @@ module.exports = {
       where: {
         or: [
           { role: User.Roles.ADMIN },
+          { role: User.Roles.USER_MANAGER },
           { role: User.Roles.PROJECT_OWNER },
         ],
       },
@@ -40,5 +41,4 @@ module.exports = {
     return admins.length;
   },
 };
-
 

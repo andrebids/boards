@@ -13,6 +13,7 @@ import chatServices, {
   retryChatMessageAttachment,
   uploadChatMessageAttachment,
   uploadChatMessageAttachments,
+  updateChatMessage,
 } from './chat';
 import chatInboxServices, {
   fetchChatInbox,
@@ -24,6 +25,7 @@ jest.mock('../../../api', () => ({
   __esModule: true,
   default: {
     getChatInbox: jest.fn(),
+    updateChatMessage: jest.fn(),
     markChatConversationAsRead: jest.fn(),
     createChatMessageAttachment: jest.fn(),
   },
@@ -310,5 +312,32 @@ describe('chat attachment uploads', () => {
     expect(generator.next().value).toEqual(
       all([call(uploadChatMessageAttachment, message, pendingFiles[3], 4, pendingFiles.length)]),
     );
+  });
+});
+
+describe('chat message edit requests', () => {
+  test('reports a network failure and allows a subsequent save', () => {
+    const previousMessage = { id: '10', text: 'Original' };
+    const data = { text: 'Draft retained by the editor' };
+    const failed = updateChatMessage('10', data);
+    expect(failed.next().value).toEqual(select(selectors.selectChatMessageById, '10'));
+    expect(failed.next(previousMessage).value).toEqual(put(actions.updateChatMessage('10', data)));
+    expect(failed.next().value).toEqual(call(request, api.updateChatMessage, '10', data));
+    const error = { code: 'E_HTTP_TIMEOUT' };
+    expect(failed.throw(error).value).toEqual(
+      put(actions.updateChatMessage.failure('10', previousMessage, error)),
+    );
+    expect(failed.next().done).toBe(true);
+
+    const retry = updateChatMessage('10', data);
+    retry.next();
+    retry.next(previousMessage);
+    retry.next();
+    const message = { id: '10', conversationId: '20', text: data.text };
+    expect(retry.next({ item: message }).value).toEqual(
+      select(selectors.selectChatConversationById, '20'),
+    );
+    expect(retry.next({ id: '20' }).value).toEqual(put(actions.updateChatMessage.success(message)));
+    expect(retry.next().done).toBe(true);
   });
 });

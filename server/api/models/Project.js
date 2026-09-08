@@ -86,6 +86,11 @@ module.exports = {
       allowNull: true,
       columnName: 'background_gradient',
     },
+    isArchived: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'is_archived',
+    },
     isHidden: {
       type: 'boolean',
       defaultsTo: false, // TODO: implement via normalizeValues?

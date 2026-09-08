@@ -13,6 +13,7 @@ import { Popup } from '../../../../lib/custom-ui';
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import { useSteps } from '../../../../hooks';
+import { UserRoles } from '../../../../constants/Enums';
 import SelectRoleStep from './SelectRoleStep';
 import ConfirmationStep from '../../ConfirmationStep';
 import EditUserInformationStep from '../../../users/EditUserInformationStep';
@@ -39,6 +40,9 @@ const ActionsStep = React.memo(({ userId, onClose }) => {
   const activeUsersLimit = useSelector(selectors.selectActiveUsersLimit);
   const activeUsersTotal = useSelector(selectors.selectActiveUsersTotal);
   const user = useSelector(state => selectUserById(state, userId));
+  const isAdmin = useSelector(
+    state => selectors.selectCurrentUser(state).role === UserRoles.ADMIN
+  );
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -115,7 +119,7 @@ const ActionsStep = React.memo(({ userId, onClose }) => {
     openStep(StepTypes.DELETE);
   }, [openStep]);
 
-  if (step) {
+  if (step && isAdmin) {
     switch (step.type) {
       case StepTypes.EDIT_INFORMATION:
         return (
@@ -207,94 +211,111 @@ const ActionsStep = React.memo(({ userId, onClose }) => {
       </Popup.Header>
       <Popup.Content>
         {user.welcomeEmailResendForm.wasSent === true && (
-          <Message success visible content={t('common.welcomeEmailResentSuccessfully')} />
+          <Message
+            success
+            visible
+            content={t('common.welcomeEmailResentSuccessfully')}
+          />
         )}
         {(user.welcomeEmailResendForm.wasSent === false ||
           user.welcomeEmailResendForm.error) && (
-          <Message error visible content={t('common.welcomeEmailResendFailed')} />
+          <Message
+            error
+            visible
+            content={t('common.welcomeEmailResendFailed')}
+          />
         )}
         <Menu secondary vertical className={styles.menu}>
-          <Menu.Item
-            className={styles.menuItem}
-            onClick={handleEditInformationClick}
-          >
-            {t('action.editInformation', {
-              context: 'title',
-            })}
-          </Menu.Item>
-          {!user.lockedFieldNames.includes('username') && (
-            <Menu.Item
-              className={styles.menuItem}
-              onClick={handleEditUsernameClick}
-            >
-              {t('action.editUsername', {
-                context: 'title',
-              })}
-            </Menu.Item>
+          {isAdmin && (
+            <>
+              <Menu.Item
+                className={styles.menuItem}
+                onClick={handleEditInformationClick}
+              >
+                {t('action.editInformation', {
+                  context: 'title',
+                })}
+              </Menu.Item>
+              {!user.lockedFieldNames.includes('username') && (
+                <Menu.Item
+                  className={styles.menuItem}
+                  onClick={handleEditUsernameClick}
+                >
+                  {t('action.editUsername', {
+                    context: 'title',
+                  })}
+                </Menu.Item>
+              )}
+              {!user.lockedFieldNames.includes('email') && (
+                <Menu.Item
+                  className={styles.menuItem}
+                  onClick={handleEditEmailClick}
+                >
+                  {t('action.editEmail', {
+                    context: 'title',
+                  })}
+                </Menu.Item>
+              )}
+              {!user.lockedFieldNames.includes('password') && (
+                <Menu.Item
+                  className={styles.menuItem}
+                  onClick={handleEditPasswordClick}
+                >
+                  {t('action.editPassword', {
+                    context: 'title',
+                  })}
+                </Menu.Item>
+              )}
+              {!user.lockedFieldNames.includes('role') && (
+                <Menu.Item
+                  className={styles.menuItem}
+                  onClick={handleEditRoleClick}
+                >
+                  {t('action.editRole', {
+                    context: 'title',
+                  })}
+                </Menu.Item>
+              )}
+            </>
           )}
-          {!user.lockedFieldNames.includes('email') && (
+          {user.mustChangePassword &&
+            !user.isSsoUser &&
+            (isAdmin ||
+              (user.role === UserRoles.BOARD_USER && !user.isDeactivated)) && (
+              <Menu.Item
+                disabled={user.welcomeEmailResendForm.isSubmitting}
+                className={styles.menuItem}
+                onClick={handleResendWelcomeEmailClick}
+              >
+                {user.welcomeEmailResendForm.isSubmitting
+                  ? t('common.resendingWelcomeEmail')
+                  : t('action.resendWelcomeEmail', {
+                      context: 'title',
+                    })}
+              </Menu.Item>
+            )}
+          {isAdmin && (
             <Menu.Item
+              disabled={
+                user.isDeactivated &&
+                activeUsersLimit !== null &&
+                activeUsersTotal >= activeUsersLimit
+              }
               className={styles.menuItem}
-              onClick={handleEditEmailClick}
+              onClick={
+                user.isDeactivated ? handleActivateClick : handleDeactivateClick
+              }
             >
-              {t('action.editEmail', {
-                context: 'title',
-              })}
-            </Menu.Item>
-          )}
-          {!user.lockedFieldNames.includes('password') && (
-            <Menu.Item
-              className={styles.menuItem}
-              onClick={handleEditPasswordClick}
-            >
-              {t('action.editPassword', {
-                context: 'title',
-              })}
-            </Menu.Item>
-          )}
-          {!user.lockedFieldNames.includes('role') && (
-            <Menu.Item
-              className={styles.menuItem}
-              onClick={handleEditRoleClick}
-            >
-              {t('action.editRole', {
-                context: 'title',
-              })}
-            </Menu.Item>
-          )}
-          {user.mustChangePassword && !user.isSsoUser && (
-            <Menu.Item
-              disabled={user.welcomeEmailResendForm.isSubmitting}
-              className={styles.menuItem}
-              onClick={handleResendWelcomeEmailClick}
-            >
-              {user.welcomeEmailResendForm.isSubmitting
-                ? t('common.resendingWelcomeEmail')
-                : t('action.resendWelcomeEmail', {
+              {user.isDeactivated
+                ? t('action.activateUser', {
+                    context: 'title',
+                  })
+                : t('action.deactivateUser', {
                     context: 'title',
                   })}
             </Menu.Item>
           )}
-          <Menu.Item
-            disabled={
-              user.isDeactivated &&
-              activeUsersLimit !== null &&
-              activeUsersTotal >= activeUsersLimit
-            }
-            className={styles.menuItem}
-            onClick={
-              user.isDeactivated ? handleActivateClick : handleDeactivateClick
-            }
-          >
-            {user.isDeactivated
-              ? t('action.activateUser', {
-                  context: 'title',
-                })
-              : t('action.deactivateUser', {
-                  context: 'title',
-                })}
-          </Menu.Item>
-          {user.isDeactivated && !user.isDefaultAdmin && (
+          {isAdmin && user.isDeactivated && !user.isDefaultAdmin && (
             <Menu.Item className={styles.menuItem} onClick={handleDeleteClick}>
               {t('action.deleteUser', {
                 context: 'title',

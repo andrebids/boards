@@ -12,6 +12,7 @@
 
 const Roles = {
   ADMIN: 'admin',
+  USER_MANAGER: 'userManager',
   PROJECT_OWNER: 'projectOwner',
   BOARD_USER: 'boardUser',
 };

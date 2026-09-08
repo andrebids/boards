@@ -11,26 +11,22 @@
 
   .section + .section {
     border-top: 1px solid var(--project-settings-border);
-    margin-top: 16px;
-    padding-top: 16px;
+    margin-top: 20px;
+    padding-top: 20px;
   }
 
   .sectionTitle {
     color: var(--project-settings-text);
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.4;
     margin: 0 0 8px;
   }
 
   .settingRow {
     align-items: center;
-    background: var(--project-settings-surface);
-    border: 1px solid var(--project-settings-border);
-    border-radius: 10px;
     display: flex;
-    min-height: 44px;
-    padding: 10px 14px;
+    min-height: 36px;
   }
 
   .radio {
@@ -38,49 +34,58 @@
     width: 100%;
 
     &:global(.ui.toggle.checkbox) {
-      min-height: 20px;
+      min-height: 36px;
     }
 
     &:global(.ui.toggle.checkbox) input {
-      height: 20px;
-      width: 36px;
+      height: 36px;
+      left: auto;
+      right: 0;
+      width: 44px;
     }
 
     &:global(.ui.toggle.checkbox) label {
       color: var(--project-settings-text) !important;
       font-size: 14px;
-      line-height: 20px;
-      min-height: 20px;
-      padding: 0 0 0 50px;
+      font-weight: 400;
+      line-height: 24px;
+      min-height: 36px;
+      padding: 6px 60px 6px 0;
     }
 
     &:global(.ui.toggle.checkbox) label::before {
-      background: var(--project-settings-field-hover);
-      border: 1px solid var(--project-settings-border-strong);
-      height: 20px;
-      width: 36px;
+      background: var(--app-default);
+      border: 0;
+      height: 24px;
+      left: auto;
+      right: 0;
+      top: 6px;
+      width: 44px;
     }
 
     &:global(.ui.toggle.checkbox) label::after {
-      background: var(--project-settings-text);
-      box-shadow: 0 1px 3px rgba(3, 5, 10, 0.4);
-      height: 16px;
-      left: 2px;
-      top: 2px;
-      width: 16px;
+      background: var(--app-accent-foreground);
+      box-shadow: 0 1px 3px rgba(3, 5, 10, 0.2);
+      height: 20px;
+      left: auto;
+      right: 22px;
+      top: 8px;
+      transition: right 150ms ease;
+      width: 20px;
     }
 
     &:global(.ui.toggle.checkbox) input:checked ~ label::before {
-      background: var(--project-settings-accent) !important;
-      border-color: var(--project-settings-accent);
+      background: var(--app-accent) !important;
     }
 
     &:global(.ui.toggle.checkbox) input:checked ~ label::after {
-      left: 18px;
+      left: auto;
+      right: 2px;
     }
 
     &:global(.ui.toggle.checkbox) input:focus-visible ~ label::before {
-      box-shadow: 0 0 0 3px rgba(95, 126, 232, 0.28);
+      outline: 2px solid var(--app-focus);
+      outline-offset: 2px;
     }
   }
 
@@ -94,44 +99,44 @@
 
     :global(.field > label) {
       color: var(--project-settings-text);
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 1.4;
-      margin: 0 0 5px;
+      display: block;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.5;
+      margin: 0 0 8px;
     }
 
     :global(.ui.selection.dropdown) {
       align-items: center;
       background: var(--project-settings-field);
-      border: 1px solid var(--project-settings-border-strong);
-      border-radius: 9px;
+      border: 1px solid transparent;
+      border-radius: 12px;
       box-shadow: none;
       color: var(--project-settings-text);
       display: flex;
       font-size: 14px;
-      min-height: 40px;
-      padding: 9px 42px 9px 13px;
-      transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+      min-height: 44px;
+      padding: 10px 40px 10px 12px;
+      transition:
+        background-color 150ms ease,
+        border-color 150ms ease;
     }
 
     :global(.ui.selection.dropdown:hover) {
       background: var(--project-settings-field-hover);
-      border-color: rgba(255, 255, 255, 0.24);
     }
 
     :global(.ui.selection.dropdown:focus),
     :global(.ui.selection.dropdown.active) {
-      background: var(--project-settings-field);
-      border-color: var(--project-settings-accent);
-      box-shadow: 0 0 0 3px rgba(95, 126, 232, 0.22);
+      border-color: var(--app-focus);
       z-index: var(--project-settings-layer-dropdown);
     }
 
     :global(.ui.selection.dropdown > .text),
     :global(.ui.selection.visible.dropdown > .text:not(.default)) {
       color: var(--project-settings-text);
-      font-weight: 500;
-      line-height: 1.35;
+      font-weight: 400;
+      line-height: 1.5;
     }
 
     :global(.ui.selection.dropdown > .dropdown.icon) {
@@ -141,11 +146,12 @@
 
     :global(.ui.selection.dropdown .menu) {
       background: var(--project-settings-surface-raised);
-      border: 1px solid var(--project-settings-border-strong);
-      border-radius: 9px;
-      box-shadow: 0 14px 32px rgba(3, 5, 10, 0.42);
+      border: 1px solid var(--project-settings-border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(3, 5, 10, 0.24);
       margin-top: 6px;
       overflow: hidden auto;
+      padding: 4px;
       z-index: var(--project-settings-layer-dropdown);
     }
 
@@ -156,105 +162,42 @@
 
     :global(.ui.selection.dropdown .menu > .item) {
       background: transparent;
-      border-top: 1px solid var(--project-settings-border);
+      border: 0;
+      border-radius: 8px;
       color: var(--project-settings-text);
       font-size: 14px;
-      line-height: 1.4;
-      padding: 11px 13px !important;
-    }
-
-    :global(.ui.selection.dropdown .menu > .item:first-child) {
-      border-top: 0;
+      line-height: 1.5;
+      padding: 10px 12px !important;
     }
 
     :global(.ui.selection.dropdown .menu > .item:hover),
-    :global(.ui.selection.dropdown .menu > .selected.item) {
+    :global(.ui.selection.dropdown .menu > .selected.item),
+    :global(.ui.selection.dropdown .menu > .active.item) {
       background: var(--project-settings-field-hover);
       color: var(--project-settings-text);
-    }
-
-    :global(.ui.selection.dropdown .menu > .active.item) {
-      background: rgba(95, 126, 232, 0.18);
-      color: var(--project-settings-text);
-      font-weight: 600;
+      font-weight: 500;
     }
   }
 
-  .hint,
-  .dangerHint {
+  .hint {
     color: var(--project-settings-muted);
     font-size: 13px;
-    line-height: 1.4;
-    margin: 5px 0 0;
-    max-width: 64ch;
+    line-height: 1.5;
+    margin: 4px 0 0;
   }
 
   .retryButton:global(.ui.button) {
-    margin-top: 10px;
-  }
-
-  .dangerSection {
-    background: var(--project-settings-danger-background);
-    border: 1px solid var(--project-settings-danger-border);
-    border-radius: 10px;
-    padding: 16px;
-
-    .sectionTitle {
-      color: #f5d7da;
-      margin-bottom: 12px;
-    }
+    margin-top: 12px;
   }
 
   .action {
-    display: inline-flex;
-  }
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
 
-  .actionButton:global(.ui.button) {
-    background: rgba(240, 138, 148, 0.12);
-    border: 1px solid rgba(240, 138, 148, 0.38);
-    border-radius: 8px;
-    box-shadow: none;
-    color: #f5c2c7;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1;
-    margin: 0;
-    min-height: 40px;
-    padding: 12px 16px;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease,
-      transform 100ms ease;
-  }
-
-  .actionButton:global(.ui.button:hover:not(:disabled)) {
-    background: rgba(240, 138, 148, 0.2);
-    border-color: rgba(240, 138, 148, 0.58);
-    color: #ffe8ea;
-  }
-
-  .actionButton:global(.ui.button:focus-visible) {
-    box-shadow: 0 0 0 3px rgba(240, 138, 148, 0.2);
-    outline: none;
-  }
-
-  .actionButton:global(.ui.button:active:not(:disabled)) {
-    transform: scale(0.98);
-  }
-
-  .actionButton:global(.ui.button:disabled) {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: var(--project-settings-border);
-    color: var(--project-settings-muted);
-    opacity: 0.6 !important;
-  }
-
-  @media only screen and (width < 768px) {
-    .section + .section {
-      margin-top: 14px;
-      padding-top: 14px;
-    }
-
-    .settingRow {
-      padding: 10px 13px;
+    > :global(.ui.button) {
+      margin: 0;
     }
   }
 }

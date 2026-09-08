@@ -19,7 +19,10 @@ module.exports = {
   async fn() {
     const { currentUser } = this.req;
 
-    if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
+    if (
+      !sails.helpers.users.isAdminOrProjectOwner(currentUser) &&
+      !sails.helpers.users.canManageUsers(currentUser)
+    ) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 

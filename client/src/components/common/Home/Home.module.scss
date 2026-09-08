@@ -4,6 +4,20 @@
  */
 
 :global(#app) {
+  .archiveLink {
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    color: #c0c6cf;
+    cursor: pointer;
+    font: inherit;
+    margin: 24px 0;
+    min-height: 44px;
+    padding: 8px 0;
+
+    &:hover { color: #fff; text-decoration: underline; }
+    &:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  }
   .wrapper {
     height: 100%;
     margin-left: auto !important;

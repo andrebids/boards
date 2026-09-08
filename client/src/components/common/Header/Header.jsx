@@ -13,6 +13,7 @@ import { Button } from '../../../lib/custom-ui';
 import { usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
+import RestoreProjectButton from '../../projects/RestoreProjectButton';
 import entryActions from '../../../entry-actions';
 import { selectIsSidebarExpanded } from '../../../selectors/sidebarSelectors';
 import Paths from '../../../constants/Paths';
@@ -201,6 +202,12 @@ const Header = React.memo(() => {
             </Menu.Item>
             <Menu.Item className={classNames(styles.item, styles.title)}>
               {project.name}
+              {project.isArchived && (
+                <span className={styles.archiveStatus} title={t('common.projectIsArchived')}>
+                  <span role="status">{t('common.archivedProjectBadge')}</span>
+                  <RestoreProjectButton id={project.id} compact />
+                </span>
+              )}
               {canEditProject && (
                 <Button
                   variant="secondary"

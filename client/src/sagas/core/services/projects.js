@@ -4,7 +4,9 @@
  */
 
 import omit from 'lodash/omit';
+import toast from 'react-hot-toast';
 import { call, put, select } from 'redux-saga/effects';
+import i18n from '../../../i18n';
 
 import { goToProject, goToRoot } from './router';
 import request from '../request';
@@ -14,6 +16,39 @@ import actions from '../../../actions';
 import api from '../../../api';
 import mergeRecords from '../../../utils/merge-records';
 import { UserRoles } from '../../../constants/Enums';
+
+export function* setProjectArchived(id, isArchived) {
+  const current = yield select(selectors.selectProjectById, id);
+  if (!current || current.isArchiveSubmitting || current.isArchived === isArchived) {
+    return;
+  }
+
+  yield put(actions.updateProject(id, { isArchiveSubmitting: true }));
+  let project;
+  try {
+    ({ item: project } = yield call(request, api.updateProject, id, { isArchived }));
+  } catch {
+    // The persisted archive state was never changed optimistically.
+    const remaining = yield select(selectors.selectProjectById, id);
+    if (remaining) {
+      yield put(actions.updateProject(id, { isArchiveSubmitting: false }));
+    }
+    yield call(toast.error, i18n.t('common.projectArchiveFailed'));
+    return;
+  }
+
+  yield put(actions.updateProject.success({ ...project, isArchiveSubmitting: false }));
+  let message = 'common.projectRestoredSuccess';
+  if (isArchived) message = 'common.projectArchivedSuccess';
+  else if (project.isHidden) message = 'common.projectRestoredHidden';
+  yield call(toast.success, i18n.t(message));
+
+  const { projectId } = yield select(selectors.selectPath);
+  if (isArchived && projectId === id) {
+    yield put(actions.closeModal());
+    yield call(goToRoot);
+  }
+}
 
 export function* searchProjects(value) {
   yield put(actions.searchProjects(value));
@@ -96,17 +131,15 @@ export function* handleProjectCreate({ id }) {
       boards,
       boardMemberships,
       customFields,
-      notificationServices
-    )
+      notificationServices,
+    ),
   );
 }
 
 export function* updateProject(id, data) {
   yield put(actions.updateProject(id, data));
 
-  const isAvailableForCurrentUser = yield select(
-    selectors.isCurrentModalAvailableForCurrentUser
-  );
+  const isAvailableForCurrentUser = yield select(selectors.isCurrentModalAvailableForCurrentUser);
 
   if (!isAvailableForCurrentUser) {
     yield put(actions.closeModal());
@@ -133,15 +166,14 @@ export function* handleProjectUpdate(project) {
   const prevProject = yield select(selectors.selectProjectById, project.id);
 
   const isChangedToShared =
-    (!prevProject || !!prevProject.ownerProjectManagerId) &&
-    !project.ownerProjectManagerId;
+    (!prevProject || !!prevProject.ownerProjectManagerId) && !project.ownerProjectManagerId;
 
   const currentUser = yield select(selectors.selectCurrentUser);
   const isCurrentUserAdmin = currentUser.role === UserRoles.ADMIN;
 
   const isExternalAccessibleForCurrentUser = yield select(
     selectors.selectIsProjectWithIdExternalAccessibleForCurrentUser,
-    project.id
+    project.id,
   );
 
   let board;
@@ -168,11 +200,7 @@ export function* handleProjectUpdate(project) {
   let notificationsToDelete;
   let notificationServices;
 
-  if (
-    isCurrentUserAdmin &&
-    isChangedToShared &&
-    !isExternalAccessibleForCurrentUser
-  ) {
+  if (isCurrentUserAdmin && isChangedToShared && !isExternalAccessibleForCurrentUser) {
     const { boardId } = yield select(selectors.selectPath);
 
     try {
@@ -220,23 +248,17 @@ export function* handleProjectUpdate(project) {
         } = body);
 
         if (body.card) {
-          notificationsToDelete = yield select(
-            selectors.selectNotificationsByCardId,
-            body.card.id
-          );
+          notificationsToDelete = yield select(selectors.selectNotificationsByCardId, body.card.id);
         }
       }
     }
   }
 
-  const boardIds = yield select(
-    selectors.selectBoardIdsByProjectId,
-    project.id
-  );
+  const boardIds = yield select(selectors.selectBoardIdsByProjectId, project.id);
 
   const isAvailable = yield select(
     selectors.selectIsProjectWithIdAvailableForCurrentUser,
-    project.id
+    project.id,
   );
 
   yield put(
@@ -263,13 +285,11 @@ export function* handleProjectUpdate(project) {
       mergeRecords(customFields1, customFields2),
       customFieldValues,
       notificationsToDelete,
-      notificationServices
-    )
+      notificationServices,
+    ),
   );
 
-  const isAvailableForCurrentUser = yield select(
-    selectors.isCurrentModalAvailableForCurrentUser
-  );
+  const isAvailableForCurrentUser = yield select(selectors.isCurrentModalAvailableForCurrentUser);
 
   if (!isAvailableForCurrentUser) {
     yield put(actions.closeModal());
@@ -313,6 +333,7 @@ export function* handleProjectDelete(project) {
 }
 
 export default {
+  setProjectArchived,
   searchProjects,
   updateProjectsOrder,
   toggleHiddenProjects,

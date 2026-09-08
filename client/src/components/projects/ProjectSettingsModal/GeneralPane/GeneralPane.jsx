@@ -7,13 +7,14 @@ import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { Checkbox, Form, Radio, Tab } from 'semantic-ui-react';
+import { Checkbox, Form, Tab } from 'semantic-ui-react';
 import { Button } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import { usePopupInClosableContext } from '../../../../hooks';
 import EditInformation from './EditInformation';
+import ArchiveSection from './ArchiveSection';
 import ConfirmationStep from '../../../common/ConfirmationStep';
 import { useGantt } from '../../../gantt';
 
@@ -109,8 +110,9 @@ const GeneralPane = React.memo(() => {
           })}
         </h3>
         <div className={styles.settingRow}>
-          <Radio
+          <Checkbox
             toggle
+            id="project-settings-hidden"
             name="isHidden"
             checked={project.isHidden}
             label={t('common.hideFromProjectListAndFavorites')}
@@ -127,8 +129,9 @@ const GeneralPane = React.memo(() => {
             })}
           </h3>
           <div className={styles.settingRow}>
-            <Radio
+            <Checkbox
               toggle
+              id="project-settings-auto-add-members"
               name="autoAddBoardMembersToCards"
               checked={project.autoAddBoardMembersToCards}
               label={t('common.autoAddBoardMembersToCards')}
@@ -146,6 +149,7 @@ const GeneralPane = React.memo(() => {
             <Form.Select
               fluid
               upward
+              aria-label={t('common.projectChatAccess')}
               label={t('common.projectChatAccess')}
               value={project.chatMode || 'allProjectMembers'}
               options={[
@@ -177,6 +181,7 @@ const GeneralPane = React.memo(() => {
           <div className={styles.settingRow}>
             <Checkbox
               toggle
+              id="project-settings-gantt"
               label={t('common.ganttAvailability')}
               checked={Boolean(ganttPlan?.isEnabled)}
               className={styles.radio}
@@ -194,13 +199,17 @@ const GeneralPane = React.memo(() => {
           )}
         </section>
       )}
+      <ArchiveSection />
       {canEdit && (
-        <section className={`${styles.section} ${styles.dangerSection}`}>
+        <section className={styles.section}>
           <h3 className={styles.sectionTitle}>
             {t('common.dangerZone', {
               context: 'title',
             })}
           </h3>
+          {hasBoards && (
+            <p className={styles.hint}>{t('common.deleteAllBoardsToBeAbleToDeleteThisProject')}</p>
+          )}
           <div className={styles.action}>
             <ConfirmationPopup
               title="common.deleteProject"
@@ -208,18 +217,13 @@ const GeneralPane = React.memo(() => {
               buttonContent="action.deleteProject"
               onConfirm={handleDeleteConfirm}
             >
-              <Button variant="secondary" disabled={hasBoards} className={styles.actionButton}>
+              <Button variant="danger-soft" size="sm" disabled={hasBoards}>
                 {t('action.deleteProject', {
                   context: 'title',
                 })}
               </Button>
             </ConfirmationPopup>
           </div>
-          {hasBoards && (
-            <p className={styles.dangerHint}>
-              {t('common.deleteAllBoardsToBeAbleToDeleteThisProject')}
-            </p>
-          )}
         </section>
       )}
     </Tab.Pane>

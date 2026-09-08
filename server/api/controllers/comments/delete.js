@@ -54,14 +54,14 @@ module.exports = {
       }
 
       if (boardMembership.role !== BoardMembership.Roles.EDITOR) {
-        if (comment.userId !== currentUser.id) {
-          throw Errors.NOT_ENOUGH_RIGHTS;
-        }
-
         if (!boardMembership.canComment) {
           throw Errors.NOT_ENOUGH_RIGHTS;
         }
       }
+    }
+
+    if (comment.userId !== currentUser.id) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     comment = await sails.helpers.comments.deleteOne.with({

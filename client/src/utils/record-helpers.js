@@ -6,7 +6,13 @@
 import { ListTypes, UserRoles } from '../constants/Enums';
 
 export const isUserAdminOrProjectOwner = user =>
-  [UserRoles.ADMIN, UserRoles.PROJECT_OWNER].includes(user.role);
+  [UserRoles.ADMIN, UserRoles.USER_MANAGER, UserRoles.PROJECT_OWNER].includes(user.role);
+
+export const canUserManageUsers = user =>
+  [UserRoles.ADMIN, UserRoles.USER_MANAGER].includes(user.role);
+
+export const canUserListUsers = user =>
+  isUserAdminOrProjectOwner(user) || canUserManageUsers(user);
 
 export const isListArchiveOrTrash = list =>
   [ListTypes.ARCHIVE, ListTypes.TRASH].includes(list.type);

@@ -31,9 +31,9 @@ module.exports = {
 
     if (inputs.user) {
       const isForCurrentUser = inputs.record.id === inputs.user.id;
-      const isForAdmin = inputs.user.role === User.Roles.ADMIN;
+      const canManageUsers = sails.helpers.users.canManageUsers(inputs.user);
 
-      if (isForCurrentUser || isForAdmin) {
+      if (isForCurrentUser || canManageUsers) {
         const isDefaultAdmin = inputs.record.email === sails.config.custom.defaultAdminEmail;
 
         const lockedFieldNames = [];

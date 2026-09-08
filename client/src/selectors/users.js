@@ -13,7 +13,7 @@ import {
   selectProjectsSearch,
 } from './core';
 import { isLocalId } from '../utils/local-id';
-import { isUserAdminOrProjectOwner } from '../utils/record-helpers';
+import { canUserListUsers } from '../utils/record-helpers';
 import { STATIC_USER_BY_ID } from '../constants/StaticUsers';
 import {
   BoardMembershipRoles,
@@ -74,7 +74,7 @@ export const selectActiveAdminOrProjectOwnerUsers = createSelector(
   orm,
   ({ User }) =>
     User.getActiveQuerySet()
-      .filter(user => isUserAdminOrProjectOwner(user))
+      .filter(user => canUserListUsers(user))
       .toRefArray()
 );
 
@@ -113,6 +113,25 @@ export const selectProjectIdsForCurrentUser = createSelector(
     return userModel
       .getProjectsModelArray()
       .map(projectModel => projectModel.id);
+  }
+);
+
+export const selectArchivedProjectsForCurrentUser = createSelector(
+  orm,
+  state => selectCurrentUserId(state),
+  ({ User }, id) => {
+    const user = id && User.withId(id);
+    if (!user) return [];
+    const { managerProjectModels, membershipProjectModels, adminProjectModels } =
+      user.getSeparatedProjectsModelArray();
+    return [
+      ...managerProjectModels.map(project => ({
+        ...project.ref,
+        group: project.ownerProjectManagerId ? 'common.myOwn' : 'common.team',
+      })),
+      ...membershipProjectModels.map(project => ({ ...project.ref, group: 'common.sharedWithMe' })),
+      ...adminProjectModels.map(project => ({ ...project.ref, group: 'common.others' })),
+    ].filter(project => project.isArchived).sort((a, b) => a.name.localeCompare(b.name));
   }
 );
 
@@ -347,6 +366,7 @@ export const selectIsFavoritesActiveForCurrentUser = createSelector(
 );
 
 export default {
+  selectArchivedProjectsForCurrentUser,
   makeSelectUserById,
   selectUserById,
   selectCurrentUserId,

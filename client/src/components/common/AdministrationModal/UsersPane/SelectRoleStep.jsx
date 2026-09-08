@@ -16,6 +16,7 @@ import styles from './SelectRoleStep.module.scss';
 
 const DESCRIPTION_BY_ROLE = {
   [UserRoles.ADMIN]: 'common.canManageSystemWideSettingsAndActAsProjectOwner',
+  [UserRoles.USER_MANAGER]: 'common.canCreateUsersAndOwnProjects',
   [UserRoles.PROJECT_OWNER]:
     'common.canCreateOwnProjectsAndBeInvitedToWorkInOthers',
   [UserRoles.BOARD_USER]: 'common.canBeInvitedToWorkInBoards',
@@ -69,13 +70,17 @@ const SelectRoleStep = React.memo(
             <Menu secondary vertical className={styles.menu}>
               {[
                 UserRoles.ADMIN,
+                UserRoles.USER_MANAGER,
                 UserRoles.PROJECT_OWNER,
                 UserRoles.BOARD_USER,
               ].map(role => (
                 <Menu.Item
+                  as="button"
+                  type="button"
                   key={role}
                   value={role}
                   active={role === value}
+                  aria-pressed={role === value}
                   className={styles.menuItem}
                   onClick={handleSelectClick}
                 >

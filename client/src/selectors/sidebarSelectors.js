@@ -41,7 +41,9 @@ export const selectSidebarProjects = createOrmSelector(
     }
 
     // Obter projetos do utilizador (limitado para performance)
-    const projectModels = userModel.getProjectsModelArray();
+    const projectModels = userModel.getProjectsModelArray().filter(
+      project => !project.isHidden && !project.isArchived
+    );
 
     // Obter notificações não lidas do utilizador (limitado para performance)
     const unreadNotifications = userModel

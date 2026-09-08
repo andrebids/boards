@@ -14,6 +14,7 @@ import { Button } from '../../../../lib/custom-ui';
 import selectors from '../../../../selectors';
 import { usePopupInClosableContext } from '../../../../hooks';
 import { UserRoleIcons } from '../../../../constants/Icons';
+import { UserRoles } from '../../../../constants/Enums';
 import ActionsStep from './ActionsStep';
 import UserAvatar from '../../../users/UserAvatar';
 
@@ -23,6 +24,14 @@ const Item = React.memo(({ id }) => {
   const selectUserById = useMemo(() => selectors.makeSelectUserById(), []);
 
   const user = useSelector(state => selectUserById(state, id));
+  const isAdmin = useSelector(
+    state => selectors.selectCurrentUser(state).role === UserRoles.ADMIN
+  );
+  const canResendWelcomeEmail =
+    user.role === UserRoles.BOARD_USER &&
+    user.mustChangePassword &&
+    !user.isSsoUser &&
+    !user.isDeactivated;
 
   const [t] = useTranslation();
 
@@ -43,11 +52,18 @@ const Item = React.memo(({ id }) => {
         {t(`common.${user.role}`)}
       </Table.Cell>
       <Table.Cell textAlign="right">
-        <ActionsPopup userId={id}>
-          <Button variant="secondary" className={styles.button}>
-            <Icon fitted name="pencil" />
-          </Button>
-        </ActionsPopup>
+        {(isAdmin || canResendWelcomeEmail) && (
+          <ActionsPopup userId={id}>
+            <Button
+              variant="secondary"
+              isIconOnly
+              className={styles.button}
+              aria-label={t('common.userActions', { context: 'title' })}
+            >
+              <Icon fitted name="pencil" />
+            </Button>
+          </ActionsPopup>
+        )}
       </Table.Cell>
     </Table.Row>
   );

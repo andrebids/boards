@@ -22,6 +22,7 @@ const ConfirmationStep = React.memo(
     content,
     contentValues,
     buttonContent,
+    isPending,
     variant,
     typeValue,
     typeContent,
@@ -70,6 +71,7 @@ const ConfirmationStep = React.memo(
           </>
         }
         initialFocusRef={typeValue ? nameFieldRef : undefined}
+        isPending={isPending}
         open
         title={t(title, {
           context: 'title',
@@ -103,6 +105,7 @@ ConfirmationStep.propTypes = {
     PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool]),
   ),
   buttonContent: PropTypes.string.isRequired,
+  isPending: PropTypes.bool,
   typeValue: PropTypes.string,
   typeContent: PropTypes.string,
   onConfirm: PropTypes.func.isRequired,
@@ -112,6 +115,7 @@ ConfirmationStep.propTypes = {
 };
 
 ConfirmationStep.defaultProps = {
+  isPending: false,
   contentValues: undefined,
   typeValue: undefined,
   typeContent: undefined,

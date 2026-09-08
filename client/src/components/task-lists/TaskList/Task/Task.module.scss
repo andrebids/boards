@@ -206,9 +206,7 @@
 
     &:focus-within {
       label:before {
-        box-shadow:
-          0 0 0 2px var(--card-modal-background, #111827),
-          0 0 0 4px var(--card-modal-accent, #2563eb) !important;
+        box-shadow: 0 0 0 2px var(--card-modal-accent, #2563eb) !important;
       }
     }
 
@@ -325,7 +323,7 @@
 
     &:hover,
     &:focus-within {
-      :global(.ui.checkbox).checkbox input:not(:checked) ~ label:before {
+      :global(.ui.checkbox).checkbox input:not(:checked):not(:focus) ~ label:before {
         background: var(--card-modal-surface, #fff) !important;
         border: 1px solid color-mix(in oklab, var(--card-modal-muted, #8a94a3) 45%, transparent) !important;
       }

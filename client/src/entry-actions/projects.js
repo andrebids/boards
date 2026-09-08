@@ -5,6 +5,11 @@
 
 import EntryActionTypes from '../constants/EntryActionTypes';
 
+const setProjectArchived = (id, isArchived) => ({
+  type: EntryActionTypes.PROJECT_ARCHIVE_UPDATE,
+  payload: { id, isArchived },
+});
+
 const searchProjects = value => ({
   type: EntryActionTypes.PROJECTS_SEARCH,
   payload: {
@@ -75,6 +80,7 @@ const handleProjectDelete = project => ({
 });
 
 export default {
+  setProjectArchived,
   searchProjects,
   updateProjectsOrder,
   toggleHiddenProjects,

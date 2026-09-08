@@ -34,6 +34,8 @@ export default class extends BaseModel {
     localId: attr(),
     text: attr(),
     editedAt: attr(),
+    isUpdating: attr({ getDefault: () => false }),
+    editError: attr(),
     deletedAt: attr(),
     createdAt: attr({ getDefault: () => new Date() }),
     updatedAt: attr(),
@@ -79,7 +81,9 @@ export default class extends BaseModel {
         break;
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE:
-        ChatMessage.filter({ conversationId: payload.historyState.conversationId })
+        ChatMessage.filter({
+          conversationId: payload.historyState.conversationId,
+        })
           .toModelArray()
           .filter(
             ({ id, isPending, isFailed }) =>
@@ -117,7 +121,11 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_MESSAGE_CREATE__FAILURE: {
         const messageModel = ChatMessage.withId(payload.localId);
         if (messageModel) {
-          messageModel.update({ isPending: false, isFailed: true, error: payload.error });
+          messageModel.update({
+            isPending: false,
+            isFailed: true,
+            error: payload.error,
+          });
         }
         break;
       }
@@ -151,7 +159,11 @@ export default class extends BaseModel {
           messageModel.update({
             pendingFiles: (messageModel.pendingFiles || []).map((pendingFile) =>
               pendingFile.clientAttachmentId === payload.clientAttachmentId
-                ? { ...pendingFile, status: payload.status, error: payload.error }
+                ? {
+                    ...pendingFile,
+                    status: payload.status,
+                    error: payload.error,
+                  }
                 : pendingFile,
             ),
           });
@@ -174,29 +186,43 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_MESSAGE_RETRY: {
         const messageModel = ChatMessage.withId(payload.localId);
         if (messageModel) {
-          messageModel.update({ isPending: true, isFailed: false, error: null });
+          messageModel.update({
+            isPending: true,
+            isFailed: false,
+            error: null,
+          });
         }
         break;
       }
       case ActionTypes.CHAT_MESSAGE_CREATE_HANDLE:
-      case ActionTypes.CHAT_MESSAGE_UPDATE__SUCCESS:
       case ActionTypes.CHAT_MESSAGE_UPDATE_HANDLE:
       case ActionTypes.CHAT_MESSAGE_DELETE__SUCCESS:
       case ActionTypes.CHAT_MESSAGE_DELETE_HANDLE:
         removeMatchingOptimisticMessage(ChatMessage, payload.message);
-        ChatMessage.upsert({ ...payload.message, isPending: false, isFailed: false });
+        ChatMessage.upsert({
+          ...payload.message,
+          isPending: false,
+          isFailed: false,
+        });
+        break;
+      case ActionTypes.CHAT_MESSAGE_UPDATE__SUCCESS:
+        ChatMessage.upsert({
+          ...payload.message,
+          isUpdating: false,
+          editError: null,
+        });
         break;
       case ActionTypes.CHAT_MESSAGE_UPDATE: {
         const messageModel = ChatMessage.withId(payload.id);
         if (messageModel) {
-          messageModel.update({ ...payload.data, error: null });
+          messageModel.update({ isUpdating: true, editError: null });
         }
         break;
       }
       case ActionTypes.CHAT_MESSAGE_UPDATE__FAILURE: {
         const messageModel = ChatMessage.withId(payload.id);
         if (messageModel) {
-          messageModel.update({ ...payload.previousData, error: payload.error });
+          messageModel.update({ isUpdating: false, editError: payload.error });
         }
         break;
       }

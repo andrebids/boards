@@ -115,9 +115,7 @@ const Item = React.memo(({ id, aboveId, belowId }) => {
         comment.userId === boardMembership.userId &&
         (isEditor || boardMembership.canComment),
       canDelete:
-        isManager ||
-        isEditor ||
-        (isMember && comment.userId === boardMembership.userId && boardMembership.canComment),
+        isCurrentUser && (isManager || isEditor || (isMember && boardMembership.canComment)),
       canReact: isMember && (isEditor || boardMembership.canComment),
     };
   }, shallowEqual);

@@ -10,6 +10,9 @@ import EntryActionTypes from '../../../constants/EntryActionTypes';
 
 export default function* projectsWatchers() {
   yield all([
+    takeEvery(EntryActionTypes.PROJECT_ARCHIVE_UPDATE, ({ payload: { id, isArchived } }) =>
+      services.setProjectArchived(id, isArchived)
+    ),
     takeEvery(EntryActionTypes.PROJECTS_SEARCH, ({ payload: { value } }) =>
       services.searchProjects(value)
     ),

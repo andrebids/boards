@@ -323,40 +323,44 @@
     margin: 0 5px 3px;
   }
 
+  .editingContent {
+    width: 100%;
+  }
+
   .inlineEditor {
-    min-width: 210px;
+    min-width: min(210px, 100%);
+    width: 100%;
+    white-space: normal;
+  }
 
-    textarea {
-      background: var(--chat-background);
-      border: 1px solid var(--chat-border);
-      border-radius: var(--chat-radius-control);
-      color: inherit;
-      font: inherit;
-      min-height: 66px;
-      padding: 7px;
-      resize: vertical;
-      width: 100%;
-    }
+  .editorInput {
+    background: var(--chat-background);
+    border: 1px solid var(--chat-border);
+    border-radius: var(--chat-radius-control);
+    color: var(--chat-foreground);
 
-    > span {
-      display: flex;
-      gap: 4px;
-      justify-content: flex-end;
-      margin-top: 4px;
+    &:focus-within {
+      border-color: var(--chat-accent);
+      box-shadow: 0 0 0 2px var(--chat-focus-ring);
     }
+  }
 
-    button {
-      align-items: center;
-      background: var(--chat-default);
-      border: 0;
-      border-radius: var(--chat-radius-control);
-      color: inherit;
-      cursor: pointer;
-      display: inline-flex;
-      height: 25px;
-      justify-content: center;
-      width: 27px;
-    }
+  .editorActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  .editError {
+    background: var(--chat-background);
+    border-radius: var(--chat-radius-control);
+    color: var(--app-danger, #f87171);
+    font-size: var(--chat-font-meta);
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+    padding: 8px;
   }
 
   .groupTime {

@@ -221,3 +221,78 @@ describe('ChatMessage optimistic reconciliation', () => {
     expect(messageModel.isFailed).toBe(false);
   });
 });
+
+describe('ChatMessage editing confirmation', () => {
+  test('keeps confirmed content during save and failure, including newer socket updates', () => {
+    const record = {
+      id: '10',
+      text: 'Original',
+      attachments: [{ id: '20' }],
+      createdAt: '2020-01-01',
+    };
+    const model = {
+      withId: () => ({ update: (data) => Object.assign(record, data) }),
+      upsert: (data) => Object.assign(record, data),
+    };
+    ChatMessage.reducer(
+      {
+        type: ActionTypes.CHAT_MESSAGE_UPDATE,
+        payload: { id: '10', data: { text: 'Draft' } },
+      },
+      model,
+    );
+    expect(record).toMatchObject({
+      text: 'Original',
+      isUpdating: true,
+      editError: null,
+    });
+    ChatMessage.reducer(
+      {
+        type: ActionTypes.CHAT_MESSAGE_UPDATE_HANDLE,
+        payload: { message: { id: '10', text: 'Newer remote edit' } },
+      },
+      model,
+    );
+    expect(record.isUpdating).toBe(true);
+    const error = { message: 'Network failure' };
+    ChatMessage.reducer(
+      {
+        type: ActionTypes.CHAT_MESSAGE_UPDATE__FAILURE,
+        payload: { id: '10', previousData: { text: 'Original' }, error },
+      },
+      model,
+    );
+    expect(record).toMatchObject({
+      text: 'Newer remote edit',
+      isUpdating: false,
+      editError: error,
+      attachments: [{ id: '20' }],
+      createdAt: '2020-01-01',
+    });
+    ChatMessage.reducer(
+      {
+        type: ActionTypes.CHAT_MESSAGE_UPDATE,
+        payload: { id: '10', data: { text: 'Draft' } },
+      },
+      model,
+    );
+    expect(record.editError).toBeNull();
+    ChatMessage.reducer(
+      {
+        type: ActionTypes.CHAT_MESSAGE_UPDATE__SUCCESS,
+        payload: {
+          message: { id: '10', text: 'Draft', editedAt: '2026-09-07' },
+        },
+      },
+      model,
+    );
+    expect(record).toMatchObject({
+      text: 'Draft',
+      isUpdating: false,
+      editError: null,
+      editedAt: '2026-09-07',
+      attachments: [{ id: '20' }],
+      createdAt: '2020-01-01',
+    });
+  });
+});

@@ -70,6 +70,8 @@ export default {
       dropFilesHere: 'Déposez les fichiers ici',
       dropOrPasteFiles: 'Déposez des fichiers ici ou collez une image',
       editMessage: 'Modifier le message',
+      editMessageFailed: 'Impossible d’enregistrer. Vos modifications sont conservées ; réessayez.',
+      savingMessage: 'Enregistrement…',
       edited: 'modifié',
       emptyConversationDescription: 'Les messages de ce projet sont regroupés ici.',
       emptyConversationTitle: 'Commencez la conversation',

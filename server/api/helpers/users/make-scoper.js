@@ -27,15 +27,18 @@ class Scoper {
   async getSeparatedUserIds() {
     if (!this.separatedUserIds) {
       const users = await User.qm.getAll({
-        roleOrRoles: [User.Roles.ADMIN, User.Roles.PROJECT_OWNER],
+        roleOrRoles: [User.Roles.ADMIN, User.Roles.USER_MANAGER, User.Roles.PROJECT_OWNER],
       });
 
       const adminUserIds = [];
+      const userManagerUserIds = [];
       const projectOwnerUserIds = [];
 
       users.forEach((user) => {
         if (user.role === User.Roles.ADMIN) {
           adminUserIds.push(user.id);
+        } else if (user.role === User.Roles.USER_MANAGER) {
+          userManagerUserIds.push(user.id);
         } else {
           projectOwnerUserIds.push(user.id);
         }
@@ -43,6 +46,7 @@ class Scoper {
 
       this.separatedUserIds = {
         adminUserIds,
+        userManagerUserIds,
         projectOwnerUserIds,
       };
     }
@@ -98,9 +102,9 @@ class Scoper {
 
   async getPrivateUserRelatedUserIds() {
     if (!this.privateUserRelatedUserIds) {
-      const { adminUserIds } = await this.getSeparatedUserIds();
+      const { adminUserIds, userManagerUserIds } = await this.getSeparatedUserIds();
 
-      this.privateUserRelatedUserIds = _.union([this.user.id], adminUserIds);
+      this.privateUserRelatedUserIds = _.union([this.user.id], adminUserIds, userManagerUserIds);
     }
 
     return this.privateUserRelatedUserIds;

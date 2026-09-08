@@ -52,7 +52,7 @@ const DEFAULT_NOTIFICATION_LEVEL_UPDATE_FORM = {
 
 const filterProjectModels = (projectModels, search, isHidden) => {
   let filteredProjectModels = projectModels.filter(
-    (projectModel) => projectModel.isHidden === isHidden,
+    (projectModel) => !projectModel.isArchived && projectModel.isHidden === isHidden,
   );
 
   if (filteredProjectModels.length > 0 && search) {
@@ -518,7 +518,7 @@ export default class extends BaseModel {
     let projectModels = this.getProjectsModelArray();
 
     projectModels = projectModels.filter(
-      (projectModel) => !projectModel.isHidden && projectModel.isFavorite,
+      (projectModel) => !projectModel.isArchived && !projectModel.isHidden && projectModel.isFavorite,
     );
 
     if (orderByArgs) {

@@ -13,14 +13,18 @@ import { Button, Popup } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { UserRoles } from '../../../constants/Enums';
+import { canUserManageUsers } from '../../../utils/record-helpers';
 
 import styles from './UserStep.module.scss';
 
 const UserStep = React.memo(({ onClose }) => {
   const isLogouting = useSelector(selectors.selectIsLogouting);
 
-  const withAdministration = useSelector(
-    state => selectors.selectCurrentUser(state).role === UserRoles.ADMIN
+  const withAdministration = useSelector(state =>
+    canUserManageUsers(selectors.selectCurrentUser(state))
+  );
+  const isUserManager = useSelector(
+    state => selectors.selectCurrentUser(state).role === UserRoles.USER_MANAGER
   );
 
   const dispatch = useDispatch();
@@ -83,7 +87,7 @@ const UserStep = React.memo(({ onClose }) => {
                 className={styles.menuItem}
                 onClick={handleAdministrationClick}
               >
-                {t('common.administration', {
+                {t(isUserManager ? 'common.users' : 'common.administration', {
                   context: 'title',
                 })}
               </Menu.Item>

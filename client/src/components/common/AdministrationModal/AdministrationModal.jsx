@@ -5,11 +5,13 @@
 
 import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Modal, Tab } from 'semantic-ui-react';
 
 import entryActions from '../../../entry-actions';
+import selectors from '../../../selectors';
+import { UserRoles } from '../../../constants/Enums';
 import { useClosableModal } from '../../../hooks';
 import UsersPane from './UsersPane';
 import DefaultLabelsPane from './DefaultLabelsPane';
@@ -17,6 +19,9 @@ import DefaultLabelsPane from './DefaultLabelsPane';
 import styles from './AdministrationModal.module.scss';
 
 const AdministrationModal = React.memo(() => {
+  const isAdmin = useSelector(
+    state => selectors.selectCurrentUser(state).role === UserRoles.ADMIN
+  );
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -38,10 +43,14 @@ const AdministrationModal = React.memo(() => {
       }),
       render: () => <UsersPane />,
     },
-    {
-      menuItem: t('common.defaultLabels', 'Etiquetas Padrão'),
-      render: () => <DefaultLabelsPane />,
-    },
+    ...(isAdmin
+      ? [
+          {
+            menuItem: t('common.defaultLabels', 'Etiquetas Padrão'),
+            render: () => <DefaultLabelsPane />,
+          },
+        ]
+      : []),
   ];
 
   const isUsersPaneActive = activeTabIndex === 0;

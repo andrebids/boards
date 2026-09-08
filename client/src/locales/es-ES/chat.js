@@ -35,6 +35,8 @@ export default {
       dropFilesHere: 'Suelta los archivos aquí',
       dropOrPasteFiles: 'Suelta archivos aquí o pega una imagen',
       editMessage: 'Editar mensaje',
+      editMessageFailed: 'No se pudo guardar. Tus cambios siguen aquí; inténtalo de nuevo.',
+      savingMessage: 'Guardando…',
       edited: 'editado',
       emptyConversationDescription: 'Los mensajes de este proyecto se reúnen aquí.',
       emptyConversationTitle: 'Inicia la conversación',

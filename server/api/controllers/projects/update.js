@@ -67,6 +67,9 @@ module.exports = {
       isIn: Project.BACKGROUND_GRADIENTS,
       allowNull: true,
     },
+    isArchived: {
+      type: 'boolean',
+    },
     isHidden: {
       type: 'boolean',
     },
@@ -130,12 +133,12 @@ module.exports = {
           throw Errors.NOT_ENOUGH_RIGHTS;
         }
 
-        availableInputKeys.push('ownerProjectManagerId', 'isHidden');
+        availableInputKeys.push('ownerProjectManagerId', 'isHidden', 'isArchived');
       }
     } else if (currentUser.role === User.Roles.ADMIN) {
-      availableInputKeys.push('ownerProjectManagerId', 'isHidden');
+      availableInputKeys.push('ownerProjectManagerId', 'isHidden', 'isArchived');
     } else if (projectManager) {
-      availableInputKeys.push('isHidden');
+      availableInputKeys.push('isHidden', 'isArchived');
     }
 
     if (projectManager) {
@@ -206,6 +209,7 @@ module.exports = {
       'backgroundType',
       'backgroundGradient',
       'isHidden',
+      'isArchived',
       'chatMode',
       'autoAddBoardMembersToCards',
       'isFavorite',

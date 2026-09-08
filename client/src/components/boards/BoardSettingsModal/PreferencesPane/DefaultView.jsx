@@ -47,9 +47,12 @@ const DefaultView = React.memo(() => {
     <Menu secondary vertical className={styles.menu}>
       {[BoardViews.KANBAN].map(view => (
         <Menu.Item
+          as="button"
+          type="button"
           key={view}
           value={view}
           active={view === board.defaultView}
+          aria-pressed={view === board.defaultView}
           className={styles.menuItem}
           onClick={handleSelectClick}
         >

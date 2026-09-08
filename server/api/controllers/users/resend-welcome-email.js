@@ -34,12 +34,18 @@ module.exports = {
   async fn(inputs) {
     const { currentUser } = this.req;
 
+    if (sails.config.custom.oidcEnforced) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     let user = await User.qm.getOneById(inputs.id);
     if (!user) {
       throw Errors.USER_NOT_FOUND;
     }
 
     if (
+      (currentUser.role !== User.Roles.ADMIN &&
+        (user.role !== User.Roles.BOARD_USER || !user.mustChangePassword || user.isDeactivated)) ||
       user.isSsoUser ||
       user.email === sails.config.custom.defaultAdminEmail ||
       !User.EMAIL_LANGUAGES.includes(user.language)

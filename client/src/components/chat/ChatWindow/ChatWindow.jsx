@@ -596,6 +596,7 @@ const ChatWindow = React.memo(({ id }) => {
         initialLastReadMessageId={initialReadStateRef.current.lastReadMessageId}
         initialUnreadCount={initialReadStateRef.current.unreadCount}
         isDirect={conversation.type === 'projectDirect'}
+        isDisabled={conversation.isBlocked}
         isFetching={isMessagesFetching}
         members={members}
         messages={messages}

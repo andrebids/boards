@@ -51,7 +51,10 @@ module.exports = {
         sails.sockets.join(this.req, `user:${user.id}`);
       }
     } else {
-      if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
+      if (
+        !sails.helpers.users.isAdminOrProjectOwner(currentUser) &&
+        !sails.helpers.users.canManageUsers(currentUser)
+      ) {
         throw Errors.USER_NOT_FOUND; // Forbidden
       }
 

@@ -91,13 +91,20 @@ module.exports = {
     }
 
     if (user) {
+      const isRoleChange = user.role !== inputs.record.role;
+
+      if (isRoleChange) {
+        // Re-authenticate with the new role and discard every previous socket subscription.
+        await Session.qm.delete({ userId: user.id });
+      }
+
       if (inputs.record.avatar) {
         if (!user.avatar || user.avatar.dirname !== inputs.record.avatar.dirname) {
           sails.helpers.users.removeRelatedFiles(inputs.record);
         }
       }
 
-      if (!_.isUndefined(values.password) || isDeactivatedChangeToTrue) {
+      if (!_.isUndefined(values.password) || isDeactivatedChangeToTrue || isRoleChange) {
         sails.sockets.broadcast(
           `user:${user.id}`,
           'userDelete', // TODO: introduce separate event
@@ -109,6 +116,7 @@ module.exports = {
 
         if (
           !isDeactivatedChangeToTrue &&
+          !isRoleChange &&
           user.id === inputs.actorUser.id &&
           inputs.request &&
           inputs.request.isSocket
@@ -155,33 +163,6 @@ module.exports = {
           });
 
           if (!isOnlyEmailChange) {
-            if (inputs.record.role === User.Roles.ADMIN && user.role !== User.Roles.ADMIN) {
-              const managerProjectIds = await sails.helpers.users.getManagerProjectIds(user.id);
-
-              const sharedProjects = await Project.qm.getShared({
-                exceptIdOrIds: managerProjectIds,
-              });
-
-              const projectIds = sails.helpers.utils.mapRecords(sharedProjects);
-
-              const boards = await Board.qm.getByProjectIds(projectIds);
-              const boardIds = sails.helpers.utils.mapRecords(boards);
-
-              const boardMemberships = await BoardMembership.qm.getByBoardIdsAndUserId(
-                boardIds,
-                user.id,
-              );
-
-              const missingBoardIds = _.difference(
-                boardIds,
-                sails.helpers.utils.mapRecords(boardMemberships, 'boardId'),
-              );
-
-              missingBoardIds.forEach((boardId) => {
-                sails.sockets.removeRoomMembersFromRooms(`@user:${user.id}`, `board:${boardId}`);
-              });
-            }
-
             const publicUserRelatedUserIds = await scoper.getPublicUserRelatedUserIds();
 
             publicUserRelatedUserIds.forEach((userId) => {

@@ -69,6 +69,8 @@ export default {
       dropFilesHere: 'Drop files here',
       dropOrPasteFiles: 'Drop files here or paste an image',
       editMessage: 'Edit message',
+      editMessageFailed: 'Could not save. Your changes are still here; please try again.',
+      savingMessage: 'Saving…',
       edited: 'edited',
       emptyConversationDescription: 'Messages from this project are collected here.',
       emptyConversationTitle: 'Start the conversation',

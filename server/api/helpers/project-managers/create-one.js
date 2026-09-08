@@ -31,7 +31,10 @@ module.exports = {
       throw 'projectInValuesMustBePrivate';
     }
 
-    if (!sails.helpers.users.isAdminOrProjectOwner(values.user)) {
+    if (
+      !sails.helpers.users.isAdminOrProjectOwner(values.user) &&
+      !sails.helpers.users.canManageUsers(values.user)
+    ) {
       throw 'userInValuesMustBeAdminOrProjectOwner';
     }
 

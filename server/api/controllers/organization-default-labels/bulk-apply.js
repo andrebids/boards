@@ -73,6 +73,13 @@ module.exports = {
       throw Errors.INVALID_PROJECT_IDS;
     }
 
+    if (currentUser.role !== User.Roles.ADMIN) {
+      const managerProjectIds = await sails.helpers.users.getManagerProjectIds(currentUser.id);
+      if (projects.some((project) => !managerProjectIds.includes(project.id))) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+    }
+
     const defaultLabels = await sails.models.organizationdefaultlabel.qm.getAll();
     console.log(`🔵 [CONTROLLER] A aplicar ${defaultLabels.length} labels padrão`);
     const results = [];
@@ -121,4 +128,3 @@ module.exports = {
     };
   },
 };
-

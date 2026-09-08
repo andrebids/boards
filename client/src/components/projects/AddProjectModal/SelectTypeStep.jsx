@@ -44,9 +44,12 @@ const SelectTypeStep = React.memo(({ value, onSelect, onClose }) => {
         <Menu secondary vertical className={styles.menu}>
           {[ProjectTypes.PRIVATE, ProjectTypes.SHARED].map(type => (
             <Menu.Item
+              as="button"
+              type="button"
               key={type}
               value={type}
               active={type === value}
+              aria-pressed={type === value}
               className={styles.menuItem}
               onClick={handleSelectClick}
             >

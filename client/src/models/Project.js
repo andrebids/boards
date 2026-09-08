@@ -19,6 +19,8 @@ export default class extends BaseModel {
     backgroundType: attr(),
     backgroundGradient: attr(),
     isHidden: attr(),
+    isArchived: attr({ getDefault: () => false }),
+    isArchiveSubmitting: attr({ getDefault: () => false }),
     chatMode: attr(),
     autoAddBoardMembersToCards: attr({
       getDefault: () => false,

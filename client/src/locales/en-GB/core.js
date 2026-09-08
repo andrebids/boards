@@ -114,6 +114,8 @@ export default {
       boardNotFound_title: 'Board Not Found',
       boardSubscribed: 'Board subscribed',
       boardUser: 'Board user',
+      userManager: 'User manager',
+      canCreateUsersAndOwnProjects: 'Can create users and own projects, and be invited to work in others.',
       byCreationTime: 'By creation time',
       byDefault: 'By default',
       byDueDate: 'By due date',

@@ -12,7 +12,6 @@ import { createPortal } from 'react-dom';
 import { useDispatch } from 'react-redux';
 import LinkifyReact from 'linkify-react';
 import {
-  Check,
   CheckCheck,
   ChevronDown,
   ExternalLink,
@@ -24,7 +23,6 @@ import {
   Quote,
   SmilePlus,
   Trash2,
-  X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -42,6 +40,7 @@ import { getConversationTitle, getParticipantUserIds, isDirectConversation } fro
 import { compareIds } from '../../../utils/id-helpers';
 import { getAttachmentDeliveryErrorMessage } from './attachment-state';
 import AttachmentPreview from './AttachmentPreview';
+import MessageEditor from './MessageEditor';
 import MessageAttachments, { SendingStatus } from './MessageAttachments';
 import {
   classifyMessageAttachments,
@@ -90,6 +89,7 @@ const MessageList = React.memo(
     initialLastReadMessageId,
     initialUnreadCount,
     isDirect,
+    isDisabled,
     isFetching,
     members,
     messages,
@@ -338,7 +338,7 @@ const MessageList = React.memo(
         }
         closeMenus();
       },
-      [closeMenus, conversationId, dispatch, projectId, t],
+      [closeMenus, conversationId, dispatch, projectId],
     );
 
     const handleDeleteMessageCancel = useCallback(() => {
@@ -352,14 +352,11 @@ const MessageList = React.memo(
       setPendingDeleteMessageId(null);
     }, [dispatch, pendingDeleteMessageId]);
 
-    const saveEdit = useCallback(() => {
-      const text = editingText.trim();
-      if (editingMessageId && text) {
-        dispatch(entryActions.updateChatMessage(editingMessageId, { text }));
-      }
+    const closeEditor = useCallback(() => {
+      listRef.current?.querySelector(`[data-message-actions-id="${editingMessageId}"]`)?.focus();
       setEditingMessageId(null);
       setEditingText('');
-    }, [dispatch, editingMessageId, editingText]);
+    }, [editingMessageId]);
 
     const handleReactionClick = useCallback(
       (event) => {
@@ -496,7 +493,7 @@ const MessageList = React.memo(
 
     return (
       <div className={styles.listShell}>
-        <div ref={listRef} className={styles.list} onScroll={handleScroll}>
+        <div ref={listRef} data-chat-message-list className={styles.list} onScroll={handleScroll}>
           {messages.map((message, index) => {
             const previousMessage = messages[index - 1];
             const nextMessage = messages[index + 1];
@@ -522,33 +519,15 @@ const MessageList = React.memo(
               messageBody = <em>{t('chat.messageDeleted')}</em>;
             } else if (editingMessageId === message.id) {
               messageBody = (
-                <div className={styles.inlineEditor}>
-                  <textarea
-                    value={editingText}
-                    maxLength={10000}
-                    aria-label={t('chat.editMessage')}
-                    onChange={(event) => setEditingText(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Escape') setEditingMessageId(null);
-                      if (event.key === 'Enter' && !event.shiftKey) {
-                        event.preventDefault();
-                        saveEdit();
-                      }
-                    }}
-                  />
-                  <span>
-                    <button
-                      type="button"
-                      aria-label={t('chat.cancel')}
-                      onClick={() => setEditingMessageId(null)}
-                    >
-                      <X aria-hidden="true" size={14} strokeWidth={1.5} />
-                    </button>
-                    <button type="button" aria-label={t('chat.save')} onClick={saveEdit}>
-                      <Check aria-hidden="true" size={14} />
-                    </button>
-                  </span>
-                </div>
+                <MessageEditor
+                  key={message.id}
+                  conversationId={conversationId}
+                  message={message}
+                  text={editingText}
+                  isDisabled={isDisabled}
+                  onChange={setEditingText}
+                  onClose={closeEditor}
+                />
               );
             } else {
               messageBody = (
@@ -581,7 +560,9 @@ const MessageList = React.memo(
                     <UserAvatar id={message.userId} size="tiny" className={styles.messageAvatar} />
                   )}
                   {!isOwn && continuesNext && <span className={styles.avatarSpacer} />}
-                  <div className={styles.messageContent}>
+                  <div
+                    className={`${styles.messageContent} ${editingMessageId === message.id ? styles.editingContent : ''}`}
+                  >
                     {!continuesPrevious && (
                       <span className={styles.groupTime}>
                         {formatMessageTime(message.createdAt)}
@@ -668,6 +649,7 @@ const MessageList = React.memo(
                           <button
                             type="button"
                             aria-label={t('chat.messageActions')}
+                            data-message-actions-id={message.id}
                             aria-expanded={activeActionsMessageId === message.id}
                             onClick={() =>
                               setActiveActionsMessageId((current) =>
@@ -682,6 +664,12 @@ const MessageList = React.memo(
                               {isOwn && (
                                 <button
                                   type="button"
+                                  disabled={
+                                    isDisabled ||
+                                    message.isUpdating ||
+                                    message.isPending ||
+                                    message.isFailed
+                                  }
                                   onClick={() => handleMessageAction('edit', message)}
                                 >
                                   <Pencil aria-hidden="true" size={14} /> {t('chat.editMessage')}
@@ -904,6 +892,7 @@ MessageList.propTypes = {
   initialLastReadMessageId: PropTypes.string,
   initialUnreadCount: PropTypes.number,
   isDirect: PropTypes.bool,
+  isDisabled: PropTypes.bool,
   isFetching: PropTypes.bool,
   members: PropTypes.arrayOf(
     PropTypes.shape({
@@ -932,6 +921,7 @@ MessageList.defaultProps = {
   initialLastReadMessageId: undefined,
   initialUnreadCount: 0,
   isDirect: false,
+  isDisabled: false,
   isFetching: false,
   onReadHorizonChange: () => {},
   otherReadMessageId: undefined,
