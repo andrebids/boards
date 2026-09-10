@@ -8,9 +8,11 @@ import socket from './socket';
 
 /* Actions */
 
-const getUsers = headers => socket.get('/users', undefined, headers);
+const getUsers = (headers) => socket.get('/users', undefined, headers);
 
 const createUser = (data, headers) => socket.post('/users', data, headers);
+
+const generateUserPassword = (headers) => http.post('/users/generate-password', undefined, headers);
 
 const resendUserWelcomeEmail = (id, headers) =>
   socket.post(`/users/${id}/resend-welcome-email`, undefined, headers);
@@ -22,17 +24,11 @@ const resendUserWelcomeEmail = (id, headers) =>
   })); */
 
 const getCurrentUser = (subscribe, headers) =>
-  socket.get(
-    `/users/me${subscribe ? '?subscribe=true' : ''}`,
-    undefined,
-    headers
-  );
+  socket.get(`/users/me${subscribe ? '?subscribe=true' : ''}`, undefined, headers);
 
-const updateUser = (id, data, headers) =>
-  socket.patch(`/users/${id}`, data, headers);
+const updateUser = (id, data, headers) => socket.patch(`/users/${id}`, data, headers);
 
-const updateUserEmail = (id, data, headers) =>
-  socket.patch(`/users/${id}/email`, data, headers);
+const updateUserEmail = (id, data, headers) => socket.patch(`/users/${id}/email`, data, headers);
 
 const updateUserPassword = (id, data, headers) =>
   socket.patch(`/users/${id}/password`, data, headers);
@@ -40,15 +36,14 @@ const updateUserPassword = (id, data, headers) =>
 const updateUserUsername = (id, data, headers) =>
   socket.patch(`/users/${id}/username`, data, headers);
 
-const updateUserAvatar = (id, data, headers) =>
-  http.post(`/users/${id}/avatar`, data, headers);
+const updateUserAvatar = (id, data, headers) => http.post(`/users/${id}/avatar`, data, headers);
 
-const deleteUser = (id, headers) =>
-  socket.delete(`/users/${id}`, undefined, headers);
+const deleteUser = (id, headers) => socket.delete(`/users/${id}`, undefined, headers);
 
 export default {
   getUsers,
   createUser,
+  generateUserPassword,
   resendUserWelcomeEmail,
   // getUser,
   getCurrentUser,

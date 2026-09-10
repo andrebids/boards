@@ -3,37 +3,72 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { Check, ChevronDown, ChevronRight } from 'lucide-react';
 
-import selectors from '../../../../selectors';
 import Linkify from '../../../common/Linkify';
 
 import styles from './Task.module.scss';
 
-const Task = React.memo(({ id, isSubtask }) => {
-  const selectTaskById = useMemo(() => selectors.makeSelectTaskById(), []);
-
-  const task = useSelector((state) => selectTaskById(state, id));
+const Task = React.memo(({ task, depth, childTasks, isCollapsed, onCollapseToggle }) => {
+  const [t] = useTranslation();
+  const hasChildren = childTasks.length > 0;
+  const CollapseIcon = isCollapsed ? ChevronRight : ChevronDown;
 
   return (
     <li
-      className={classNames(
-        styles.wrapper,
-        isSubtask && styles.wrapperSubtask,
-        task.isCompleted && styles.wrapperCompleted,
-      )}
+      className={classNames(styles.wrapper, depth === 0 && styles.wrapperRoot)}
+      style={{ '--task-preview-indent': `${Math.min(depth, 4) * 14}px` }}
     >
-      <Linkify linkStopPropagation>{task.name}</Linkify>
+      {hasChildren && (
+        <button
+          type="button"
+          className={styles.collapseButton}
+          aria-expanded={!isCollapsed}
+          aria-label={`${t(isCollapsed ? 'common.expandPanel' : 'common.collapsePanel')}: ${task.name}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            onCollapseToggle(task.id);
+          }}
+        >
+          <CollapseIcon size={12} aria-hidden="true" />
+        </button>
+      )}
+      <span
+        role="checkbox"
+        aria-checked={task.isCompleted}
+        aria-readonly="true"
+        aria-label={task.name}
+        className={classNames(styles.status, task.isCompleted && styles.statusCompleted)}
+      >
+        {task.isCompleted && <Check size={11} strokeWidth={3} aria-hidden="true" />}
+      </span>
+      <span className={classNames(styles.name, task.isCompleted && styles.nameCompleted)}>
+        <Linkify linkStopPropagation>{task.name}</Linkify>
+      </span>
+      {hasChildren && (
+        <span className={styles.count}>
+          {childTasks.filter((childTask) => childTask.isCompleted).length}/{childTasks.length}
+        </span>
+      )}
     </li>
   );
 });
 
 Task.propTypes = {
-  id: PropTypes.string.isRequired,
-  isSubtask: PropTypes.bool.isRequired,
+  task: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    isCompleted: PropTypes.bool.isRequired,
+  }).isRequired,
+  depth: PropTypes.number.isRequired,
+  childTasks: PropTypes.arrayOf(PropTypes.shape({ isCompleted: PropTypes.bool.isRequired }))
+    .isRequired,
+  isCollapsed: PropTypes.bool.isRequired,
+  onCollapseToggle: PropTypes.func.isRequired,
 };
 
 export default Task;

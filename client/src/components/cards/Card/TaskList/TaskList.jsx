@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
@@ -11,21 +11,31 @@ import { Progress } from 'semantic-ui-react';
 import { useToggle } from '../../../../lib/hooks';
 
 import selectors from '../../../../selectors';
+import { buildTaskRows } from '../../../task-lists/TaskList/task-tree';
 import Task from './Task';
 
 import styles from './TaskList.module.scss';
 
 const TaskList = React.memo(({ id }) => {
   const selectTasksByTaskListId = useMemo(() => selectors.makeSelectTasksByTaskListId(), []);
-  const selectRootTasksByTaskListId = useMemo(
-    () => selectors.makeSelectRootTasksByTaskListId(),
-    [],
-  );
 
   const tasks = useSelector((state) => selectTasksByTaskListId(state, id));
-  const rootTasks = useSelector((state) => selectRootTasksByTaskListId(state, id));
 
   const [isOpened, toggleOpened] = useToggle();
+  const [collapsedTaskIds, setCollapsedTaskIds] = useState(() => new Set());
+  const taskRows = useMemo(() => buildTaskRows(tasks, collapsedTaskIds), [tasks, collapsedTaskIds]);
+
+  const handleCollapseToggle = useCallback((taskId) => {
+    setCollapsedTaskIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(taskId)) {
+        next.delete(taskId);
+      } else {
+        next.add(taskId);
+      }
+      return next;
+    });
+  }, []);
 
   const leafTasks = useMemo(
     () => tasks.filter((task) => !tasks.some((childTask) => childTask.parentTaskId === task.id)),
@@ -52,9 +62,12 @@ const TaskList = React.memo(({ id }) => {
 
   return (
     <>
-      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
-                                   jsx-a11y/no-static-element-interactions */}
-      <div className={styles.button} onClick={handleToggleClick}>
+      <button
+        type="button"
+        className={styles.button}
+        aria-expanded={isOpened}
+        onClick={handleToggleClick}
+      >
         <span className={styles.progressWrapper}>
           <Progress
             autoSuccess
@@ -70,17 +83,19 @@ const TaskList = React.memo(({ id }) => {
         >
           {completedTasksTotal}/{leafTasks.length}
         </span>
-      </div>
+      </button>
       {isOpened && (
         <ul className={styles.tasks}>
-          {rootTasks
-            .flatMap((task) => [
-              task,
-              ...tasks.filter((childTask) => childTask.parentTaskId === task.id),
-            ])
-            .map((task) => (
-              <Task key={task.id} id={task.id} isSubtask={Boolean(task.parentTaskId)} />
-            ))}
+          {taskRows.map(({ task, depth }) => (
+            <Task
+              key={task.id}
+              task={task}
+              depth={depth}
+              childTasks={tasks.filter((childTask) => childTask.parentTaskId === task.id)}
+              isCollapsed={collapsedTaskIds.has(task.id)}
+              onCollapseToggle={handleCollapseToggle}
+            />
+          ))}
         </ul>
       )}
     </>

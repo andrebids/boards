@@ -19,6 +19,7 @@ module.exports.policies = {
   '*': 'is-authenticated',
 
   'users/create': ['is-authenticated', 'can-manage-users'],
+  'users/generate-password': ['is-authenticated', 'is-admin'],
   'users/resend-welcome-email': ['is-authenticated', 'can-manage-users'],
   'users/delete': ['is-authenticated', 'is-admin'],
 

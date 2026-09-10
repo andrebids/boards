@@ -588,6 +588,11 @@ export default {
       myOwn_title: "Meus Boards",
       name: "Nome",
       newEmail: "Novo e-mail",
+      generateSecurePassword: "Gerar palavra-passe segura",
+      copyPassword: "Copiar",
+      passwordCopied: "Palavra-passe copiada",
+      passwordCopyFailed: "Não foi possível copiar. Mostra a palavra-passe e copia-a manualmente.",
+      passwordGenerationFailed: "Não foi possível gerar uma palavra-passe. Tenta novamente.",
       newPassword: "Nova palavra-passe",
       changeTemporaryPassword_title: "Alterar Password Temporária",
       changeTemporaryPasswordDescription:

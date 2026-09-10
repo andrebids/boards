@@ -107,6 +107,7 @@ module.exports.routes = {
 
   'GET /api/users': 'users/index',
   'POST /api/users': 'users/create',
+  'POST /api/users/generate-password': 'users/generate-password',
   'GET /api/users/:id': 'users/show',
   'PATCH /api/users/:id': 'users/update',
   'PATCH /api/users/:id/email': 'users/update-email',

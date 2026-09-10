@@ -319,6 +319,11 @@ export default {
       myOwn_title: "My Own",
       name: "Name",
       newEmail: "New e-mail",
+      generateSecurePassword: "Generate secure password",
+      copyPassword: "Copy",
+      passwordCopied: "Password copied",
+      passwordCopyFailed: "Could not copy. Show the password and copy it manually.",
+      passwordGenerationFailed: "Could not generate a password. Please try again.",
       newPassword: "New password",
       changeTemporaryPassword_title: "Change Temporary Password",
       changeTemporaryPasswordDescription:
