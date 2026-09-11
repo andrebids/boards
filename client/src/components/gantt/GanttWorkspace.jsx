@@ -19,12 +19,9 @@ import {
   getGanttStatusTranslationKey,
 } from '../../constants/GanttStatuses';
 import { useGantt } from './GanttContext';
-import {
-  selectGeneralItems,
-  selectItemsById,
-  selectTimelineData,
-} from './ganttSelectors';
+import { selectItemsById, selectTimelineData } from './ganttSelectors';
 import GanttTimelineAdapter from './GanttTimelineAdapter';
+import { getDescendantIds, isValidParent } from './ganttHierarchy';
 import GanttItemPanel from './GanttItemPanel';
 import GanttSourceTaskImportPanel from './GanttSourceTaskImportPanel';
 
@@ -82,7 +79,20 @@ const GanttWorkspace = React.memo(() => {
     }
   }, [items, searchParams]);
 
-  const generalItems = useMemo(() => selectGeneralItems(items), [items]);
+  const parentItems = useMemo(() => {
+    const candidate = selectedItem || { id: 'new', itemType: 'task', ganttPlanId: plan?.id };
+    const byId = selectItemsById(items);
+    return items
+      .filter((parent) => isValidParent(items, candidate, parent.id))
+      .map((parent) => ({
+        ...parent,
+        task: parent.parentId ? `${byId[parent.parentId]?.task} → ${parent.task}` : parent.task,
+      }));
+  }, [items, plan?.id, selectedItem]);
+  const canAddSubtask = Boolean(
+    selectedItem &&
+      isValidParent(items, { id: 'new', itemType: 'task', ganttPlanId: plan?.id }, selectedItem.id),
+  );
   const itemsById = useMemo(() => selectItemsById(items), [items]);
   const { timelineItems, timelineLinks, unscheduledItems } = useMemo(
     () => selectTimelineData(items, links),
@@ -164,7 +174,7 @@ const GanttWorkspace = React.memo(() => {
   const handleItemChange = useCallback(
     async (id, changes) => {
       const item = items.find((candidate) => candidate.id === id);
-      if (!item || item.itemType === 'summary') {
+      if (!item || item.itemType === 'summary' || !item.startDate) {
         return;
       }
 
@@ -351,12 +361,13 @@ const GanttWorkspace = React.memo(() => {
           <GanttItemPanel
             item={selectedItem}
             users={users}
-            generalItems={generalItems}
+            parentItems={parentItems}
+            canAddSubtask={canAddSubtask}
             predecessorIds={links
               .filter(({ targetItemId }) => targetItemId === selectedItem?.id)
               .map(({ sourceItemId }) => sourceItemId)}
             initialParentId={initialParentId || undefined}
-            childCount={items.filter(({ parentId }) => parentId === selectedItem?.id).length}
+            childCount={selectedItem ? getDescendantIds(items, selectedItem.id).length : 0}
             onSave={handleSave}
             onDelete={deleteItem}
             onAddSubtask={handleAddSubtask}

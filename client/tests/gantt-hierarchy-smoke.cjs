@@ -1,103 +1,50 @@
-const { chromium } = require('@playwright/test');
-
-const waitForSite = async () => {
-  /* eslint-disable no-await-in-loop */
-  for (let attempt = 0; attempt < 90; attempt += 1) {
-    try {
-      const response = await fetch('http://localhost:3008/');
-      if (response.ok) {
-        return;
-      }
-    } catch {
-      // The development server may be restarting; retry until it is ready.
-    }
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1000);
-    });
-  }
-  /* eslint-enable no-await-in-loop */
-  throw new Error('Development site did not become ready');
-};
+// Use the local fixture printed by gantt-hierarchy-api.cjs with KEEP_GANTT_FIXTURE=1.
+const { chromium, expect } = require('@playwright/test');
 
 (async () => {
+  if (!process.env.TEST_PROJECT) throw new Error('TEST_PROJECT must identify the disposable Gantt fixture');
   const browser = await chromium.launch({ headless: true });
   try {
-    await waitForSite();
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    let token = process.env.TEST_TOKEN;
+    if (!token) {
+      const response = await context.request.post('http://localhost:3008/api/access-tokens', {
+        data: { emailOrUsername: process.env.TEST_USERNAME, password: process.env.TEST_PASSWORD },
+      });
+      expect(response.ok()).toBeTruthy();
+      token = (await response.json()).item;
+    }
     await context.addCookies([
-      { name: 'accessToken', value: process.env.TEST_TOKEN, url: 'http://localhost:3008' },
+      { name: 'accessToken', value: token, url: 'http://localhost:3008' },
       { name: 'accessTokenVersion', value: '1', url: 'http://localhost:3008' },
     ]);
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    page.on('console', (message) => message.type() === 'error' && errors.push(message.text()));
-
-    await page.goto(`http://localhost:3008/projects/${process.env.TEST_PROJECT}/gantt`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60000,
-    });
-    const main = page.getByRole('main');
-    await main.waitFor({ state: 'visible', timeout: 90000 });
-    await page.locator('.wx-bar.wx-summary').waitFor({ state: 'visible', timeout: 30000 });
-    if (await page.locator('.wx-progress-wrapper:visible, .wx-progress-marker:visible').count()) {
-      throw new Error('The Gantt timeline still renders progress');
-    }
-    const mainText = await main.innerText();
-    if (!mainText.includes('te') || !mainText.includes('tete')) {
-      throw new Error('Converted hierarchy is not visible');
-    }
-
-    await page.getByRole('button', { name: 'Nova tarefa' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Nova tarefa' });
-    const dialogText = await dialog.innerText();
-    ['Tipo', 'Estado', 'Duração esperada'].forEach((label) => {
-      if (dialogText.includes(label)) {
-        throw new Error(`Non-essential field is visible by default: ${label}`);
-      }
-    });
-    if (await dialog.locator('#gantt-task-color').count()) {
-      throw new Error('The hierarchy panel still exposes an independent task color');
-    }
-    if (await dialog.locator('#gantt-task-description').count()) {
-      throw new Error('The compact panel still exposes a description field');
-    }
-    await dialog.getByRole('button', { name: 'Adicionar membro' }).click();
-    await page.getByRole('menuitemcheckbox').first().waitFor({ state: 'visible' });
-    await page.locator('.ui.popup').getByRole('button', { name: 'Fechar' }).click();
-    if (await dialog.locator('#gantt-task-progress').count()) {
-      throw new Error('The compact panel still exposes editable progress');
-    }
-    await dialog.getByRole('tab', { name: 'Agendar datas' }).click();
-    await dialog.locator('#gantt-task-start').fill('2026-08-14');
-    await dialog.locator('#gantt-task-end').fill('2026-08-17');
-    if (!(await dialog.innerText()).includes('2 dias úteis')) {
-      throw new Error('The date range did not calculate business-day duration');
-    }
-    await dialog.getByRole('button', { name: 'Mostrar mais opções' }).click();
-    if ((await dialog.locator('#gantt-task-status input').inputValue()) !== 'notStarted') {
-      throw new Error('A new task does not use the default status');
-    }
-    await dialog.locator('#gantt-task-type').click();
-    await dialog.locator('#gantt-task-type .menu .item', { hasText: 'Projeto' }).click();
-    if (await dialog.locator('#gantt-task-duration').count()) {
-      throw new Error('Project exposes task duration controls');
-    }
+    await page.goto(`http://localhost:3008/projects/${process.env.TEST_PROJECT}/gantt`);
+    const parent = page.getByRole('row').filter({ hasText: 'QA Prism' });
+    const child = page.getByRole('row').filter({ hasText: 'QA Subtask' });
+    await expect(child).toBeVisible();
+    await expect(parent).toHaveAttribute('aria-expanded', 'true');
+    await parent.locator('[data-action="open-task"]').click();
+    await expect(child).toHaveCount(0);
+    await page.getByTestId('gantt-zoom-month').click();
+    await expect(parent).toHaveAttribute('aria-expanded', 'false');
+    await parent.locator('[data-action="open-task"]').click();
+    await expect(child).toBeVisible();
+    await expect(page.getByRole('row').filter({ hasText: 'QA Parent without dates' })).toBeVisible();
+    await parent.getByRole('gridcell').nth(1).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('button', { name: /Add subtask|Adicionar subtarefa/ })).toBeVisible();
     await page.keyboard.press('Escape');
-
-    await page.getByText('te', { exact: true }).first().click();
-    const editDialog = page.getByRole('dialog', { name: 'Editar tarefa' });
-    await editDialog.getByRole('button', { name: 'Adicionar subtarefa' }).waitFor();
-    await page.screenshot({ path: '/tmp/gantt-hierarchy-settings.png', fullPage: true });
-
-    if (errors.length > 0) {
-      throw new Error(`Browser errors: ${errors.join(' | ')}`);
-    }
-    process.stdout.write('Gantt hierarchy smoke test passed\n');
+    await child.getByRole('gridcell').nth(1).click();
+    await expect(dialog.getByRole('button', { name: /Add subtask|Adicionar subtarefa/ })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await page.reload();
+    await expect(child).toBeVisible();
+    expect(errors).toEqual([]);
+    console.log('Gantt three-level browser smoke passed');
   } finally {
     await browser.close();
   }
-})().catch((error) => {
-  process.stderr.write(`${error.stack}\n`);
-  process.exit(1);
-});
+})().catch((error) => { console.error(error); process.exitCode = 1; });

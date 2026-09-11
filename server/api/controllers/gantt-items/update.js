@@ -4,9 +4,11 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { isValidParent, lockPlan } = require('../../../utils/gantt-hierarchy');
 const { normalizeItemDates } = require('../../../utils/gantt-dates');
 
 const Errors = {
+  INVALID_HIERARCHY: { invalidHierarchy: 'Invalid Gantt hierarchy' },
   CONFLICT: { conflict: 'Gantt item was updated by another user' },
   GANTT_ITEM_NOT_FOUND: { ganttItemNotFound: 'Gantt item not found' },
   INVALID_DATES: { invalidDates: 'Invalid Gantt dates or duration' },
@@ -72,6 +74,7 @@ module.exports = {
   },
 
   exits: {
+    invalidHierarchy: { responseType: 'unprocessableEntity' },
     conflict: { responseType: 'conflict' },
     ganttItemNotFound: { responseType: 'notFound' },
     invalidDates: { responseType: 'unprocessableEntity' },
@@ -104,17 +107,6 @@ module.exports = {
         inputs.assigneeUserIds !== undefined)
     ) {
       throw Errors.SOURCE_FIELDS_READ_ONLY;
-    }
-
-    if (inputs.parentId !== undefined) {
-      const parent = inputs.parentId && (await GanttItem.qm.getOneById(inputs.parentId));
-      if (
-        item.itemType !== 'task' ||
-        (inputs.parentId &&
-          (!parent || parent.ganttPlanId !== plan.id || parent.itemType !== 'summary'))
-      ) {
-        throw Errors.GANTT_ITEM_NOT_FOUND;
-      }
     }
 
     let assigneeUserIds;
@@ -163,7 +155,18 @@ module.exports = {
     }
 
     values.version = item.version + 1;
-    item = await GanttItem.qm.updateOne({ id: item.id, version: inputs.version }, values);
+    item = await sails.getDatastore().transaction(async (db) => {
+      await lockPlan(plan.id, db);
+      if (inputs.parentId !== undefined) {
+        const currentItems = await GanttItem.find({ ganttPlanId: plan.id }).usingConnection(db);
+        if (!isValidParent(currentItems, item, inputs.parentId)) {
+          throw Errors.INVALID_HIERARCHY;
+        }
+      }
+      return GanttItem.updateOne({ id: item.id, version: inputs.version })
+        .set(values)
+        .usingConnection(db);
+    });
     if (!item) {
       throw Errors.CONFLICT;
     }

@@ -1,11 +1,37 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import {
   createPlankaUsageUrl,
   extractTokenActivity,
   extractWeeklyUsage,
 } from './codex-usage-bridge.mjs';
+
+test('one-shot failures return an error code so the scheduler can retry', () => {
+  const result = spawnSync(
+    process.execPath,
+    [fileURLToPath(new URL('./codex-usage-bridge.mjs', import.meta.url)), '--once'],
+    {
+      encoding: 'utf8',
+      timeout: 20_000,
+      windowsHide: true,
+      env: {
+        ...process.env,
+        // Node exists, but cannot serve the Codex RPC protocol; no snapshot is published.
+        CODEX_EXE: process.execPath,
+        PLANKA_URL: 'http://127.0.0.1:1',
+        CODEX_USAGE_BRIDGE_TOKEN: 'test-only',
+      },
+    },
+  );
+
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Codex usage snapshot was not sent:/);
+  assert.doesNotMatch(result.stdout, /snapshot sent/);
+});
 
 test('extracts only the primary Codex weekly usage window', () => {
   assert.deepEqual(

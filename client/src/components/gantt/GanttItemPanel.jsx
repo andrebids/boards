@@ -39,7 +39,8 @@ const GanttItemPanel = React.memo(
   ({
     item,
     users,
-    generalItems,
+    parentItems,
+    canAddSubtask,
     predecessorIds,
     initialParentId,
     childCount,
@@ -97,9 +98,9 @@ const GanttItemPanel = React.memo(
     );
     const selectedUsers = users.filter(({ id }) => data.assigneeUserIds.includes(id));
     const hiddenAssignees = Math.max(0, selectedUsers.length - MAX_VISIBLE_ASSIGNEES);
-    const generalOptions = useMemo(
-      () => generalItems.map(({ id, task }) => ({ key: id, value: id, text: task })),
-      [generalItems],
+    const parentOptions = useMemo(
+      () => parentItems.map(({ id, task }) => ({ key: id, value: id, text: task })),
+      [parentItems],
     );
     const handleFieldChange = useCallback((event) => {
       const { name, value } = event.currentTarget;
@@ -222,7 +223,9 @@ const GanttItemPanel = React.memo(
             predecessorIds: data.itemType !== 'summary' ? data.predecessorIds : [],
             expectedDurationDays: Number(data.expectedDurationDays),
             startDate:
-              data.itemType !== 'summary' && timeMode === 'schedule' ? data.startDate || null : null,
+              data.itemType !== 'summary' && timeMode === 'schedule'
+                ? data.startDate || null
+                : null,
             endDate:
               data.itemType !== 'summary' && timeMode === 'schedule' ? data.endDate || null : null,
             ...(item && { version: item.version }),
@@ -235,11 +238,14 @@ const GanttItemPanel = React.memo(
           await onSave(payload);
           onClose();
         } catch (nextError) {
-          setError(
-            nextError.statusCode === 409
-              ? t('common.ganttTaskConflict')
-              : t('common.ganttTaskSaveFailed'),
-          );
+          let errorKey =
+            nextError.statusCode === 409 || nextError.code === 'E_CONFLICT'
+              ? 'common.ganttTaskConflict'
+              : 'common.ganttTaskSaveFailed';
+          if (nextError.message === 'Invalid Gantt hierarchy') {
+            errorKey = 'common.ganttInvalidHierarchy';
+          }
+          setError(t(errorKey));
         } finally {
           setIsSubmitting(false);
         }
@@ -249,14 +255,14 @@ const GanttItemPanel = React.memo(
 
     const handleDeleteClick = useCallback(() => {
       let confirmation = t('common.ganttDeleteTaskConfirmation');
-      if (item.itemType === 'summary' && childCount > 0) {
-        confirmation = t('common.ganttDeleteGeneralTaskConfirmation', { count: childCount });
+      if (childCount > 0) {
+        confirmation = t('common.ganttDeleteBranchConfirmation', { count: childCount });
       } else if (isLinked) {
         confirmation = t('common.ganttRemoveLinkedTaskConfirmation');
       }
 
       setDeleteConfirmation(confirmation);
-    }, [childCount, isLinked, item, t]);
+    }, [childCount, isLinked, t]);
 
     const handleDeleteConfirm = useCallback(async () => {
       setIsSubmitting(true);
@@ -455,7 +461,7 @@ const GanttItemPanel = React.memo(
                 </div>
               </div>
               <div className={styles.field}>
-                <span id="gantt-task-parent-label">{t('common.ganttGeneralTask')}</span>
+                <span id="gantt-task-parent-label">{t('common.ganttParentTask')}</span>
                 <Dropdown
                   fluid
                   search
@@ -463,8 +469,8 @@ const GanttItemPanel = React.memo(
                   clearable
                   placeholder={t('common.ganttIndependentTask')}
                   value={data.parentId}
-                  options={generalOptions}
-                  noResultsMessage={t('common.ganttNoGeneralTasksFound')}
+                  options={parentOptions}
+                  noResultsMessage={t('common.ganttNoParentsFound')}
                   aria-labelledby="gantt-task-parent-label"
                   onChange={handleParentChange}
                 />
@@ -549,7 +555,9 @@ const GanttItemPanel = React.memo(
                     />
                   </label>
                   <div className={styles.field}>
-                    <span id="gantt-task-duration-unit-label">{t('common.ganttDurationUnit')}</span>
+                    <span id="gantt-task-duration-unit-label">
+                      {t('common.ganttDurationUnit')}
+                    </span>
                     <Dropdown
                       fluid
                       selection
@@ -622,7 +630,7 @@ const GanttItemPanel = React.memo(
           )}
 
           <footer className={styles.footer}>
-            {item?.itemType === 'summary' && (
+            {canAddSubtask && (
               <Button
                 isIconOnly
                 size="sm"
@@ -686,7 +694,8 @@ const GanttItemPanel = React.memo(
 GanttItemPanel.propTypes = {
   item: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   users: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
-  generalItems: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
+  canAddSubtask: PropTypes.bool.isRequired,
+  parentItems: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
   predecessorIds: PropTypes.arrayOf(PropTypes.string).isRequired,
   initialParentId: PropTypes.string,
   childCount: PropTypes.number.isRequired,

@@ -110,7 +110,11 @@ const TaskBarContent = React.memo(({ data }) => (
   </div>
 ));
 
-const TaskTitleCell = React.memo(({ row }) => <OverflowMarquee text={row.text} />);
+const TaskTitleCell = React.memo(({ row }) => (
+  <span className={styles.titleCell} title={row.text}>
+    {row.text}
+  </span>
+));
 
 TaskTitleCell.propTypes = {
   row: PropTypes.shape({
@@ -250,7 +254,12 @@ const GanttTimelineAdapter = React.memo(
       };
     }, [i18n.dateFns, locale, t]);
 
-    const tasks = useMemo(() => mapGanttItemsToTimelineTasks(items, t), [items, t]);
+    const expandedRef = useRef(new Map());
+    // Zoom remounts the chart, so rebuild its input with the latest expansion state.
+    const tasks = useMemo(
+      () => mapGanttItemsToTimelineTasks(items, t, expandedRef.current),
+      [items, t, zoomLevel], // eslint-disable-line react-hooks/exhaustive-deps
+    );
 
     const assigneesColumnWidth = useMemo(() => {
       const maximum = Math.max(0, ...items.map((item) => item.assigneeUserIds?.length || 0));
@@ -392,18 +401,33 @@ const GanttTimelineAdapter = React.memo(
           }
         });
 
+        ganttApi.on('open-task', ({ id }) => {
+          expandedRef.current.set(String(id), ganttApi.getTask(id).open);
+        });
+        // Derived bars are presentation only. Stop the store before it moves a branch.
+        const canChangeTask = ({ id }) => {
+          const task = ganttApi.getTask(id);
+          return Boolean(task && task.type !== 'summary' && !task.hasDerivedDates);
+        };
+        ganttApi.intercept('drag-task', canChangeTask);
+        ganttApi.intercept('update-task', (event) =>
+          event.eventSource ? true : canChangeTask(event),
+        );
+        // Reparenting is validated and persisted through the existing item editor.
+        ganttApi.intercept('move-task', () => false);
+
         if (!isDashboardWidget) {
           ganttApi.on('select-task', ({ id }) => {
             onItemSelectRef.current(String(id));
           });
 
-          ganttApi.on('update-task', ({ id, inProgress }) => {
-            if (inProgress) {
+          ganttApi.on('update-task', ({ id, inProgress, eventSource }) => {
+            if (inProgress || eventSource) {
               return;
             }
 
             const task = ganttApi.getTask(id);
-            if (!task?.start || !task?.end) {
+            if (!task?.start || !task?.end || task.type === 'summary' || task.hasDerivedDates) {
               return;
             }
 

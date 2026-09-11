@@ -191,6 +191,7 @@ const readAppServer = (codexExecutable, method) =>
     const send = (request) => appServer.stdin.write(`${JSON.stringify(request)}\n`);
 
     appServer.on('error', () => finish(new Error('Could not start the Codex App Server')));
+    appServer.stderr.resume();
     appServer.on('close', () => {
       if (!isSettled) {
         finish(new Error('Codex App Server closed before returning usage data'));
@@ -266,7 +267,7 @@ const runOnce = async ({ codexExecutable, endpoint, token }) => {
   const tokenActivity = extractTokenActivity(await readTokenActivity(codexExecutable));
   await publishUsage(endpoint, token, { ...usage, tokenActivity });
   console.log(
-    `Codex usage snapshot sent (${usage.usedPercent}%, ${tokenActivity.dailyUsageBuckets.length} daily buckets).`,
+    `${new Date().toISOString()} Codex usage snapshot sent (${usage.usedPercent}%, ${tokenActivity.dailyUsageBuckets.length} daily buckets).`,
   );
 };
 
@@ -292,7 +293,10 @@ const runBridge = async () => {
     try {
       await runOnce(config);
     } catch (error) {
-      console.error(`Codex usage snapshot was not sent: ${error.message}`);
+      console.error(`${new Date().toISOString()} Codex usage snapshot was not sent: ${error.message}`);
+      if (isOneShot) {
+        process.exitCode = 1;
+      }
     }
   };
 

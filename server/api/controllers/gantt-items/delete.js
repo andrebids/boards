@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { getDescendantIds, lockPlan } = require('../../../utils/gantt-hierarchy');
 
 const Errors = {
   GANTT_ITEM_NOT_FOUND: { ganttItemNotFound: 'Gantt item not found' },
@@ -37,14 +38,18 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
-    const deletedItems = await GanttItem.find({
-      or: [{ id: item.id }, { parentId: item.id }],
+    const { deletedItem, deletedItemIds } = await sails.getDatastore().transaction(async (db) => {
+      await lockPlan(plan.id, db);
+      const items = await GanttItem.find({ ganttPlanId: plan.id }).usingConnection(db);
+      const ids = [item.id, ...getDescendantIds(items, item.id)];
+      const deleted = await GanttItem.destroyOne(item.id).usingConnection(db);
+      if (!deleted) throw Errors.GANTT_ITEM_NOT_FOUND;
+      return { deletedItem: deleted, deletedItemIds: ids };
     });
-    const deletedItem = await GanttItem.qm.deleteOne(item.id);
     const payload = {
       item: deletedItem,
       included: {
-        deletedItemIds: deletedItems.map(({ id }) => id),
+        deletedItemIds,
       },
     };
     sails.sockets.broadcast(`ganttPlan:${plan.id}`, 'ganttItemDelete', payload, this.req);

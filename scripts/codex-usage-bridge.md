@@ -39,3 +39,27 @@ lidos ficheiros de sessoes nem credenciais locais.
 
 Para desenvolvimento local use `http://localhost:3008` como `PLANKA_URL`.
 Fora de localhost, a bridge aceita apenas HTTPS.
+
+## Background no Windows (baixo consumo)
+
+Neste computador, a tarefa `Codex Usage Bridge` executa o launcher
+`%USERPROFILE%\.codex\codex-usage-bridge\run.ps1` com `--once`, sem janela,
+no inicio de sessao e a cada 5 minutos. Entre sincronizacoes nao ha um processo
+residente do bridge. A tarefa usa prioridade baixa, ignora arranques duplicados
+e limita cada execucao a 2 minutos. Em caso de erro tenta novamente apos 1 minuto
+(ate 3 tentativas); o agendamento de 5 minutos continua depois disso.
+
+O launcher mantem o mutex `Local\CodexUsageBridge` e roda o log ao ultrapassar
+1 MB. O modo `--once` termina com codigo 1 quando a sincronizacao falha, para o
+Windows reconhecer a falha. Cada snapshot inclui a hora UTC no log.
+
+E necessario manter a sessao Windows iniciada e o computador acordado; bloquear
+o ecra ou fechar o terminal nao interrompe o agendamento. A tarefa nao acorda o
+computador. Para parar intencionalmente, desative `Codex Usage Bridge` no
+Agendador de Tarefas; terminar apenas uma execucao nao desativa as seguintes.
+
+A acao da tarefa usa `wscript.exe //B //NoLogo` com
+`%USERPROFILE%\.codex\codex-usage-bridge\run-hidden.vbs`, que inicia o PowerShell
+oculto desde o arranque, espera pelo `run.ps1` e propaga o codigo de saida.
+Isto evita iniciar diretamente uma aplicacao de consola que so oculta a janela
+depois de arrancar. O wrapper tambem termina depois de cada sincronizacao.

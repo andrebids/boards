@@ -4,9 +4,11 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { isValidParent, lockPlan } = require('../../../utils/gantt-hierarchy');
 const { normalizeItemDates } = require('../../../utils/gantt-dates');
 
 const Errors = {
+  INVALID_HIERARCHY: { invalidHierarchy: 'Invalid Gantt hierarchy' },
   GANTT_PLAN_NOT_FOUND: { ganttPlanNotFound: 'Gantt plan not found' },
   INVALID_DATES: { invalidDates: 'Invalid Gantt dates or duration' },
   INVALID_DEPENDENCIES: { invalidDependencies: 'Invalid Gantt dependencies' },
@@ -74,6 +76,7 @@ module.exports = {
   },
 
   exits: {
+    invalidHierarchy: { responseType: 'unprocessableEntity' },
     ganttPlanNotFound: { responseType: 'notFound' },
     invalidDates: { responseType: 'unprocessableEntity' },
     invalidDependencies: { responseType: 'unprocessableEntity' },
@@ -93,19 +96,6 @@ module.exports = {
     }
     if (!access.canEdit) {
       throw Errors.NOT_ENOUGH_RIGHTS;
-    }
-
-    let parent = null;
-    if (inputs.parentId) {
-      parent = await GanttItem.qm.getOneById(inputs.parentId);
-      if (
-        inputs.itemType !== 'task' ||
-        !parent ||
-        parent.ganttPlanId !== plan.id ||
-        parent.itemType !== 'summary'
-      ) {
-        throw Errors.GANTT_PLAN_NOT_FOUND;
-      }
     }
 
     if (!Array.isArray(inputs.assigneeUserIds)) {
@@ -147,11 +137,22 @@ module.exports = {
     }
     const position = items.length > 0 ? items[items.length - 1].position + 65535 : 65535;
     const { item, assignees, links } = await sails.getDatastore().transaction(async (db) => {
+      await lockPlan(plan.id, db);
+      const currentItems = await GanttItem.find({ ganttPlanId: plan.id }).usingConnection(db);
+      if (
+        !isValidParent(
+          currentItems,
+          { id: 'new', itemType: inputs.itemType, ganttPlanId: plan.id },
+          inputs.parentId || null,
+        )
+      ) {
+        throw Errors.INVALID_HIERARCHY;
+      }
       const createdItem = await GanttItem.create({
         ganttPlanId: plan.id,
         task: inputs.task.trim(),
         itemType: inputs.itemType,
-        parentId: parent ? parent.id : null,
+        parentId: inputs.parentId || null,
         description: inputs.description ? inputs.description.trim() : null,
         status: inputs.status ? inputs.status.trim() : null,
         color: inputs.color || null,
