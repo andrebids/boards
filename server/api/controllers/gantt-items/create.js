@@ -58,7 +58,6 @@ module.exports = {
     expectedDurationDays: {
       type: 'number',
       min: 1,
-      defaultsTo: 1,
     },
     color: {
       type: 'string',
@@ -118,7 +117,9 @@ module.exports = {
           values: {
             startDate: inputs.startDate || null,
             endDate: inputs.endDate || null,
-            expectedDurationDays: inputs.expectedDurationDays,
+            ...((inputs.expectedDurationDays !== undefined || !inputs.endDate) && {
+              expectedDurationDays: inputs.expectedDurationDays || 1,
+            }),
           },
         });
       } catch (error) {

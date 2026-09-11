@@ -1,4 +1,4 @@
-import { mapGanttItemsToTimelineTasks } from './ganttTimelineMapper';
+import { mapGanttItemsToTimelineTasks, mapTimelineTaskDateChanges } from './ganttTimelineMapper';
 
 describe('mapGanttItemsToTimelineTasks', () => {
   test('uses the full date span for the bar while keeping the group duration label', () => {
@@ -54,5 +54,31 @@ describe('mapGanttItemsToTimelineTasks', () => {
 
     expect(task.end).toEqual(new Date(2026, 7, 13));
     expect(task.duration).toBe(3);
+  });
+
+  test('preserves business duration when moving a bar across a weekend', () => {
+    expect(
+      mapTimelineTaskDateChanges(
+        { start: new Date(2026, 8, 11), end: new Date(2026, 8, 16) },
+        {
+          startDate: '2026-09-07',
+          endDate: '2026-09-11',
+          expectedDurationDays: 5,
+        },
+      ),
+    ).toEqual({ startDate: '2026-09-11', expectedDurationDays: 5 });
+  });
+
+  test('sends inclusive dates on resize so the server counts only weekdays', () => {
+    expect(
+      mapTimelineTaskDateChanges(
+        { start: new Date(2026, 8, 7), end: new Date(2026, 8, 15) },
+        {
+          startDate: '2026-09-07',
+          endDate: '2026-09-11',
+          expectedDurationDays: 5,
+        },
+      ),
+    ).toEqual({ startDate: '2026-09-07', endDate: '2026-09-14' });
   });
 });

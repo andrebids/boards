@@ -9,6 +9,17 @@ const formatDateLabel = (value) => {
   return `${day}-${month}-${year.slice(-2)}`;
 };
 
+export const mapTimelineTaskDateChanges = (task, item) => {
+  const startDate = addGanttDays(task.start, 0);
+  const endDate = addGanttDays(task.end, -1);
+  const isMove =
+    differenceInGanttDays(startDate, endDate) ===
+    differenceInGanttDays(item.startDate, item.endDate);
+  return isMove
+    ? { startDate, expectedDurationDays: item.expectedDurationDays }
+    : { startDate, endDate };
+};
+
 export const mapGanttItemsToTimelineTasks = (items, t, expanded = new Map()) => {
   const parentIds = new Set(items.map(({ parentId }) => parentId).filter(Boolean));
   return items.map((item) => {
@@ -30,7 +41,9 @@ export const mapGanttItemsToTimelineTasks = (items, t, expanded = new Map()) => 
       assigneeUserIds: item.assigneeUserIds || [],
       startLabel: formatDateLabel(item.startDate),
       endLabel: formatDateLabel(item.endDate),
-      durationLabel: t('common.ganttDayShort', { count: item.expectedDurationDays }),
+      durationLabel: t('common.ganttDayShort', {
+        count: item.expectedDurationDays,
+      }),
       statusLabel: translationKey ? t(translationKey) : '—',
     };
   });

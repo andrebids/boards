@@ -26,11 +26,14 @@ const isBusinessDay = (date) => date.getDay() !== 0 && date.getDay() !== 6;
 
 export const addGanttBusinessDays = (value, amount) => {
   const date = typeof value === 'string' ? parseGanttDate(value) : new Date(value);
-  let remaining = Math.max(0, amount);
+  const businessDays = Math.max(0, amount);
+  let remaining = businessDays % 5;
 
   while (!isBusinessDay(date)) {
     date.setDate(date.getDate() + 1);
   }
+
+  date.setDate(date.getDate() + Math.floor(businessDays / 5) * 7);
 
   while (remaining > 0) {
     date.setDate(date.getDate() + 1);
@@ -45,9 +48,12 @@ export const addGanttBusinessDays = (value, amount) => {
 export const countGanttBusinessDays = (startDate, endDate) => {
   const current = parseGanttDate(startDate);
   const end = parseGanttDate(endDate);
-  let count = 0;
+  const utcStart = Date.UTC(current.getFullYear(), current.getMonth(), current.getDate());
+  const utcEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+  const days = Math.round((utcEnd - utcStart) / DAY_IN_MILLISECONDS) + 1;
+  let count = Math.floor(days / 7) * 5;
 
-  while (current <= end) {
+  for (let day = 0; day < days % 7; day += 1) {
     if (isBusinessDay(current)) {
       count += 1;
     }
@@ -63,4 +69,19 @@ export const differenceInGanttDays = (startDate, endDate) => {
   const utcStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
   const utcEnd = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
   return Math.round((utcEnd - utcStart) / DAY_IN_MILLISECONDS);
+};
+
+// Shared by the editor and external scheduling; the stored end is inclusive.
+export const updateGanttSchedule = (current, changes) => {
+  const next = { ...current, ...changes };
+  if (!next.startDate) return { ...next, endDate: '' };
+  if (Object.prototype.hasOwnProperty.call(changes, 'endDate')) {
+    if (next.endDate && next.endDate >= next.startDate) {
+      next.expectedDurationDays = countGanttBusinessDays(next.startDate, next.endDate);
+    }
+  } else {
+    next.startDate = addGanttBusinessDays(next.startDate, 0);
+    next.endDate = addGanttBusinessDays(next.startDate, next.expectedDurationDays - 1);
+  }
+  return next;
 };

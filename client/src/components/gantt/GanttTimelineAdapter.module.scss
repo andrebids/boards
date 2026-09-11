@@ -1,4 +1,120 @@
 :global(#app) {
+  .wrapper[data-row-drag-enabled='true'] :global(.wx-table [role='row']) {
+    cursor: grab;
+  }
+
+  .wrapper[data-row-drag-intent] :global(.wx-table .wx-reorder-task .wx-content) {
+    transform: translateX(var(--gantt-row-shift));
+    transition: transform 140ms ease;
+  }
+
+  .wrapper[data-row-drag-intent] :global(.wx-table .wx-reorder-task [data-col-id$='text']) {
+    position: relative;
+
+    &::after {
+      background: var(--app-accent);
+      bottom: 0;
+      content: '';
+      height: 2px;
+      left: calc(24px + var(--gantt-row-indent));
+      pointer-events: none;
+      position: absolute;
+      right: 0;
+      transition: left 140ms ease;
+    }
+  }
+
+  .wrapper :global([data-gantt-drop-parent='true']) {
+    background: color-mix(in srgb, var(--app-accent) 10%, transparent);
+    box-shadow: inset 3px 0 0 var(--app-accent);
+    transition: background 140ms ease;
+  }
+
+  .rowDragFeedback {
+    align-items: center;
+    background: var(--app-dark-surface);
+    border: 1px solid var(--app-accent);
+    border-radius: var(--app-radius);
+    bottom: 12px;
+    box-sizing: border-box;
+    color: var(--app-dark-text);
+    display: flex;
+    font-size: 12px;
+    gap: 8px;
+    height: auto;
+    left: 12px;
+    max-width: min(360px, calc(100% - 24px));
+    padding: 6px 10px;
+    pointer-events: none;
+    position: absolute;
+    width: max-content;
+    z-index: 6;
+
+    > span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .wrapper[data-row-drag-intent='invalid'] {
+    .rowDragFeedback {
+      border-style: dashed;
+    }
+
+    :global(.wx-table .wx-reorder-task [data-col-id$='text'])::after {
+      background: transparent;
+      border-bottom: 2px dashed var(--app-dark-text-muted);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wrapper[data-row-drag-intent] :global(.wx-table .wx-reorder-task .wx-content),
+    .wrapper[data-row-drag-intent] :global(.wx-table .wx-reorder-task [data-col-id$='text'])::after,
+    .wrapper :global([data-gantt-drop-parent='true']) {
+      transition: none;
+    }
+  }
+
+  .dropOverlay {
+    position: absolute;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .listDropTarget {
+    position: absolute;
+    pointer-events: none;
+    background: var(--app-accent);
+    z-index: 5;
+
+    &[data-child='true'] {
+      background: color-mix(in srgb, var(--app-accent) 10%, transparent);
+      box-shadow: inset 3px 0 0 var(--app-accent);
+    }
+  }
+
+  .dropBar {
+    position: absolute;
+    height: 28px;
+    border: 2px dashed var(--app-accent);
+    border-radius: var(--app-radius);
+    background: var(--app-accent-soft);
+  }
+
+  .dropLabel {
+    position: absolute;
+    left: 8px;
+    padding: 3px 8px;
+    max-width: calc(100% - 16px);
+    background: var(--app-dark-surface);
+    color: var(--app-dark-text);
+    border: 1px solid var(--app-dark-border);
+    border-radius: var(--app-radius);
+    font-size: 12px;
+  }
+
   .columnHeader {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -25,13 +141,10 @@
   }
 
   .wrapper {
+    position: relative;
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
-
-    > :global(*) {
-      height: 100%;
-    }
 
     :global(.wx-willow-dark-theme) {
       --wx-border: 1px solid var(--app-dark-border);
@@ -53,8 +166,7 @@
     );
   }
 
-  .wrapper[data-zoom-level='day']
-    :global(.wx-scale .wx-row:last-child .wx-cell > span) {
+  .wrapper[data-zoom-level='day'] :global(.wx-scale .wx-row:last-child .wx-cell > span) {
     align-items: center;
     box-sizing: border-box;
     display: flex;
@@ -119,9 +231,7 @@
 
   @media (prefers-reduced-motion: no-preference) {
     .wrapper :global(.wx-bar:hover) .marqueeViewport[data-overflowing] .marqueeTrack,
-    .wrapper :global(.wx-bar:focus-visible)
-      .marqueeViewport[data-overflowing]
-      .marqueeTrack,
+    .wrapper :global(.wx-bar:focus-visible) .marqueeViewport[data-overflowing] .marqueeTrack,
     .marqueeViewport:hover[data-overflowing] .marqueeTrack,
     .wrapper :global([data-col-id$='text']:focus) .marqueeViewport[data-overflowing] .marqueeTrack {
       animation: ganttTitleMarquee var(--gantt-title-duration) linear infinite;
@@ -129,9 +239,7 @@
     }
 
     .wrapper :global(.wx-bar:hover) .marqueeViewport[data-overflowing] .marqueeCopy,
-    .wrapper :global(.wx-bar:focus-visible)
-      .marqueeViewport[data-overflowing]
-      .marqueeCopy,
+    .wrapper :global(.wx-bar:focus-visible) .marqueeViewport[data-overflowing] .marqueeCopy,
     .marqueeViewport:hover[data-overflowing] .marqueeCopy,
     .wrapper :global([data-col-id$='text']:focus) .marqueeViewport[data-overflowing] .marqueeCopy {
       display: block;

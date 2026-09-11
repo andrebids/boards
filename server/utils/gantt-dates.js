@@ -38,6 +38,35 @@ const differenceInDays = (startDate, endDate) => {
   return Math.round((end.getTime() - start.getTime()) / 86400000);
 };
 
+const isBusinessDay = (date) => date.getUTCDay() !== 0 && date.getUTCDay() !== 6;
+
+const addBusinessDays = (value, amount) => {
+  const date = parseDate(value);
+  let remaining = amount % 5;
+  while (!isBusinessDay(date)) {
+    date.setUTCDate(date.getUTCDate() + 1);
+  }
+  date.setUTCDate(date.getUTCDate() + Math.floor(amount / 5) * 7);
+  while (remaining > 0) {
+    date.setUTCDate(date.getUTCDate() + 1);
+    if (isBusinessDay(date)) remaining -= 1;
+  }
+  return formatDate(date);
+};
+
+const countBusinessDays = (startDate, endDate) => {
+  const date = parseDate(startDate);
+  const end = parseDate(endDate);
+  const fullWeeks = Math.floor(Math.max(0, differenceInDays(startDate, endDate) + 1) / 7);
+  let count = fullWeeks * 5;
+  date.setUTCDate(date.getUTCDate() + fullWeeks * 7);
+  while (date <= end) {
+    if (isBusinessDay(date)) count += 1;
+    date.setUTCDate(date.getUTCDate() + 1);
+  }
+  return Math.max(1, count);
+};
+
 const normalizeStoredDate = (value) => {
   if (!value) {
     return null;
@@ -58,6 +87,16 @@ const normalizeItemDates = ({ current = {}, values }) => {
     ...values,
   };
 
+  if (!Number.isInteger(merged.expectedDurationDays) || merged.expectedDurationDays < 1) {
+    throw new Error('INVALID_DURATION');
+  }
+  if (
+    (merged.startDate !== null && !parseDate(merged.startDate)) ||
+    (merged.endDate !== null && !parseDate(merged.endDate))
+  ) {
+    throw new Error('INVALID_DATE');
+  }
+
   if (merged.startDate === null || merged.endDate === null) {
     if (merged.startDate === null && merged.endDate === null) {
       return {
@@ -69,8 +108,8 @@ const normalizeItemDates = ({ current = {}, values }) => {
 
     if (merged.startDate && values.expectedDurationDays !== undefined) {
       return {
-        startDate: merged.startDate,
-        endDate: addDays(merged.startDate, merged.expectedDurationDays - 1),
+        startDate: addBusinessDays(merged.startDate, 0),
+        endDate: addBusinessDays(merged.startDate, merged.expectedDurationDays - 1),
         expectedDurationDays: merged.expectedDurationDays,
       };
     }
@@ -78,36 +117,29 @@ const normalizeItemDates = ({ current = {}, values }) => {
     throw new Error('DATES_MUST_BE_BOTH_PRESENT');
   }
 
-  if (!parseDate(merged.startDate) || !parseDate(merged.endDate)) {
-    throw new Error('INVALID_DATE');
-  }
-
-  if (!Number.isInteger(merged.expectedDurationDays) || merged.expectedDurationDays < 1) {
-    throw new Error('INVALID_DURATION');
-  }
-
   if (values.endDate !== undefined && values.expectedDurationDays === undefined) {
-    const expectedDurationDays = differenceInDays(merged.startDate, merged.endDate) + 1;
-    if (expectedDurationDays < 1) {
+    if (merged.endDate < merged.startDate) {
       throw new Error('INVALID_DATE_RANGE');
     }
 
     return {
       startDate: merged.startDate,
       endDate: merged.endDate,
-      expectedDurationDays,
+      expectedDurationDays: countBusinessDays(merged.startDate, merged.endDate),
     };
   }
 
   return {
-    startDate: merged.startDate,
-    endDate: addDays(merged.startDate, merged.expectedDurationDays - 1),
+    startDate: addBusinessDays(merged.startDate, 0),
+    endDate: addBusinessDays(merged.startDate, merged.expectedDurationDays - 1),
     expectedDurationDays: merged.expectedDurationDays,
   };
 };
 
 module.exports = {
+  addBusinessDays,
   addDays,
+  countBusinessDays,
   differenceInDays,
   normalizeItemDates,
   normalizeStoredDate,

@@ -209,13 +209,39 @@
 
     > :global(.ui.multiple.dropdown > .label) {
       background: var(--app-accent-soft) !important;
-      box-shadow:
-        inset 0 0 0 1px color-mix(in oklab, var(--app-accent) 32%, transparent) !important;
+      box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--app-accent) 32%, transparent) !important;
       color: var(--app-dark-text) !important;
     }
 
     > :global(.ui.multiple.search.dropdown) > :global(input.search) {
       min-height: 0;
+    }
+  }
+
+  .parentField {
+    grid-column: 1 / -1;
+  }
+
+  .parentDropdown {
+    > :global(.text) {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    > :global(input.search)::placeholder {
+      color: transparent;
+    }
+
+    &:global(.active) {
+      > :global(.text) {
+        visibility: hidden;
+      }
+
+      > :global(input.search)::placeholder {
+        color: var(--app-dark-text-muted);
+      }
     }
   }
 
@@ -240,43 +266,6 @@
     gap: 5px;
   }
 
-  .timeTabs {
-    background: var(--app-default);
-    border: 1px solid var(--app-dark-border);
-    border-radius: var(--app-radius);
-    display: grid;
-    gap: 3px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 3px;
-  }
-
-  .timeTab,
-  .timeTabActive {
-    background: transparent;
-    border: 0;
-    border-radius: 6px;
-    color: var(--app-dark-text-muted);
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 700;
-    min-height: 30px;
-    padding: 5px 8px;
-
-    &:focus-visible {
-      box-shadow: 0 0 0 2px var(--app-focus);
-      outline: none;
-    }
-  }
-
-  .timeTab:hover {
-    color: var(--app-dark-text);
-  }
-
-  .timeTabActive {
-    background: var(--app-accent-soft);
-    color: var(--app-accent);
-  }
-
   .durationRow {
     display: grid;
     gap: 12px;
@@ -291,8 +280,7 @@
 
   .statusDot {
     background: var(--gantt-status-color);
-    border: 1px solid
-      color-mix(in oklab, var(--gantt-status-color) 78%, var(--app-dark-text) 22%);
+    border: 1px solid color-mix(in oklab, var(--gantt-status-color) 78%, var(--app-dark-text) 22%);
     border-radius: 50%;
     box-shadow: 0 0 0 1px var(--app-dark-canvas);
     flex: 0 0 auto;
@@ -310,13 +298,36 @@
     justify-content: space-between;
     padding: 10px 12px;
 
-    > div { display: flex; flex-direction: column; min-width: 0; }
-    span { color: var(--app-accent); font-size: 10px; font-weight: 800; text-transform: uppercase; }
-    strong { color: var(--app-dark-text); font-size: 12px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    small { color: var(--app-dark-text-muted); font-size: 10px; margin-top: 2px; }
+    > div {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    span {
+      color: var(--app-accent);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    strong {
+      color: var(--app-dark-text);
+      font-size: 12px;
+      margin-top: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    small {
+      color: var(--app-dark-text-muted);
+      font-size: 10px;
+      margin-top: 2px;
+    }
   }
 
-  .sourceEmpty { color: var(--app-dark-text-muted) !important; font-weight: 400 !important; }
+  .sourceEmpty {
+    color: var(--app-dark-text-muted) !important;
+    font-weight: 400 !important;
+  }
 
   .people {
     align-items: center;

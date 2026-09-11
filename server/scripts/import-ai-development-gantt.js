@@ -8,7 +8,7 @@
 const knex = require('knex');
 
 const knexConfig = require('../db/knexfile');
-const { differenceInDays, parseDate } = require('../utils/gantt-dates');
+const { countBusinessDays, parseDate } = require('../utils/gantt-dates');
 
 const SOURCE_ITEMS = [
   [
@@ -141,8 +141,8 @@ const buildItems = (userIdByPerson) =>
       throw new Error(`Datas inválidas na tarefa "${task}".`);
     }
 
-    const expectedDurationDays = startDate ? differenceInDays(startDate, endDate) + 1 : 1;
-    if (expectedDurationDays < 1) {
+    const expectedDurationDays = startDate ? countBusinessDays(startDate, endDate) : 1;
+    if (startDate && endDate < startDate) {
       throw new Error(`Intervalo inválido na tarefa "${task}".`);
     }
 

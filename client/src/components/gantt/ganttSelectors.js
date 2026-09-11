@@ -19,7 +19,8 @@ export const selectTimelineData = (items, links = []) => {
     const children = (childrenByParentId.get(item.id) || [])
       .map((child) => visit(child, nextVisited))
       .filter(Boolean);
-    const hasOwnDates = item.itemType !== 'summary' && item.startDate && item.endDate;
+    const hasOwnDates =
+      item.itemType !== 'summary' && children.length === 0 && item.startDate && item.endDate;
     const scheduled = hasOwnDates ? [item, ...children] : children;
     if (!scheduled.length) return null;
     const startDate = scheduled.map((child) => child.startDate).sort()[0];
@@ -42,7 +43,8 @@ export const selectTimelineData = (items, links = []) => {
   items.forEach((item) => visit(item));
   const timelineItems = items
     .filter((item) => scheduledById.has(item.id))
-    .map((item) => scheduledById.get(item.id));
+    .map((item) => scheduledById.get(item.id))
+    .sort((a, b) => (a.position || 0) - (b.position || 0));
 
   return {
     timelineItems,
@@ -51,7 +53,8 @@ export const selectTimelineData = (items, links = []) => {
         scheduledById.has(sourceItemId) && scheduledById.has(targetItemId),
     ),
     unscheduledItems: items.filter(
-      ({ itemType, startDate }) => (itemType === 'task' || itemType === 'delivery') && !startDate,
+      ({ id, itemType, startDate }) =>
+        (itemType === 'task' || itemType === 'delivery') && !startDate && !scheduledById.has(id),
     ),
   };
 };

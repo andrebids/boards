@@ -1,3 +1,39 @@
+import {
+  addGanttDays,
+  differenceInGanttDays,
+  formatGanttDate,
+  parseGanttDate,
+  updateGanttSchedule,
+} from './gantt-dates';
+
+export const GANTT_ITEM_DRAG_TYPE = 'application/x-planka-gantt-item';
+
+// Invert the same SVAR scale used to draw bars, without assuming equal month widths.
+export const getGanttDropSchedule = ({ x, scales, cellWidth, expectedDurationDays }) => {
+  if (!scales || !cellWidth || x < 0 || x >= scales.width) return null;
+  const firstDay = formatGanttDate(scales.start);
+  const position = (day) => scales.diff(parseGanttDate(day), scales.start, 'hour') * cellWidth;
+  let low = 0;
+  let high = differenceInGanttDays(firstDay, formatGanttDate(scales.end));
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (position(addGanttDays(firstDay, middle)) <= x + 0.000001) low = middle;
+    else high = middle - 1;
+  }
+  const schedule = updateGanttSchedule(
+    { expectedDurationDays },
+    {
+      startDate: addGanttDays(firstDay, low),
+    },
+  );
+  const left = position(schedule.startDate);
+  return {
+    ...schedule,
+    left,
+    width: position(addGanttDays(schedule.endDate, 1)) - left,
+  };
+};
+
 const GANTT_TITLE_MARQUEE_GAP = 24;
 const GANTT_TITLE_MARQUEE_SPEED = 32;
 

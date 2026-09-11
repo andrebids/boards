@@ -102,3 +102,14 @@ Sem dependências novas, reformulação visual, migração prevista ou alteraç�
 - Smoke script atualizado para a fixture dedicada. As interações foram executadas nesta sessão através do browser controlado; o script Playwright autónomo não foi executado.
 - Lint focado e `git diff --check` passaram. No painel foi preservada a indentação JSX preexistente; a regra de formatação desse ficheiro foi excluída do lint para evitar uma reformatação integral.
 - Sem build, migração ou alteração de produção.
+
+
+## Ajuste aprovado: intervalo da tarefa principal
+
+A pedido do utilizador, a tarefa principal passa a usar o intervalo das subtarefas agendadas, tal como o projeto. Esta decisão substitui a proposta inicial de manter uma barra independente no pai:
+
+- Início = primeira data das subtarefas; fim = última data; duração da tarefa principal = intervalo inclusivo em dias.
+- O editor mostra as datas calculadas em campos de leitura. Guardar outros campos não grava as datas derivadas sobre o planeamento original.
+- A barra calculada reutiliza a proteção existente contra arrastamento. Sem subtarefas agendadas, usa novamente as datas próprias guardadas.
+- Pais cujo intervalo é calculado já não aparecem em “Por agendar”.
+- Verificação: 20 testes focados passaram. No browser, o exemplo com pai originalmente de 23/08 a 19/09 e subtarefas de 10/08 a 05/09 passou a mostrar 10/08–05/09 e 27 dias tanto no pai como no grupo. As barras ficaram alinhadas; campos calculados no editor confirmados.

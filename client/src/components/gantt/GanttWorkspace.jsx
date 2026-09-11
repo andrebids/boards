@@ -13,6 +13,7 @@ import { Icon, Loader } from 'semantic-ui-react';
 import { Button } from '../../lib/custom-ui';
 import selectors from '../../selectors';
 import Paths from '../../constants/Paths';
+import { GANTT_ITEM_DRAG_TYPE } from '../../utils/gantt-timeline';
 import { GANTT_STATUS_COLORS } from '../../constants/GanttColors';
 import {
   getEffectiveGanttStatus,
@@ -45,6 +46,10 @@ const GanttWorkspace = React.memo(() => {
     deleteItem,
     reload,
   } = useGantt();
+  const [draggedItemId, setDraggedItemId] = useState(null);
+  const [schedulingItemId, setSchedulingItemId] = useState(null);
+  const schedulingRef = useRef(false);
+  const suppressDragClickRef = useRef(false);
   const [zoomLevel, setZoomLevel] = useState('week');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isImportPanelOpen, setIsImportPanelOpen] = useState(false);
@@ -174,7 +179,13 @@ const GanttWorkspace = React.memo(() => {
   const handleItemChange = useCallback(
     async (id, changes) => {
       const item = items.find((candidate) => candidate.id === id);
-      if (!item || item.itemType === 'summary' || !item.startDate) {
+      if (
+        !canMutate ||
+        !item ||
+        item.itemType === 'summary' ||
+        !item.startDate ||
+        timelineItems.some((entry) => entry.id === id && entry.hasDerivedDates)
+      ) {
         return;
       }
 
@@ -184,7 +195,44 @@ const GanttWorkspace = React.memo(() => {
         toast.error(t('common.ganttSaveFailed'));
       }
     },
-    [items, t, updateItem],
+    [canMutate, items, timelineItems, t, updateItem],
+  );
+
+  const handleItemMove = useCallback(
+    async (id, changes) => {
+      const item = items.find((candidate) => candidate.id === id);
+      if (!canMutate || !item || !isValidParent(items, item, changes.parentId)) return;
+      try {
+        await updateItem(id, changes);
+      } catch (nextError) {
+        toast.error(
+          t(nextError.statusCode === 409 ? 'common.ganttTaskConflict' : 'common.ganttSaveFailed'),
+        );
+      }
+    },
+    [canMutate, items, t, updateItem],
+  );
+
+  const handleItemSchedule = useCallback(
+    async (id, changes) => {
+      const item = unscheduledItems.find((candidate) => candidate.id === id);
+      if (!canMutate || !item || schedulingRef.current) return;
+      if ('parentId' in changes && !isValidParent(items, item, changes.parentId)) return;
+      schedulingRef.current = true;
+      setSchedulingItemId(id);
+      setDraggedItemId(null);
+      try {
+        await updateItem(id, { ...changes, version: item.version });
+      } catch (nextError) {
+        toast.error(
+          t(nextError.statusCode === 409 ? 'common.ganttTaskConflict' : 'common.ganttSaveFailed'),
+        );
+      } finally {
+        schedulingRef.current = false;
+        setSchedulingItemId(null);
+      }
+    },
+    [canMutate, items, t, unscheduledItems, updateItem],
   );
 
   if (isLoading) {
@@ -278,7 +326,7 @@ const GanttWorkspace = React.memo(() => {
       </header>
 
       <section className={styles.timelineArea}>
-        {timelineItems.length > 0 ? (
+        {timelineItems.length > 0 || unscheduledItems.length > 0 ? (
           <GanttTimelineAdapter
             items={timelineItems}
             links={timelineLinks}
@@ -287,6 +335,10 @@ const GanttWorkspace = React.memo(() => {
             onZoomLevelChange={setZoomLevel}
             onItemSelect={handleItemSelect}
             onItemChange={handleItemChange}
+            moveItems={items}
+            onItemMove={handleItemMove}
+            draggedItem={canMutate ? unscheduledItems.find(({ id }) => id === draggedItemId) : null}
+            onItemSchedule={handleItemSchedule}
           />
         ) : (
           <div className={styles.emptyState}>
@@ -332,9 +384,34 @@ const GanttWorkspace = React.memo(() => {
                   key={item.id}
                   type="button"
                   className={styles.unscheduledItem}
-                  onClick={() => handleItemSelect(item.id)}
+                  draggable={canMutate && !schedulingItemId}
+                  disabled={Boolean(schedulingItemId)}
+                  aria-busy={schedulingItemId === item.id}
+                  title={canMutate ? t('common.ganttDragToSchedule') : undefined}
+                  onDragStart={(event) => {
+                    suppressDragClickRef.current = true;
+                    const { dataTransfer } = event;
+                    dataTransfer.setData(GANTT_ITEM_DRAG_TYPE, item.id);
+                    dataTransfer.effectAllowed = 'move';
+                    setDraggedItemId(item.id);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedItemId(null);
+                    window.setTimeout(() => {
+                      suppressDragClickRef.current = false;
+                    }, 0);
+                  }}
+                  onClick={() => {
+                    if (!suppressDragClickRef.current) handleItemSelect(item.id);
+                  }}
                 >
-                  <strong>{item.task}</strong>
+                  <strong>
+                    {canMutate && <Icon name="move" aria-hidden="true" />}
+                    {item.task}
+                  </strong>
+                  {schedulingItemId === item.id && (
+                    <span role="status">{t('common.ganttScheduling')}</span>
+                  )}
                   <span className={styles.unscheduledMeta}>
                     <span
                       className={styles.statusDot}
@@ -360,6 +437,9 @@ const GanttWorkspace = React.memo(() => {
           />
           <GanttItemPanel
             item={selectedItem}
+            derivedSchedule={timelineItems.find(
+              (item) => item.id === selectedItem?.id && item.hasDerivedDates,
+            )}
             users={users}
             parentItems={parentItems}
             canAddSubtask={canAddSubtask}

@@ -8,19 +8,34 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Icon } from 'semantic-ui-react';
 import { Gantt, WillowDark } from '@svar-ui/react-gantt';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { getID } from '@svar-ui/lib-dom';
 // The package exposes this stylesheet through "./all.css"; the legacy ESLint
 // resolver used by this project does not understand package export maps.
 // eslint-disable-next-line import/no-unresolved
 import '@svar-ui/react-gantt/all.css';
 
 import { buildGanttTaskColorStyles } from '../../constants/GanttColors';
-import { formatGanttDate } from '../../utils/gantt-dates';
+import {
+  addGanttDays,
+  formatGanttDate,
+  parseGanttDate,
+  updateGanttSchedule,
+} from '../../utils/gantt-dates';
 import createGanttCurrentTimeMarker, {
   getGanttCenteredScrollLeft,
+  getGanttDropSchedule,
+  GANTT_ITEM_DRAG_TYPE,
   getGanttTitleMarqueeMetrics,
 } from '../../utils/gantt-timeline';
 import CardMembers from '../cards/Card/CardMembers';
-import { mapGanttItemsToTimelineTasks, mapGanttLinksToTimelineLinks } from './ganttTimelineMapper';
+import useGanttRowDrag from './useGanttRowDrag';
+import { getGanttListDropChanges } from './ganttRowMove';
+import {
+  mapGanttItemsToTimelineTasks,
+  mapGanttLinksToTimelineLinks,
+  mapTimelineTaskDateChanges,
+} from './ganttTimelineMapper';
 
 import styles from './GanttTimelineAdapter.module.scss';
 
@@ -110,15 +125,22 @@ const TaskBarContent = React.memo(({ data }) => (
   </div>
 ));
 
-const TaskTitleCell = React.memo(({ row }) => (
-  <span className={styles.titleCell} title={row.text}>
-    {row.text}
-  </span>
-));
+const TaskTitleCell = React.memo(({ row }) => {
+  const [t] = useTranslation();
+  return (
+    <span
+      className={styles.titleCell}
+      title={row.canReorder ? t('common.ganttRowMoveHelp', { task: row.text }) : row.text}
+    >
+      {row.text}
+    </span>
+  );
+});
 
 TaskTitleCell.propTypes = {
   row: PropTypes.shape({
     text: PropTypes.string.isRequired,
+    canReorder: PropTypes.bool,
   }).isRequired,
 };
 
@@ -160,9 +182,25 @@ const GanttTimelineAdapter = React.memo(
     onZoomLevelChange,
     onItemSelect,
     onItemChange,
+    moveItems,
+    onItemMove,
+    draggedItem,
+    onItemSchedule,
   }) => {
     const [t, i18n] = useTranslation();
     const [readyZoomLevel, setReadyZoomLevel] = useState(null);
+    const [dropPreview, setDropPreview] = useState(null);
+    const [rowRevision, setRowRevision] = useState(0);
+    const timelineRef = useRef(null);
+    const resetRows = useCallback(() => setRowRevision((value) => value + 1), []);
+    const rowDrag = useGanttRowDrag({
+      items: moveItems || items,
+      readonly: readonly || variant === 'dashboard',
+      onMove: onItemMove,
+      onReset: resetRows,
+      containerRef: timelineRef,
+    });
+    const { init: initRowDrag } = rowDrag;
     const locale = i18n.resolvedLanguage || i18n.language;
     const todayLabel = useMemo(() => {
       const label = new Intl.RelativeTimeFormat(locale, {
@@ -172,9 +210,10 @@ const GanttTimelineAdapter = React.memo(
     }, [locale]);
     const onItemSelectRef = useRef(onItemSelect);
     const onItemChangeRef = useRef(onItemChange);
+    const itemsRef = useRef(items);
+    itemsRef.current = items;
     const onZoomLevelChangeRef = useRef(onZoomLevelChange);
     const ganttApiRef = useRef(null);
-    const timelineRef = useRef(null);
     const todayLabelRef = useRef(todayLabel);
     const isDashboardWidget = variant === 'dashboard';
     todayLabelRef.current = todayLabel;
@@ -255,11 +294,184 @@ const GanttTimelineAdapter = React.memo(
     }, [i18n.dateFns, locale, t]);
 
     const expandedRef = useRef(new Map());
-    // Zoom remounts the chart, so rebuild its input with the latest expansion state.
-    const tasks = useMemo(
-      () => mapGanttItemsToTimelineTasks(items, t, expandedRef.current),
-      [items, t, zoomLevel], // eslint-disable-line react-hooks/exhaustive-deps
-    );
+    const previousIdsRef = useRef(new Set(items.map(({ id }) => id)));
+    // A newly scheduled child must be visible even when its parent was collapsed.
+    const tasks = useMemo(() => {
+      const byId = new Map(items.map((item) => [item.id, item]));
+      items
+        .filter(({ id }) => !previousIdsRef.current.has(id))
+        .forEach((item) => {
+          let parent = byId.get(item.parentId);
+          const visited = new Set();
+          while (parent && !visited.has(parent.id)) {
+            visited.add(parent.id);
+            expandedRef.current.set(parent.id, true);
+            parent = byId.get(parent.parentId);
+          }
+        });
+      previousIdsRef.current = new Set(byId.keys());
+      return mapGanttItemsToTimelineTasks(items, t, expandedRef.current).map((task) => ({
+        ...task,
+        canReorder: !readonly && !isDashboardWidget,
+      }));
+    }, [items, t, zoomLevel, rowRevision, readonly, isDashboardWidget]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const emptyRange = useMemo(() => {
+      const today = formatGanttDate(new Date());
+      return {
+        start: parseGanttDate(addGanttDays(today, -14)),
+        end: parseGanttDate(addGanttDays(today, 60)),
+      };
+    }, []);
+
+    useEffect(() => {
+      const wrapper = timelineRef.current;
+      setDropPreview(null);
+      if (!wrapper || !draggedItem || readonly || isDashboardWidget) return undefined;
+      const clearPreview = () => setDropPreview(null);
+      const getPreview = (event) => {
+        const chart = wrapper.querySelector('.wx-chart');
+        const state = ganttApiRef.current?.getState();
+        if (!chart || !state) return null;
+        const bounds = chart.getBoundingClientRect();
+        const { _scales: scales } = state;
+        if (!scales) return null;
+        const bodyTop = bounds.top + scales.height + 1;
+        const wrapperBounds = wrapper.getBoundingClientRect();
+        if (
+          event.clientX >= wrapperBounds.left &&
+          event.clientX < bounds.left &&
+          event.clientY >= bodyTop &&
+          event.clientY < bounds.top + chart.clientHeight
+        ) {
+          const row = event.target.closest('.wx-table [role="row"][data-id]');
+          const target = row && items.find(({ id }) => id === getID(row));
+          const rowBounds = row?.getBoundingClientRect();
+          const titleBounds = row?.querySelector('.wx-text')?.getBoundingClientRect();
+          let mode = 'after';
+          if (rowBounds && event.clientY < rowBounds.top + rowBounds.height * 0.25) mode = 'before';
+          else if (
+            rowBounds &&
+            event.clientY < rowBounds.bottom - rowBounds.height * 0.25 &&
+            titleBounds &&
+            event.clientX >= titleBounds.left + 20 &&
+            event.clientX <= titleBounds.right
+          )
+            mode = 'child';
+          const changes = getGanttListDropChanges(
+            moveItems || items,
+            draggedItem.id,
+            target?.id,
+            mode,
+          );
+          const schedule = updateGanttSchedule(draggedItem, {
+            startDate: target?.startDate || formatGanttDate(new Date()),
+          });
+          return {
+            kind: 'list',
+            valid: Boolean(changes),
+            mode,
+            target: target?.task,
+            changes: {
+              ...changes,
+              startDate: schedule.startDate,
+              endDate: schedule.endDate,
+              expectedDurationDays: schedule.expectedDurationDays,
+            },
+            left: titleBounds
+              ? titleBounds.left - wrapperBounds.left + (mode === 'child' ? 20 : 0)
+              : 44,
+            top: rowBounds
+              ? (mode === 'before' ? rowBounds.top : rowBounds.bottom) - wrapperBounds.top
+              : event.clientY - wrapperBounds.top,
+            width: bounds.left - wrapperBounds.left,
+            parentTop: rowBounds ? rowBounds.top - wrapperBounds.top : 0,
+            parentHeight: rowBounds?.height || 0,
+          };
+        }
+        if (
+          event.clientX < bounds.left ||
+          event.clientX >= bounds.left + chart.clientWidth ||
+          event.clientY < bodyTop ||
+          event.clientY >= bounds.top + chart.clientHeight
+        )
+          return null;
+        const schedule = getGanttDropSchedule({
+          x: event.clientX - bounds.left + chart.scrollLeft,
+          scales,
+          cellWidth: state.cellWidth,
+          expectedDurationDays: draggedItem.expectedDurationDays,
+        });
+        if (!schedule) return null;
+        return {
+          ...schedule,
+          left: schedule.left - chart.scrollLeft,
+          top: Math.max(
+            0,
+            Math.floor((event.clientY - bodyTop + chart.scrollTop) / state.cellHeight) *
+              state.cellHeight -
+              chart.scrollTop,
+          ),
+          chartLeft: bounds.left - wrapperBounds.left,
+          chartTop: bodyTop - wrapperBounds.top,
+          chartWidth: chart.clientWidth,
+          chartHeight: chart.clientHeight - scales.height - 1,
+        };
+      };
+      const dragOver = (event) => {
+        if (!event.dataTransfer.types.includes(GANTT_ITEM_DRAG_TYPE)) return;
+        event.stopPropagation();
+        const preview = getPreview(event);
+        event.preventDefault();
+        const { dataTransfer } = event;
+        dataTransfer.dropEffect = preview && preview.valid !== false ? 'move' : 'none';
+        setDropPreview(preview);
+      };
+      const drop = (event) => {
+        if (event.dataTransfer.getData(GANTT_ITEM_DRAG_TYPE) !== draggedItem.id) return;
+        event.stopPropagation();
+        const preview = getPreview(event);
+        event.preventDefault();
+        clearPreview();
+        if (
+          !preview ||
+          preview.valid === false ||
+          event.dataTransfer.getData(GANTT_ITEM_DRAG_TYPE) !== draggedItem.id
+        )
+          return;
+        onItemSchedule(
+          draggedItem.id,
+          preview.kind === 'list'
+            ? preview.changes
+            : {
+                startDate: preview.startDate,
+                endDate: preview.endDate,
+                expectedDurationDays: preview.expectedDurationDays,
+              },
+        );
+      };
+      const leave = (event) => {
+        if (!wrapper.contains(event.relatedTarget)) clearPreview();
+      };
+      const escape = (event) => {
+        if (event.key === 'Escape') clearPreview();
+      };
+      // The grid handles its own HTML drops; reserve only our external item MIME type.
+      wrapper.addEventListener('dragenter', dragOver, true);
+      wrapper.addEventListener('dragover', dragOver, true);
+      wrapper.addEventListener('drop', drop, true);
+      wrapper.addEventListener('dragleave', leave);
+      document.addEventListener('keydown', escape);
+      document.addEventListener('dragend', clearPreview);
+      return () => {
+        wrapper.removeEventListener('dragenter', dragOver, true);
+        wrapper.removeEventListener('dragover', dragOver, true);
+        wrapper.removeEventListener('drop', drop, true);
+        wrapper.removeEventListener('dragleave', leave);
+        document.removeEventListener('keydown', escape);
+        document.removeEventListener('dragend', clearPreview);
+      };
+    }, [draggedItem, readonly, isDashboardWidget, onItemSchedule, zoomLevel, items, moveItems]);
 
     const assigneesColumnWidth = useMemo(() => {
       const maximum = Math.max(0, ...items.map((item) => item.assigneeUserIds?.length || 0));
@@ -267,10 +479,12 @@ const GanttTimelineAdapter = React.memo(
       return 44 + Math.max(0, visibleSlots - 1) * 18;
     }, [items]);
 
+    // Manual order is authoritative; column sorting would mask persisted row moves.
     const columns = useMemo(
       () => [
         {
           id: 'assignees',
+          sort: false,
           header: createHeader(t('common.ganttPerson'), 'users'),
           width: assigneesColumnWidth,
           resize: true,
@@ -278,6 +492,7 @@ const GanttTimelineAdapter = React.memo(
         },
         {
           id: 'text',
+          sort: false,
           header: createHeader(t('common.ganttTask')),
           width: 190,
           resize: true,
@@ -285,6 +500,7 @@ const GanttTimelineAdapter = React.memo(
         },
         {
           id: 'startLabel',
+          sort: false,
           header: createHeader(t('common.ganttStart')),
           width: 64,
           align: 'center',
@@ -292,6 +508,7 @@ const GanttTimelineAdapter = React.memo(
         },
         {
           id: 'endLabel',
+          sort: false,
           header: createHeader(t('common.ganttEnd')),
           width: 64,
           align: 'center',
@@ -299,12 +516,14 @@ const GanttTimelineAdapter = React.memo(
         },
         {
           id: 'durationLabel',
+          sort: false,
           header: createHeader(t('common.ganttDuration')),
           width: 48,
           align: 'center',
         },
         {
           id: 'statusLabel',
+          sort: false,
           header: createHeader(t('common.ganttStatus')),
           width: 104,
           align: 'center',
@@ -409,12 +628,11 @@ const GanttTimelineAdapter = React.memo(
           const task = ganttApi.getTask(id);
           return Boolean(task && task.type !== 'summary' && !task.hasDerivedDates);
         };
-        ganttApi.intercept('drag-task', canChangeTask);
+        ganttApi.intercept('drag-task', (event) => event.top !== undefined || canChangeTask(event));
         ganttApi.intercept('update-task', (event) =>
           event.eventSource ? true : canChangeTask(event),
         );
-        // Reparenting is validated and persisted through the existing item editor.
-        ganttApi.intercept('move-task', () => false);
+        initRowDrag(ganttApi);
 
         if (!isDashboardWidget) {
           ganttApi.on('select-task', ({ id }) => {
@@ -431,11 +649,10 @@ const GanttTimelineAdapter = React.memo(
               return;
             }
 
-            onItemChangeRef.current(String(id), {
-              startDate: formatGanttDate(task.start),
-              endDate: formatGanttDate(new Date(task.end.getTime() - 86400000)),
-              expectedDurationDays: Math.max(1, Math.round(task.duration || 1)),
-            });
+            const item = itemsRef.current.find((candidate) => String(candidate.id) === String(id));
+            if (item) {
+              onItemChangeRef.current(String(id), mapTimelineTaskDateChanges(task, item));
+            }
           });
         }
 
@@ -444,8 +661,10 @@ const GanttTimelineAdapter = React.memo(
           setReadyZoomLevel(zoomLevel);
         });
       },
-      [isDashboardWidget, updateCurrentTimeMarker, zoomLevel],
+      [isDashboardWidget, updateCurrentTimeMarker, zoomLevel, initRowDrag],
     );
+
+    const timelineLinks = useMemo(() => mapGanttLinksToTimelineLinks(links), [links]);
 
     const taskColorStyles = useMemo(() => buildGanttTaskColorStyles(tasks), [tasks]);
 
@@ -475,7 +694,17 @@ const GanttTimelineAdapter = React.memo(
         className={styles.wrapper}
         data-gantt-color-scope
         data-zoom-level={zoomLevel}
-        style={{ visibility: readyZoomLevel === zoomLevel ? 'visible' : 'hidden' }}
+        data-row-drag-enabled={!readonly && !isDashboardWidget && !rowDrag.isSaving}
+        data-row-drag-intent={rowDrag.preview?.kind}
+        onMouseDownCapture={rowDrag.onPointerDown}
+        onTouchStartCapture={rowDrag.onPointerDown}
+        onKeyDownCapture={rowDrag.onKeyDown}
+        onPointerCancel={rowDrag.onCancel}
+        style={{
+          visibility: readyZoomLevel === zoomLevel ? 'visible' : 'hidden',
+          '--gantt-row-shift': `${rowDrag.preview?.shift || 0}px`,
+          '--gantt-row-indent': `${Math.max(0, (rowDrag.preview?.level || 1) - 1) * 20}px`,
+        }}
       >
         <style>{taskColorStyles}</style>
         <WillowDark fonts={false}>
@@ -483,10 +712,10 @@ const GanttTimelineAdapter = React.memo(
             key={zoomLevel}
             tasks={tasks}
             taskTemplate={TaskBarContent}
-            links={mapGanttLinksToTimelineLinks(links)}
+            links={timelineLinks}
             columns={columns}
             gridWidth={523 + assigneesColumnWidth}
-            readonly={readonly}
+            readonly={readonly || rowDrag.isSaving}
             cellBorders="full"
             cellHeight={42}
             scaleHeight={54}
@@ -496,10 +725,80 @@ const GanttTimelineAdapter = React.memo(
             scales={zoom.scales}
             zoom={nativeZoom}
             highlightTime={highlightTime}
+            start={tasks.length === 0 ? emptyRange.start : undefined}
+            end={tasks.length === 0 ? emptyRange.end : undefined}
             autoScale
             init={handleInit}
           />
         </WillowDark>
+        {rowDrag.preview && (
+          <div className={styles.rowDragFeedback} role="status" aria-live="polite">
+            <span aria-hidden="true">
+              {{ order: '↕', child: '↳', outdent: '↰', invalid: '⊘' }[rowDrag.preview.kind]}
+            </span>
+            <span>
+              {t(`common.ganttRowDrag_${rowDrag.preview.kind}`, {
+                parent: rowDrag.preview.parentName || t('common.ganttRowDrag_root'),
+              })}
+            </span>
+          </div>
+        )}
+        {dropPreview?.kind === 'list' && draggedItem && !readonly && (
+          <>
+            {dropPreview.valid && (
+              <div
+                className={styles.listDropTarget}
+                data-child={dropPreview.mode === 'child'}
+                style={{
+                  left: dropPreview.left,
+                  right: `calc(100% - ${dropPreview.width}px)`,
+                  top: dropPreview.mode === 'child' ? dropPreview.parentTop : dropPreview.top,
+                  height: dropPreview.mode === 'child' ? dropPreview.parentHeight : 2,
+                }}
+              />
+            )}
+            <div className={styles.rowDragFeedback} role="status">
+              {dropPreview.valid
+                ? t(`common.ganttListDrop_${dropPreview.target ? dropPreview.mode : 'root'}`, {
+                    task: dropPreview.target,
+                    start: dropPreview.changes.startDate,
+                    end: dropPreview.changes.endDate,
+                  })
+                : t('common.ganttRowDrag_invalid')}
+            </div>
+          </>
+        )}
+        {dropPreview && dropPreview.kind !== 'list' && draggedItem && !readonly && (
+          <div
+            className={styles.dropOverlay}
+            style={{
+              left: dropPreview.chartLeft,
+              top: dropPreview.chartTop,
+              width: dropPreview.chartWidth,
+              height: dropPreview.chartHeight,
+            }}
+          >
+            <div
+              className={styles.dropBar}
+              style={{
+                left: dropPreview.left,
+                top: dropPreview.top,
+                width: Math.max(1, dropPreview.width),
+              }}
+            />
+            <div
+              className={styles.dropLabel}
+              role="status"
+              style={{ top: Math.min(dropPreview.top + 32, dropPreview.chartHeight - 28) }}
+            >
+              {t('common.ganttDropPreview', {
+                start: dropPreview.startDate,
+                end: dropPreview.endDate,
+                count: dropPreview.expectedDurationDays,
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   },
@@ -514,6 +813,10 @@ GanttTimelineAdapter.propTypes = {
   onZoomLevelChange: PropTypes.func,
   onItemSelect: PropTypes.func,
   onItemChange: PropTypes.func,
+  moveItems: PropTypes.array, // eslint-disable-line react/forbid-prop-types
+  onItemMove: PropTypes.func,
+  draggedItem: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+  onItemSchedule: PropTypes.func,
 };
 
 GanttTimelineAdapter.defaultProps = {
@@ -521,6 +824,10 @@ GanttTimelineAdapter.defaultProps = {
   onZoomLevelChange: () => {},
   onItemSelect: () => {},
   onItemChange: () => {},
+  moveItems: null,
+  onItemMove: () => {},
+  draggedItem: null,
+  onItemSchedule: () => {},
 };
 
 export default GanttTimelineAdapter;
