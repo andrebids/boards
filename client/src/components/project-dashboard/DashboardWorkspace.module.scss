@@ -248,11 +248,17 @@
     padding: 16px 16px 124px;
 
     .grid {
-      min-height: calc(100vh - 140px);
+      min-height: 0;
     }
 
     .editorLayout {
-      min-height: calc(100vh - 140px);
+      height: calc(100vh - 140px);
+      height: calc(100dvh - 140px);
+      min-height: 0;
+
+      > section {
+        min-height: 0;
+      }
     }
   }
 
@@ -260,9 +266,9 @@
     .tvMode {
       padding: 10px 10px 118px;
 
-      .grid,
       .editorLayout {
-        min-height: calc(100vh - 128px);
+        height: calc(100vh - 128px);
+        height: calc(100dvh - 128px);
       }
     }
 

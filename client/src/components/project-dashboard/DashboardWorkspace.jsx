@@ -97,6 +97,7 @@ const dashboardWidgetComponents = { DashboardWidget };
 
 const DashboardWorkspace = React.memo(() => {
   const gridComponentRef = useRef(null);
+  const gridContainerRef = useRef(null);
   const saveTimerRef = useRef(null);
   const layoutVersionRef = useRef(null);
   const isLoadingGridRef = useRef(false);
@@ -283,6 +284,31 @@ const DashboardWorkspace = React.memo(() => {
 
     return () => window.cancelAnimationFrame(frameId);
   }, [dashboardLayout, isDashboardLoading, loadGridLayout]);
+
+  useEffect(() => {
+    const container = gridContainerRef.current;
+    if (!isTvMode || isDashboardLoading || !container) {
+      return undefined;
+    }
+
+    const fitGrid = () => {
+      const grid = gridComponentRef.current?.getGrid();
+      if (grid && container.clientHeight > 0) {
+        grid.cellHeight(container.clientHeight / Math.max(1, grid.getRow()));
+      }
+    };
+    // Run after the saved layout is loaded, then follow the available TV height.
+    const frameId = window.requestAnimationFrame(fitGrid);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fitGrid);
+    observer?.observe(container);
+    window.addEventListener('resize', fitGrid);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      observer?.disconnect();
+      window.removeEventListener('resize', fitGrid);
+    };
+  }, [dashboardLayout, isDashboardLoading, isTvMode]);
 
   // GridStack can be mounted while the edit lock is still being acquired. Apply
   // the final interaction state directly once the lock result is known.
@@ -517,7 +543,7 @@ const DashboardWorkspace = React.memo(() => {
       cellHeight: 88,
       children: dashboardLayout.map(dashboardLayoutHelpers.toGridStackDashboardWidget),
       column: 12,
-      columnOpts: { breakpoints: [{ c: 1, w: 760 }] },
+      columnOpts: isTvMode ? undefined : { breakpoints: [{ c: 1, w: 760 }] },
       disableDrag: isTvMode || !canEditDashboard,
       disableResize: isTvMode || !canEditDashboard,
       draggable: { handle: `.${styles.dragHandle}` },
@@ -660,7 +686,7 @@ const DashboardWorkspace = React.memo(() => {
             )}
           </aside>
         )}
-        <section aria-label="Dashboard TV">
+        <section aria-label="Dashboard TV" ref={gridContainerRef}>
           <DashboardWidgetActionsContext.Provider value={widgetActions}>
             <GridStackReact
               className={styles.grid}
