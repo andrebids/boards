@@ -49,6 +49,63 @@ const isValidWindow = (window) =>
     Number.isSafeInteger(window.resetsAt) &&
     window.resetsAt > 0);
 
+// Explicit opt-in: this private endpoint can change without notice. Credentials never leave
+// the local machine except for the access token sent to this fixed Anthropic HTTPS origin.
+export const fetchOAuthRateLimits = async (configDirectory, fetchImpl = fetch) => {
+  let accessToken;
+  try {
+    const credentials = JSON.parse(
+      await readFile(path.join(configDirectory, ".credentials.json"), "utf8"),
+    );
+    accessToken = credentials?.claudeAiOauth?.accessToken;
+  } catch {
+    throw new Error("Claude credentials unavailable; run claude auth login");
+  }
+  if (typeof accessToken !== "string" || !accessToken.trim()) {
+    throw new Error("Claude access token unavailable; run claude auth login");
+  }
+
+  let response;
+  try {
+    response = await fetchImpl("https://api.anthropic.com/api/oauth/usage", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "anthropic-beta": "oauth-2025-04-20",
+      },
+      redirect: "error",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  } catch {
+    throw new Error("Claude usage request failed (network or timeout)");
+  }
+  if (!response.ok) {
+    throw new Error(
+      `Claude usage request failed (HTTP ${response.status})${
+        response.status === 401 ? "; run claude auth login" : ""
+      }`,
+    );
+  }
+
+  try {
+    const usage = await response.json();
+    const normalize = (window) => {
+      if (window == null) return null;
+      const result = {
+        usedPercent: window.utilization,
+        resetsAt: Math.floor(Date.parse(window.resets_at) / 1000),
+      };
+      if (!isValidWindow(result)) throw new Error();
+      return result;
+    };
+    const fiveHour = normalize(usage.five_hour);
+    const sevenDay = normalize(usage.seven_day);
+    if (!fiveHour && !sevenDay) throw new Error();
+    return { fiveHour, sevenDay, capturedAt: new Date().toISOString() };
+  } catch {
+    throw new Error("Claude usage response has an unsupported format");
+  }
+};
+
 // Reads the snapshot written by claude-usage-statusline.mjs from Claude Code `rate_limits`.
 export const readRateLimitsSnapshot = async (usageDirectory) => {
   let snapshot;
@@ -287,9 +344,16 @@ const runBridge = async () => {
 
   const endpoint = createPlankaUsageUrl(plankaUrl);
   const configDirectory = getClaudeConfigDirectory();
-  const rateLimits = await readRateLimitsSnapshot(
-    path.join(configDirectory, "planka-usage"),
-  );
+  const usageDirectory = path.join(configDirectory, "planka-usage");
+  const bridgeConfig = await readFile(path.join(usageDirectory, "config.json"), "utf8")
+    .then(JSON.parse)
+    .catch((error) => {
+      if (error.code === "ENOENT") return {};
+      throw new Error("Claude usage bridge config is unreadable");
+    });
+  const rateLimits = bridgeConfig.oauthEnabled === true
+    ? await fetchOAuthRateLimits(configDirectory)
+    : await readRateLimitsSnapshot(usageDirectory);
   const tokenActivity = await collectTokenActivity(
     path.join(configDirectory, "projects"),
   );

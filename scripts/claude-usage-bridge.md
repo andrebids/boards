@@ -13,14 +13,23 @@ com uma Admin API key da organização, e não inclui a subscrição Claude.ai.
 
 Limitações conhecidas:
 
-- O Claude Code só envia `rate_limits` a contas Pro/Max autenticadas com claude.ai, depois da
+- Com `~/.claude/planka-usage/config.json` contendo `{"oauthEnabled":true}`, a bridge
+  consulta `https://api.anthropic.com/api/oauth/usage` em cada execução usando o access token
+  de `~/.claude/.credentials.json` (ou `CLAUDE_CONFIG_DIR`). Esta opção é explícita porque
+  o endpoint não é documentado e pode mudar. Funciona sem uma sessão de terminal ativa.
+  Só os limites normalizados são enviados ao Planka; os tokens não são registados nem enviados
+  ao Planka. Redirecionamentos são recusados e cada pedido tem timeout de 15 segundos.
+  Uma falha mantém a leitura anterior em produção, sem renovar a data de captura.
+  Em HTTP 401, voltar a executar `claude auth login`: a bridge não renova nem altera credenciais.
+  Remover esta opção repõe o modo baseado no status line.
+
+- No modo status line, o Claude Code só envia `rate_limits` a contas Pro/Max autenticadas com claude.ai, depois da
   primeira resposta da sessão e enquanto uma sessão está aberta. Sem sessão ativa, o painel mostra
   a hora da última leitura e marca-a como desatualizada após 30 minutos.
 - Quando a hora de reposição de uma janela passa, a percentagem antiga deixa de ser mostrada.
 - O formato dos transcripts é interno ao Claude Code. Linhas desconhecidas são ignoradas; os
   tokens incluem input, output e cache (criação e leitura), contando cada mensagem uma vez.
-- O endpoint não documentado `api.anthropic.com/api/oauth/usage` não é usado, nem as credenciais
-  locais do Claude Code.
+- Sem a opção OAuth, não são usadas as credenciais locais nem o endpoint privado.
 
 ## Configuração
 
@@ -66,9 +75,9 @@ A tarefa `Claude Usage Bridge` executa `%USERPROFILE%\.claude\planka-usage\run-h
 cada 5 minutos. Usa o mutex `Local\ClaudeUsageBridge`, limita cada execução a 2 minutos, tenta
 de novo após 1 minuto em caso de erro (até 3 vezes) e roda o `bridge.log` acima de 1 MB.
 
-A tarefa só lê ficheiros locais e envia para o Planka: não faz pedidos à Anthropic nem consome
-utilização da subscrição. Os limites só ficam atuais enquanto o Claude Code (com o status line
-configurado) está a ser usado; nos restantes períodos o painel mostra a idade da última leitura.
+A tarefa consulta os limites na Anthropic quando a opção OAuth está ativa, sem pedidos de geração.
+Sem essa opção, só lê ficheiros locais: os limites ficam atuais enquanto o Claude Code
+(com o status line configurado) está a ser usado. O painel mostra a idade da última leitura.
 
 `run.ps1` lê do utilizador Windows `CLAUDE_USAGE_PLANKA_URL`, `CLAUDE_USAGE_BRIDGE_TOKEN` e,
 como alternativa ao segundo, `CODEX_USAGE_BRIDGE_TOKEN`. Para passar de desenvolvimento para

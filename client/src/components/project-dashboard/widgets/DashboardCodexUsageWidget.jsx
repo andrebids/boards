@@ -417,9 +417,6 @@ const ClaudeUsagePanel = React.memo(() => {
   return (
     <section className={`${styles.wrapper} ${styles.claude}`} aria-label="Utilização do Claude">
       <div className={styles.weekly}>
-        <h2 className={styles.providerName}>
-          Claude <small>subscrição</small>
-        </h2>
         <div
           className={styles.gauge}
           role="status"

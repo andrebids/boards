@@ -7,6 +7,7 @@ import test from "node:test";
 import {
   collectTokenActivity,
   createPlankaUsageUrl,
+  fetchOAuthRateLimits,
   getTranscriptEntryUsage,
   readRateLimitsSnapshot,
   summarizeDailyTokens,
@@ -18,6 +19,39 @@ import {
 } from "./claude-usage-statusline.mjs";
 
 const CAPTURED_AT = new Date("2026-09-14T11:00:00.000Z");
+
+test("OAuth usage reads fresh limits and fails safely on expired login or invalid data", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "claude-oauth-test-"));
+  try {
+    await writeFile(path.join(directory, ".credentials.json"), JSON.stringify({
+      claudeAiOauth: { accessToken: "test-only-token" },
+    }));
+    const result = await fetchOAuthRateLimits(directory, async (url, options) => {
+      assert.equal(url, "https://api.anthropic.com/api/oauth/usage");
+      assert.equal(options.redirect, "error");
+      assert.equal(options.headers.Authorization, "Bearer test-only-token");
+      return { ok: true, json: async () => ({
+        five_hour: { utilization: 0, resets_at: "2026-09-14T21:10:00+01:00" },
+        seven_day: { utilization: 4, resets_at: "2026-09-20T07:00:00+01:00" },
+      }) };
+    });
+    assert.equal(result.sevenDay.usedPercent, 4);
+    assert.equal(result.fiveHour.usedPercent, 0);
+    assert.equal(result.sevenDay.resetsAt, 1789884000);
+    assert.ok(Date.now() - Date.parse(result.capturedAt) < 5000);
+    await assert.rejects(fetchOAuthRateLimits(directory, async () => ({
+      ok: false, status: 401,
+    })), /401.*auth login/);
+    await assert.rejects(fetchOAuthRateLimits(directory, async () => ({
+      ok: true, json: async () => ({ seven_day: { utilization: 104, resets_at: "bad" } }),
+    })), /unsupported format/);
+    await assert.rejects(fetchOAuthRateLimits(directory, async () => {
+      throw new Error("test-only-token");
+    }), (error) => !error.message.includes("test-only-token"));
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
 
 test("status line keeps only documented Claude.ai subscription windows", () => {
   const input = {

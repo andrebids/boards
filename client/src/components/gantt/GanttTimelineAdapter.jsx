@@ -618,8 +618,14 @@ const GanttTimelineAdapter = React.memo(
         chartWidth ||
         currentChartWidth;
       if (focus && focusChartWidth) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const baseScroll = getGanttCenteredScrollLeft(marker.left, focusChartWidth);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const adjustedScroll = isDashboardWidget
+          ? baseScroll + Math.round(focusChartWidth * 0.15)
+          : baseScroll;
         ganttApi.exec('scroll-chart', {
-          left: getGanttCenteredScrollLeft(marker.left, focusChartWidth),
+          left: adjustedScroll,
         });
       }
     }, []);
