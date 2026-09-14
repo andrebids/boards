@@ -13,7 +13,7 @@ describe('dashboard gantt layout', () => {
     expect(getDashboardGanttPageSize(812)).toBe(19);
     expect(getDashboardGanttPageSize(120)).toBe(4);
     expect(getDashboardGanttFontSize(38)).toBe(16);
-    expect(getDashboardGanttFontSize(28)).toBe(13);
+    expect(getDashboardGanttFontSize(28)).toBe(11);
     expect(getDashboardGanttFontSize(90)).toBe(17);
   });
 

@@ -362,10 +362,10 @@ const GanttTimelineAdapter = React.memo(
     const emptyRange = useMemo(() => {
       const today = formatGanttDate(new Date());
       return {
-        start: parseGanttDate(addGanttDays(today, -14)),
-        end: parseGanttDate(addGanttDays(today, 60)),
+        start: parseGanttDate(addGanttDays(today, isDashboardWidget ? -7 : -14)),
+        end: parseGanttDate(addGanttDays(today, isDashboardWidget ? 85 : 60)),
       };
-    }, []);
+    }, [isDashboardWidget]);
 
     useEffect(() => {
       const wrapper = timelineRef.current;

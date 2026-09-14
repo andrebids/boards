@@ -133,10 +133,6 @@ function TokenActivity({ activity, emptyMessage, note, stats }) {
 
   return (
     <div className={styles.activity} ref={activityRef}>
-      <div className={styles.activityHeading}>
-        <span>Atividade de tokens</span>
-        <small>{focusedPeriodLabel || 'últimos 12 meses'}</small>
-      </div>
       {hasActivity ? (
         <>
           <div
