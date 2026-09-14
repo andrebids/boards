@@ -1,11 +1,11 @@
 // Sizing rules shared by the dashboard variant of the Gantt adapter and the
 // dashboard widget that paginates items into pages that fit those rules.
 
-export const DASHBOARD_GANTT_MIN_ROW_HEIGHT = 40;
-export const DASHBOARD_GANTT_MAX_ROW_HEIGHT = 64;
-export const DASHBOARD_GANTT_TARGET_ROW_HEIGHT = 52;
-export const DASHBOARD_GANTT_MIN_FONT_SIZE = 16;
-export const DASHBOARD_GANTT_MAX_FONT_SIZE = 24;
+export const DASHBOARD_GANTT_MIN_ROW_HEIGHT = 30;
+export const DASHBOARD_GANTT_MAX_ROW_HEIGHT = 44;
+export const DASHBOARD_GANTT_TARGET_ROW_HEIGHT = 38;
+export const DASHBOARD_GANTT_MIN_FONT_SIZE = 13;
+export const DASHBOARD_GANTT_MAX_FONT_SIZE = 17;
 export const DASHBOARD_GANTT_MIN_PAGE_SIZE = 4;
 
 // Horizontal scrollbar and border allowance below the last row.
@@ -15,8 +15,8 @@ const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, v
 
 export const getDashboardGanttScaleHeight = (height) => {
   if (height < 500) return 24;
-  if (height < 720) return 32;
-  return 40;
+  if (height < 720) return 28;
+  return 32;
 };
 
 export const getDashboardGanttRowsHeight = (height) =>

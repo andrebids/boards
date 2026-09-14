@@ -6,14 +6,15 @@ const sortTasks = (tasks) =>
   );
 
 const TASK_ROW_HEIGHT = 34;
-const TASK_ROW_MAX_HEIGHT = 72;
+const TASK_ROW_MAX_HEIGHT = 56;
 const TASK_ROW_GAP = 2;
 
-// Type grows with the row so a short list on a TV reads from across the room.
+// Type grows with the row, between the 13px floor used across the TV dashboard and
+// a size that still leaves room for long lists.
 const getTaskListFontSize = (rowHeight) => {
-  if (rowHeight >= 64) return 26;
-  if (rowHeight >= 52) return 20;
-  if (rowHeight >= 40) return 15;
+  if (rowHeight >= 56) return 18;
+  if (rowHeight >= 44) return 16;
+  if (rowHeight >= 36) return 14;
   return 13;
 };
 

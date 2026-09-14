@@ -491,7 +491,6 @@ const ClaudeUsagePanel = React.memo(() => {
       <TokenActivity
         activity={usage?.tokenActivity}
         emptyMessage="A bridge ainda não enviou atividade local do Claude Code."
-        note="Claude Code local · inclui cache · sem faturação API"
         stats={getClaudeActivityStats(usage)}
       />
     </section>

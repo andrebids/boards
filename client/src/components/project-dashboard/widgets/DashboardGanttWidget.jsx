@@ -2,8 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Loader } from 'semantic-ui-react';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import selectors from '../../../selectors';
+import GANTT_STATUSES, { getGanttStatusTranslationKey } from '../../../constants/GanttStatuses';
+import { getGanttStatusColor } from '../../../constants/GanttColors';
 import { ProjectGanttProvider, useGantt } from '../../gantt';
 import GanttTimelineAdapter from '../../gantt/GanttTimelineAdapter';
 import {
@@ -22,6 +25,7 @@ const FALLBACK_CONTENT_HEIGHT = 600;
 
 const DashboardGanttContent = React.memo(
   ({ cardId, projectName, rotationSeconds, taskListId, zoomLevel }) => {
+    const [t] = useTranslation();
     const { plan, items, links, isLoading, error } = useGantt();
     const contentRef = useRef(null);
     const [contentHeight, setContentHeight] = useState(0);
@@ -93,10 +97,20 @@ const DashboardGanttContent = React.memo(
             <strong>{projectName}</strong>
           </div>
           {!isLoading && plan?.isEnabled && (
-            <small>
-              {timelineItems.length} tarefas planeadas
-              {pages.length > 1 && ` · página ${pageIndex + 1}/${pages.length}`}
-            </small>
+            <div className={styles.headerMeta}>
+              <ul className={styles.legend} aria-label="Legenda de estados">
+                {GANTT_STATUSES.map((status) => (
+                  <li key={status}>
+                    <i style={{ background: getGanttStatusColor(status) }} aria-hidden="true" />
+                    {t(getGanttStatusTranslationKey(status))}
+                  </li>
+                ))}
+              </ul>
+              <small>
+                {timelineItems.length} tarefas planeadas
+                {pages.length > 1 && ` · página ${pageIndex + 1}/${pages.length}`}
+              </small>
+            </div>
           )}
         </header>
         <div

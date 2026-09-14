@@ -266,32 +266,32 @@
 // Wall TV sizing: controls follow the auto-fitted font so a short list fills the panel.
 :global(#app) :global(.dashboard-tv) {
   .module {
-    padding-left: 84px;
+    padding-left: 72px;
     padding-right: 28px;
   }
 
   .moduleHeader {
-    font-size: 28px;
-    line-height: 36px;
-    padding: 10px 0;
+    font-size: 20px;
+    line-height: 28px;
+    padding: 6px 0;
   }
 
   .moduleIcon {
-    font-size: 28px;
-    height: 44px;
+    font-size: 20px;
+    height: 36px;
     left: 28px;
-    line-height: 44px;
+    line-height: 36px;
     top: 8px;
-    width: 44px;
+    width: 36px;
   }
 
   .count {
-    font-size: 22px;
-    line-height: 28px;
+    font-size: 16px;
+    line-height: 22px;
   }
 
   :global(.ui.progress).progress {
-    height: 10px !important;
+    height: 8px !important;
   }
 
   .progressRow {
@@ -346,11 +346,11 @@
   }
 
   .state {
-    font-size: 22px;
+    font-size: 16px;
     gap: 14px;
 
     :global(i.icon) {
-      font-size: 36px;
+      font-size: 28px;
     }
   }
 }

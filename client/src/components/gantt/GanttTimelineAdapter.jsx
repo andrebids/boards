@@ -155,6 +155,30 @@ TaskBarContent.propTypes = {
   }).isRequired,
 };
 
+// Dashboard bars carry the assignees because the grid columns are hidden there.
+const DashboardTaskBarContent = React.memo(({ data }) => {
+  const assigneeUserIds = data.type === 'summary' ? [] : data.assigneeUserIds || [];
+
+  return (
+    <div className={`${styles.barContent} ${styles.barContentDashboard}`}>
+      {assigneeUserIds.length > 0 && (
+        <span className={styles.barAssignees}>
+          <CardMembers userIds={assigneeUserIds} />
+        </span>
+      )}
+      <OverflowMarquee text={data.text} centered={assigneeUserIds.length === 0} />
+    </div>
+  );
+});
+
+DashboardTaskBarContent.propTypes = {
+  data: PropTypes.shape({
+    assigneeUserIds: PropTypes.arrayOf(PropTypes.string),
+    text: PropTypes.string.isRequired,
+    type: PropTypes.string,
+  }).isRequired,
+};
+
 const ColumnHeader = React.memo(({ cell }) => (
   <span className={cell.icon ? styles.iconHeader : styles.columnHeader} title={cell.text}>
     {cell.icon ? (
@@ -222,22 +246,14 @@ const GanttTimelineAdapter = React.memo(
     const todayLabelRef = useRef(todayLabel);
     const isDashboardWidget = variant === 'dashboard';
     const [dashboardHeight, setDashboardHeight] = useState(0);
-    const [dashboardWidth, setDashboardWidth] = useState(0);
     // The dashboard widget paginates items so these floors stay readable on a TV.
     const dashboardScaleHeight = getDashboardGanttScaleHeight(dashboardHeight);
     const dashboardRowHeight = getDashboardGanttRowHeight(dashboardHeight, items.length);
-    // Narrow TV widgets (720p) keep most of the width for the timeline itself.
-    const isCompactDashboard = isDashboardWidget && dashboardWidth > 0 && dashboardWidth < 960;
-    const dashboardTextColumnWidth = isCompactDashboard ? 230 : 340;
-    const dashboardStatusColumnWidth = isCompactDashboard ? 118 : 150;
 
     useEffect(() => {
       const node = timelineRef.current;
       if (!isDashboardWidget || !node) return undefined;
-      const measure = () => {
-        setDashboardHeight(node.clientHeight);
-        setDashboardWidth(node.clientWidth);
-      };
+      const measure = () => setDashboardHeight(node.clientHeight);
       measure();
       const observer = new ResizeObserver(measure);
       observer.observe(node);
@@ -507,8 +523,14 @@ const GanttTimelineAdapter = React.memo(
     }, [items]);
 
     // Manual order is authoritative; column sorting would mask persisted row moves.
+    // The dashboard shows only the timeline: an empty column list hides the SVAR grid,
+    // and the bars themselves carry the task name and assignees.
     const columns = useMemo(() => {
-      const allColumns = [
+      if (isDashboardWidget) {
+        return [];
+      }
+
+      return [
         {
           id: 'assignees',
           sort: false,
@@ -521,7 +543,7 @@ const GanttTimelineAdapter = React.memo(
           id: 'text',
           sort: false,
           header: createHeader(t('common.ganttTask')),
-          width: isDashboardWidget ? dashboardTextColumnWidth : 190,
+          width: 190,
           resize: true,
           cell: TaskTitleCell,
         },
@@ -552,26 +574,15 @@ const GanttTimelineAdapter = React.memo(
           id: 'statusLabel',
           sort: false,
           header: createHeader(t('common.ganttStatus')),
-          width: isDashboardWidget ? dashboardStatusColumnWidth : 104,
+          width: 104,
           align: 'center',
           resize: true,
         },
       ];
-
-      // On the dashboard the bars already show the dates; keep the grid to what
-      // reads from a distance.
-      return isDashboardWidget
-        ? allColumns.filter(({ id }) => !['startLabel', 'endLabel', 'durationLabel'].includes(id))
-        : allColumns;
-    }, [
-      assigneesColumnWidth,
-      dashboardStatusColumnWidth,
-      dashboardTextColumnWidth,
-      isDashboardWidget,
-      t,
-    ]);
+    }, [assigneesColumnWidth, isDashboardWidget, t]);
     const gridWidth = useMemo(
-      () => columns.reduce((total, column) => total + column.width, 53),
+      () =>
+        columns.length === 0 ? 0 : columns.reduce((total, column) => total + column.width, 53),
       [columns],
     );
 
@@ -758,7 +769,7 @@ const GanttTimelineAdapter = React.memo(
           <Gantt
             key={zoomLevel}
             tasks={tasks}
-            taskTemplate={TaskBarContent}
+            taskTemplate={isDashboardWidget ? DashboardTaskBarContent : TaskBarContent}
             links={timelineLinks}
             columns={columns}
             gridWidth={gridWidth}
@@ -768,7 +779,7 @@ const GanttTimelineAdapter = React.memo(
             scaleHeight={isDashboardWidget ? dashboardScaleHeight : 54}
             lengthUnit="day"
             durationUnit="day"
-            cellWidth={zoom.cellWidth}
+            cellWidth={isDashboardWidget ? Math.round(zoom.cellWidth * 1.5) : zoom.cellWidth}
             scales={zoom.scales}
             zoom={nativeZoom}
             highlightTime={highlightTime}

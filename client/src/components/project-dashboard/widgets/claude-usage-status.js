@@ -100,8 +100,7 @@ export const getClaudeUsageStatus = ({ usage, hasLoadError, nowMs }) => {
     return { tone: 'warning', label: 'Limites ainda não lidos pelo Claude Code' };
   }
 
-  const label = `Leitura dos limites ${formatElapsed(limitsCapturedAtMs, nowMs)}`;
   return nowMs - limitsCapturedAtMs > CLAUDE_LIMITS_STALE_AFTER_MS
-    ? { tone: 'warning', label: `${label} · desatualizada` }
-    : { tone: 'ok', label };
+    ? { tone: 'warning', label: '' }
+    : { tone: 'ok', label: '' };
 };

@@ -56,6 +56,38 @@
     }
   }
 
+  .headerMeta {
+    align-items: center;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 16px;
+  }
+
+  .legend {
+    align-items: center;
+    color: var(--app-dark-text-muted);
+    display: flex;
+    font-size: 11px;
+    gap: 12px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      align-items: center;
+      display: inline-flex;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    i {
+      border-radius: 3px;
+      display: inline-block;
+      height: 10px;
+      width: 14px;
+    }
+  }
+
   .header,
   .content,
   .taskListView {
@@ -120,21 +152,36 @@
   :global(.dashboard-tv) {
     .header {
       gap: 16px;
-      min-height: 60px;
-      padding: 10px 20px;
+      min-height: 48px;
+      padding: 8px 16px;
 
       div {
-        gap: 14px;
+        gap: 12px;
       }
 
       span,
       small {
-        font-size: 17px;
+        font-size: 14px;
       }
 
       strong {
-        font-size: 26px;
+        font-size: 20px;
         font-weight: 650;
+      }
+    }
+
+    .headerMeta {
+      gap: 20px;
+    }
+
+    .legend {
+      font-size: 13px;
+      gap: 14px;
+
+      i {
+        border-radius: 3px;
+        height: 12px;
+        width: 18px;
       }
     }
 

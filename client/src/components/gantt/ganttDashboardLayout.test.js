@@ -8,13 +8,13 @@ import {
 
 describe('dashboard gantt layout', () => {
   it('keeps rows readable on a TV and lets the widget paginate the overflow', () => {
-    expect(getDashboardGanttRowHeight(812, 19)).toBe(40);
-    expect(getDashboardGanttRowHeight(812, 6)).toBe(64);
-    expect(getDashboardGanttPageSize(812)).toBe(13);
+    expect(getDashboardGanttRowHeight(812, 19)).toBe(38);
+    expect(getDashboardGanttRowHeight(812, 6)).toBe(44);
+    expect(getDashboardGanttPageSize(812)).toBe(19);
     expect(getDashboardGanttPageSize(120)).toBe(4);
-    expect(getDashboardGanttFontSize(52)).toBe(22);
-    expect(getDashboardGanttFontSize(30)).toBe(16);
-    expect(getDashboardGanttFontSize(90)).toBe(24);
+    expect(getDashboardGanttFontSize(38)).toBe(16);
+    expect(getDashboardGanttFontSize(28)).toBe(13);
+    expect(getDashboardGanttFontSize(90)).toBe(17);
   });
 
   it('paginates depth first and repeats ancestors when a page starts inside a subtree', () => {

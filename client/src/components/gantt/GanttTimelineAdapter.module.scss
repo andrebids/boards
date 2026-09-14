@@ -225,6 +225,38 @@
     width: 100%;
   }
 
+  .barContentDashboard {
+    align-items: center;
+    box-sizing: border-box;
+    container-type: inline-size;
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+    padding-inline: 8px;
+
+    > :last-child {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+
+  // A bar of a day or two has no room for avatars and a label; keep the label.
+  @container (max-width: 120px) {
+    .barAssignees {
+      display: none;
+    }
+  }
+
+  .barAssignees {
+    display: inline-flex;
+    flex: 0 0 auto;
+
+    > span {
+      min-height: 0;
+      padding-left: 0;
+    }
+  }
+
   .titleCell {
     display: block;
     min-width: 0;

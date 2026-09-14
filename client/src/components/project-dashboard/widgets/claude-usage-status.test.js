@@ -33,14 +33,14 @@ describe('Claude usage status', () => {
 
     expect(getClaudeUsageStatus({ usage, nowMs: NOW_MS })).toEqual({
       tone: 'ok',
-      label: 'Leitura dos limites há 10 min',
+      label: '',
     });
     expect(
       getClaudeUsageStatus({
         usage: { ...usage, rateLimits: { capturedAt: '2026-09-14T09:00:00.000Z' } },
         nowMs: NOW_MS,
       }),
-    ).toEqual({ tone: 'warning', label: 'Leitura dos limites há 3h · desatualizada' });
+    ).toEqual({ tone: 'warning', label: '' });
     expect(
       getClaudeUsageStatus({ usage: { ...usage, rateLimits: null }, nowMs: NOW_MS }).label,
     ).toBe('Limites ainda não lidos pelo Claude Code');
