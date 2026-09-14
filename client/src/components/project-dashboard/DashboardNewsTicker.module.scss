@@ -7,11 +7,38 @@
     box-shadow: 0 -8px 22px rgb(0 0 0 / 0.18);
     color: var(--app-dark-text);
     display: flex;
-    height: 108px;
+    height: var(--dashboard-ticker-height, 132px);
     left: 0;
     position: fixed;
     right: 0;
     z-index: 10;
+  }
+
+  .clock {
+    align-items: flex-start;
+    border-right: 1px solid var(--app-dark-border);
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 236px;
+    padding: 0 28px;
+
+    strong {
+      font-size: clamp(34px, 4.5vh, 48px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+
+    span {
+      color: var(--app-dark-text-muted);
+      font-size: 17px;
+      line-height: 1.2;
+      margin-top: 8px;
+      white-space: nowrap;
+    }
   }
 
   .viewport {
@@ -29,7 +56,7 @@
       pointer-events: none;
       position: absolute;
       top: 0;
-      width: 48px;
+      width: 64px;
       z-index: 1;
     }
 
@@ -52,7 +79,7 @@
 
   .sequence {
     align-items: center;
-    animation: news-ticker-sequence 200s linear infinite;
+    animation: news-ticker-sequence var(--news-ticker-duration, 200s) linear infinite;
     display: flex;
     height: 100%;
     left: 0;
@@ -61,7 +88,7 @@
     will-change: transform;
 
     &:first-child {
-      animation-delay: -100s;
+      animation-delay: calc(var(--news-ticker-duration, 200s) / -2);
     }
   }
 
@@ -70,17 +97,17 @@
     color: var(--app-dark-text);
     display: flex;
     flex: 0 0 auto;
-    font-size: 14px;
-    gap: 14px;
-    padding: 0 16px;
+    font-size: clamp(19px, 2.25vh, 24px);
+    gap: 18px;
+    padding: 0 22px;
     text-decoration: none;
-    width: 420px;
+    width: 640px;
 
     &::before {
       background: color-mix(in oklab, var(--app-dark-border) 84%, transparent);
       content: "";
       flex: 0 0 auto;
-      height: 48px;
+      height: 72px;
       width: 1px;
     }
 
@@ -93,11 +120,11 @@
 
   .thumbnailFrame {
     background: var(--app-dark-surface-hover);
-    border-radius: 5px;
+    border-radius: 6px;
     flex: 0 0 auto;
-    height: 72px;
+    height: min(88px, calc(var(--dashboard-ticker-height, 132px) - 32px));
     overflow: hidden;
-    width: 104px;
+    width: 128px;
   }
 
   .thumbnail {
@@ -111,7 +138,7 @@
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     justify-content: center;
     min-width: 0;
     padding: 6px 0;
@@ -119,7 +146,7 @@
 
   .source {
     color: var(--app-dark-text-muted);
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -127,21 +154,17 @@
 
   .title {
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     display: -webkit-box;
-    line-height: 1.25;
+    font-weight: 500;
+    line-height: 1.2;
     overflow: hidden;
-  }
-
-  .viewport:hover .sequence,
-  .track:focus-within .sequence {
-    animation-play-state: paused;
   }
 
   .loading {
     color: var(--app-dark-text-muted);
-    font-size: 13px;
-    padding: 0 20px;
+    font-size: 20px;
+    padding: 0 24px;
   }
 
   @keyframes news-ticker-sequence {

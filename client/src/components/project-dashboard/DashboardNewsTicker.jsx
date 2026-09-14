@@ -11,6 +11,38 @@ import {
 import styles from './DashboardNewsTicker.module.scss';
 
 const NEWS_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const CLOCK_REFRESH_INTERVAL_MS = 15 * 1000;
+// Each item scrolls past in this many seconds, which keeps the marquee near 40px/s.
+const TICKER_SECONDS_PER_ITEM = 32;
+const CLOCK_LOCALE = 'pt-PT';
+
+const timeFormatter = new Intl.DateTimeFormat(CLOCK_LOCALE, { hour: '2-digit', minute: '2-digit' });
+const dateFormatter = new Intl.DateTimeFormat(CLOCK_LOCALE, {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+});
+const formatDateLabel = (date) => {
+  const label = dateFormatter.format(date);
+  return `${label.charAt(0).toLocaleUpperCase(CLOCK_LOCALE)}${label.slice(1)}`;
+};
+
+const DashboardTvClock = React.memo(() => {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(new Date()), CLOCK_REFRESH_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  return (
+    <time className={styles.clock} dateTime={now.toISOString()}>
+      <strong>{timeFormatter.format(now)}</strong>
+      <span>{formatDateLabel(now)}</span>
+    </time>
+  );
+});
 
 const DashboardNewsTickerThumbnail = React.memo(({ imageUrl }) => {
   const [ref, isInView] = useInView({ rootMargin: '160px' });
@@ -22,10 +54,10 @@ const DashboardNewsTickerThumbnail = React.memo(({ imageUrl }) => {
           alt=""
           className={styles.thumbnail}
           decoding="async"
-          height="72"
+          height="88"
           referrerPolicy="no-referrer"
           src={imageUrl}
-          width="104"
+          width="128"
           onError={(event) => {
             const image = event.currentTarget;
             image.hidden = true;
@@ -74,12 +106,19 @@ const DashboardNewsTicker = React.memo(() => {
     ],
     [tickerItems],
   );
+  const trackStyle = useMemo(
+    () => ({
+      '--news-ticker-duration': `${Math.max(60, tickerItems.length * TICKER_SECONDS_PER_ITEM)}s`,
+    }),
+    [tickerItems.length],
+  );
 
   return (
     <aside className={styles.ticker} aria-label="Notícias de tecnologia">
+      <DashboardTvClock />
       <div className={styles.viewport}>
         {tickerItems.length > 0 ? (
-          <div className={styles.track}>
+          <div className={styles.track} style={trackStyle}>
             {tickerSequences.map(([sequenceId, sequenceItems]) => (
               <div
                 aria-hidden={sequenceId === 'duplicate'}

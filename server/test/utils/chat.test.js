@@ -107,7 +107,7 @@ describe('Chat domain', () => {
     }
   });
 
-  it('includes administrators with full visibility in shared-project chat', async () => {
+  it('excludes visibility-only administrators from project chat but includes explicit members', async () => {
     const previousGlobals = {
       sails: global.sails,
       Project: global.Project,
@@ -147,7 +147,7 @@ describe('Chat domain', () => {
             ownerProjectManagerId: null,
           },
         }),
-      ).to.deep.equal(['manager', 'shared', 'member', 'admin']);
+      ).to.deep.equal(['manager', 'shared', 'member']);
       expect(
         await getProjectMemberUserIds.fn({
           project: {

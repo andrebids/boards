@@ -166,6 +166,33 @@
     );
   }
 
+  .wrapper[data-dashboard] {
+    :global(.wx-willow-dark-theme) {
+      --wx-font-size: var(--dashboard-gantt-font-size);
+    }
+
+    :global(.wx-cell),
+    :global(.wx-bar) {
+      font-size: var(--dashboard-gantt-font-size);
+    }
+
+    :global(.wx-bar),
+    :global(.wx-scale .wx-cell) {
+      font-weight: 600;
+    }
+
+    // Read-only on a wall display: scrollbars are noise there.
+    :global(.wx-chart),
+    :global(.wx-grid),
+    :global(.wx-body) {
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+  }
+
   .wrapper[data-zoom-level='day'] :global(.wx-scale .wx-row:last-child .wx-cell > span) {
     align-items: center;
     box-sizing: border-box;

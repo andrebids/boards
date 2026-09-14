@@ -58,6 +58,9 @@ module.exports.custom = {
   tokenExpiresIn: parseInt(process.env.TOKEN_EXPIRES_IN, 10) || 365,
 
   codexUsageBridgeToken: process.env.CODEX_USAGE_BRIDGE_TOKEN,
+  // Falls back to the Codex secret so one local usage bridge computer needs a single token.
+  claudeUsageBridgeToken:
+    process.env.CLAUDE_USAGE_BRIDGE_TOKEN || process.env.CODEX_USAGE_BRIDGE_TOKEN,
 
   passwordResetEnabled: process.env.PASSWORD_RESET_ENABLED !== 'false',
   passwordResetTokenExpiresInMinutes: envToPositiveNumber(

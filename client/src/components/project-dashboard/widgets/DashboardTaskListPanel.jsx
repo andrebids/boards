@@ -39,7 +39,9 @@ const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }
     }
 
     const updateLayout = () => {
-      setTaskLayout(getDashboardTaskListLayout(rows.length, contentNode.clientHeight));
+      setTaskLayout(
+        getDashboardTaskListLayout(rows.length, contentNode.clientHeight, contentNode.clientWidth),
+      );
     };
 
     updateLayout();
@@ -110,6 +112,8 @@ const DashboardTaskListPanel = React.memo(({ error, isLoading, taskList, tasks }
               style={{
                 '--task-list-columns': taskLayout.columns,
                 '--task-list-rows': taskLayout.rows,
+                '--task-list-row-height': `${taskLayout.rowHeight || 46}px`,
+                '--task-list-font-size': `${taskLayout.fontSize || 13}px`,
               }}
             >
               {rows.map(({ task, depth }) => {

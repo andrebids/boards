@@ -31,4 +31,5 @@ module.exports.policies = {
   'password-reset-requests/create': true,
   'password-resets/create': true,
   'dashboard/update-codex-usage': true,
+  'dashboard/update-claude-usage': true,
 };

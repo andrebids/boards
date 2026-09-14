@@ -94,7 +94,7 @@
   .content {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: hidden;
+    overflow: auto;
   }
 
   .tasks {
@@ -103,8 +103,8 @@
     gap: 2px 12px;
     grid-auto-flow: column;
     grid-template-columns: repeat(var(--task-list-columns), minmax(0, 1fr));
-    grid-template-rows: repeat(var(--task-list-rows), 34px);
-    height: 100%;
+    grid-template-rows: repeat(var(--task-list-rows), var(--task-list-row-height));
+    min-height: 100%;
     list-style: none;
     margin: 0;
     overflow: hidden;
@@ -112,14 +112,14 @@
   }
 
   .taskRow {
-    --task-indent: min(calc(var(--task-depth) * 24px), 120px);
+    --task-indent: min(calc(var(--task-depth) * 12px), 48px);
 
     background: transparent;
     border: 1px solid transparent;
     border-radius: 8px;
     box-sizing: border-box;
     margin-left: var(--task-indent);
-    min-height: 34px;
+    min-height: 0;
     position: relative;
     width: calc(100% - var(--task-indent));
   }
@@ -176,7 +176,8 @@
     align-items: center;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    min-height: 34px;
+    height: 100%;
+    min-height: 0;
     padding: 0 4px 0 40px;
   }
 
@@ -196,15 +197,19 @@
 
   .taskName {
     color: var(--card-modal-text);
-    font-size: 14px;
-    line-height: 20px;
+    font-size: var(--task-list-font-size);
+    line-height: 1.25;
     min-width: 0;
     overflow: hidden;
     overflow-wrap: break-word;
-    padding: 7px 0;
-    white-space: nowrap;
+    max-height: 100%;
+    padding: 0;
+    white-space: normal;
 
     p {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
       margin: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -254,6 +259,98 @@
 
     .moduleIcon {
       left: 24px;
+    }
+  }
+}
+
+// Wall TV sizing: controls follow the auto-fitted font so a short list fills the panel.
+:global(#app) :global(.dashboard-tv) {
+  .module {
+    padding-left: 84px;
+    padding-right: 28px;
+  }
+
+  .moduleHeader {
+    font-size: 28px;
+    line-height: 36px;
+    padding: 10px 0;
+  }
+
+  .moduleIcon {
+    font-size: 28px;
+    height: 44px;
+    left: 28px;
+    line-height: 44px;
+    top: 8px;
+    width: 44px;
+  }
+
+  .count {
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  :global(.ui.progress).progress {
+    height: 10px !important;
+  }
+
+  .progressRow {
+    gap: 16px;
+    margin: 6px 0 18px;
+  }
+
+  .tasks {
+    gap: 4px 24px;
+  }
+
+  .taskRow {
+    --task-indent: min(calc(var(--task-depth) * 22px), 88px);
+  }
+
+  .checkboxWrapper {
+    width: calc(var(--task-list-font-size) * 2.4);
+  }
+
+  .collapseIcon {
+    font-size: calc(var(--task-list-font-size) * 0.65) !important;
+    top: calc(50% - var(--task-list-font-size) * 0.35);
+
+    + .checkbox {
+      transform: translateX(calc(var(--task-list-font-size) * 0.35));
+    }
+  }
+
+  .checkbox {
+    border-radius: 0.3em;
+    flex-basis: 1.15em;
+    font-size: var(--task-list-font-size);
+    height: 1.15em;
+    width: 1.15em;
+  }
+
+  .checkboxCompleted::after {
+    border-width: 0 0.12em 0.12em 0;
+    height: 0.55em;
+    left: 0.4em;
+    top: 0.18em;
+    width: 0.28em;
+  }
+
+  .taskContent {
+    padding-left: calc(var(--task-list-font-size) * 2.8);
+  }
+
+  .subtaskProgress {
+    font-size: calc(var(--task-list-font-size) * 0.75);
+    line-height: 1.4;
+  }
+
+  .state {
+    font-size: 22px;
+    gap: 14px;
+
+    :global(i.icon) {
+      font-size: 36px;
     }
   }
 }

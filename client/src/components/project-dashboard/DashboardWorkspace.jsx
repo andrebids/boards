@@ -11,9 +11,16 @@ import selectors from '../../selectors';
 import { UserRoles } from '../../constants/Enums';
 import * as dashboardLayoutHelpers from './dashboardLayout';
 import DashboardNewsTicker from './DashboardNewsTicker';
+import DashboardTvDiagnostics from './DashboardTvDiagnostics';
 import DashboardWidgetContent from './widgets/DashboardWidgetContent';
 
 import styles from './DashboardWorkspace.module.scss';
+
+const CURSOR_IDLE_MS = 4000;
+// TV browsers on Android (WebView based) report a small CSS viewport such as 960×540
+// at 1080p. Pinning the layout viewport keeps the dashboard designed for 1920×1080
+// and lets the browser scale it to the panel; desktop browsers ignore the meta tag.
+const TV_LAYOUT_VIEWPORT_WIDTH = 1920;
 
 const WIDGET_LABELS = {
   attention: 'Atenção',
@@ -21,7 +28,7 @@ const WIDGET_LABELS = {
   status: 'Estado',
   upcoming: 'Próximas tarefas',
   blachereProducts: 'Blachere Products',
-  codexUsage: 'Uso do Codex',
+  codexUsage: 'Uso do Codex e Claude',
   factorialEntrance: 'Entrada Factorial',
 };
 
@@ -114,6 +121,7 @@ const DashboardWorkspace = React.memo(() => {
     shallowEqual,
   );
   const isTvMode = searchParams.get('tv') === '1';
+  const [isCursorIdle, setIsCursorIdle] = useState(false);
   const isPreviewAllowed = user?.role === UserRoles.ADMIN;
   const [ganttProjectId, setGanttProjectId] = useState('');
   const [ganttCardReference, setGanttCardReference] = useState('');
@@ -293,22 +301,84 @@ const DashboardWorkspace = React.memo(() => {
 
     const fitGrid = () => {
       const grid = gridComponentRef.current?.getGrid();
-      if (grid && container.clientHeight > 0) {
-        grid.cellHeight(container.clientHeight / Math.max(1, grid.getRow()));
+      if (!grid || container.clientHeight <= 0) {
+        return;
+      }
+
+      const nextCellHeight = container.clientHeight / Math.max(1, grid.getRow());
+      if (Math.abs(grid.getCellHeight() - nextCellHeight) > 0.5) {
+        grid.cellHeight(nextCellHeight);
       }
     };
-    // Run after the saved layout is loaded, then follow the available TV height.
+    // Run after the saved layout is loaded, then follow the available TV height. The
+    // grid element is observed too: widgets load asynchronously and change the row count
+    // without the container ever resizing.
     const frameId = window.requestAnimationFrame(fitGrid);
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fitGrid);
     observer?.observe(container);
+    const gridElement = container.querySelector('.grid-stack');
+    if (gridElement) {
+      observer?.observe(gridElement);
+    }
     window.addEventListener('resize', fitGrid);
+    // Late stylesheet or font loads can move the container without a resize event on a
+    // TV; the periodic check is a no-op once the grid matches the container.
+    const intervalId = window.setInterval(fitGrid, 1000);
 
     return () => {
       window.cancelAnimationFrame(frameId);
+      window.clearInterval(intervalId);
       observer?.disconnect();
       window.removeEventListener('resize', fitGrid);
     };
   }, [dashboardLayout, isDashboardLoading, isTvMode]);
+
+  useEffect(() => {
+    if (!isTvMode) {
+      return undefined;
+    }
+
+    const meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) {
+      return undefined;
+    }
+
+    const requestedWidth = Number(searchParams.get('vw'));
+    const layoutWidth =
+      Number.isInteger(requestedWidth) && requestedWidth >= 960 && requestedWidth <= 3840
+        ? requestedWidth
+        : TV_LAYOUT_VIEWPORT_WIDTH;
+    const previousContent = meta.getAttribute('content');
+    meta.setAttribute('content', `width=${layoutWidth}, user-scalable=no`);
+
+    return () => {
+      if (previousContent === null) {
+        meta.removeAttribute('content');
+      } else {
+        meta.setAttribute('content', previousContent);
+      }
+    };
+  }, [isTvMode, searchParams]);
+
+  // A wall TV has no pointer; hide it after a short idle so setup with a mouse still works.
+  useEffect(() => {
+    if (!isTvMode) {
+      return undefined;
+    }
+
+    let timerId = window.setTimeout(() => setIsCursorIdle(true), CURSOR_IDLE_MS);
+    const handlePointerActivity = () => {
+      setIsCursorIdle(false);
+      window.clearTimeout(timerId);
+      timerId = window.setTimeout(() => setIsCursorIdle(true), CURSOR_IDLE_MS);
+    };
+    window.addEventListener('mousemove', handlePointerActivity);
+
+    return () => {
+      window.clearTimeout(timerId);
+      window.removeEventListener('mousemove', handlePointerActivity);
+    };
+  }, [isTvMode]);
 
   // GridStack can be mounted while the edit lock is still being acquired. Apply
   // the final interaction state directly once the lock result is known.
@@ -540,6 +610,9 @@ const DashboardWorkspace = React.memo(() => {
   const gridOptions = useMemo(
     () => ({
       acceptWidgets: false,
+      // The TV grid is static and re-fitted to the viewport; item transitions only add
+      // a visible reflow on load.
+      animate: !isTvMode,
       cellHeight: 88,
       children: dashboardLayout.map(dashboardLayoutHelpers.toGridStackDashboardWidget),
       column: 12,
@@ -569,7 +642,11 @@ const DashboardWorkspace = React.memo(() => {
   }
 
   return (
-    <main className={`${styles.workspace} ${isTvMode ? styles.tvMode : ''}`}>
+    <main
+      className={`${styles.workspace} ${isTvMode ? `${styles.tvMode} dashboard-tv` : ''} ${
+        isCursorIdle ? styles.cursorHidden : ''
+      }`}
+    >
       {!isTvMode && (
         <header className={styles.toolbar}>
           <div>
@@ -701,6 +778,7 @@ const DashboardWorkspace = React.memo(() => {
         </section>
       </div>
       {isTvMode && <DashboardNewsTicker />}
+      {isTvMode && searchParams.get('debug') === '1' && <DashboardTvDiagnostics />}
     </main>
   );
 });

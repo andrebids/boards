@@ -48,8 +48,8 @@ const Fixed = React.memo(() => {
         {board && !board.isFetching && <BoardActions />}
         <BoardActivitiesPanel />
       </div>
-      <ChatLauncher />
-      <ChatDock />
+      {!isDashboardTv && <ChatLauncher />}
+      {!isDashboardTv && <ChatDock />}
     </ChatProvider>
   );
 });

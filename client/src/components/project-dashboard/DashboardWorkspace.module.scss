@@ -245,21 +245,34 @@
   }
 
   .tvMode {
-    padding: 16px 16px 124px;
+    // Wall TV: overscan-safe margins, stronger surface separation, taller ticker.
+    --app-dark-canvas: oklch(0.15 0.014 264);
+    --app-dark-surface: oklch(0.235 0.02 262);
+    --app-dark-border: oklch(0.943 0.011 243.657 / 0.18);
+    // Shared with the news ticker so 720p TVs keep more of the height for widgets.
+    --dashboard-ticker-height: clamp(100px, 12.25vh, 132px);
+
+    background: var(--app-dark-canvas);
+    padding: 28px 28px calc(var(--dashboard-ticker-height) + 24px);
 
     .grid {
       min-height: 0;
     }
 
     .editorLayout {
-      height: calc(100vh - 140px);
-      height: calc(100dvh - 140px);
+      height: calc(100vh - 52px - var(--dashboard-ticker-height));
+      height: calc(100dvh - 52px - var(--dashboard-ticker-height));
       min-height: 0;
 
       > section {
         min-height: 0;
       }
     }
+  }
+
+  .cursorHidden,
+  .cursorHidden * {
+    cursor: none !important;
   }
 
   @media only screen and (width < 760px) {

@@ -5,6 +5,20 @@ import {
 } from './dashboardTaskList';
 
 describe('dashboard task list state', () => {
+  it('preserves sentence width and reduces type before squeezing more columns into a short panel', () => {
+    const layout = getDashboardTaskListLayout(18, 340, 800);
+    expect(layout.columns).toBe(2);
+    expect(layout.fontSize).toBe(13);
+    expect(layout.rows * layout.rowHeight + (layout.rows - 1) * 2).toBeLessThanOrEqual(340);
+    expect(getDashboardTaskListLayout(18, 340, 370).columns).toBe(1);
+  });
+
+  it('scales rows and type up when a short list has a tall TV panel', () => {
+    const layout = getDashboardTaskListLayout(5, 812, 1235);
+    expect(layout).toEqual({ columns: 1, rows: 5, rowHeight: 72, fontSize: 26 });
+    expect(getDashboardTaskListLayout(40, 812, 1235)).toMatchObject({ columns: 3, fontSize: 20 });
+  });
+
   it('distributes every task across columns that fit the available height', () => {
     expect(getDashboardTaskListLayout(18, 340)).toEqual({ columns: 2, rows: 9 });
     expect(getDashboardTaskListLayout(4, 340)).toEqual({ columns: 1, rows: 4 });

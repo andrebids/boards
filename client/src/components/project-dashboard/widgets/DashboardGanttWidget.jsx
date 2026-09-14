@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Loader } from 'semantic-ui-react';
 import { useSelector } from 'react-redux';
@@ -6,16 +6,26 @@ import { useSelector } from 'react-redux';
 import selectors from '../../../selectors';
 import { ProjectGanttProvider, useGantt } from '../../gantt';
 import GanttTimelineAdapter from '../../gantt/GanttTimelineAdapter';
+import {
+  filterDashboardGanttLinks,
+  getDashboardGanttPageSize,
+  paginateDashboardGanttItems,
+} from '../../gantt/ganttDashboardLayout';
 import { selectTimelineData } from '../../gantt/ganttSelectors';
 import DashboardTaskListPanel from './DashboardTaskListPanel';
 import useDashboardTaskList from './useDashboardTaskList';
 
 import styles from './DashboardGanttWidget.module.scss';
 
+const DEFAULT_SLOT_SECONDS = 20;
+const FALLBACK_CONTENT_HEIGHT = 600;
+
 const DashboardGanttContent = React.memo(
   ({ cardId, projectName, rotationSeconds, taskListId, zoomLevel }) => {
     const { plan, items, links, isLoading, error } = useGantt();
-    const [activeView, setActiveView] = useState('gantt');
+    const contentRef = useRef(null);
+    const [contentHeight, setContentHeight] = useState(0);
+    const [slotIndex, setSlotIndex] = useState(0);
     const taskListState = useDashboardTaskList(cardId, taskListId);
     const { timelineItems, timelineLinks } = useMemo(
       () => selectTimelineData(items, links),
@@ -23,18 +33,54 @@ const DashboardGanttContent = React.memo(
     );
 
     useEffect(() => {
-      setActiveView('gantt');
+      const node = contentRef.current;
+      if (!node || typeof ResizeObserver === 'undefined') {
+        return undefined;
+      }
 
-      if (!cardId || !taskListId || !rotationSeconds) {
+      const measure = () => setContentHeight(node.clientHeight);
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(node);
+
+      return () => observer.disconnect();
+    }, []);
+
+    // Pages keep every row at a TV-readable height instead of squeezing the list.
+    const pages = useMemo(
+      () =>
+        paginateDashboardGanttItems(
+          timelineItems,
+          getDashboardGanttPageSize(contentHeight || FALLBACK_CONTENT_HEIGHT),
+        ),
+      [contentHeight, timelineItems],
+    );
+    const hasTaskList = Boolean(cardId && taskListId);
+    const slotCount = Math.max(1, pages.length) + (hasTaskList ? 1 : 0);
+    const currentSlot = slotIndex % slotCount;
+    const activeView = hasTaskList && currentSlot === slotCount - 1 ? 'taskList' : 'gantt';
+    const pageIndex = Math.min(currentSlot, Math.max(0, pages.length - 1));
+    const slotSeconds = rotationSeconds || DEFAULT_SLOT_SECONDS;
+
+    useEffect(() => {
+      setSlotIndex(0);
+
+      if (slotCount <= 1) {
         return undefined;
       }
 
       const intervalId = window.setInterval(() => {
-        setActiveView((previous) => (previous === 'gantt' ? 'taskList' : 'gantt'));
-      }, rotationSeconds * 1000);
+        setSlotIndex((previous) => (previous + 1) % slotCount);
+      }, slotSeconds * 1000);
 
       return () => window.clearInterval(intervalId);
-    }, [cardId, rotationSeconds, taskListId]);
+    }, [slotCount, slotSeconds]);
+
+    const pageItems = pages[pageIndex] || timelineItems;
+    const pageLinks = useMemo(
+      () => filterDashboardGanttLinks(timelineLinks, pageItems),
+      [pageItems, timelineLinks],
+    );
 
     return (
       <section className={styles.wrapper} aria-label={`Gantt: ${projectName}`}>
@@ -46,9 +92,15 @@ const DashboardGanttContent = React.memo(
             <span>Gantt</span>
             <strong>{projectName}</strong>
           </div>
-          {!isLoading && plan?.isEnabled && <small>{timelineItems.length} tarefas planeadas</small>}
+          {!isLoading && plan?.isEnabled && (
+            <small>
+              {timelineItems.length} tarefas planeadas
+              {pages.length > 1 && ` · página ${pageIndex + 1}/${pages.length}`}
+            </small>
+          )}
         </header>
         <div
+          ref={contentRef}
           className={`${styles.content} ${activeView !== 'gantt' ? styles.viewHidden : ''}`}
           aria-hidden={activeView !== 'gantt'}
         >
@@ -71,13 +123,15 @@ const DashboardGanttContent = React.memo(
             </div>
           )}
           {!isLoading && !error && plan?.isEnabled && timelineItems.length > 0 && (
-            <GanttTimelineAdapter
-              items={timelineItems}
-              links={timelineLinks}
-              zoomLevel={zoomLevel}
-              readonly
-              variant="dashboard"
-            />
+            <div className={styles.page} key={pageIndex}>
+              <GanttTimelineAdapter
+                items={pageItems}
+                links={pageLinks}
+                zoomLevel={zoomLevel}
+                readonly
+                variant="dashboard"
+              />
+            </div>
           )}
         </div>
         <div
@@ -91,6 +145,14 @@ const DashboardGanttContent = React.memo(
             tasks={taskListState.tasks}
           />
         </div>
+        {slotCount > 1 && (
+          <span
+            aria-hidden="true"
+            className={styles.rotationProgress}
+            key={`${currentSlot}-${slotCount}`}
+            style={{ animationDuration: `${slotSeconds}s` }}
+          />
+        )}
       </section>
     );
   },

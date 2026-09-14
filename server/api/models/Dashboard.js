@@ -15,6 +15,10 @@ module.exports = {
       type: 'json',
       columnName: 'codex_usage',
     },
+    claudeUsage: {
+      type: 'json',
+      columnName: 'claude_usage',
+    },
     version: {
       type: 'number',
       defaultsTo: 1,

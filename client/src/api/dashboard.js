@@ -7,6 +7,9 @@ const getDashboardNews = (headers) => socket.get('/dashboard/news', undefined, h
 const getDashboardCodexUsage = (headers) =>
   socket.get('/dashboard/codex-usage', undefined, headers);
 
+const getDashboardClaudeUsage = (headers) =>
+  socket.get('/dashboard/claude-usage', undefined, headers);
+
 const updateDashboard = (layout, version, headers) =>
   socket.patch('/dashboard', { layout, version }, headers);
 
@@ -19,6 +22,7 @@ export default {
   getDashboard,
   getDashboardNews,
   getDashboardCodexUsage,
+  getDashboardClaudeUsage,
   updateDashboard,
   acquireDashboardEditLock,
   releaseDashboardEditLock,

@@ -50,9 +50,12 @@ describe('dashboard module isolation', () => {
     expect(tickerSource).toContain("import { useInView } from 'react-intersection-observer';");
     expect(tickerSource).toContain("useInView({ rootMargin: '160px' })");
     expect(tickerSource).toContain('<DashboardNewsTickerThumbnail imageUrl={item.imageUrl} />');
-    expect(styles).toContain('animation: news-ticker-sequence 200s linear infinite;');
-    expect(styles).toContain('animation-delay: -100s;');
-    expect(styles).toContain('width: 420px;');
+    expect(styles).toContain(
+      'animation: news-ticker-sequence var(--news-ticker-duration, 200s) linear infinite;',
+    );
+    expect(tickerSource).toContain("'--news-ticker-duration'");
+    expect(styles).toContain('animation-delay: calc(var(--news-ticker-duration, 200s) / -2);');
+    expect(styles).toContain('width: 640px;');
   });
 
   it('rotates the Gantt with a configured task list and clears its timer', () => {

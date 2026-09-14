@@ -1,0 +1,44 @@
+:global(#app) {
+  .panel {
+    background: rgb(0 0 0 / 0.86);
+    border: 2px solid var(--app-accent);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 22px;
+    left: 50%;
+    line-height: 1.35;
+    max-width: min(1100px, calc(100vw - 48px));
+    padding: 20px 28px;
+    position: fixed;
+    top: 40px;
+    transform: translateX(-50%);
+    z-index: 30;
+
+    h2 {
+      font-size: 30px;
+      margin: 0 0 12px;
+    }
+
+    dl {
+      column-gap: 24px;
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      margin: 0;
+      row-gap: 6px;
+    }
+
+    dt {
+      color: var(--app-dark-text-muted);
+    }
+
+    dd {
+      font-variant-numeric: tabular-nums;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .userAgent {
+    font-size: 16px;
+  }
+}

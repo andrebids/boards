@@ -24,6 +24,10 @@ const DashboardFactorialEntranceQrWidget = React.memo(() => (
         value={FACTORIAL_ENTRANCE_URL}
       />
     </a>
+    <p className={styles.caption}>
+      <strong>Entrada Factorial</strong>
+      <span>Aponta o telemóvel para registar</span>
+    </p>
   </section>
 ));
 

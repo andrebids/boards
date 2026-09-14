@@ -98,6 +98,8 @@ module.exports.routes = {
   'GET /api/dashboard/news': 'dashboard/news',
   'GET /api/dashboard/codex-usage': 'dashboard/show-codex-usage',
   'POST /api/dashboard/codex-usage': 'dashboard/update-codex-usage',
+  'GET /api/dashboard/claude-usage': 'dashboard/show-claude-usage',
+  'POST /api/dashboard/claude-usage': 'dashboard/update-claude-usage',
   'PATCH /api/dashboard': 'dashboard/update',
   'POST /api/dashboard/edit-lock': 'dashboard/acquire-edit-lock',
   'DELETE /api/dashboard/edit-lock': 'dashboard/release-edit-lock',

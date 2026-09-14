@@ -17,6 +17,11 @@ import '@svar-ui/react-gantt/all.css';
 
 import { buildGanttTaskColorStyles } from '../../constants/GanttColors';
 import {
+  getDashboardGanttFontSize,
+  getDashboardGanttRowHeight,
+  getDashboardGanttScaleHeight,
+} from './ganttDashboardLayout';
+import {
   addGanttDays,
   formatGanttDate,
   parseGanttDate,
@@ -216,6 +221,28 @@ const GanttTimelineAdapter = React.memo(
     const ganttApiRef = useRef(null);
     const todayLabelRef = useRef(todayLabel);
     const isDashboardWidget = variant === 'dashboard';
+    const [dashboardHeight, setDashboardHeight] = useState(0);
+    const [dashboardWidth, setDashboardWidth] = useState(0);
+    // The dashboard widget paginates items so these floors stay readable on a TV.
+    const dashboardScaleHeight = getDashboardGanttScaleHeight(dashboardHeight);
+    const dashboardRowHeight = getDashboardGanttRowHeight(dashboardHeight, items.length);
+    // Narrow TV widgets (720p) keep most of the width for the timeline itself.
+    const isCompactDashboard = isDashboardWidget && dashboardWidth > 0 && dashboardWidth < 960;
+    const dashboardTextColumnWidth = isCompactDashboard ? 230 : 340;
+    const dashboardStatusColumnWidth = isCompactDashboard ? 118 : 150;
+
+    useEffect(() => {
+      const node = timelineRef.current;
+      if (!isDashboardWidget || !node) return undefined;
+      const measure = () => {
+        setDashboardHeight(node.clientHeight);
+        setDashboardWidth(node.clientWidth);
+      };
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(node);
+      return () => observer.disconnect();
+    }, [isDashboardWidget]);
     todayLabelRef.current = todayLabel;
     useEffect(() => {
       onItemSelectRef.current = onItemSelect;
@@ -480,8 +507,8 @@ const GanttTimelineAdapter = React.memo(
     }, [items]);
 
     // Manual order is authoritative; column sorting would mask persisted row moves.
-    const columns = useMemo(
-      () => [
+    const columns = useMemo(() => {
+      const allColumns = [
         {
           id: 'assignees',
           sort: false,
@@ -494,7 +521,7 @@ const GanttTimelineAdapter = React.memo(
           id: 'text',
           sort: false,
           header: createHeader(t('common.ganttTask')),
-          width: 190,
+          width: isDashboardWidget ? dashboardTextColumnWidth : 190,
           resize: true,
           cell: TaskTitleCell,
         },
@@ -525,12 +552,27 @@ const GanttTimelineAdapter = React.memo(
           id: 'statusLabel',
           sort: false,
           header: createHeader(t('common.ganttStatus')),
-          width: 104,
+          width: isDashboardWidget ? dashboardStatusColumnWidth : 104,
           align: 'center',
           resize: true,
         },
-      ],
-      [assigneesColumnWidth, t],
+      ];
+
+      // On the dashboard the bars already show the dates; keep the grid to what
+      // reads from a distance.
+      return isDashboardWidget
+        ? allColumns.filter(({ id }) => !['startLabel', 'endLabel', 'durationLabel'].includes(id))
+        : allColumns;
+    }, [
+      assigneesColumnWidth,
+      dashboardStatusColumnWidth,
+      dashboardTextColumnWidth,
+      isDashboardWidget,
+      t,
+    ]);
+    const gridWidth = useMemo(
+      () => columns.reduce((total, column) => total + column.width, 53),
+      [columns],
     );
 
     const updateCurrentTimeMarker = useCallback(({ focus = false, chartWidth } = {}) => {
@@ -610,7 +652,10 @@ const GanttTimelineAdapter = React.memo(
 
         updateCurrentTimeMarker();
         ganttApi.on('resize-chart', ({ width }) => {
-          updateCurrentTimeMarker({ focus: isDashboardWidget, chartWidth: width });
+          updateCurrentTimeMarker({
+            focus: isDashboardWidget,
+            chartWidth: width,
+          });
         });
         ganttApi.on('zoom-scale', () => {
           updateCurrentTimeMarker();
@@ -693,6 +738,7 @@ const GanttTimelineAdapter = React.memo(
         ref={timelineRef}
         className={styles.wrapper}
         data-gantt-color-scope
+        data-dashboard={isDashboardWidget || undefined}
         data-zoom-level={zoomLevel}
         data-row-drag-enabled={!readonly && !isDashboardWidget && !rowDrag.isSaving}
         data-row-drag-intent={rowDrag.preview?.kind}
@@ -702,6 +748,7 @@ const GanttTimelineAdapter = React.memo(
         onPointerCancel={rowDrag.onCancel}
         style={{
           visibility: readyZoomLevel === zoomLevel ? 'visible' : 'hidden',
+          '--dashboard-gantt-font-size': `${getDashboardGanttFontSize(dashboardRowHeight)}px`,
           '--gantt-row-shift': `${rowDrag.preview?.shift || 0}px`,
           '--gantt-row-indent': `${Math.max(0, (rowDrag.preview?.level || 1) - 1) * 20}px`,
         }}
@@ -714,11 +761,11 @@ const GanttTimelineAdapter = React.memo(
             taskTemplate={TaskBarContent}
             links={timelineLinks}
             columns={columns}
-            gridWidth={523 + assigneesColumnWidth}
+            gridWidth={gridWidth}
             readonly={readonly || rowDrag.isSaving}
             cellBorders="full"
-            cellHeight={42}
-            scaleHeight={54}
+            cellHeight={isDashboardWidget ? dashboardRowHeight : 42}
+            scaleHeight={isDashboardWidget ? dashboardScaleHeight : 54}
             lengthUnit="day"
             durationUnit="day"
             cellWidth={zoom.cellWidth}
@@ -789,7 +836,9 @@ const GanttTimelineAdapter = React.memo(
             <div
               className={styles.dropLabel}
               role="status"
-              style={{ top: Math.min(dropPreview.top + 32, dropPreview.chartHeight - 28) }}
+              style={{
+                top: Math.min(dropPreview.top + 32, dropPreview.chartHeight - 28),
+              }}
             >
               {t('common.ganttDropPreview', {
                 start: dropPreview.startDate,

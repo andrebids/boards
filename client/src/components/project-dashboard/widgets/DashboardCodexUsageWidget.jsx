@@ -8,6 +8,7 @@ import {
   getActivityCalendarWeeks,
   getActivityLevel,
 } from './codex-usage-activity';
+import { getClaudeUsageStatus, getLimitWindowState } from './claude-usage-status';
 import getCodexUsageForecast from './codex-usage-forecast';
 import styles from './DashboardCodexUsageWidget.module.scss';
 
@@ -93,12 +94,11 @@ const formatDuration = (seconds) => {
   return `${minutes}m`;
 };
 
-function TokenActivity({ activity }) {
+function TokenActivity({ activity, emptyMessage, note, stats }) {
   const activityRef = useRef(null);
   const [maximumWeeks, setMaximumWeeks] = useState(() => getActivityCalendarWeeks(600));
   const calendar = buildActivityCalendar(activity?.dailyUsageBuckets, maximumWeeks);
-  const summary = activity?.summary;
-  const hasActivity = summary && Number.isSafeInteger(summary.lifetimeTokens);
+  const hasActivity = Boolean(stats);
   const calendarStyle = {
     '--calendar-columns': calendar.weeks.length,
     '--calendar-width': `${20 + calendar.weeks.length * 24}px`,
@@ -139,27 +139,15 @@ function TokenActivity({ activity }) {
       </div>
       {hasActivity ? (
         <>
-          <div className={styles.activityStats}>
-            <div>
-              <span>Total</span>
-              <strong>{formatTokenCount(summary.lifetimeTokens)}</strong>
-            </div>
-            <div>
-              <span>Pico diário</span>
-              <strong>{formatTokenCount(summary.peakDailyTokens)}</strong>
-            </div>
-            <div>
-              <span>Streak</span>
-              <strong>{summary.currentStreakDays}d</strong>
-            </div>
-            <div>
-              <span>Melhor</span>
-              <strong>{summary.longestStreakDays}d</strong>
-            </div>
-            <div>
-              <span>Tarefa mais longa</span>
-              <strong>{formatDuration(summary.longestRunningTurnSec)}</strong>
-            </div>
+          <div
+            className={`${styles.activityStats} ${stats.length === 4 ? styles.activityStatsFour : ''}`}
+          >
+            {stats.map(({ label, value }) => (
+              <div key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
           </div>
           <div className={styles.calendar} style={calendarStyle} aria-label={calendarAriaLabel}>
             <div className={styles.monthLabels} aria-hidden="true">
@@ -200,9 +188,10 @@ function TokenActivity({ activity }) {
               <span>mais</span>
             </div>
           </div>
+          {note && <p className={styles.activityNote}>{note}</p>}
         </>
       ) : (
-        <p className={styles.activityEmpty}>A bridge ainda não enviou atividade de tokens.</p>
+        <p className={styles.activityEmpty}>{emptyMessage}</p>
       )}
     </div>
   );
@@ -210,17 +199,21 @@ function TokenActivity({ activity }) {
 
 TokenActivity.defaultProps = {
   activity: null,
+  emptyMessage: 'A bridge ainda não enviou atividade de tokens.',
+  note: null,
+  stats: null,
 };
 
 TokenActivity.propTypes = {
-  activity: PropTypes.shape({
-    summary: PropTypes.shape({
-      lifetimeTokens: PropTypes.number,
-      peakDailyTokens: PropTypes.number,
-      longestRunningTurnSec: PropTypes.number,
-      currentStreakDays: PropTypes.number,
-      longestStreakDays: PropTypes.number,
+  emptyMessage: PropTypes.string,
+  note: PropTypes.string,
+  stats: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      value: PropTypes.string.isRequired,
     }),
+  ),
+  activity: PropTypes.shape({
     dailyUsageBuckets: PropTypes.arrayOf(
       PropTypes.shape({
         startDate: PropTypes.string,
@@ -230,7 +223,22 @@ TokenActivity.propTypes = {
   }),
 };
 
-const DashboardCodexUsageWidget = React.memo(() => {
+const getCodexActivityStats = (usage) => {
+  const summary = usage?.tokenActivity?.summary;
+  if (!summary || !Number.isSafeInteger(summary.lifetimeTokens)) {
+    return null;
+  }
+
+  return [
+    { label: 'Total', value: formatTokenCount(summary.lifetimeTokens) },
+    { label: 'Pico diário', value: formatTokenCount(summary.peakDailyTokens) },
+    { label: 'Streak', value: `${summary.currentStreakDays}d` },
+    { label: 'Melhor', value: `${summary.longestStreakDays}d` },
+    { label: 'Tarefa mais longa', value: formatDuration(summary.longestRunningTurnSec) },
+  ];
+};
+
+const CodexUsagePanel = React.memo(() => {
   const [usage, setUsage] = useState(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -282,6 +290,7 @@ const DashboardCodexUsageWidget = React.memo(() => {
   return (
     <section className={styles.wrapper} aria-label="Uso semanal do Codex">
       <div className={styles.weekly}>
+        <h2 className={styles.providerName}>Codex</h2>
         <div
           className={styles.gauge}
           role="status"
@@ -339,9 +348,161 @@ const DashboardCodexUsageWidget = React.memo(() => {
           </p>
         )}
       </div>
-      <TokenActivity activity={usage?.tokenActivity} />
+      <TokenActivity activity={usage?.tokenActivity} stats={getCodexActivityStats(usage)} />
     </section>
   );
 });
+
+const getClaudeActivityStats = (usage) => {
+  const summary = usage?.tokenActivity?.summary;
+  if (!summary || !Number.isSafeInteger(summary.totalTokens)) {
+    return null;
+  }
+
+  return [
+    { label: 'Total local', value: formatTokenCount(summary.totalTokens) },
+    { label: 'Pico diário', value: formatTokenCount(summary.peakDailyTokens) },
+    { label: 'Streak', value: `${summary.currentStreakDays}d` },
+    { label: 'Melhor', value: `${summary.longestStreakDays}d` },
+  ];
+};
+
+const CLAUDE_WINDOW_STATUS_LABELS = {
+  reset: 'reposto',
+  unavailable: 'sem leitura',
+};
+
+const CLAUDE_STATUS_TONE_CLASSES = {
+  error: styles.statusError,
+  ok: styles.statusOk,
+  warning: styles.statusWarning,
+};
+
+const ClaudeUsagePanel = React.memo(() => {
+  const [usage, setUsage] = useState(null);
+  const [hasLoadError, setHasLoadError] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const refresh = () => {
+      setNowMs(Date.now());
+      api
+        .getDashboardClaudeUsage()
+        .then(({ item }) => {
+          if (!isCancelled) {
+            setUsage(item || null);
+            setHasLoadError(false);
+          }
+        })
+        .catch(() => {
+          if (!isCancelled) {
+            setHasLoadError(true);
+          }
+        });
+    };
+
+    refresh();
+    const intervalId = window.setInterval(refresh, USAGE_REFRESH_INTERVAL_MS);
+
+    return () => {
+      isCancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const weekly = getLimitWindowState(usage?.rateLimits?.sevenDay, nowMs);
+  const session = getLimitWindowState(usage?.rateLimits?.fiveHour, nowMs);
+  const status = getClaudeUsageStatus({ usage, hasLoadError, nowMs });
+  const weeklyRenewal = weekly.status === 'available' ? formatRenewal(weekly.resetsAt) : null;
+  const sessionRenewal = session.status === 'available' ? formatRenewal(session.resetsAt) : null;
+
+  return (
+    <section className={`${styles.wrapper} ${styles.claude}`} aria-label="Utilização do Claude">
+      <div className={styles.weekly}>
+        <h2 className={styles.providerName}>
+          Claude <small>subscrição</small>
+        </h2>
+        <div
+          className={styles.gauge}
+          role="status"
+          aria-label={
+            weekly.status === 'available'
+              ? `Limite semanal da subscrição Claude: ${weekly.remainingPercent}% restante, ${
+                  weekly.usedPercent
+                }% utilizado${weeklyRenewal ? `, repõe ${weeklyRenewal.label}` : ''}`
+              : `Limite semanal da subscrição Claude ${CLAUDE_WINDOW_STATUS_LABELS[weekly.status]}`
+          }
+        >
+          <svg
+            className={styles.gaugeSvg}
+            viewBox="0 0 240 142"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path className={styles.track} d="M 30 120 A 90 90 0 0 1 210 120" pathLength="100" />
+            <path
+              className={styles.fill}
+              d="M 30 120 A 90 90 0 0 1 210 120"
+              pathLength="100"
+              strokeDasharray={
+                weekly.status === 'available' ? `${weekly.remainingPercent} 100` : '0 100'
+              }
+            />
+          </svg>
+          <div className={styles.reading} aria-live="polite">
+            <strong>{weekly.status === 'available' ? `${weekly.remainingPercent}%` : '—'}</strong>
+            <span>
+              {weekly.status === 'available'
+                ? 'restante'
+                : CLAUDE_WINDOW_STATUS_LABELS[weekly.status]}
+            </span>
+          </div>
+        </div>
+        <div className={styles.details}>
+          {weekly.status === 'available' && <span>{weekly.usedPercent}% usado</span>}
+          {weeklyRenewal && (
+            <time dateTime={weeklyRenewal.dateTime} title={weeklyRenewal.label}>
+              Reset em {weekly.countdown}
+            </time>
+          )}
+        </div>
+        <p className={styles.sessionLimit}>
+          <span>Sessão 5h</span>
+          {session.status === 'available' ? (
+            <>
+              <strong>{session.remainingPercent}% restante</strong>
+              <time dateTime={sessionRenewal?.dateTime} title={sessionRenewal?.label}>
+                reset em {session.countdown}
+              </time>
+            </>
+          ) : (
+            <strong>{CLAUDE_WINDOW_STATUS_LABELS[session.status]}</strong>
+          )}
+        </p>
+        <p
+          className={`${styles.connectionStatus} ${CLAUDE_STATUS_TONE_CLASSES[status.tone]}`}
+          role="status"
+        >
+          {status.label}
+        </p>
+      </div>
+      <TokenActivity
+        activity={usage?.tokenActivity}
+        emptyMessage="A bridge ainda não enviou atividade local do Claude Code."
+        note="Claude Code local · inclui cache · sem faturação API"
+        stats={getClaudeActivityStats(usage)}
+      />
+    </section>
+  );
+});
+
+const DashboardCodexUsageWidget = React.memo(() => (
+  <div className={styles.providers} aria-label="Utilização de Codex e Claude">
+    <CodexUsagePanel />
+    <ClaudeUsagePanel />
+  </div>
+));
 
 export default DashboardCodexUsageWidget;

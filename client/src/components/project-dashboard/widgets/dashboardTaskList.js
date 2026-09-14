@@ -6,9 +6,35 @@ const sortTasks = (tasks) =>
   );
 
 const TASK_ROW_HEIGHT = 34;
+const TASK_ROW_MAX_HEIGHT = 72;
 const TASK_ROW_GAP = 2;
 
-export const getDashboardTaskListLayout = (taskCount, availableHeight) => {
+// Type grows with the row so a short list on a TV reads from across the room.
+const getTaskListFontSize = (rowHeight) => {
+  if (rowHeight >= 64) return 26;
+  if (rowHeight >= 52) return 20;
+  if (rowHeight >= 40) return 15;
+  return 13;
+};
+
+export const getDashboardTaskListLayout = (taskCount, availableHeight, availableWidth) => {
+  if (availableWidth !== undefined) {
+    // Keep useful sentence widths; reduce type/row height before adding narrow columns.
+    const maxColumns = Math.max(1, Math.floor(availableWidth / 380));
+    const columns = Math.min(
+      maxColumns,
+      Math.max(1, Math.ceil(taskCount / Math.max(1, Math.floor(availableHeight / 46)))),
+    );
+    const rows = Math.max(1, Math.ceil(taskCount / columns));
+    const rowHeight = Math.max(
+      32,
+      Math.min(
+        TASK_ROW_MAX_HEIGHT,
+        Math.floor((availableHeight - (rows - 1) * TASK_ROW_GAP) / rows),
+      ),
+    );
+    return { columns, rows, rowHeight, fontSize: getTaskListFontSize(rowHeight) };
+  }
   const availableRows = Math.max(
     1,
     Math.floor((availableHeight + TASK_ROW_GAP) / (TASK_ROW_HEIGHT + TASK_ROW_GAP)),
