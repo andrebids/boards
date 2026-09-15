@@ -24,10 +24,16 @@ describe('ganttStateReducer', () => {
     expect(
       ganttStateReducer(state, {
         type: 'itemsImported',
-        items: [{ id: 'a', task: 'New' }, { id: 'b', task: 'Added' }],
+        items: [
+          { id: 'a', task: 'New' },
+          { id: 'b', task: 'Added' },
+        ],
       }),
     ).toMatchObject({
-      items: [{ id: 'a', task: 'New' }, { id: 'b', task: 'Added' }],
+      items: [
+        { id: 'a', task: 'New' },
+        { id: 'b', task: 'Added' },
+      ],
     });
   });
 });

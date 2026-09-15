@@ -1,7 +1,9 @@
 import {
   filterDashboardGanttLinks,
+  getDashboardGanttCellWidth,
   getDashboardGanttFontSize,
   getDashboardGanttPageSize,
+  getDashboardGanttRange,
   getDashboardGanttRowHeight,
   paginateDashboardGanttItems,
 } from './ganttDashboardLayout';
@@ -15,6 +17,31 @@ describe('dashboard gantt layout', () => {
     expect(getDashboardGanttFontSize(38)).toBe(16);
     expect(getDashboardGanttFontSize(28)).toBe(13);
     expect(getDashboardGanttFontSize(90)).toBe(17);
+  });
+
+  it('sizes cells so about seven weeks fit the dashboard chart', () => {
+    expect(getDashboardGanttCellWidth(1219, 'week', 126)).toBe(174);
+    expect(getDashboardGanttCellWidth(1219, 'day', 36)).toBe(24);
+    expect(getDashboardGanttCellWidth(0, 'week', 126)).toBe(126);
+    expect(getDashboardGanttCellWidth(1219, 'unknown', 126)).toBe(126);
+  });
+
+  it('opens the chart a week before today, seven weeks wide, and stretches to fit tasks', () => {
+    const now = new Date(2026, 8, 14, 15, 0);
+
+    expect(getDashboardGanttRange([], now)).toEqual({
+      start: new Date(2026, 8, 7),
+      end: new Date(2026, 9, 26),
+    });
+    expect(
+      getDashboardGanttRange(
+        [
+          { start: new Date(2026, 7, 5), end: new Date(2026, 7, 20) },
+          { start: new Date(2026, 8, 20), end: new Date(2026, 11, 3) },
+        ],
+        now,
+      ),
+    ).toEqual({ start: new Date(2026, 7, 3), end: new Date(2026, 11, 7) });
   });
 
   it('paginates depth first and repeats ancestors when a page starts inside a subtree', () => {

@@ -93,6 +93,10 @@
     position: relative;
     z-index: var(--project-settings-layer-field);
 
+    &.dropdownOpen {
+      z-index: var(--project-settings-layer-dropdown);
+    }
+
     :global(.field) {
       margin: 0;
     }

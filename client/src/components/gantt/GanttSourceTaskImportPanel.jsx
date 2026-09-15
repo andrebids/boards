@@ -173,9 +173,7 @@ const GanttSourceTaskImportPanel = React.memo(({ onImported, onOpenItem, onClose
                   aria-label={card.name}
                   checked={selectedSources.includes(`card:${card.id}`)}
                   disabled={Boolean(card.card.ganttItemId)}
-                  onChange={() =>
-                    handleSourceToggle({ key: `card:${card.id}`, id: card.id })
-                  }
+                  onChange={() => handleSourceToggle({ key: `card:${card.id}`, id: card.id })}
                 />
                 <button
                   type="button"

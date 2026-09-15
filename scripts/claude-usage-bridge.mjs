@@ -1,5 +1,5 @@
 import { createReadStream } from "node:fs";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -10,6 +10,8 @@ const REQUEST_TIMEOUT_MS = 15_000;
 const MAX_DAILY_USAGE_BUCKETS = 400;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BRIDGE_PATH = "api/dashboard/claude-usage";
+const OAUTH_TOKEN_URL = "https://platform.claude.com/v1/oauth/token";
+const OAUTH_CLIENT_ID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e";
 const TOKEN_FIELDS = [
   "input_tokens",
   "output_tokens",
@@ -52,22 +54,71 @@ const isValidWindow = (window) =>
 // Explicit opt-in: this private endpoint can change without notice. Credentials never leave
 // the local machine except for the access token sent to this fixed Anthropic HTTPS origin.
 export const fetchOAuthRateLimits = async (configDirectory, fetchImpl = fetch) => {
-  let accessToken;
+  let credentials;
   try {
-    const credentials = JSON.parse(
+    credentials = JSON.parse(
       await readFile(path.join(configDirectory, ".credentials.json"), "utf8"),
     );
-    accessToken = credentials?.claudeAiOauth?.accessToken;
   } catch {
     throw new Error("Claude credentials unavailable; run claude auth login");
   }
+  const oauth = credentials?.claudeAiOauth;
+  let accessToken = oauth?.accessToken;
   if (typeof accessToken !== "string" || !accessToken.trim()) {
     throw new Error("Claude access token unavailable; run claude auth login");
   }
 
-  let response;
-  try {
-    response = await fetchImpl("https://api.anthropic.com/api/oauth/usage", {
+  const refreshCredentials = async () => {
+    if (typeof oauth?.refreshToken !== "string" || !oauth.refreshToken.trim()) {
+      throw new Error("Claude refresh token unavailable; run claude auth login");
+    }
+    const response = await fetchImpl(OAUTH_TOKEN_URL, {
+      body: new URLSearchParams({
+        client_id: process.env.CLAUDE_CODE_OAUTH_CLIENT_ID || OAUTH_CLIENT_ID,
+        grant_type: "refresh_token",
+        refresh_token: oauth.refreshToken,
+      }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      redirect: "error",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      method: "POST",
+    });
+    if (!response.ok) {
+      throw new Error(`Claude OAuth refresh failed (HTTP ${response.status})`);
+    }
+    const refreshed = await response.json();
+    if (typeof refreshed.access_token !== "string" || !refreshed.access_token) {
+      throw new Error("Claude OAuth refresh response is invalid");
+    }
+    const nextOauth = {
+      ...oauth,
+      accessToken: refreshed.access_token,
+      expiresAt: Date.now() + Number(refreshed.expires_in || 3600) * 1000,
+      ...(typeof refreshed.refresh_token === "string"
+        ? { refreshToken: refreshed.refresh_token }
+        : {}),
+      ...(Number.isFinite(refreshed.refresh_token_expires_in)
+        ? {
+            refreshTokenExpiresAt:
+              Date.now() + Number(refreshed.refresh_token_expires_in) * 1000,
+          }
+        : {}),
+    };
+    const nextCredentials = { ...credentials, claudeAiOauth: nextOauth };
+    const credentialsFile = path.join(configDirectory, ".credentials.json");
+    const temporaryFile = `${credentialsFile}.${process.pid}.tmp`;
+    await writeFile(temporaryFile, `${JSON.stringify(nextCredentials, null, 2)}\n`);
+    await rename(temporaryFile, credentialsFile);
+    accessToken = nextOauth.accessToken;
+    return nextOauth;
+  };
+
+  if (Number.isFinite(oauth.expiresAt) && oauth.expiresAt <= Date.now() + 60_000) {
+    await refreshCredentials();
+  }
+
+  const requestUsage = () =>
+    fetchImpl("https://api.anthropic.com/api/oauth/usage", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "anthropic-beta": "oauth-2025-04-20",
@@ -75,8 +126,15 @@ export const fetchOAuthRateLimits = async (configDirectory, fetchImpl = fetch) =
       redirect: "error",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-  } catch {
+  let response;
+  try { response = await requestUsage(); } catch {
     throw new Error("Claude usage request failed (network or timeout)");
+  }
+  if (response.status === 401) {
+    await refreshCredentials();
+    try { response = await requestUsage(); } catch {
+      throw new Error("Claude usage request failed (network or timeout)");
+    }
   }
   if (!response.ok) {
     throw new Error(
@@ -89,7 +147,7 @@ export const fetchOAuthRateLimits = async (configDirectory, fetchImpl = fetch) =
   try {
     const usage = await response.json();
     const normalize = (window) => {
-      if (window == null) return null;
+      if (window == null || window.resets_at == null) return null;
       const result = {
         usedPercent: window.utilization,
         resetsAt: Math.floor(Date.parse(window.resets_at) / 1000),

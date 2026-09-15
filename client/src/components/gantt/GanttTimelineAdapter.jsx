@@ -17,7 +17,10 @@ import '@svar-ui/react-gantt/all.css';
 
 import { buildGanttTaskColorStyles } from '../../constants/GanttColors';
 import {
+  DASHBOARD_GANTT_LEAD_DAYS,
+  getDashboardGanttCellWidth,
   getDashboardGanttFontSize,
+  getDashboardGanttRange,
   getDashboardGanttRowHeight,
   getDashboardGanttScaleHeight,
 } from './ganttDashboardLayout';
@@ -30,6 +33,7 @@ import {
 import createGanttCurrentTimeMarker, {
   getGanttCenteredScrollLeft,
   getGanttDropSchedule,
+  getGanttLeadingScrollLeft,
   GANTT_ITEM_DRAG_TYPE,
   getGanttTitleMarqueeMetrics,
 } from '../../utils/gantt-timeline';
@@ -246,6 +250,7 @@ const GanttTimelineAdapter = React.memo(
     const todayLabelRef = useRef(todayLabel);
     const isDashboardWidget = variant === 'dashboard';
     const [dashboardHeight, setDashboardHeight] = useState(0);
+    const [dashboardWidth, setDashboardWidth] = useState(0);
     // The dashboard widget paginates items so these floors stay readable on a TV.
     const dashboardScaleHeight = getDashboardGanttScaleHeight(dashboardHeight);
     const dashboardRowHeight = getDashboardGanttRowHeight(dashboardHeight, items.length);
@@ -253,7 +258,10 @@ const GanttTimelineAdapter = React.memo(
     useEffect(() => {
       const node = timelineRef.current;
       if (!isDashboardWidget || !node) return undefined;
-      const measure = () => setDashboardHeight(node.clientHeight);
+      const measure = () => {
+        setDashboardHeight(node.clientHeight);
+        setDashboardWidth(node.clientWidth);
+      };
       measure();
       const observer = new ResizeObserver(measure);
       observer.observe(node);
@@ -362,10 +370,16 @@ const GanttTimelineAdapter = React.memo(
     const emptyRange = useMemo(() => {
       const today = formatGanttDate(new Date());
       return {
-        start: parseGanttDate(addGanttDays(today, isDashboardWidget ? -7 : -14)),
-        end: parseGanttDate(addGanttDays(today, isDashboardWidget ? 85 : 60)),
+        start: parseGanttDate(addGanttDays(today, -14)),
+        end: parseGanttDate(addGanttDays(today, 60)),
       };
-    }, [isDashboardWidget]);
+    }, []);
+    // An explicit range keeps the scale start aligned, so the today marker and the
+    // leading scroll land exactly where the cells say they do.
+    const dashboardRange = useMemo(
+      () => (isDashboardWidget ? getDashboardGanttRange(tasks) : null),
+      [isDashboardWidget, tasks],
+    );
 
     useEffect(() => {
       const wrapper = timelineRef.current;
@@ -603,9 +617,12 @@ const GanttTimelineAdapter = React.memo(
         return;
       }
 
+      // Cells are laid out from the scale's aligned origin, which can sit before
+      // `_start`; measuring from `_start` would draw the marker a day or more early.
+      const scaleOrigin = scales.start instanceof Date ? scales.start : scaleStart;
       const marker = createGanttCurrentTimeMarker({
         scales,
-        scaleStart,
+        scaleStart: scaleOrigin,
         cellWidth,
         now: new Date(),
         text: todayLabelRef.current,
@@ -618,17 +635,19 @@ const GanttTimelineAdapter = React.memo(
         chartWidth ||
         currentChartWidth;
       if (focus && focusChartWidth) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        const baseScroll = getGanttCenteredScrollLeft(marker.left, focusChartWidth);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        const adjustedScroll = isDashboardWidget
-          ? baseScroll + Math.round(focusChartWidth * 0.15)
-          : baseScroll;
         ganttApi.exec('scroll-chart', {
-          left: adjustedScroll,
+          left: isDashboardWidget
+            ? getGanttLeadingScrollLeft({
+                scales,
+                scaleStart: scaleOrigin,
+                cellWidth,
+                now: marker.start,
+                leadDays: DASHBOARD_GANTT_LEAD_DAYS,
+              })
+            : getGanttCenteredScrollLeft(marker.left, focusChartWidth),
         });
       }
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
       const intervalId = window.setInterval(
@@ -731,6 +750,20 @@ const GanttTimelineAdapter = React.memo(
     const taskColorStyles = useMemo(() => buildGanttTaskColorStyles(tasks), [tasks]);
 
     const zoom = zoomConfig[zoomLevel] || zoomConfig.week;
+    const dashboardCellWidth = isDashboardWidget
+      ? getDashboardGanttCellWidth(dashboardWidth, zoomLevel, zoom.cellWidth)
+      : zoom.cellWidth;
+
+    // The widget grows once the grid fits the TV; cells widen with it, so the leading
+    // scroll must be recomputed after the new cell width is applied.
+    useEffect(() => {
+      if (!isDashboardWidget || readyZoomLevel !== zoomLevel) {
+        return undefined;
+      }
+      const frame = window.requestAnimationFrame(() => updateCurrentTimeMarker({ focus: true }));
+      return () => window.cancelAnimationFrame(frame);
+    }, [dashboardCellWidth, isDashboardWidget, readyZoomLevel, updateCurrentTimeMarker, zoomLevel]);
+
     const highlightTime = useCallback(
       (date, unit) =>
         zoomLevel === 'day' && unit === 'day' && (date.getDay() === 0 || date.getDay() === 6)
@@ -771,30 +804,34 @@ const GanttTimelineAdapter = React.memo(
         }}
       >
         <style>{taskColorStyles}</style>
-        <WillowDark fonts={false}>
-          <Gantt
-            key={zoomLevel}
-            tasks={tasks}
-            taskTemplate={isDashboardWidget ? DashboardTaskBarContent : TaskBarContent}
-            links={timelineLinks}
-            columns={columns}
-            gridWidth={gridWidth}
-            readonly={readonly || rowDrag.isSaving}
-            cellBorders="full"
-            cellHeight={isDashboardWidget ? dashboardRowHeight : 42}
-            scaleHeight={isDashboardWidget ? dashboardScaleHeight : 54}
-            lengthUnit="day"
-            durationUnit="day"
-            cellWidth={isDashboardWidget ? Math.round(zoom.cellWidth * 1.5) : zoom.cellWidth}
-            scales={zoom.scales}
-            zoom={nativeZoom}
-            highlightTime={highlightTime}
-            start={tasks.length === 0 ? emptyRange.start : undefined}
-            end={tasks.length === 0 ? emptyRange.end : undefined}
-            autoScale
-            init={handleInit}
-          />
-        </WillowDark>
+        {/* The dashboard sizes cells from the measured width, so mount once measured
+            and the initial scroll lands on the right week. */}
+        {(!isDashboardWidget || dashboardWidth > 0) && (
+          <WillowDark fonts={false}>
+            <Gantt
+              key={zoomLevel}
+              tasks={tasks}
+              taskTemplate={isDashboardWidget ? DashboardTaskBarContent : TaskBarContent}
+              links={timelineLinks}
+              columns={columns}
+              gridWidth={gridWidth}
+              readonly={readonly || rowDrag.isSaving}
+              cellBorders="full"
+              cellHeight={isDashboardWidget ? dashboardRowHeight : 42}
+              scaleHeight={isDashboardWidget ? dashboardScaleHeight : 54}
+              lengthUnit="day"
+              durationUnit="day"
+              cellWidth={dashboardCellWidth}
+              scales={zoom.scales}
+              zoom={nativeZoom}
+              highlightTime={highlightTime}
+              start={dashboardRange?.start || (tasks.length === 0 ? emptyRange.start : undefined)}
+              end={dashboardRange?.end || (tasks.length === 0 ? emptyRange.end : undefined)}
+              autoScale
+              init={handleInit}
+            />
+          </WillowDark>
+        )}
         {rowDrag.preview && (
           <div className={styles.rowDragFeedback} role="status" aria-live="polite">
             <span aria-hidden="true">

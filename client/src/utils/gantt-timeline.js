@@ -59,4 +59,15 @@ const createGanttCurrentTimeMarker = ({ scales, scaleStart, cellWidth, now, text
   text,
 });
 
+// Scroll so the chart opens `leadDays` before `now`, leaving the rest to the future.
+export const getGanttLeadingScrollLeft = ({ scales, scaleStart, cellWidth, now, leadDays }) => {
+  const leadStart = new Date(now);
+  leadStart.setDate(leadStart.getDate() - leadDays);
+
+  return Math.max(
+    0,
+    createGanttCurrentTimeMarker({ scales, scaleStart, cellWidth, now: leadStart, text: '' }).left,
+  );
+};
+
 export default createGanttCurrentTimeMarker;

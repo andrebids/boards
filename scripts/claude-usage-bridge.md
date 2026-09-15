@@ -15,7 +15,8 @@ Limitações conhecidas:
 
 - Com `~/.claude/planka-usage/config.json` contendo `{"oauthEnabled":true}`, a bridge
   consulta `https://api.anthropic.com/api/oauth/usage` em cada execução usando o access token
-  de `~/.claude/.credentials.json` (ou `CLAUDE_CONFIG_DIR`). Esta opção é explícita porque
+  de `~/.claude/.credentials.json` (ou `CLAUDE_CONFIG_DIR`). Renova automaticamente o access
+  token pelo endpoint OAuth oficial quando necessário, usando o refresh token existente. Esta opção é explícita porque
   o endpoint não é documentado e pode mudar. Funciona sem uma sessão de terminal ativa.
   Só os limites normalizados são enviados ao Planka; os tokens não são registados nem enviados
   ao Planka. Redirecionamentos são recusados e cada pedido tem timeout de 15 segundos.

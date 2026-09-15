@@ -1,5 +1,6 @@
 import createGanttCurrentTimeMarker, {
   getGanttCenteredScrollLeft,
+  getGanttLeadingScrollLeft,
   getGanttTitleMarqueeMetrics,
   getGanttDropSchedule,
 } from './gantt-timeline';
@@ -92,5 +93,17 @@ describe('Gantt current time marker', () => {
       start: now,
       text: 'Hoje',
     });
+  });
+
+  test('opens the dashboard chart one week before today, never before its start', () => {
+    const now = new Date(2026, 7, 14, 15, 0);
+    const scales = {
+      diff: (currentTime, start) => (currentTime - start) / (24 * 60 * 60 * 1000),
+    };
+    const scroll = (scaleStart) =>
+      getGanttLeadingScrollLeft({ scales, scaleStart, cellWidth: 100, now, leadDays: 7 });
+
+    expect(scroll(new Date(2026, 7, 1))).toBe(663);
+    expect(scroll(new Date(2026, 7, 10))).toBe(0);
   });
 });

@@ -3,7 +3,14 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from 'react';
 import PropTypes from 'prop-types';
 
 import api, { socket } from '../../api';
@@ -176,9 +183,7 @@ export const ProjectGanttProvider = React.memo(({ projectId, children }) => {
 
   const importSourceTasks = useCallback(
     async (sources) => {
-      const { taskIds, cardIds = [] } = Array.isArray(sources)
-        ? { taskIds: sources }
-        : sources;
+      const { taskIds, cardIds = [] } = Array.isArray(sources) ? { taskIds: sources } : sources;
       const body = await api.importGanttSourceTasks(plan.id, taskIds, cardIds);
       dispatch({ type: 'itemsImported', items: body.items });
       return body;

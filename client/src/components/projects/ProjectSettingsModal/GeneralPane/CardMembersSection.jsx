@@ -132,7 +132,11 @@ const CardMembersSection = React.memo(() => {
     <section className={styles.section} aria-busy={isBusy || isPreviewLoading}>
       <h3 className={styles.sectionTitle}>{t('common.cards', { context: 'title' })}</h3>
       <p className={styles.hint}>{t('common.bulkCardMembersHint')}</p>
-      <div className={`${styles.accessField} ${styles.memberField}`}>
+      <div
+        className={`${styles.accessField} ${styles.memberField} ${
+          isDropdownOpen ? styles.dropdownOpen : ''
+        }`}
+      >
         <Form.Select
           fluid
           multiple

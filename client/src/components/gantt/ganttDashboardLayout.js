@@ -99,3 +99,62 @@ export const filterDashboardGanttLinks = (links, items) => {
   const ids = new Set(items.map(({ id }) => id));
   return links.filter((link) => ids.has(link.sourceItemId) && ids.has(link.targetItemId));
 };
+
+// Days kept visible behind today on the dashboard; the rest of the chart looks ahead.
+export const DASHBOARD_GANTT_LEAD_DAYS = 7;
+
+export const DASHBOARD_GANTT_VISIBLE_WEEKS = 7;
+
+// Cells of the smallest scale unit that fit the dashboard chart width: about seven
+// weeks at every zoom level, so the TV shows one week back and six ahead.
+const DASHBOARD_GANTT_VISIBLE_CELLS = {
+  day: DASHBOARD_GANTT_VISIBLE_WEEKS * 7,
+  week: DASHBOARD_GANTT_VISIBLE_WEEKS,
+  month: 2,
+  quarter: 1,
+};
+
+export const getDashboardGanttCellWidth = (width, zoomLevel, fallbackCellWidth) => {
+  const cells = DASHBOARD_GANTT_VISIBLE_CELLS[zoomLevel];
+  if (!cells || !(width > 0)) {
+    return fallbackCellWidth;
+  }
+
+  return Math.max(1, Math.floor(width / cells));
+};
+
+const startOfDay = (date) => {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  return result;
+};
+
+const addDays = (date, amount) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + amount);
+  return result;
+};
+
+const startOfWeek = (date) => {
+  const day = startOfDay(date);
+  return addDays(day, -((day.getDay() + 6) % 7));
+};
+
+// The chart opens DASHBOARD_GANTT_LEAD_DAYS before now and reaches at least seven
+// weeks past that point; it only grows beyond that to keep every task on it.
+export const getDashboardGanttRange = (tasks, now = new Date()) => {
+  const leadStart = startOfDay(addDays(now, -DASHBOARD_GANTT_LEAD_DAYS));
+  let start = startOfWeek(leadStart);
+  let end = startOfWeek(addDays(leadStart, DASHBOARD_GANTT_VISIBLE_WEEKS * 7 + 6));
+
+  tasks.forEach((task) => {
+    if (task.start instanceof Date && task.start < start) {
+      start = startOfWeek(task.start);
+    }
+    if (task.end instanceof Date && task.end > end) {
+      end = startOfWeek(addDays(task.end, 6));
+    }
+  });
+
+  return { start, end };
+};
