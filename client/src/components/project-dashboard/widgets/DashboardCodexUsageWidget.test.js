@@ -20,8 +20,8 @@ describe('DashboardCodexUsageWidget token activity', () => {
       { startDate: '2026-08-26', tokens: 300 },
     ]);
 
-    expect(calendar.focusedMonthLabel).toBe('maio');
-    expect(calendar.monthMarks.map(({ label }) => label)).toEqual(['mai', 'jun', 'jul', 'ago']);
+    expect(calendar.focusedMonthLabel).toBe('May');
+    expect(calendar.monthMarks.map(({ label }) => label)).toEqual(['May', 'Jun', 'Jul', 'Aug']);
     expect(calendar.weeks.flat().some(({ dateKey }) => dateKey === '2026-05-01')).toBe(true);
     expect(calendar.weeks.flat().some(({ dateKey }) => dateKey === '2026-04-01')).toBe(false);
   });

@@ -13,19 +13,19 @@ const parseMs = (value) => {
 export const formatElapsed = (fromMs, nowMs) => {
   const elapsedMinutes = Math.max(0, Math.floor((nowMs - fromMs) / MINUTE_MS));
   if (elapsedMinutes < 1) {
-    return 'agora';
+    return 'now';
   }
 
   if (elapsedMinutes < 60) {
-    return `há ${elapsedMinutes} min`;
+    return `${elapsedMinutes} min ago`;
   }
 
   const elapsedHours = Math.floor(elapsedMinutes / 60);
   if (elapsedHours < 48) {
-    return `há ${elapsedHours}h`;
+    return `${elapsedHours}h ago`;
   }
 
-  return `há ${Math.floor(elapsedHours / 24)}d`;
+  return `${Math.floor(elapsedHours / 24)}d ago`;
 };
 
 export const formatCountdown = (resetsAt, nowMs) => {
@@ -35,7 +35,7 @@ export const formatCountdown = (resetsAt, nowMs) => {
 
   const remainingMinutes = Math.ceil((resetsAt * 1000 - nowMs) / MINUTE_MS);
   if (remainingMinutes <= 0) {
-    return 'agora';
+    return 'now';
   }
 
   const hours = Math.floor(remainingMinutes / 60);
@@ -80,24 +80,24 @@ export const getClaudeUsageStatus = ({ usage, hasLoadError, nowMs }) => {
     return {
       tone: 'error',
       label: updatedAtMs
-        ? `Falha ao atualizar · último envio ${formatElapsed(updatedAtMs, nowMs)}`
-        : 'Falha ao contactar o servidor',
+        ? `Update failed · last received ${formatElapsed(updatedAtMs, nowMs)}`
+        : 'Unable to reach the server',
     };
   }
 
   if (!usage || !updatedAtMs) {
-    return { tone: 'warning', label: 'Bridge ainda sem dados' };
+    return { tone: 'warning', label: 'No bridge data yet' };
   }
 
   if (nowMs - updatedAtMs > CLAUDE_BRIDGE_STALE_AFTER_MS) {
     return {
       tone: 'warning',
-      label: `Bridge sem contacto ${formatElapsed(updatedAtMs, nowMs)}`,
+      label: `No bridge update · last received ${formatElapsed(updatedAtMs, nowMs)}`,
     };
   }
 
   if (!limitsCapturedAtMs) {
-    return { tone: 'warning', label: 'Limites ainda não lidos pelo Claude Code' };
+    return { tone: 'warning', label: 'Limits not yet read by Claude Code' };
   }
 
   return nowMs - limitsCapturedAtMs > CLAUDE_LIMITS_STALE_AFTER_MS

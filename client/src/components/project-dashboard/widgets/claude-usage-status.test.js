@@ -8,7 +8,7 @@ describe('Claude usage status', () => {
     expect(formatCountdown(NOW_S + 2 * 3600 + 13 * 60, NOW_MS)).toBe('2h 13m');
     expect(formatCountdown(NOW_S + 5 * 60, NOW_MS)).toBe('5m');
     expect(formatCountdown(NOW_S + 3 * 86400 + 4 * 3600, NOW_MS)).toBe('3d 4h');
-    expect(formatCountdown(NOW_S - 1, NOW_MS)).toBe('agora');
+    expect(formatCountdown(NOW_S - 1, NOW_MS)).toBe('now');
   });
 
   it('hides percentages from windows that are missing or already reset', () => {
@@ -43,19 +43,17 @@ describe('Claude usage status', () => {
     ).toEqual({ tone: 'warning', label: '' });
     expect(
       getClaudeUsageStatus({ usage: { ...usage, rateLimits: null }, nowMs: NOW_MS }).label,
-    ).toBe('Limites ainda não lidos pelo Claude Code');
+    ).toBe('Limits not yet read by Claude Code');
     expect(
       getClaudeUsageStatus({
         usage: { ...usage, updatedAt: '2026-09-13T12:00:00.000Z' },
         nowMs: NOW_MS,
       }).label,
-    ).toBe('Bridge sem contacto há 24h');
-    expect(getClaudeUsageStatus({ usage: null, nowMs: NOW_MS }).label).toBe(
-      'Bridge ainda sem dados',
-    );
+    ).toBe('No bridge update · last received 24h ago');
+    expect(getClaudeUsageStatus({ usage: null, nowMs: NOW_MS }).label).toBe('No bridge data yet');
     expect(getClaudeUsageStatus({ usage, hasLoadError: true, nowMs: NOW_MS })).toEqual({
       tone: 'error',
-      label: 'Falha ao atualizar · último envio há 1 min',
+      label: 'Update failed · last received 1 min ago',
     });
   });
 });

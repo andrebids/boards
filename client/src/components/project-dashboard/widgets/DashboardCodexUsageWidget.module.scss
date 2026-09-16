@@ -557,10 +557,15 @@
     max-height: 210px;
   }
 
+  .week {
+    container-type: size;
+  }
+
   .calendarGrid .day {
     align-self: center;
     height: auto;
-    width: min(100%, 8px);
+    // Fit both the week column and its seven rows, including the six 3px gaps.
+    width: min(100cqw, calc((100cqh - 18px) / 7));
   }
 
   // Keep the heat calendar present on short TV tiles, using a compact grid instead of

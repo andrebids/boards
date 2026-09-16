@@ -39,7 +39,12 @@ const formatRenewal = (resetsAt) => {
 
   return {
     dateTime: renewalDate.toISOString(),
-    label: new Intl.DateTimeFormat('pt-PT', {
+    timeLabel: new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(renewalDate),
+    label: new Intl.DateTimeFormat('en-GB', {
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
@@ -56,7 +61,7 @@ const formatResetCountdown = (resetsAt, nowMs) => {
 
   const remainingMs = resetsAt * 1000 - nowMs;
   if (remainingMs <= 0) {
-    return 'agora';
+    return 'now';
   }
 
   const remainingHours = Math.floor(remainingMs / (60 * 60 * 1000));
@@ -68,20 +73,20 @@ const formatResetCountdown = (resetsAt, nowMs) => {
 
 const formatTokenCount = (tokens) => {
   if (!Number.isSafeInteger(tokens) || tokens < 0) {
-    return 'n/d';
+    return 'n/a';
   }
 
   const unit = TOKEN_UNITS.find(({ threshold }) => tokens >= threshold);
   const value = unit ? tokens / unit.divisor : tokens;
 
-  return `${new Intl.NumberFormat('pt-PT', {
+  return `${new Intl.NumberFormat('en-GB', {
     maximumFractionDigits: unit ? 2 : 0,
   }).format(value)}${unit ? unit.suffix : ''}`;
 };
 
 const formatDuration = (seconds) => {
   if (!Number.isSafeInteger(seconds) || seconds < 0) {
-    return 'n/d';
+    return 'n/a';
   }
 
   const hours = Math.floor(seconds / 3600);
@@ -103,10 +108,10 @@ function TokenActivity({ activity, emptyMessage, note, stats }) {
     '--calendar-width': `${calendar.weeks.length * 24}px`,
   };
   const focusedPeriodLabel = calendar.focusedMonthLabel
-    ? `desde ${calendar.focusedMonthLabel}`
+    ? `since ${calendar.focusedMonthLabel}`
     : null;
-  const calendarAriaLabel = `Atividade diária de tokens ${
-    focusedPeriodLabel || 'nos últimos 12 meses'
+  const calendarAriaLabel = `Daily token activity ${
+    focusedPeriodLabel || 'over the last 12 months'
   }`;
 
   useEffect(() => {
@@ -162,8 +167,8 @@ function TokenActivity({ activity, emptyMessage, note, stats }) {
                         type="button"
                         className={`${styles.day} ${styles[`level${level}`]}`}
                         key={dateKey}
-                        title={`${dateKey}: ${tokens.toLocaleString('pt-PT')} tokens`}
-                        aria-label={`${dateKey}: ${tokens.toLocaleString('pt-PT')} tokens`}
+                        title={`${dateKey}: ${tokens.toLocaleString('en-GB')} tokens`}
+                        aria-label={`${dateKey}: ${tokens.toLocaleString('en-GB')} tokens`}
                       />
                     );
                   })}
@@ -173,13 +178,13 @@ function TokenActivity({ activity, emptyMessage, note, stats }) {
             <div className={styles.legend} aria-hidden="true">
               <span className={styles.rangeLabel}>{calendar.rangeLabel}</span>
               <span className={styles.legendScale}>
-                <span>menos</span>
+                <span>less</span>
                 {Array.from({ length: ACTIVITY_LEVEL_COUNT + 1 }, (_, level) => level).map(
                   (level) => (
                     <i className={`${styles.day} ${styles[`level${level}`]}`} key={level} />
                   ),
                 )}
-                <span>mais</span>
+                <span>more</span>
               </span>
             </div>
           </div>
@@ -194,7 +199,7 @@ function TokenActivity({ activity, emptyMessage, note, stats }) {
 
 TokenActivity.defaultProps = {
   activity: null,
-  emptyMessage: 'A bridge ainda não enviou atividade de tokens.',
+  emptyMessage: 'No token activity received from the bridge yet.',
   note: null,
   stats: null,
 };
@@ -226,11 +231,11 @@ const getCodexActivityStats = (usage) => {
 
   return [
     { label: 'Total', value: formatTokenCount(summary.lifetimeTokens) },
-    { label: 'Pico diário', value: formatTokenCount(summary.peakDailyTokens) },
+    { label: 'Daily peak', value: formatTokenCount(summary.peakDailyTokens) },
     { label: 'Streak', value: `${summary.currentStreakDays}d` },
-    { label: 'Melhor', value: `${summary.longestStreakDays}d` },
+    { label: 'Best streak', value: `${summary.longestStreakDays}d` },
     {
-      label: 'Tarefa mais longa',
+      label: 'Longest task',
       value: formatDuration(summary.longestRunningTurnSec),
     },
   ];
@@ -245,28 +250,28 @@ function UsageForecast({ forecast }) {
     ? formatRenewal(Math.round(forecast.depletesAtMs / 1000))
     : null;
   const depletionLabel = depletion
-    ? new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit' }).format(
+    ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit' }).format(
         new Date(depletion.dateTime),
       )
     : null;
-  const rate = new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 2 }).format(
+  const rate = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 }).format(
     forecast.usedPercentPerHour,
   );
 
   return (
     <p
       className={styles.forecast}
-      title="Estimativa baseada no consumo médio desde o início da janela."
-      aria-label={`${rate}% por hora, ${
-        depletion ? `esgota aproximadamente a ${depletionLabel}` : 'dura até ao reset'
+      title="Estimate based on average usage since the start of the window."
+      aria-label={`${rate}% per hour, ${
+        depletion ? `runs out around ${depletionLabel}` : 'lasts until reset'
       }`}
     >
       {rate}%/h
       <br />
       {depletion ? (
-        <time dateTime={depletion.dateTime}>Esgota ~{depletionLabel}</time>
+        <time dateTime={depletion.dateTime}>Runs out ~{depletionLabel}</time>
       ) : (
-        'Dura até ao reset'
+        'Lasts until reset'
       )}
     </p>
   );
@@ -316,13 +321,13 @@ const CodexUsagePanel = React.memo(() => {
   const usedPercent = normalizeUsagePercent(usage?.usedPercent);
   const hasUsage = usedPercent !== null;
   const remainingPercent = hasUsage ? 100 - usedPercent : null;
-  const displayedPercent = hasUsage ? `${remainingPercent}%` : 'n/d';
+  const displayedPercent = hasUsage ? `${remainingPercent}%` : 'n/a';
   const renewal = formatRenewal(usage?.resetsAt);
   const resetCountdown = formatResetCountdown(usage?.resetsAt, nowMs);
   const forecast = getCodexUsageForecast(usage);
 
   return (
-    <section className={styles.wrapper} aria-label="Uso semanal do Codex">
+    <section className={styles.wrapper} aria-label="Codex weekly usage">
       <div className={styles.weekly}>
         <h2 className={styles.providerName}>Codex</h2>
         <div
@@ -330,10 +335,10 @@ const CodexUsagePanel = React.memo(() => {
           role="status"
           aria-label={
             hasUsage
-              ? `Uso semanal do Codex: ${remainingPercent}% restante, ${usedPercent}% utilizado${
-                  renewal ? `, repõe ${renewal.label}` : ''
+              ? `Codex weekly usage: ${remainingPercent}% remaining, ${usedPercent}% used${
+                  renewal ? `, resets ${renewal.label}` : ''
                 }`
-              : 'Uso semanal ainda indisponível'
+              : 'Weekly usage unavailable'
           }
         >
           <svg
@@ -352,14 +357,14 @@ const CodexUsagePanel = React.memo(() => {
           </svg>
           <div className={styles.reading} aria-live="polite">
             <strong>{displayedPercent}</strong>
-            {hasUsage && <span>restante</span>}
+            {hasUsage && <span>remaining</span>}
           </div>
         </div>
         <div className={styles.details}>
-          {hasUsage && <span>{usedPercent}% usado</span>}
+          {hasUsage && <span>{usedPercent}% used</span>}
           {renewal && resetCountdown && (
             <time dateTime={renewal.dateTime} title={renewal.label}>
-              Reset em {resetCountdown}
+              Reset in {resetCountdown}
             </time>
           )}
         </div>
@@ -377,16 +382,16 @@ const getClaudeActivityStats = (usage) => {
   }
 
   return [
-    { label: 'Total local', value: formatTokenCount(summary.totalTokens) },
-    { label: 'Pico diário', value: formatTokenCount(summary.peakDailyTokens) },
+    { label: 'Local total', value: formatTokenCount(summary.totalTokens) },
+    { label: 'Daily peak', value: formatTokenCount(summary.peakDailyTokens) },
     { label: 'Streak', value: `${summary.currentStreakDays}d` },
-    { label: 'Melhor', value: `${summary.longestStreakDays}d` },
+    { label: 'Best streak', value: `${summary.longestStreakDays}d` },
   ];
 };
 
 const CLAUDE_WINDOW_STATUS_LABELS = {
-  reset: 'reposto',
-  unavailable: 'sem leitura',
+  reset: 'reset',
+  unavailable: 'unavailable',
 };
 
 const CLAUDE_STATUS_TONE_CLASSES = {
@@ -437,7 +442,7 @@ const ClaudeUsagePanel = React.memo(() => {
   const forecast = getClaudeUsageForecast(usage, nowMs);
 
   return (
-    <section className={`${styles.wrapper} ${styles.claude}`} aria-label="Utilização do Claude">
+    <section className={`${styles.wrapper} ${styles.claude}`} aria-label="Claude usage">
       <div className={styles.weekly}>
         <h2 className={styles.providerName}>Claude</h2>
         <div
@@ -445,10 +450,10 @@ const ClaudeUsagePanel = React.memo(() => {
           role="status"
           aria-label={
             weekly.status === 'available'
-              ? `Limite semanal da subscrição Claude: ${weekly.remainingPercent}% restante, ${
+              ? `Claude weekly subscription limit: ${weekly.remainingPercent}% remaining, ${
                   weekly.usedPercent
-                }% utilizado${weeklyRenewal ? `, repõe ${weeklyRenewal.label}` : ''}`
-              : `Limite semanal da subscrição Claude ${CLAUDE_WINDOW_STATUS_LABELS[weekly.status]}`
+                }% used${weeklyRenewal ? `, resets ${weeklyRenewal.label}` : ''}`
+              : `Claude weekly subscription limit ${CLAUDE_WINDOW_STATUS_LABELS[weekly.status]}`
           }
         >
           <svg
@@ -468,30 +473,30 @@ const ClaudeUsagePanel = React.memo(() => {
             />
           </svg>
           <div className={styles.reading} aria-live="polite">
-            <strong>{weekly.status === 'available' ? `${weekly.remainingPercent}%` : 'n/d'}</strong>
+            <strong>{weekly.status === 'available' ? `${weekly.remainingPercent}%` : 'n/a'}</strong>
             <span>
               {weekly.status === 'available'
-                ? 'restante'
+                ? 'remaining'
                 : CLAUDE_WINDOW_STATUS_LABELS[weekly.status]}
             </span>
           </div>
         </div>
         <div className={styles.details}>
-          {weekly.status === 'available' && <span>{weekly.usedPercent}% usado</span>}
+          {weekly.status === 'available' && <span>{weekly.usedPercent}% used</span>}
           {weeklyRenewal && (
             <time dateTime={weeklyRenewal.dateTime} title={weeklyRenewal.label}>
-              Reset em {weekly.countdown}
+              Reset in {weekly.countdown}
             </time>
           )}
         </div>
         <UsageForecast forecast={forecast} />
         <p className={styles.sessionLimit}>
-          <span>Sessão 5h</span>
+          <span>5h session</span>
           {session.status === 'available' ? (
             <>
-              <strong>{session.remainingPercent}% restante</strong>
+              <strong>{session.remainingPercent}% remaining</strong>
               <time dateTime={sessionRenewal?.dateTime} title={sessionRenewal?.label}>
-                reset em {session.countdown}
+                reset at {sessionRenewal?.timeLabel}
               </time>
             </>
           ) : (
@@ -507,7 +512,7 @@ const ClaudeUsagePanel = React.memo(() => {
       </div>
       <TokenActivity
         activity={usage?.tokenActivity}
-        emptyMessage="A bridge ainda não enviou atividade local do Claude Code."
+        emptyMessage="No local Claude Code activity received from the bridge yet."
         stats={getClaudeActivityStats(usage)}
       />
     </section>
@@ -563,7 +568,7 @@ const DashboardCodexUsageWidget = React.memo(() => {
   }, []);
 
   return (
-    <div className={styles.providers} ref={providersRef} aria-label="Utilização de Codex e Claude">
+    <div className={styles.providers} ref={providersRef} aria-label="Codex and Claude usage">
       <CodexUsagePanel />
       <ClaudeUsagePanel />
     </div>

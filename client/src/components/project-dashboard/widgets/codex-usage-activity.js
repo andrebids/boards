@@ -72,7 +72,7 @@ const buildActivityCalendar = (dailyUsageBuckets, maximumWeeks = CALENDAR_WEEKS)
   const visibleStartDate = weeks[0]?.[0].date || gridStartDate;
   const displayedStartDate = visibleStartDate > startDate ? visibleStartDate : startDate;
   const peak = Math.max(0, ...weeks.flat().map(({ tokens }) => tokens));
-  const focusedMonthLabel = new Intl.DateTimeFormat('pt-PT', {
+  const focusedMonthLabel = new Intl.DateTimeFormat('en-GB', {
     month: 'long',
   }).format(displayedStartDate);
   const monthMarks = [];
@@ -85,14 +85,14 @@ const buildActivityCalendar = (dailyUsageBuckets, maximumWeeks = CALENDAR_WEEKS)
         0,
         Math.floor((monthCursor.getTime() - visibleStartDate.getTime()) / DAY_MS / 7),
       ),
-      label: new Intl.DateTimeFormat('pt-PT', { month: 'short' })
+      label: new Intl.DateTimeFormat('en-GB', { month: 'short' })
         .format(monthCursor)
         .replace('.', ''),
     });
     monthCursor.setUTCMonth(monthCursor.getUTCMonth() + 1);
   }
 
-  const rangeFormatter = new Intl.DateTimeFormat('pt-PT', {
+  const rangeFormatter = new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: '2-digit',
     timeZone: 'UTC',
