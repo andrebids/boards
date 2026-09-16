@@ -1,7 +1,8 @@
 const CALENDAR_DAYS = 365;
 const CALENDAR_WEEKS = 53;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const ACTIVITY_LEVEL_THRESHOLDS = [0.01, 0.04, 0.12, 0.3, 0.6];
+const ACTIVITY_LEVEL_THRESHOLDS = [0.005, 0.015, 0.04, 0.08, 0.16, 0.3, 0.48, 0.68];
+const ACTIVITY_LEVEL_COUNT = ACTIVITY_LEVEL_THRESHOLDS.length + 1;
 const COMPACT_CALENDAR_WEEKS = 14;
 const MEDIUM_CALENDAR_WEEKS = 27;
 
@@ -12,6 +13,8 @@ const getActivityCalendarWeeks = (containerWidth) => {
 
   return containerWidth >= 430 ? MEDIUM_CALENDAR_WEEKS : COMPACT_CALENDAR_WEEKS;
 };
+
+const MIN_VISIBLE_CALENDAR_WEEKS = 14;
 
 const toDateKey = (date) => date.toISOString().slice(0, 10);
 
@@ -37,7 +40,18 @@ const buildActivityCalendar = (dailyUsageBuckets, maximumWeeks = CALENDAR_WEEKS)
     startDate.setTime(new Date(`${firstActivityDate.slice(0, 7)}-01T00:00:00Z`).getTime());
   }
   const gridStartDate = new Date(startDate);
-  gridStartDate.setUTCDate(gridStartDate.getUTCDate() - gridStartDate.getUTCDay());
+  const daysFromMonday = (gridStartDate.getUTCDay() + 6) % 7;
+  gridStartDate.setUTCDate(gridStartDate.getUTCDate() - daysFromMonday);
+  const minimumGridStartDate = new Date(endDate);
+  minimumGridStartDate.setUTCDate(
+    minimumGridStartDate.getUTCDate() -
+      (Math.min(maximumWeeks, MIN_VISIBLE_CALENDAR_WEEKS) - 1) * 7,
+  );
+  const minimumDaysFromMonday = (minimumGridStartDate.getUTCDay() + 6) % 7;
+  minimumGridStartDate.setUTCDate(minimumGridStartDate.getUTCDate() - minimumDaysFromMonday);
+  if (minimumGridStartDate < gridStartDate) {
+    gridStartDate.setTime(minimumGridStartDate.getTime());
+  }
   const allWeeks = [];
   const cursor = new Date(gridStartDate);
 
@@ -58,9 +72,9 @@ const buildActivityCalendar = (dailyUsageBuckets, maximumWeeks = CALENDAR_WEEKS)
   const visibleStartDate = weeks[0]?.[0].date || gridStartDate;
   const displayedStartDate = visibleStartDate > startDate ? visibleStartDate : startDate;
   const peak = Math.max(0, ...weeks.flat().map(({ tokens }) => tokens));
-  const focusedMonthLabel = new Intl.DateTimeFormat('pt-PT', { month: 'long' }).format(
-    displayedStartDate,
-  );
+  const focusedMonthLabel = new Intl.DateTimeFormat('pt-PT', {
+    month: 'long',
+  }).format(displayedStartDate);
   const monthMarks = [];
   const monthCursor = new Date(
     Date.UTC(displayedStartDate.getUTCFullYear(), displayedStartDate.getUTCMonth(), 1),
@@ -78,7 +92,14 @@ const buildActivityCalendar = (dailyUsageBuckets, maximumWeeks = CALENDAR_WEEKS)
     monthCursor.setUTCMonth(monthCursor.getUTCMonth() + 1);
   }
 
-  return { focusedMonthLabel, monthMarks, peak, weeks };
+  const rangeFormatter = new Intl.DateTimeFormat('pt-PT', {
+    day: '2-digit',
+    month: '2-digit',
+    timeZone: 'UTC',
+  });
+  const rangeLabel = `${rangeFormatter.format(visibleStartDate)} - ${rangeFormatter.format(endDate)}`;
+
+  return { focusedMonthLabel, monthMarks, peak, rangeLabel, weeks };
 };
 
 const getActivityLevel = (tokens, peak) => {
@@ -89,7 +110,7 @@ const getActivityLevel = (tokens, peak) => {
   const ratio = tokens / peak;
   const thresholdIndex = ACTIVITY_LEVEL_THRESHOLDS.findIndex((threshold) => ratio <= threshold);
 
-  return thresholdIndex === -1 ? ACTIVITY_LEVEL_THRESHOLDS.length + 1 : thresholdIndex + 1;
+  return thresholdIndex === -1 ? ACTIVITY_LEVEL_COUNT : thresholdIndex + 1;
 };
 
-export { buildActivityCalendar, getActivityCalendarWeeks, getActivityLevel };
+export { ACTIVITY_LEVEL_COUNT, buildActivityCalendar, getActivityCalendarWeeks, getActivityLevel };

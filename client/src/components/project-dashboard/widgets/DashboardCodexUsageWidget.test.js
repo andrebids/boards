@@ -29,11 +29,11 @@ describe('DashboardCodexUsageWidget token activity', () => {
   it('keeps low token days distinct from the peak', () => {
     expect(getActivityLevel(0, 10_000)).toBe(0);
     expect(getActivityLevel(50, 10_000)).toBe(1);
-    expect(getActivityLevel(200, 10_000)).toBe(2);
-    expect(getActivityLevel(1_000, 10_000)).toBe(3);
-    expect(getActivityLevel(2_000, 10_000)).toBe(4);
-    expect(getActivityLevel(5_000, 10_000)).toBe(5);
-    expect(getActivityLevel(10_000, 10_000)).toBe(6);
+    expect(getActivityLevel(200, 10_000)).toBe(3);
+    expect(getActivityLevel(1_000, 10_000)).toBe(5);
+    expect(getActivityLevel(2_000, 10_000)).toBe(6);
+    expect(getActivityLevel(5_000, 10_000)).toBe(8);
+    expect(getActivityLevel(10_000, 10_000)).toBe(9);
   });
 
   it('keeps calendar cells readable by reducing the visible period', () => {
@@ -54,5 +54,12 @@ describe('DashboardCodexUsageWidget token activity', () => {
     expect(calendar.weeks).toHaveLength(14);
     expect(calendar.weeks.flat().some(({ dateKey }) => dateKey === '2026-05-11')).toBe(false);
     expect(calendar.weeks.flat().some(({ dateKey }) => dateKey === '2026-08-26')).toBe(true);
+  });
+
+  it('keeps a short activity history on the same readable heat calendar scale', () => {
+    const calendar = buildActivityCalendar([{ startDate: '2026-08-26', tokens: 300 }]);
+
+    expect(calendar.weeks).toHaveLength(14);
+    expect(calendar.weeks.flat().filter(({ tokens }) => tokens > 0)).toHaveLength(1);
   });
 });

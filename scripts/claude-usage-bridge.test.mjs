@@ -156,8 +156,8 @@ test("token activity counts each assistant message once", async () => {
     cache_creation_input_tokens: 100,
     cache_read_input_tokens: 1000,
   };
-  const entry = (id, timestamp) =>
-    JSON.stringify({ type: "assistant", timestamp, message: { id, usage } });
+  const entry = (id, timestamp, entryUsage = usage) =>
+    JSON.stringify({ type: "assistant", timestamp, message: { id, usage: entryUsage } });
 
   try {
     await mkdir(path.join(directory, "project", "subagents"), {
@@ -168,6 +168,10 @@ test("token activity counts each assistant message once", async () => {
       [
         entry("msg_1", "2026-09-13T12:00:00.000Z"),
         entry("msg_1", "2026-09-13T12:00:01.000Z"),
+        entry("msg_1", "2026-09-13T12:00:02.000Z", {
+          ...usage,
+          input_tokens: 12,
+        }),
         '{not json "usage"',
         JSON.stringify({
           type: "user",
@@ -186,8 +190,8 @@ test("token activity counts each assistant message once", async () => {
       new Date("2026-09-14T13:00:00.000Z"),
     );
     assert.deepEqual(activity.summary, {
-      totalTokens: 2230,
-      peakDailyTokens: 1115,
+      totalTokens: 2232,
+      peakDailyTokens: 1117,
       currentStreakDays: 2,
       longestStreakDays: 2,
     });

@@ -326,8 +326,10 @@ export const collectTokenActivity = async (
 ) => {
   const minimumModifiedMs = now.getTime() - MAX_DAILY_USAGE_BUCKETS * DAY_MS;
   const files = await findTranscriptFiles(projectsDirectory, minimumModifiedMs);
-  const seenMessageIds = new Set();
-  const tokensByDate = new Map();
+  // A streamed assistant message can be written several times with cumulative usage.
+  // Keep the largest snapshot for each message so repeated content blocks are not counted
+  // twice while the final usage is not lost by keeping only the first snapshot.
+  const usageByMessageId = new Map();
 
   for (const file of files) {
     const lines = readline.createInterface({
@@ -347,16 +349,18 @@ export const collectTokenActivity = async (
         continue;
       }
 
-      // Claude Code writes one entry per content block, each repeating the same message usage.
+      // Claude Code can write several entries for one streamed assistant message.
       const usage = getTranscriptEntryUsage(entry);
-      if (usage && !seenMessageIds.has(usage.id)) {
-        seenMessageIds.add(usage.id);
-        tokensByDate.set(
-          usage.dateKey,
-          (tokensByDate.get(usage.dateKey) || 0) + usage.tokens,
-        );
+      const previousUsage = usageByMessageId.get(usage?.id);
+      if (usage && (!previousUsage || usage.tokens > previousUsage.tokens)) {
+        usageByMessageId.set(usage.id, usage);
       }
     }
+  }
+
+  const tokensByDate = new Map();
+  for (const { dateKey, tokens } of usageByMessageId.values()) {
+    tokensByDate.set(dateKey, (tokensByDate.get(dateKey) || 0) + tokens);
   }
 
   return {

@@ -4,12 +4,13 @@ import PropTypes from 'prop-types';
 import api from '../../../api';
 
 import {
+  ACTIVITY_LEVEL_COUNT,
   buildActivityCalendar,
   getActivityCalendarWeeks,
   getActivityLevel,
 } from './codex-usage-activity';
 import { getClaudeUsageStatus, getLimitWindowState } from './claude-usage-status';
-import getCodexUsageForecast from './codex-usage-forecast';
+import getCodexUsageForecast, { getClaudeUsageForecast } from './codex-usage-forecast';
 import styles from './DashboardCodexUsageWidget.module.scss';
 
 const USAGE_REFRESH_INTERVAL_MS = 60 * 1000;
@@ -18,8 +19,6 @@ const TOKEN_UNITS = [
   { threshold: 1e6, suffix: 'M', divisor: 1e6 },
   { threshold: 1e3, suffix: 'K', divisor: 1e3 },
 ];
-const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
 const normalizeUsagePercent = (usagePercent) => {
   if (!Number.isFinite(usagePercent)) {
     return null;
@@ -69,7 +68,7 @@ const formatResetCountdown = (resetsAt, nowMs) => {
 
 const formatTokenCount = (tokens) => {
   if (!Number.isSafeInteger(tokens) || tokens < 0) {
-    return '—';
+    return 'n/d';
   }
 
   const unit = TOKEN_UNITS.find(({ threshold }) => tokens >= threshold);
@@ -82,7 +81,7 @@ const formatTokenCount = (tokens) => {
 
 const formatDuration = (seconds) => {
   if (!Number.isSafeInteger(seconds) || seconds < 0) {
-    return '—';
+    return 'n/d';
   }
 
   const hours = Math.floor(seconds / 3600);
@@ -101,7 +100,7 @@ function TokenActivity({ activity, emptyMessage, note, stats }) {
   const hasActivity = Boolean(stats);
   const calendarStyle = {
     '--calendar-columns': calendar.weeks.length,
-    '--calendar-width': `${20 + calendar.weeks.length * 24}px`,
+    '--calendar-width': `${calendar.weeks.length * 24}px`,
   };
   const focusedPeriodLabel = calendar.focusedMonthLabel
     ? `desde ${calendar.focusedMonthLabel}`
@@ -147,25 +146,20 @@ function TokenActivity({ activity, emptyMessage, note, stats }) {
           </div>
           <div className={styles.calendar} style={calendarStyle} aria-label={calendarAriaLabel}>
             <div className={styles.monthLabels} aria-hidden="true">
-              <span />
               {calendar.monthMarks.map(({ index, label }) => (
-                <span key={`${index}-${label}`} style={{ gridColumn: index + 2 }}>
+                <span key={`${index}-${label}`} style={{ gridColumn: index + 1 }}>
                   {label}
                 </span>
               ))}
             </div>
-            <div className={styles.calendarGrid} role="img" aria-label={calendarAriaLabel}>
-              <div className={styles.weekdayLabels} aria-hidden="true">
-                {WEEKDAY_LABELS.map((label) => (
-                  <span key={label}>{label}</span>
-                ))}
-              </div>
+            <div className={styles.calendarGrid} aria-label={calendarAriaLabel}>
               {calendar.weeks.map((week) => (
                 <div className={styles.week} key={week[0].dateKey}>
                   {week.map(({ dateKey, tokens }) => {
                     const level = getActivityLevel(tokens, calendar.peak);
                     return (
-                      <span
+                      <button
+                        type="button"
                         className={`${styles.day} ${styles[`level${level}`]}`}
                         key={dateKey}
                         title={`${dateKey}: ${tokens.toLocaleString('pt-PT')} tokens`}
@@ -177,11 +171,16 @@ function TokenActivity({ activity, emptyMessage, note, stats }) {
               ))}
             </div>
             <div className={styles.legend} aria-hidden="true">
-              <span>menos</span>
-              {[0, 1, 2, 3, 4, 5, 6].map((level) => (
-                <i className={`${styles.day} ${styles[`level${level}`]}`} key={level} />
-              ))}
-              <span>mais</span>
+              <span className={styles.rangeLabel}>{calendar.rangeLabel}</span>
+              <span className={styles.legendScale}>
+                <span>menos</span>
+                {Array.from({ length: ACTIVITY_LEVEL_COUNT + 1 }, (_, level) => level).map(
+                  (level) => (
+                    <i className={`${styles.day} ${styles[`level${level}`]}`} key={level} />
+                  ),
+                )}
+                <span>mais</span>
+              </span>
             </div>
           </div>
           {note && <p className={styles.activityNote}>{note}</p>}
@@ -230,8 +229,56 @@ const getCodexActivityStats = (usage) => {
     { label: 'Pico diário', value: formatTokenCount(summary.peakDailyTokens) },
     { label: 'Streak', value: `${summary.currentStreakDays}d` },
     { label: 'Melhor', value: `${summary.longestStreakDays}d` },
-    { label: 'Tarefa mais longa', value: formatDuration(summary.longestRunningTurnSec) },
+    {
+      label: 'Tarefa mais longa',
+      value: formatDuration(summary.longestRunningTurnSec),
+    },
   ];
+};
+
+function UsageForecast({ forecast }) {
+  if (!forecast) {
+    return null;
+  }
+
+  const depletion = forecast.isBeforeReset
+    ? formatRenewal(Math.round(forecast.depletesAtMs / 1000))
+    : null;
+  const depletionLabel = depletion
+    ? new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit' }).format(
+        new Date(depletion.dateTime),
+      )
+    : null;
+  const rate = new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 2 }).format(
+    forecast.usedPercentPerHour,
+  );
+
+  return (
+    <p
+      className={styles.forecast}
+      title="Estimativa baseada no consumo médio desde o início da janela."
+      aria-label={`${rate}% por hora, ${
+        depletion ? `esgota aproximadamente a ${depletionLabel}` : 'dura até ao reset'
+      }`}
+    >
+      {rate}%/h
+      <br />
+      {depletion ? (
+        <time dateTime={depletion.dateTime}>Esgota ~{depletionLabel}</time>
+      ) : (
+        'Dura até ao reset'
+      )}
+    </p>
+  );
+}
+
+UsageForecast.defaultProps = { forecast: null };
+UsageForecast.propTypes = {
+  forecast: PropTypes.shape({
+    isBeforeReset: PropTypes.bool.isRequired,
+    depletesAtMs: PropTypes.number,
+    usedPercentPerHour: PropTypes.number.isRequired,
+  }),
 };
 
 const CodexUsagePanel = React.memo(() => {
@@ -269,19 +316,10 @@ const CodexUsagePanel = React.memo(() => {
   const usedPercent = normalizeUsagePercent(usage?.usedPercent);
   const hasUsage = usedPercent !== null;
   const remainingPercent = hasUsage ? 100 - usedPercent : null;
-  const displayedPercent = hasUsage ? `${remainingPercent}%` : '—';
+  const displayedPercent = hasUsage ? `${remainingPercent}%` : 'n/d';
   const renewal = formatRenewal(usage?.resetsAt);
   const resetCountdown = formatResetCountdown(usage?.resetsAt, nowMs);
   const forecast = getCodexUsageForecast(usage);
-  const forecastDepletion = forecast
-    ? formatRenewal(Math.round(forecast.depletesAtMs / 1000))
-    : null;
-  const forecastDepletionLabel = forecastDepletion?.label.replace(',', ' às');
-  const forecastRate = forecast
-    ? new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 2 }).format(
-        forecast.usedPercentPerHour,
-      )
-    : null;
 
   return (
     <section className={styles.wrapper} aria-label="Uso semanal do Codex">
@@ -294,12 +332,6 @@ const CodexUsagePanel = React.memo(() => {
             hasUsage
               ? `Uso semanal do Codex: ${remainingPercent}% restante, ${usedPercent}% utilizado${
                   renewal ? `, repõe ${renewal.label}` : ''
-                }${
-                  forecast && forecastDepletion
-                    ? `, ao ritmo médio de ${forecastRate}% por hora esgota ${
-                        forecast.isBeforeReset ? 'antes' : 'depois'
-                      } do reset, dia ${forecastDepletionLabel}`
-                    : ''
                 }`
               : 'Uso semanal ainda indisponível'
           }
@@ -331,18 +363,7 @@ const CodexUsagePanel = React.memo(() => {
             </time>
           )}
         </div>
-        {forecast && forecastDepletion && (
-          <p
-            className={styles.forecast}
-            title="Estimativa baseada no consumo médio desde o início desta janela"
-          >
-            Ritmo médio: {forecastRate}%/h.{' '}
-            <time dateTime={forecastDepletion.dateTime}>
-              Esgota dia {forecastDepletionLabel}, {forecast.isBeforeReset ? 'antes' : 'depois'} do
-              reset.
-            </time>
-          </p>
-        )}
+        <UsageForecast forecast={forecast} />
       </div>
       <TokenActivity activity={usage?.tokenActivity} stats={getCodexActivityStats(usage)} />
     </section>
@@ -413,6 +434,7 @@ const ClaudeUsagePanel = React.memo(() => {
   const status = getClaudeUsageStatus({ usage, hasLoadError, nowMs });
   const weeklyRenewal = weekly.status === 'available' ? formatRenewal(weekly.resetsAt) : null;
   const sessionRenewal = session.status === 'available' ? formatRenewal(session.resetsAt) : null;
+  const forecast = getClaudeUsageForecast(usage, nowMs);
 
   return (
     <section className={`${styles.wrapper} ${styles.claude}`} aria-label="Utilização do Claude">
@@ -446,7 +468,7 @@ const ClaudeUsagePanel = React.memo(() => {
             />
           </svg>
           <div className={styles.reading} aria-live="polite">
-            <strong>{weekly.status === 'available' ? `${weekly.remainingPercent}%` : '—'}</strong>
+            <strong>{weekly.status === 'available' ? `${weekly.remainingPercent}%` : 'n/d'}</strong>
             <span>
               {weekly.status === 'available'
                 ? 'restante'
@@ -462,6 +484,7 @@ const ClaudeUsagePanel = React.memo(() => {
             </time>
           )}
         </div>
+        <UsageForecast forecast={forecast} />
         <p className={styles.sessionLimit}>
           <span>Sessão 5h</span>
           {session.status === 'available' ? (
@@ -491,11 +514,60 @@ const ClaudeUsagePanel = React.memo(() => {
   );
 });
 
-const DashboardCodexUsageWidget = React.memo(() => (
-  <div className={styles.providers} aria-label="Utilização de Codex e Claude">
-    <CodexUsagePanel />
-    <ClaudeUsagePanel />
-  </div>
-));
+const DashboardCodexUsageWidget = React.memo(() => {
+  const providersRef = useRef(null);
+
+  useEffect(() => {
+    const providers = providersRef.current;
+    if (!providers || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    let frame;
+    const alignSections = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        ['weekly', 'activityStats'].forEach((section) => {
+          const heights = [...providers.querySelectorAll(`.${styles[section]}`)].map((element) => {
+            const { marginTop, marginBottom } = window.getComputedStyle(element);
+            return (
+              element.getBoundingClientRect().height +
+              parseFloat(marginTop) +
+              parseFloat(marginBottom)
+            );
+          });
+          providers.style.setProperty(`--${section}-height`, `${Math.max(0, ...heights)}px`);
+        });
+      });
+    };
+    const resizeObserver = new ResizeObserver(alignSections);
+    const observeSections = () => {
+      resizeObserver.disconnect();
+      providers
+        .querySelectorAll(`.${styles.weekly}, .${styles.activityStats}`)
+        .forEach((element) => {
+          resizeObserver.observe(element);
+        });
+      alignSections();
+    };
+    // Readings arrive independently and can add or remove the statistics block.
+    const mutationObserver = new MutationObserver(observeSections);
+    mutationObserver.observe(providers, { childList: true, subtree: true });
+    observeSections();
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return (
+    <div className={styles.providers} ref={providersRef} aria-label="Utilização de Codex e Claude">
+      <CodexUsagePanel />
+      <ClaudeUsagePanel />
+    </div>
+  );
+});
 
 export default DashboardCodexUsageWidget;
