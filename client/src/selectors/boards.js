@@ -339,6 +339,28 @@ export const selectFilteredCardIdsForCurrentBoard = createSelector(
   }
 );
 
+export const selectFilteredAttachmentsForCurrentBoard = createSelector(
+  orm,
+  state => selectPath(state).boardId,
+  ({ Board }, id) => {
+    if (!id) {
+      return [];
+    }
+
+    const boardModel = Board.withId(id);
+
+    if (!boardModel) {
+      return [];
+    }
+
+    return boardModel.getFilteredAttachmentsModelArray().map(attachmentModel => ({
+      ...attachmentModel.ref,
+      cardId: attachmentModel.cardId,
+      cardName: attachmentModel.card ? attachmentModel.card.name : null,
+    }));
+  }
+);
+
 export const selectCustomFieldGroupIdsForCurrentBoard = createSelector(
   orm,
   state => selectPath(state).boardId,
@@ -470,6 +492,7 @@ export default {
   selectFiniteListIdsForCurrentBoard,
   selectAvailableListsForCurrentBoard,
   selectFilteredCardIdsForCurrentBoard,
+  selectFilteredAttachmentsForCurrentBoard,
   selectCustomFieldGroupIdsForCurrentBoard,
   selectCustomFieldGroupsForCurrentBoard,
   selectActivityIdsForCurrentBoard,

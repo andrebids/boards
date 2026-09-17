@@ -10,6 +10,7 @@ import selectors from '../../../selectors';
 import ModalTypes from '../../../constants/ModalTypes';
 import { BoardContexts, BoardViews } from '../../../constants/Enums';
 import KanbanContent from './KanbanContent';
+import MediaView from './MediaView';
 import FiniteContent from './FiniteContent';
 import EndlessContent from './EndlessContent';
 import CardModal from '../../cards/CardModal';
@@ -25,6 +26,8 @@ const Board = React.memo(() => {
   let Content;
   if (board.view === BoardViews.KANBAN) {
     Content = KanbanContent;
+  } else if (board.view === BoardViews.MEDIA) {
+    Content = MediaView;
   } else {
     switch (board.context) {
       case BoardContexts.BOARD:

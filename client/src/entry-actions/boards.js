@@ -72,6 +72,13 @@ const updateViewInCurrentBoard = value => ({
   },
 });
 
+const updateMediaTypeFilterInCurrentBoard = value => ({
+  type: EntryActionTypes.MEDIA_TYPE_FILTER_IN_CURRENT_BOARD_UPDATE,
+  payload: {
+    value,
+  },
+});
+
 const searchInCurrentBoard = value => ({
   type: EntryActionTypes.IN_CURRENT_BOARD_SEARCH,
   payload: {
@@ -104,6 +111,7 @@ export default {
   updateContextInCurrentBoard,
   updateViewInCurrentBoard,
   searchInCurrentBoard,
+  updateMediaTypeFilterInCurrentBoard,
   deleteBoard,
   handleBoardDelete,
 };

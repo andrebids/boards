@@ -7,6 +7,7 @@ import { attr, fk, many } from 'redux-orm';
 
 import BaseModel from './BaseModel';
 import buildSearchParts from '../utils/build-search-parts';
+import categoriseAttachment from '../utils/categorise-attachment';
 import { isListFinite } from '../utils/record-helpers';
 import ActionTypes from '../constants/ActionTypes';
 import Config from '../constants/Config';
@@ -18,6 +19,7 @@ const prepareFetchedBoard = board => ({
   context: BoardContexts.BOARD,
   view: board.defaultView,
   search: '',
+  mediaTypeFilter: [],
 });
 
 export default class extends BaseModel {
@@ -40,6 +42,9 @@ export default class extends BaseModel {
     context: attr(),
     view: attr(),
     search: attr(),
+    mediaTypeFilter: attr({
+      getDefault: () => [],
+    }),
     isSubscribed: attr({
       getDefault: () => false,
     }),
@@ -242,6 +247,12 @@ export default class extends BaseModel {
         });
 
         break;
+      case ActionTypes.MEDIA_TYPE_FILTER_IN_BOARD_UPDATE:
+        Board.withId(payload.id).update({
+          mediaTypeFilter: payload.value,
+        });
+
+        break;
       case ActionTypes.BOARD_DELETE:
         Board.withId(payload.id).deleteWithRelated();
 
@@ -393,6 +404,33 @@ export default class extends BaseModel {
     }
 
     return cardModels;
+  }
+
+  getFilteredAttachmentsModelArray() {
+    const attachmentModels = [];
+    const seenIds = new Set();
+
+    const mediaTypeFilter = this.mediaTypeFilter || [];
+
+    this.getFilteredCardsModelArray().forEach(cardModel => {
+      cardModel.attachments.toModelArray().forEach(attachmentModel => {
+        if (seenIds.has(attachmentModel.id)) {
+          return;
+        }
+
+        if (
+          mediaTypeFilter.length > 0 &&
+          !mediaTypeFilter.includes(categoriseAttachment(attachmentModel.ref))
+        ) {
+          return;
+        }
+
+        seenIds.add(attachmentModel.id);
+        attachmentModels.push(attachmentModel);
+      });
+    });
+
+    return attachmentModels;
   }
 
   getActivitiesModelArray() {

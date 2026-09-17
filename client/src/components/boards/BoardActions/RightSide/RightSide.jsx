@@ -40,7 +40,7 @@ const RightSide = React.memo(() => {
 
   const views = [];
   if (board.context === BoardContexts.BOARD) {
-    views.unshift(BoardViews.KANBAN);
+    views.push(BoardViews.KANBAN, BoardViews.MEDIA);
   }
 
   return (

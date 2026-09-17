@@ -233,6 +233,12 @@ export function* updateViewInCurrentBoard(value) {
   yield call(updateBoardView, boardId, value);
 }
 
+export function* updateMediaTypeFilterInCurrentBoard(value) {
+  const { boardId } = yield select(selectors.selectPath);
+
+  yield put(actions.updateMediaTypeFilterInBoard(boardId, value));
+}
+
 export function* searchInCurrentBoard(value) {
   const { boardId } = yield select(selectors.selectPath);
   const currentListId = yield select(selectors.selectCurrentListId);
@@ -284,6 +290,7 @@ export default {
   updateBoardView,
   updateViewInCurrentBoard,
   searchInCurrentBoard,
+  updateMediaTypeFilterInCurrentBoard,
   deleteBoard,
   handleBoardDelete,
 };

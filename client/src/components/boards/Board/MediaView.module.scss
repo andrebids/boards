@@ -1,0 +1,182 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+:global(#app) {
+  .wrapper {
+    overflow-y: scroll;
+    padding-left: 20px;
+    position: relative;
+    width: 100%;
+
+    @supports (-moz-appearance: none) {
+      scrollbar-color: rgba(0, 0, 0, 0.32) rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  .tile {
+    background: rgba(0, 0, 0, 0.24);
+    border-radius: 3px;
+    cursor: pointer;
+    min-width: 0;
+    outline: none;
+    overflow: hidden;
+    padding: 8px;
+    position: relative;
+    transition: background 85ms ease-in;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.32);
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.4);
+      outline-offset: 2px;
+    }
+  }
+
+  .image {
+    aspect-ratio: 16 / 9;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-radius: 3px;
+    max-height: 310px;
+    position: relative;
+    width: 100%;
+  }
+
+  .imagePlaceholder {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.62);
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .placeholderIcon {
+    color: rgba(255, 255, 255, 0.64);
+    margin: 0;
+  }
+
+  .videoContent {
+    max-height: 80vh;
+    max-width: 90vw;
+  }
+
+  .bottomOverlay {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.72) 0%,
+      rgba(0, 0, 0, 0.72) 70%,
+      rgba(0, 0, 0, 0)
+    );
+    bottom: 8px;
+    color: #fff;
+    left: 8px;
+    padding: 24px 12px 8px;
+    pointer-events: none;
+    position: absolute;
+    right: 8px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  }
+
+  .overlayAttachmentName {
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .overlayCardName {
+    font-size: 11px;
+    line-height: 1.3;
+    margin-top: 2px;
+    opacity: 0.85;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hoverButton {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.55);
+    border: none;
+    border-radius: 3px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 14px;
+    height: 28px;
+    justify-content: center;
+    opacity: 0;
+    outline: none;
+    padding: 0;
+    position: absolute;
+    top: 14px;
+    transition: opacity 85ms ease-in, background 85ms ease-in;
+    width: 28px;
+    z-index: 2;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.78);
+    }
+  }
+
+  .hoverButtonLeft {
+    left: 14px;
+  }
+
+  .hoverButtonRight {
+    right: 14px;
+  }
+
+  .tile:hover .hoverButton,
+  .tile:focus-visible .hoverButton {
+    opacity: 1;
+  }
+
+  .previewError {
+    color: #fff;
+    display: block;
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  .emptyState {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    left: 0;
+    min-height: 60vh;
+    padding: 40px 20px;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .emptyStateCard {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.24);
+    border-radius: 3px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 32px 40px;
+    text-align: center;
+  }
+
+  .emptyStateIcon {
+    opacity: 0.6;
+  }
+
+  .emptyStateText {
+    font-size: 15px;
+    opacity: 0.9;
+  }
+}

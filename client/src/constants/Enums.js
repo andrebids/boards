@@ -68,6 +68,15 @@ export const BoardViews = {
   KANBAN: 'kanban',
   GRID: 'grid',
   LIST: 'list',
+  MEDIA: 'media',
+};
+
+export const MediaTypeFilters = {
+  IMAGES: 'images',
+  VIDEOS: 'videos',
+  DOCUMENTS: 'documents',
+  LINKS: 'links',
+  OTHERS: 'others',
 };
 
 export const BoardContexts = {

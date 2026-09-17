@@ -127,6 +127,14 @@ const updateBoardContext = (id, value) => ({
   },
 });
 
+const updateMediaTypeFilterInBoard = (id, value) => ({
+  type: ActionTypes.MEDIA_TYPE_FILTER_IN_BOARD_UPDATE,
+  payload: {
+    id,
+    value,
+  },
+});
+
 const searchInBoard = (id, value, currentListId) => ({
   type: ActionTypes.IN_BOARD_SEARCH,
   payload: {
@@ -173,6 +181,7 @@ export default {
   handleBoardUpdate,
   updateBoardContext,
   searchInBoard,
+  updateMediaTypeFilterInBoard,
   deleteBoard,
   handleBoardDelete,
 };

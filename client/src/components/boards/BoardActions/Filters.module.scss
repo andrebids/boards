@@ -80,6 +80,15 @@
     }
   }
 
+  .filterButtonActive .filterLabel {
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.6);
+    }
+  }
+
   .dropdownIcon {
     margin-left: 6px;
     opacity: 0.8;
@@ -88,6 +97,7 @@
 
   .filterLabelIcon {
     line-height: 1;
+    margin-right: 6px !important;
   }
 
   .filterTitle {

@@ -46,6 +46,11 @@ export default function* boardsWatchers() {
       EntryActionTypes.IN_CURRENT_BOARD_SEARCH,
       ({ payload: { value } }) => services.searchInCurrentBoard(value)
     ),
+    takeEvery(
+      EntryActionTypes.MEDIA_TYPE_FILTER_IN_CURRENT_BOARD_UPDATE,
+      ({ payload: { value } }) =>
+        services.updateMediaTypeFilterInCurrentBoard(value)
+    ),
     takeEvery(EntryActionTypes.BOARD_DELETE, ({ payload: { id } }) =>
       services.deleteBoard(id)
     ),
