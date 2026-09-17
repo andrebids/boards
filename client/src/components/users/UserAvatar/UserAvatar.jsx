@@ -72,10 +72,16 @@ const UserAvatar = React.memo(
 
     const user = useSelector((state) => selectUserById(state, id)) || fallbackUser;
     const currentUserId = useSelector(selectors.selectCurrentUserId);
+
+    const presenceStatusByUserId = useSelector(
+      selectors.selectPresenceStatusByUserId,
+    );
     const [t] = useTranslation();
     // Como no Pro, o nosso próprio avatar nunca leva ponto.
     const presenceStatus =
-      withPresence && user.id !== currentUserId ? user.presenceStatus : undefined;
+      withPresence && user.id !== currentUserId
+        ? presenceStatusByUserId[user.id]
+        : undefined;
 
     const title =
       user.id === StaticUserIds.DELETED
@@ -113,7 +119,6 @@ const UserAvatar = React.memo(
             className={classNames(
               styles.statusDot,
               styles[`statusDot${upperFirst(size)}`],
-              withCreatorIndicator && styles.statusDotShifted,
             )}
           />
         )}

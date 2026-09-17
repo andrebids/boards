@@ -57,11 +57,11 @@
 
   .statusDot {
     border-radius: 50%;
-    bottom: 0;
     box-sizing: border-box;
     height: 10px;
     position: absolute;
     right: 0;
+    top: 0;
     width: 10px;
     z-index: 4;
 
@@ -93,13 +93,6 @@
   .statusDotSmall {
     height: 8px;
     width: 8px;
-  }
-
-  /* A coroa de criador ja ocupa o canto inferior direito */
-
-  .statusDotShifted {
-    left: 0;
-    right: auto;
   }
 
   .initials {

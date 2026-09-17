@@ -10,6 +10,7 @@ import orm from '../orm';
 import { selectPath } from './router';
 import { isLocalId } from '../utils/local-id';
 import { isIdAtOrBefore } from '../utils/id-helpers';
+import { PresenceStatuses } from '../constants/Enums';
 
 const enrichConversation = (conversationModel) => {
   const participantModels = conversationModel.participants.toModelArray();
@@ -148,11 +149,15 @@ export const selectChatMembersForCurrentProject = createSelector(
   orm,
   (state) => selectPath(state).projectId,
   (state) => selectChatState(state).memberIdsByProject,
-  ({ User }, projectId, memberIdsByProject) =>
+  (state) => state.presence.statusByUserId,
+  ({ User }, projectId, memberIdsByProject, presenceStatusByUserId) =>
     (memberIdsByProject[projectId] || [])
       .map((id) => User.withId(id))
       .filter(Boolean)
-      .map((userModel) => userModel.ref),
+      .map((userModel) => ({
+        ...userModel.ref,
+        isOnline: presenceStatusByUserId[userModel.id] === PresenceStatuses.ONLINE,
+      })),
 );
 
 export const selectChatConversationsForCurrentProject = createSelector(

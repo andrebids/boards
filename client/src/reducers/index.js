@@ -16,6 +16,7 @@ import sidebar from './sidebarReducer';
 import timelinePanel from './timelinePanelReducer';
 import notificationHistory from './notification-history';
 import chat from './chat';
+import presence from './presence';
 
 export default combineReducers({
   router,
@@ -29,4 +30,5 @@ export default combineReducers({
   timelinePanel,
   notificationHistory,
   chat,
+  presence,
 });
