@@ -134,6 +134,25 @@ module.exports = {
       list: values.list,
     });
 
+    try {
+      await sails.helpers.cardMemberships.createOne.with({
+        project: inputs.project,
+        board: values.board,
+        list: values.list,
+        values: {
+          card,
+          user: values.creatorUser,
+        },
+        actorUser: values.creatorUser,
+        request: inputs.request,
+        skipNotifications: true,
+      });
+    } catch (error) {
+      if (error !== 'userAlreadyCardMember') {
+        throw error;
+      }
+    }
+
     if (inputs.project.autoAddBoardMembersToCards) {
       await sails.helpers.boards.syncMembersToCards.with({
         project: inputs.project,
