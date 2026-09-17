@@ -180,8 +180,7 @@ const ChatPopover = React.memo(({ onClose }) => {
                 onClick={handleMemberClick}
               >
                 <span className={styles.avatarWrapper}>
-                  <UserAvatar id={member.id} size="small" />
-                  {member.isOnline && <span className={styles.onlineIndicator} />}
+                  <UserAvatar id={member.id} size="small" withPresence />
                 </span>
                 <span className={styles.itemCopy}>
                   <strong>{member.name}</strong>

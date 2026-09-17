@@ -38,7 +38,7 @@ const Project = React.memo(() => {
       project &&
       !board &&
       firstBoardId &&
-      ![Paths.GANTT, Paths.PRESENTATION].includes(pathsMatch?.pattern.path)
+      ![Paths.GANTT, Paths.PRESENTATION, Paths.TRANSVERSAL].includes(pathsMatch?.pattern.path)
     ) {
       navigate(Paths.BOARDS.replace(':id', firstBoardId));
     }

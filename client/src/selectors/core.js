@@ -24,6 +24,9 @@ export const selectProjectsSearch = ({ core: { projectsSearch } }) =>
 export const selectProjectsOrder = ({ core: { projectsOrder } }) =>
   projectsOrder;
 
+export const selectProjectsGridStyle = ({ core: { projectsGridStyle } }) =>
+  projectsGridStyle;
+
 export const selectIsHiddenProjectsVisible = ({
   core: { isHiddenProjectsVisible },
 }) => isHiddenProjectsVisible;
@@ -37,5 +40,6 @@ export default {
   selectHomeView,
   selectProjectsSearch,
   selectProjectsOrder,
+  selectProjectsGridStyle,
   selectIsHiddenProjectsVisible,
 };

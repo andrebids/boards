@@ -53,6 +53,13 @@ const handleUserUpdate = user => ({
   },
 });
 
+const handleUserPresenceUpdate = presences => ({
+  type: EntryActionTypes.USER_PRESENCE_UPDATE_HANDLE,
+  payload: {
+    presences,
+  },
+});
+
 const updateCurrentUserLanguage = language => ({
   type: EntryActionTypes.CURRENT_USER_LANGUAGE_UPDATE,
   payload: {
@@ -239,6 +246,7 @@ export default {
   updateUser,
   updateCurrentUser,
   handleUserUpdate,
+  handleUserPresenceUpdate,
   updateCurrentUserLanguage,
   updateUserEmail,
   updateCurrentUserEmail,

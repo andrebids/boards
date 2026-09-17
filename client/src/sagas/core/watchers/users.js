@@ -33,6 +33,10 @@ export default function* usersWatchers() {
       services.handleUserUpdate(user)
     ),
     takeEvery(
+      EntryActionTypes.USER_PRESENCE_UPDATE_HANDLE,
+      ({ payload: { presences } }) => services.handleUserPresenceUpdate(presences)
+    ),
+    takeEvery(
       EntryActionTypes.CURRENT_USER_LANGUAGE_UPDATE,
       ({ payload: { language } }) =>
         services.updateCurrentUserLanguage(language)

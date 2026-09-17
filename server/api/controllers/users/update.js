@@ -77,6 +77,10 @@ module.exports = {
       type: 'string',
       isIn: Object.values(User.HomeViews),
     },
+    defaultProjectsGridStyle: {
+      type: 'string',
+      isIn: Object.values(User.ProjectsGridStyles),
+    },
     defaultProjectsOrder: {
       type: 'string',
       isIn: Object.values(User.ProjectOrders),
@@ -150,6 +154,7 @@ module.exports = {
         'enableFavoritesByDefault',
         'defaultEditorMode',
         'defaultHomeView',
+        'defaultProjectsGridStyle',
         'defaultProjectsOrder',
         'isDeactivated',
       ]),

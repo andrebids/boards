@@ -107,6 +107,17 @@ module.exports = {
       defaultsTo: false,
       columnName: 'auto_add_board_members_to_cards',
     },
+    transversalMode: {
+      type: 'string',
+      isIn: ['disabled', 'all', 'selected'],
+      defaultsTo: 'disabled',
+      columnName: 'transversal_mode',
+    },
+    transversalUserIds: {
+      type: 'json',
+      defaultsTo: [],
+      columnName: 'transversal_user_ids',
+    },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗

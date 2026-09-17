@@ -31,6 +31,7 @@ import notifications from './notifications';
 import notificationServices from './notification-services';
 import organizationDefaultLabels from './organization-default-labels';
 import chat from './chat';
+import presence from './presence';
 import gantt from './gantt';
 import presentations from './presentations';
 import dashboard from './dashboard';
@@ -65,6 +66,7 @@ export default {
   ...notificationServices,
   ...organizationDefaultLabels,
   ...chat,
+  ...presence,
   ...gantt,
   ...presentations,
   ...dashboard,

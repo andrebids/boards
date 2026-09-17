@@ -1,5 +1,7 @@
 import { createReadStream } from "node:fs";
-import { readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { open, readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
+import { setTimeout as sleep } from "node:timers/promises";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -53,22 +55,102 @@ const isValidWindow = (window) =>
 
 // Explicit opt-in: this private endpoint can change without notice. Credentials never leave
 // the local machine except for the access token sent to this fixed Anthropic HTTPS origin.
-export const fetchOAuthRateLimits = async (configDirectory, fetchImpl = fetch) => {
+export const fetchOAuthRateLimits = async (configDirectory, fetchImpl = fetch, options = {}) => {
+  // Both the scheduled task and status line enter here. A crashed owner is reclaimable.
+  const lockFile = path.join(configDirectory, ".planka-usage.lock");
+  let lock;
+  try {
+    lock = await open(lockFile, "wx", 0o600);
+  } catch (error) {
+    if (error.code !== "EEXIST") throw error;
+    const pid = Number(await readFile(lockFile, "utf8"));
+    let active = true;
+    if (Number.isSafeInteger(pid) && pid > 0) {
+      try { process.kill(pid, 0); } catch (ownerError) {
+        if (ownerError.code === "ESRCH") active = false;
+      }
+    } else {
+      active = Date.now() - (await stat(lockFile)).mtimeMs < 120_000;
+    }
+    if (active) throw new Error("Claude usage sync already running; retry next interval");
+    await unlink(lockFile);
+    lock = await open(lockFile, "wx", 0o600);
+  }
+  try {
+    await lock.writeFile(String(process.pid));
+    return await fetchLockedOAuthRateLimits(configDirectory, fetchImpl, options);
+  } finally {
+    await lock.close();
+    await unlink(lockFile);
+  }
+};
+
+const fetchLockedOAuthRateLimits = async (
+  configDirectory, fetchImpl, { renameImpl = rename, sleepImpl = sleep },
+) => {
+  const credentialsFile = path.join(configDirectory, ".credentials.json");
+  const pendingFile = `${credentialsFile}.planka-refresh.json`;
+  const temporaryFile = `${credentialsFile}.planka.tmp`;
+  const readCredentials = async () => JSON.parse(await readFile(credentialsFile, "utf8"));
+  const tokenHash = (oauth) => createHash("sha256")
+    .update(JSON.stringify([oauth?.accessToken, oauth?.refreshToken])).digest("hex");
   let credentials;
   try {
-    credentials = JSON.parse(
-      await readFile(path.join(configDirectory, ".credentials.json"), "utf8"),
-    );
+    credentials = await readCredentials();
   } catch {
     throw new Error("Claude credentials unavailable; run claude auth login");
   }
-  const oauth = credentials?.claudeAiOauth;
+  // Keep the rotated token durable until replacement succeeds; never refresh the old
+  // token again after Windows denies a rename, and never overwrite a newer Claude login.
+  const persistPending = async (pending) => {
+    for (let attempt = 0; ; attempt += 1) {
+      const current = await readCredentials();
+      if (tokenHash(current.claudeAiOauth) !== pending.previousTokenHash) {
+        await unlink(pendingFile);
+        return current;
+      }
+      const next = { ...current, claudeAiOauth: pending.oauth };
+      await writeFile(temporaryFile, `${JSON.stringify(next, null, 2)}\n`, { mode: 0o600 });
+      try {
+        await renameImpl(temporaryFile, credentialsFile);
+      } catch (error) {
+        if (!["EPERM", "EACCES", "EBUSY"].includes(error.code) || attempt >= 5) {
+          throw new Error("Claude refreshed credentials are saved for recovery; credential replacement failed");
+        }
+        await sleepImpl(100 * 2 ** attempt);
+        continue;
+      }
+      await unlink(pendingFile);
+      return next;
+    }
+  };
+  const pending = await readFile(pendingFile, "utf8").then(JSON.parse).catch((error) => {
+    if (error.code === "ENOENT") return null;
+    throw new Error("Claude pending credential refresh is unreadable");
+  });
+  if (pending) {
+    if (!pending.previousTokenHash || typeof pending.oauth?.accessToken !== "string") {
+      throw new Error("Claude pending credential refresh is invalid");
+    }
+    credentials = await persistPending(pending);
+  }
+  let oauth = credentials?.claudeAiOauth;
   let accessToken = oauth?.accessToken;
   if (typeof accessToken !== "string" || !accessToken.trim()) {
     throw new Error("Claude access token unavailable; run claude auth login");
   }
 
   const refreshCredentials = async () => {
+    const current = await readCredentials();
+    if (tokenHash(current.claudeAiOauth) !== tokenHash(oauth)) {
+      credentials = current;
+      oauth = current.claudeAiOauth;
+      accessToken = oauth?.accessToken;
+      if (typeof accessToken !== "string" || !accessToken) {
+        throw new Error("Claude access token unavailable; run claude auth login");
+      }
+      return;
+    }
     if (typeof oauth?.refreshToken !== "string" || !oauth.refreshToken.trim()) {
       throw new Error("Claude refresh token unavailable; run claude auth login");
     }
@@ -82,9 +164,11 @@ export const fetchOAuthRateLimits = async (configDirectory, fetchImpl = fetch) =
       redirect: "error",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       method: "POST",
-    });
+    }).catch(() => { throw new Error("Claude OAuth refresh failed (network or timeout)"); });
     if (!response.ok) {
-      throw new Error(`Claude OAuth refresh failed (HTTP ${response.status})`);
+      throw new Error(`Claude OAuth refresh failed (HTTP ${response.status})${
+        [400, 401].includes(response.status) ? "; run claude auth login" : ""
+      }`);
     }
     const refreshed = await response.json();
     if (typeof refreshed.access_token !== "string" || !refreshed.access_token) {
@@ -104,13 +188,11 @@ export const fetchOAuthRateLimits = async (configDirectory, fetchImpl = fetch) =
           }
         : {}),
     };
-    const nextCredentials = { ...credentials, claudeAiOauth: nextOauth };
-    const credentialsFile = path.join(configDirectory, ".credentials.json");
-    const temporaryFile = `${credentialsFile}.${process.pid}.tmp`;
-    await writeFile(temporaryFile, `${JSON.stringify(nextCredentials, null, 2)}\n`);
-    await rename(temporaryFile, credentialsFile);
-    accessToken = nextOauth.accessToken;
-    return nextOauth;
+    const pending = { previousTokenHash: tokenHash(oauth), oauth: nextOauth };
+    await writeFile(pendingFile, `${JSON.stringify(pending)}\n`, { mode: 0o600 });
+    credentials = await persistPending(pending);
+    oauth = credentials.claudeAiOauth;
+    accessToken = oauth.accessToken;
   };
 
   if (Number.isFinite(oauth.expiresAt) && oauth.expiresAt <= Date.now() + 60_000) {

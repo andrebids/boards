@@ -35,6 +35,7 @@ export const selectPath = createReduxOrmSelector(
           return {};
         case Paths.PROJECTS:
         case Paths.GANTT:
+        case Paths.TRANSVERSAL:
         case Paths.PRESENTATION: {
           const projectModel = Project.withId(pathsMatch.params.id);
 

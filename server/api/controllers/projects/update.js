@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { MODES, isUserIds } = require('../../../utils/transversal-view');
 
 const Errors = {
   NOT_ENOUGH_RIGHTS: {
@@ -83,9 +84,12 @@ module.exports = {
     isFavorite: {
       type: 'boolean',
     },
+    transversalMode: { type: 'string', isIn: MODES },
+    transversalUserIds: { type: 'json', custom: isUserIds },
   },
 
   exits: {
+    invalidTransversalUsers: { responseType: 'unprocessableEntity' },
     notEnoughRights: {
       responseType: 'forbidden',
     },
@@ -150,6 +154,8 @@ module.exports = {
         'backgroundGradient',
         'chatMode',
         'autoAddBoardMembersToCards',
+        'transversalMode',
+        'transversalUserIds',
       );
     } else if (currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId) {
       availableInputKeys.push('chatMode');
@@ -157,6 +163,19 @@ module.exports = {
 
     if (_.difference(Object.keys(inputs), availableInputKeys).length > 0) {
       throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
+    if (inputs.transversalUserIds !== undefined) {
+      const scoper = sails.helpers.projects.makeScoper.with({ record: project });
+      const eligibleIds = new Set([
+        ...(await scoper.getProjectManagerUserIds()),
+        ...(await scoper.getBoardMemberUserIdsForWholeProject()),
+      ]);
+      const users = await User.qm.getByIds(inputs.transversalUserIds);
+      const activeIds = new Set(users.filter((user) => !user.isDeactivated).map(({ id }) => id));
+      if (inputs.transversalUserIds.some((id) => !eligibleIds.has(id) || !activeIds.has(id))) {
+        throw { invalidTransversalUsers: 'Select active project members' };
+      }
     }
 
     let nextOwnerProjectManager;
@@ -212,6 +231,8 @@ module.exports = {
       'isArchived',
       'chatMode',
       'autoAddBoardMembersToCards',
+      'transversalMode',
+      'transversalUserIds',
       'isFavorite',
     ]);
 

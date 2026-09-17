@@ -28,6 +28,12 @@ const getProjectCardMemberOptions = (id, headers) =>
 const addProjectCardMembers = (id, data, headers) =>
   http.post(`/projects/${id}/card-memberships/bulk`, data, headers);
 
+const getTransversalOptions = (id, data, headers) =>
+  socket.get(`/projects/${id}/transversal/options`, data, headers);
+
+const getTransversalCards = (id, data, headers) =>
+  socket.get(`/projects/${id}/transversal/cards`, data, headers);
+
 export default {
   getProjects,
   createProject,
@@ -36,4 +42,6 @@ export default {
   deleteProject,
   getProjectCardMemberOptions,
   addProjectCardMembers,
+  getTransversalOptions,
+  getTransversalCards,
 };

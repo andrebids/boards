@@ -21,6 +21,10 @@ export default function* projectsWatchers() {
       ({ payload: { value } }) => services.updateProjectsOrder(value)
     ),
     takeEvery(
+      EntryActionTypes.PROJECTS_GRID_STYLE_UPDATE,
+      ({ payload: { value } }) => services.updateProjectsGridStyle(value)
+    ),
+    takeEvery(
       EntryActionTypes.HIDDEN_PROJECTS_TOGGLE,
       ({ payload: { isVisible } }) => services.toggleHiddenProjects(isVisible)
     ),

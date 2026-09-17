@@ -21,7 +21,11 @@ Limitações conhecidas:
   Só os limites normalizados são enviados ao Planka; os tokens não são registados nem enviados
   ao Planka. Redirecionamentos são recusados e cada pedido tem timeout de 15 segundos.
   Uma falha mantém a leitura anterior em produção, sem renovar a data de captura.
-  Em HTTP 401, voltar a executar `claude auth login`: a bridge não renova nem altera credenciais.
+  A renovação fica guardada localmente até a substituição das credenciais concluir. Bloqueios
+  temporários do Windows são repetidos; se persistirem, a execução seguinte recupera a renovação
+  pendente sem reutilizar o refresh token antigo. Uma autenticação mais recente do Claude é preservada.
+  A bridge impede consultas OAuth simultâneas da tarefa e do status line.
+  Se a renovação for recusada com HTTP 400/401, voltar a executar `claude auth login`.
   Remover esta opção repõe o modo baseado no status line.
 
 - No modo status line, o Claude Code só envia `rate_limits` a contas Pro/Max autenticadas com claude.ai, depois da

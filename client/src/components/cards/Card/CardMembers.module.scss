@@ -12,6 +12,14 @@
     }
   }
 
+  .creatorDivider {
+    background: rgba(255, 255, 255, 0.28);
+    display: inline-block;
+    height: 24px;
+    margin: 2px 2px 0 4px;
+    width: 1px;
+  }
+
   .member {
     display: inline-flex;
     position: relative;

@@ -188,6 +188,40 @@
     }
   }
 
+  .wrapperFluid {
+    container-type: inline-size;
+
+    /* Matches the scrim and the title shadow of the PLANKA Pro gallery card. */
+    .cover::after {
+      opacity: 0.3;
+    }
+
+    .description {
+      font-size: clamp(10px, 5.5cqi, 13px);
+      line-clamp: 3;
+      margin: 20px 14px 0;
+      padding-left: 8px;
+      -webkit-line-clamp: 3;
+    }
+
+    .informationWithSidebar {
+      margin-right: 14px;
+    }
+
+    .notifications {
+      font-size: clamp(10px, 5cqi, 12px);
+      line-height: 1.7;
+    }
+
+    .title {
+      font-size: clamp(12px, 10cqi, 22px);
+      line-clamp: 2;
+      margin: 0 14px 12px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+      -webkit-line-clamp: 2;
+    }
+  }
+
   .wrapperLarge {
     .description {
       line-clamp: 3;

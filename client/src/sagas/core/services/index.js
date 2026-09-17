@@ -29,6 +29,7 @@ import notifications from './notifications';
 import notificationServices from './notification-services';
 import chatInbox from './chat-inbox';
 import chat from './chat';
+import presence from './presence';
 
 export default {
   ...router,
@@ -57,4 +58,5 @@ export default {
   ...notificationServices,
   ...chatInbox,
   ...chat,
+  ...presence,
 };

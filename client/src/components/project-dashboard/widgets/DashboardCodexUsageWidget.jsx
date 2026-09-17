@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import api from '../../../api';
+import OpenAILogo from '../../../assets/images/openai.svg?react';
+import ClaudeLogo from '../../../assets/images/claude.svg?react';
 
 import {
   ACTIVITY_LEVEL_COUNT,
@@ -9,7 +11,7 @@ import {
   getActivityCalendarWeeks,
   getActivityLevel,
 } from './codex-usage-activity';
-import { getClaudeUsageStatus, getLimitWindowState } from './claude-usage-status';
+import { formatCountdown, getClaudeUsageStatus, getLimitWindowState } from './claude-usage-status';
 import getCodexUsageForecast, { getClaudeUsageForecast } from './codex-usage-forecast';
 import styles from './DashboardCodexUsageWidget.module.scss';
 
@@ -52,23 +54,6 @@ const formatRenewal = (resetsAt) => {
       year: 'numeric',
     }).format(renewalDate),
   };
-};
-
-const formatResetCountdown = (resetsAt, nowMs) => {
-  if (!Number.isSafeInteger(resetsAt) || !Number.isFinite(nowMs)) {
-    return null;
-  }
-
-  const remainingMs = resetsAt * 1000 - nowMs;
-  if (remainingMs <= 0) {
-    return 'now';
-  }
-
-  const remainingHours = Math.floor(remainingMs / (60 * 60 * 1000));
-  const days = Math.floor(remainingHours / 24);
-  const hours = remainingHours % 24;
-
-  return `${days}d ${hours}h`;
 };
 
 const formatTokenCount = (tokens) => {
@@ -250,13 +235,14 @@ function UsageForecast({ forecast }) {
     ? formatRenewal(Math.round(forecast.depletesAtMs / 1000))
     : null;
   const depletionLabel = depletion
-    ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit' }).format(
-        new Date(depletion.dateTime),
-      )
+    ? new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+      }).format(new Date(depletion.dateTime))
     : null;
-  const rate = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 }).format(
-    forecast.usedPercentPerHour,
-  );
+  const rate = new Intl.NumberFormat('en-GB', {
+    maximumFractionDigits: 2,
+  }).format(forecast.usedPercentPerHour);
 
   return (
     <p
@@ -266,8 +252,7 @@ function UsageForecast({ forecast }) {
         depletion ? `runs out around ${depletionLabel}` : 'lasts until reset'
       }`}
     >
-      {rate}%/h
-      <br />
+      {rate}%/h ·{' '}
       {depletion ? (
         <time dateTime={depletion.dateTime}>Runs out ~{depletionLabel}</time>
       ) : (
@@ -323,13 +308,12 @@ const CodexUsagePanel = React.memo(() => {
   const remainingPercent = hasUsage ? 100 - usedPercent : null;
   const displayedPercent = hasUsage ? `${remainingPercent}%` : 'n/a';
   const renewal = formatRenewal(usage?.resetsAt);
-  const resetCountdown = formatResetCountdown(usage?.resetsAt, nowMs);
+  const resetCountdown = formatCountdown(usage?.resetsAt, nowMs);
   const forecast = getCodexUsageForecast(usage);
 
   return (
     <section className={styles.wrapper} aria-label="Codex weekly usage">
       <div className={styles.weekly}>
-        <h2 className={styles.providerName}>Codex</h2>
         <div
           className={styles.gauge}
           role="status"
@@ -343,28 +327,32 @@ const CodexUsagePanel = React.memo(() => {
         >
           <svg
             className={styles.gaugeSvg}
-            viewBox="0 0 240 142"
+            viewBox="0 0 120 120"
             aria-hidden="true"
             focusable="false"
           >
-            <path className={styles.track} d="M 30 120 A 90 90 0 0 1 210 120" pathLength="100" />
-            <path
+            <circle className={styles.track} cx="60" cy="60" r="50" pathLength="100" />
+            <circle
               className={styles.fill}
-              d="M 30 120 A 90 90 0 0 1 210 120"
+              cx="60"
+              cy="60"
+              r="50"
               pathLength="100"
               strokeDasharray={hasUsage ? `${remainingPercent} 100` : '0 100'}
             />
           </svg>
+          <div className={styles.brand} aria-hidden="true">
+            <OpenAILogo focusable="false" />
+          </div>
           <div className={styles.reading} aria-live="polite">
             <strong>{displayedPercent}</strong>
-            {hasUsage && <span>remaining</span>}
+            {hasUsage && <span>weekly remaining</span>}
           </div>
         </div>
         <div className={styles.details}>
-          {hasUsage && <span>{usedPercent}% used</span>}
           {renewal && resetCountdown && (
             <time dateTime={renewal.dateTime} title={renewal.label}>
-              Reset in {resetCountdown}
+              {resetCountdown === 'now' ? 'Reset due' : `Reset in ${resetCountdown}`}
             </time>
           )}
         </div>
@@ -392,6 +380,17 @@ const getClaudeActivityStats = (usage) => {
 const CLAUDE_WINDOW_STATUS_LABELS = {
   reset: 'reset',
   unavailable: 'unavailable',
+};
+
+// A reset window starts fresh, so the bar shows the full allowance until the bridge reports usage.
+const CLAUDE_SESSION_BAR_PERCENT = {
+  reset: 100,
+  unavailable: 0,
+};
+
+const CLAUDE_SESSION_STATUS_MESSAGES = {
+  reset: 'No active session',
+  unavailable: 'No session reading yet',
 };
 
 const CLAUDE_STATUS_TONE_CLASSES = {
@@ -440,11 +439,14 @@ const ClaudeUsagePanel = React.memo(() => {
   const weeklyRenewal = weekly.status === 'available' ? formatRenewal(weekly.resetsAt) : null;
   const sessionRenewal = session.status === 'available' ? formatRenewal(session.resetsAt) : null;
   const forecast = getClaudeUsageForecast(usage, nowMs);
+  const sessionBarPercent =
+    session.status === 'available'
+      ? session.remainingPercent
+      : CLAUDE_SESSION_BAR_PERCENT[session.status];
 
   return (
     <section className={`${styles.wrapper} ${styles.claude}`} aria-label="Claude usage">
       <div className={styles.weekly}>
-        <h2 className={styles.providerName}>Claude</h2>
         <div
           className={styles.gauge}
           role="status"
@@ -458,31 +460,35 @@ const ClaudeUsagePanel = React.memo(() => {
         >
           <svg
             className={styles.gaugeSvg}
-            viewBox="0 0 240 142"
+            viewBox="0 0 120 120"
             aria-hidden="true"
             focusable="false"
           >
-            <path className={styles.track} d="M 30 120 A 90 90 0 0 1 210 120" pathLength="100" />
-            <path
+            <circle className={styles.track} cx="60" cy="60" r="50" pathLength="100" />
+            <circle
               className={styles.fill}
-              d="M 30 120 A 90 90 0 0 1 210 120"
+              cx="60"
+              cy="60"
+              r="50"
               pathLength="100"
               strokeDasharray={
                 weekly.status === 'available' ? `${weekly.remainingPercent} 100` : '0 100'
               }
             />
           </svg>
+          <div className={styles.brand} aria-hidden="true">
+            <ClaudeLogo focusable="false" />
+          </div>
           <div className={styles.reading} aria-live="polite">
             <strong>{weekly.status === 'available' ? `${weekly.remainingPercent}%` : 'n/a'}</strong>
             <span>
               {weekly.status === 'available'
-                ? 'remaining'
+                ? 'weekly remaining'
                 : CLAUDE_WINDOW_STATUS_LABELS[weekly.status]}
             </span>
           </div>
         </div>
         <div className={styles.details}>
-          {weekly.status === 'available' && <span>{weekly.usedPercent}% used</span>}
           {weeklyRenewal && (
             <time dateTime={weeklyRenewal.dateTime} title={weeklyRenewal.label}>
               Reset in {weekly.countdown}
@@ -490,25 +496,35 @@ const ClaudeUsagePanel = React.memo(() => {
           )}
         </div>
         <UsageForecast forecast={forecast} />
-        <p className={styles.sessionLimit}>
-          <span>5h session</span>
-          {session.status === 'available' ? (
-            <>
-              <strong>{session.remainingPercent}% remaining</strong>
-              <time dateTime={sessionRenewal?.dateTime} title={sessionRenewal?.label}>
-                reset at {sessionRenewal?.timeLabel}
+        <div className={styles.sessionLimit}>
+          <div className={styles.sessionHeader}>
+            <span>5h session</span>
+            {session.status === 'available' && sessionRenewal && (
+              <time dateTime={sessionRenewal.dateTime} title={sessionRenewal.label}>
+                Resets in {session.countdown}
               </time>
-            </>
-          ) : (
-            <strong>{CLAUDE_WINDOW_STATUS_LABELS[session.status]}</strong>
-          )}
-        </p>
-        <p
-          className={`${styles.connectionStatus} ${CLAUDE_STATUS_TONE_CLASSES[status.tone]}`}
-          role="status"
-        >
-          {status.label}
-        </p>
+            )}
+          </div>
+          <progress
+            className={styles.sessionProgress}
+            max="100"
+            value={sessionBarPercent}
+            aria-label="Claude 5h session remaining"
+          />
+          <strong>
+            {session.status === 'available'
+              ? `${session.remainingPercent}% remaining`
+              : CLAUDE_SESSION_STATUS_MESSAGES[session.status]}
+          </strong>
+        </div>
+        {status.label && (
+          <p
+            className={`${styles.connectionStatus} ${CLAUDE_STATUS_TONE_CLASSES[status.tone]}`}
+            role="status"
+          >
+            {status.label}
+          </p>
+        )}
       </div>
       <TokenActivity
         activity={usage?.tokenActivity}

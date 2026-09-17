@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -19,6 +19,81 @@ import {
 } from "./claude-usage-statusline.mjs";
 
 const CAPTURED_AT = new Date("2026-09-14T11:00:00.000Z");
+
+test("rotated credentials survive Windows locks and recover on the next run", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "claude-recovery-"));
+  const credentialsFile = path.join(directory, ".credentials.json");
+  let refreshes = 0;
+  const fetchImpl = async (url, options) => {
+    if (url.includes("/v1/oauth/token")) {
+      refreshes += 1;
+      assert.equal(refreshes, 1, "must not reuse the already rotated refresh token");
+      return { ok: true, json: async () => ({
+        access_token: "rotated-access", refresh_token: "rotated-refresh", expires_in: 3600,
+      }) };
+    }
+    assert.equal(options.headers.Authorization, "Bearer rotated-access");
+    return { ok: true, json: async () => ({
+      five_hour: { utilization: 7, resets_at: "2026-09-16T12:40:00+01:00" },
+    }) };
+  };
+  try {
+    await writeFile(credentialsFile, JSON.stringify({ claudeAiOauth: {
+      accessToken: "expired", refreshToken: "old-refresh", expiresAt: 1,
+    }, otherSetting: true }));
+    let attempts = 0;
+    await assert.rejects(fetchOAuthRateLimits(directory, fetchImpl, {
+      renameImpl: async () => { attempts += 1; throw Object.assign(new Error("locked"), { code: "EPERM" }); },
+      sleepImpl: async () => {},
+    }), /saved for recovery/);
+    assert.equal(attempts, 6);
+    assert.equal(JSON.parse(await readFile(credentialsFile, "utf8")).claudeAiOauth.accessToken, "expired");
+    let retries = 0;
+    const result = await fetchOAuthRateLimits(directory, fetchImpl, {
+      renameImpl: async (...args) => {
+        if (retries++ < 2) throw Object.assign(new Error("locked"), { code: "EACCES" });
+        await rename(...args);
+      },
+      sleepImpl: async () => {},
+    });
+    assert.equal(result.fiveHour.usedPercent, 7);
+    assert.equal(refreshes, 1);
+    const saved = JSON.parse(await readFile(credentialsFile, "utf8"));
+    assert.equal(saved.claudeAiOauth.refreshToken, "rotated-refresh");
+    assert.equal(saved.otherSetting, true);
+    await assert.rejects(readFile(`${credentialsFile}.planka-refresh.json`), { code: "ENOENT" });
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("concurrent bridge refresh is excluded and a newer Claude login is preserved", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "claude-concurrent-"));
+  const credentialsFile = path.join(directory, ".credentials.json");
+  try {
+    await writeFile(credentialsFile, JSON.stringify({ claudeAiOauth: {
+      accessToken: "expired", refreshToken: "old", expiresAt: 1,
+    } }));
+    await fetchOAuthRateLimits(directory, async (url, options) => {
+      if (url.includes("/v1/oauth/token")) {
+        await assert.rejects(fetchOAuthRateLimits(directory, async () => {
+          assert.fail("concurrent bridge must not call OAuth");
+        }), /already running/);
+        await writeFile(credentialsFile, JSON.stringify({ claudeAiOauth: {
+          accessToken: "new-login", refreshToken: "new-login-refresh", expiresAt: Date.now() + 3600000,
+        } }));
+        return { ok: true, json: async () => ({ access_token: "obsolete-refresh", expires_in: 3600 }) };
+      }
+      assert.equal(options.headers.Authorization, "Bearer new-login");
+      return { ok: true, json: async () => ({
+        seven_day: { utilization: 4, resets_at: "2026-09-20T07:00:00+01:00" },
+      }) };
+    });
+    assert.equal(JSON.parse(await readFile(credentialsFile, "utf8")).claudeAiOauth.accessToken, "new-login");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
 
 test("OAuth usage reads fresh limits and fails safely on expired login or invalid data", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "claude-oauth-test-"));

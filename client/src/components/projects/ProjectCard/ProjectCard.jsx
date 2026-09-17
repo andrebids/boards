@@ -29,6 +29,7 @@ import globalStyles from '../../../styles.module.scss';
 const Sizes = {
   SMALL: 'small',
   LARGE: 'large',
+  FLUID: 'fluid', // scales with the width of its container, for the mosaic view
 };
 
 const ProjectCard = React.memo(

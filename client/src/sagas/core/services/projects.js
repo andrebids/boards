@@ -68,6 +68,20 @@ export function* updateProjectsOrder(value) {
   }
 }
 
+export function* updateProjectsGridStyle(value) {
+  yield put(actions.updateProjectsGridStyle(value));
+
+  const currentUserId = yield select(selectors.selectCurrentUserId);
+
+  try {
+    yield call(request, api.updateUser, currentUserId, {
+      defaultProjectsGridStyle: value,
+    });
+  } catch {
+    /* empty */
+  }
+}
+
 export function* toggleHiddenProjects(isVisible) {
   yield put(actions.toggleHiddenProjects(isVisible));
 }
@@ -336,6 +350,7 @@ export default {
   setProjectArchived,
   searchProjects,
   updateProjectsOrder,
+  updateProjectsGridStyle,
   toggleHiddenProjects,
   createProject,
   handleProjectCreate,

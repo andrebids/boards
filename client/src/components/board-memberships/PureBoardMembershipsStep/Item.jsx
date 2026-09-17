@@ -37,7 +37,7 @@ const Item = React.memo(
         onClick={handleToggleClick}
       >
         <span className={styles.user}>
-          <UserAvatar id={user.id} />
+          <UserAvatar id={user.id} withPresence />
         </span>
         <div className={styles.menuItemText}>
           <span className={styles.userName}>{user.name || user.username || user.email}</span>

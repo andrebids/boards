@@ -7,7 +7,11 @@ import { LOCATION_CHANGE_HANDLE } from '../lib/redux-router';
 
 import ActionTypes from '../constants/ActionTypes';
 import ModalTypes from '../constants/ModalTypes';
-import { HomeViews, ProjectOrders } from '../constants/Enums';
+import {
+  HomeViews,
+  ProjectOrders,
+  ProjectsGridStyles,
+} from '../constants/Enums';
 
 const initialState = {
   isContentFetching: false,
@@ -20,6 +24,7 @@ const initialState = {
   homeView: HomeViews.GROUPED_PROJECTS,
   projectsSearch: '',
   projectsOrder: ProjectOrders.BY_DEFAULT,
+  projectsGridStyle: ProjectsGridStyles.REGULAR,
   isHiddenProjectsVisible: false, // TODO: refactor?
 };
 
@@ -62,6 +67,7 @@ export default (state = initialState, { type, payload }) => {
         isFavoritesEnabled: payload.user.enableFavoritesByDefault,
         homeView: payload.user.defaultHomeView,
         projectsOrder: payload.user.defaultProjectsOrder,
+        projectsGridStyle: payload.user.defaultProjectsGridStyle,
       };
     case ActionTypes.FAVORITES_TOGGLE:
       return {
@@ -97,6 +103,11 @@ export default (state = initialState, { type, payload }) => {
       return {
         ...state,
         projectsOrder: payload.value,
+      };
+    case ActionTypes.PROJECTS_GRID_STYLE_UPDATE:
+      return {
+        ...state,
+        projectsGridStyle: payload.value,
       };
     case ActionTypes.HIDDEN_PROJECTS_TOGGLE:
       return {

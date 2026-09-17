@@ -13,6 +13,12 @@ export const EditorModes = {
   MARKUP: 'markup',
 };
 
+export const ProjectsGridStyles = {
+  REGULAR: 'regular',
+  SQUARE: 'square',
+  GALLERY: 'gallery',
+};
+
 export const HomeViews = {
   GRID_PROJECTS: 'gridProjects',
   GROUPED_PROJECTS: 'groupedProjects',
@@ -151,6 +157,11 @@ export const NotificationServiceFormats = {
   TEXT: 'text',
   MARKDOWN: 'markdown',
   HTML: 'html',
+};
+
+export const PresenceStatuses = {
+  ONLINE: 'online',
+  IDLE: 'idle',
 };
 
 export const MentionPlaceholders = {

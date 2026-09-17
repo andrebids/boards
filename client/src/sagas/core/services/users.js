@@ -82,6 +82,10 @@ export function* updateCurrentUser(data) {
   yield call(updateUser, currentUserId, data);
 }
 
+export function* handleUserPresenceUpdate(presences) {
+  yield put(actions.handleUserPresenceUpdate(presences));
+}
+
 export function* handleUserUpdate(user) {
   const prevUser = yield select(selectors.selectUserById, user.id);
 
@@ -528,6 +532,7 @@ export default {
   updateUser,
   updateCurrentUser,
   handleUserUpdate,
+  handleUserPresenceUpdate,
   updateUserLanguage,
   updateCurrentUserLanguage,
   updateUserEmail,

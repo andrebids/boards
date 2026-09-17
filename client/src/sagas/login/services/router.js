@@ -41,6 +41,7 @@ export function* handleLocationChange() {
     case Paths.DASHBOARD:
     case Paths.PROJECTS:
     case Paths.GANTT:
+    case Paths.TRANSVERSAL:
     case Paths.PRESENTATION:
     case Paths.BOARDS:
     case Paths.CARDS:

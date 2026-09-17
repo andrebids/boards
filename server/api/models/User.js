@@ -28,6 +28,12 @@ const HomeViews = {
   GROUPED_PROJECTS: 'groupedProjects',
 };
 
+const ProjectsGridStyles = {
+  REGULAR: 'regular',
+  SQUARE: 'square',
+  GALLERY: 'gallery',
+};
+
 const ProjectOrders = {
   BY_DEFAULT: 'byDefault',
   ALPHABETICALLY: 'alphabetically',
@@ -88,6 +94,7 @@ const PERSONAL_FIELD_NAMES = [
   'enableFavoritesByDefault',
   'defaultEditorMode',
   'defaultHomeView',
+  'defaultProjectsGridStyle',
   'defaultProjectsOrder',
 ];
 
@@ -100,6 +107,7 @@ module.exports = {
   EditorModes,
   HomeViews,
   ProjectOrders,
+  ProjectsGridStyles,
   NotificationLevels,
   LANGUAGES,
   EMAIL_LANGUAGES,
@@ -194,6 +202,12 @@ module.exports = {
       isIn: Object.values(HomeViews),
       defaultsTo: HomeViews.GROUPED_PROJECTS,
       columnName: 'default_home_view',
+    },
+    defaultProjectsGridStyle: {
+      type: 'string',
+      isIn: Object.values(ProjectsGridStyles),
+      defaultsTo: ProjectsGridStyles.REGULAR,
+      columnName: 'default_projects_grid_style',
     },
     defaultProjectsOrder: {
       type: 'string',

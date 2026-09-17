@@ -128,6 +128,8 @@ module.exports.routes = {
   'DELETE /api/projects/:id': 'projects/delete',
 
   'GET /api/projects/:projectId/gantt-plan': 'gantt-plans/show',
+  'GET /api/projects/:projectId/transversal/options': 'transversal/options',
+  'GET /api/projects/:projectId/transversal/cards': 'transversal/cards',
   'POST /api/projects/:projectId/gantt-plan': 'gantt-plans/create',
   'PATCH /api/gantt-plans/:id': 'gantt-plans/update',
   'POST /api/gantt-plans/:id/disable': 'gantt-plans/disable',
@@ -144,6 +146,8 @@ module.exports.routes = {
   'PATCH /api/gantt-items/:id': 'gantt-items/update',
   'PATCH /api/gantt-items/:id/dependencies': 'gantt-item-dependencies/update',
   'DELETE /api/gantt-items/:id': 'gantt-items/delete',
+
+  'POST /api/presence': 'presence/update',
 
   'GET /api/projects/:projectId/chat-members': 'chat-members/index',
   'GET /api/chat-inbox': 'chat-inbox/index',

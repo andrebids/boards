@@ -1,0 +1,97 @@
+:global(#app) {
+  .workspace {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    color: var(--text-primary, #eef0f4);
+    padding: 16px 16px 12px;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    h1 { font-size: 18px; margin: 0 auto 0 0; }
+    label { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    select {
+      max-width: 220px;
+      min-height: 36px;
+      border: 1px solid var(--border-color, #475569);
+      border-radius: 6px;
+      background: var(--background-secondary, #252d39);
+      color: var(--text-primary, #eef0f4);
+      padding: 6px 8px;
+      font: inherit;
+    }
+  }
+
+  .hint, .columnMessage, .members, .origin {
+    color: var(--text-secondary, #b8c0ce);
+    font-size: 12px;
+  }
+
+  .hint { margin: 8px 0 16px; }
+  .message { padding: 24px 0; }
+
+  .columns {
+    display: flex;
+    align-items: flex-start;
+    flex: 1;
+    gap: 12px;
+    min-height: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 288px;
+    max-height: 100%;
+    min-height: 112px;
+    border: 1px solid var(--border-color, #414b5a);
+    border-radius: 8px;
+    background: var(--background-secondary, #2e3846);
+  }
+
+  .columnTitle {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 14px 12px;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .cards { display: flex; flex-direction: column; gap: 8px; padding: 0 8px 8px; overflow-y: auto; }
+  .card {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 8px;
+    padding: 12px;
+    background: var(--background-primary, #1d2530);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-primary, #eef0f4);
+    overflow-wrap: anywhere;
+
+    &:hover { color: var(--text-primary, #eef0f4); border-color: var(--border-color, #64748b); }
+    &:focus-visible { outline: 2px solid var(--primary-color, #8fa6f7); outline-offset: 2px; }
+  }
+  .origin { font-size: 11px; }
+  .cardTitle { font-size: 14px; font-weight: 500; line-height: 1.4; }
+  .dueDate { font-size: 12px; }
+  .columnMessage { margin: 4px; }
+
+  @media (max-width: 600px) {
+    .workspace { padding: 12px 8px; }
+    .toolbar h1 { flex-basis: 100%; }
+    .toolbar label { flex: 1 1 100%; justify-content: space-between; }
+    .toolbar select { flex: 1; max-width: 70%; min-width: 0; }
+    .column { flex-basis: min(288px, 85vw); }
+  }
+}

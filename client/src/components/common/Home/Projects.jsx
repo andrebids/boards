@@ -8,14 +8,22 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Grid, Icon } from 'semantic-ui-react';
+import { Icon } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
 import { isUserAdminOrProjectOwner } from '../../../utils/record-helpers';
-import ProjectCard from '../../projects/ProjectCard';
-import PlusIcon from '../../../assets/images/plus-icon.svg?react';
+import { ProjectsGridStyles } from '../../../constants/Enums';
+import RegularGrid from './RegularGrid';
+import SquareGrid from './SquareGrid';
+import GalleryGrid from './GalleryGrid';
 
 import styles from './Projects.module.scss';
+
+const GRID_BY_STYLE = {
+  [ProjectsGridStyles.REGULAR]: RegularGrid,
+  [ProjectsGridStyles.SQUARE]: SquareGrid,
+  [ProjectsGridStyles.GALLERY]: GalleryGrid,
+};
 
 const Projects = React.memo(
   ({ ids, title, titleIcon, withTypeIndicator, onAdd }) => {
@@ -24,7 +32,12 @@ const Projects = React.memo(
       return isUserAdminOrProjectOwner(user);
     });
 
+    const gridStyle = useSelector(selectors.selectProjectsGridStyle);
+
     const [t] = useTranslation();
+
+    const ProjectsGrid =
+      GRID_BY_STYLE[gridStyle] || GRID_BY_STYLE[ProjectsGridStyles.REGULAR];
 
     return (
       <div
@@ -43,36 +56,11 @@ const Projects = React.memo(
             })}
           </div>
         )}
-        <Grid>
-          {ids.map(id => (
-            <Grid.Column key={id} className={styles.column}>
-              <ProjectCard
-                withDescription
-                withFavoriteButton
-                id={id}
-                withTypeIndicator={withTypeIndicator}
-                className={styles.card}
-              />
-            </Grid.Column>
-          ))}
-          {onAdd && canAdd && (
-            <Grid.Column className={styles.column}>
-              <button
-                type="button"
-                className={classNames(styles.card, styles.addButton)}
-                onClick={onAdd}
-              >
-                <div className={styles.addButtonCover} />
-                <div className={styles.addButtonTitleWrapper}>
-                  <div className={styles.addButtonTitle}>
-                    <PlusIcon className={styles.addButtonTitleIcon} />
-                    {t('action.createProject')}
-                  </div>
-                </div>
-              </button>
-            </Grid.Column>
-          )}
-        </Grid>
+        <ProjectsGrid
+          ids={ids}
+          withTypeIndicator={withTypeIndicator}
+          onAdd={onAdd && canAdd ? onAdd : undefined}
+        />
       </div>
     );
   }

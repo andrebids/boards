@@ -9,7 +9,11 @@ import { attr } from 'redux-orm';
 import BaseModel from './BaseModel';
 import buildSearchParts from '../utils/build-search-parts';
 import ActionTypes from '../constants/ActionTypes';
-import { UserNotificationLevels, UserRoles } from '../constants/Enums';
+import {
+  PresenceStatuses,
+  UserNotificationLevels,
+  UserRoles,
+} from '../constants/Enums';
 
 const DEFAULT_EMAIL_UPDATE_FORM = {
   data: {
@@ -109,6 +113,10 @@ export default class extends BaseModel {
     welcomeEmailResendForm: attr({
       getDefault: () => DEFAULT_WELCOME_EMAIL_RESEND_FORM,
     }),
+    // Presença: `isOnline` é derivado de `presenceStatus` e escrito sempre no
+    // mesmo sítio, porque é o campo que o chat já lê há muito.
+    presenceStatus: attr(),
+    isOnline: attr(),
   };
 
   static reducer({ type, payload }, User) {
@@ -132,6 +140,28 @@ export default class extends BaseModel {
         }
 
         break;
+      case ActionTypes.USER_PRESENCE_UPDATE_HANDLE: {
+        const statusByUserId = new Map(
+          payload.presences.map(({ userId, status }) => [userId, status])
+        );
+
+        User.all()
+          .toModelArray()
+          .forEach((userModel) => {
+            const status = statusByUserId.get(userModel.id);
+
+            if (userModel.presenceStatus === status) {
+              return;
+            }
+
+            userModel.update({
+              presenceStatus: status,
+              isOnline: status === PresenceStatuses.ONLINE,
+            });
+          });
+
+        break;
+      }
       case ActionTypes.SOCKET_RECONNECT_HANDLE:
         User.all().delete();
         User.upsert(payload.user);

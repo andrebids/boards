@@ -142,6 +142,13 @@ const handleUserUpdate = (
   },
 });
 
+const handleUserPresenceUpdate = presences => ({
+  type: ActionTypes.USER_PRESENCE_UPDATE_HANDLE,
+  payload: {
+    presences,
+  },
+});
+
 const updateUserEmail = (id, data) => ({
   type: ActionTypes.USER_EMAIL_UPDATE,
   payload: {
@@ -373,6 +380,7 @@ export default {
   resendUserWelcomeEmail,
   updateUser,
   handleUserUpdate,
+  handleUserPresenceUpdate,
   updateUserEmail,
   clearUserEmailUpdateError,
   updateUserPassword,

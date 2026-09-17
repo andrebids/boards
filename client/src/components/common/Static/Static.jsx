@@ -24,6 +24,7 @@ import Paths from '../../../constants/Paths';
 import styles from './Static.module.scss';
 
 const DashboardWorkspace = React.lazy(() => import('../../project-dashboard/DashboardWorkspace'));
+const TransversalWorkspace = React.lazy(() => import('../../transversal/TransversalWorkspace'));
 
 function DashboardErrorFallback() {
   const [t] = useTranslation();
@@ -132,6 +133,18 @@ const Static = React.memo(() => {
           })}
         </h1>
       </div>
+    );
+  } else if (pathsMatch?.pattern.path === Paths.TRANSVERSAL) {
+    wrapperClassNames = [
+      isFavoritesActive ? styles.wrapperGanttWithFavorites : styles.wrapperGanttWithBoardTabs,
+      styles.wrapperFlex,
+    ];
+    contentNode = (
+      <ErrorBoundary fallback={DashboardErrorFallback}>
+        <React.Suspense fallback={<Loader active size="huge" />}>
+          <TransversalWorkspace />
+        </React.Suspense>
+      </ErrorBoundary>
     );
   } else if (pathsMatch?.pattern.path === Paths.GANTT) {
     wrapperClassNames = [

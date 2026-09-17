@@ -48,6 +48,7 @@ const Group = React.memo(({ items, role, groupsTotal }) => {
                   size="large"
                   variant="board"
                   isDisabled={!item.isPersisted}
+                  withPresence
                   withTitle={false}
                 />
               </ActionsPopup>

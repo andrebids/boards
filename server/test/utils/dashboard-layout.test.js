@@ -144,6 +144,16 @@ describe("dashboard layout", () => {
     ]);
   });
 
+  it("accepts a one-row Factorial entrance QR widget so it can yield TV height", () => {
+    expect(
+      normalizeDashboardLayout([
+        { id: "factorial-entrance", type: "factorialEntrance", x: 0, y: 0, w: 2, h: 1 },
+      ]),
+    ).to.deep.equal([
+      { id: "factorial-entrance", type: "factorialEntrance", x: 0, y: 0, w: 2, h: 1 },
+    ]);
+  });
+
   it("rejects duplicate ids and widgets outside their permitted size", () => {
     expect(() =>
       normalizeDashboardLayout([

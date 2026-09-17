@@ -10,41 +10,67 @@
     overflow: hidden;
   }
 
-  .providerName {
-    color: var(--codex-usage-accent);
-    font-size: clamp(14px, 5cqw, 20px);
-    line-height: 1.2;
-    margin: 0;
-    text-align: center;
-
-    small {
-      color: var(--app-dark-text-muted);
-      font-size: 0.6em;
-      font-weight: 400;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-  }
-
   .wrapper.claude {
-    --codex-usage-accent: #d99a7d;
+    --codex-usage-accent: oklch(0.68 0.22 35);
   }
 
   .sessionLimit {
-    align-items: baseline;
     color: var(--app-dark-text-muted);
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     font-size: clamp(10px, 2.9cqmin, 16px);
     font-variant-numeric: tabular-nums;
-    gap: 2px 8px;
-    justify-content: center;
+    gap: 5px;
     line-height: 1.25;
-    margin: clamp(2px, 1cqh, 8px) 0 0;
+    margin: clamp(8px, 2cqh, 12px) 0 0;
+    max-width: 260px;
+    width: 100%;
 
     strong {
       color: var(--app-dark-text);
-      font-weight: 600;
+      font-weight: 500;
+    }
+  }
+
+  .sessionHeader {
+    align-items: baseline;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+
+    span {
+      color: var(--app-dark-text);
+    }
+
+    time {
+      font-size: 0.9em;
+      white-space: nowrap;
+    }
+  }
+
+  .sessionProgress {
+    appearance: none;
+    background: var(--app-dark-surface-hover);
+    border: 0;
+    border-radius: 999px;
+    display: block;
+    height: 6px;
+    overflow: hidden;
+    width: 100%;
+
+    &::-webkit-progress-bar {
+      background: var(--app-dark-surface-hover);
+      border-radius: inherit;
+    }
+
+    &::-webkit-progress-value {
+      background: var(--codex-usage-accent);
+      border-radius: inherit;
+    }
+
+    &::-moz-progress-bar {
+      background: var(--codex-usage-accent);
+      border-radius: inherit;
     }
   }
 
@@ -78,7 +104,7 @@
   }
 
   .wrapper {
-    --codex-usage-accent: oklch(0.69 0.13 185);
+    --codex-usage-accent: oklch(0.75 0.2 150);
     // Heat calendar levels use one provider hue, as in the beUI reference.
     --codex-activity-level-1: color-mix(in srgb, var(--codex-usage-accent) 18%, transparent);
     --codex-activity-level-2: color-mix(in srgb, var(--codex-usage-accent) 27%, transparent);
@@ -116,7 +142,8 @@
     flex: 0 0 auto;
     min-height: 0;
     position: relative;
-    width: min(100%, 250px, 48cqh);
+    margin-top: 4px;
+    width: min(100%, 120px, 22cqh);
   }
 
   .gaugeSvg {
@@ -125,44 +152,66 @@
     max-width: 100%;
     overflow: visible;
     width: 100%;
+    transform: rotate(-90deg);
   }
 
   .track,
   .fill {
     fill: none;
-    stroke-width: 16;
   }
 
+  // Reference gauge: the arc runs inside a wider grey rail on the same radius, so a
+  // margin of rail shows on both sides of the filled part.
   .track {
-    stroke: color-mix(in oklab, var(--app-dark-surface-hover) 88%, var(--app-dark-surface));
+    stroke: oklch(0.38 0.008 260);
+    stroke-width: 11;
   }
 
   .fill {
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--codex-usage-accent) 35%, transparent));
     stroke: var(--codex-usage-accent);
     stroke-linecap: round;
+    stroke-width: 6;
+  }
+
+  .brand {
+    align-items: center;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+
+    svg {
+      fill: currentColor;
+      height: 42%;
+      width: 42%;
+    }
   }
 
   .reading {
     align-items: center;
     display: flex;
     flex-direction: column;
-    left: 50%;
-    position: absolute;
-    bottom: 10%;
-    transform: translateX(-50%);
+    margin: 8px 0 8px;
+    text-align: center;
     width: 100%;
 
     strong {
-      font-size: clamp(24px, 7cqmin, 44px);
+      font-size: clamp(28px, 8cqmin, 48px);
       font-variant-numeric: tabular-nums;
-      font-weight: 600;
-      line-height: 0.9;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      line-height: 1;
     }
 
     span {
       color: var(--app-dark-text-muted);
       font-size: clamp(11px, 2.6cqmin, 17px);
-      margin-top: 3px;
+      margin-top: 4px;
+      white-space: nowrap;
     }
   }
 
@@ -207,9 +256,9 @@
   .activity {
     align-self: stretch;
     display: grid;
-    grid-template-rows: var(--activityStats-height, auto) minmax(108px, 1fr) auto;
+    grid-template-rows: var(--activityStats-height, auto) minmax(0, 1fr) auto;
     min-height: 0;
-    overflow: auto;
+    overflow: hidden;
     min-width: 0;
     width: 100%;
   }
@@ -281,7 +330,7 @@
     flex-direction: column;
     margin: clamp(6px, 2cqh, 16px) auto 0;
     flex: 1 1 auto;
-    min-height: 108px;
+    min-height: 0;
     max-height: 190px;
     max-width: 100%;
     min-width: 0;
@@ -301,7 +350,9 @@
     border: 0;
     cursor: pointer;
     padding: 0;
-    transition: transform 150ms ease, filter 150ms ease;
+    transition:
+      transform 150ms ease,
+      filter 150ms ease;
   }
 
   .calendarGrid .day:hover,
@@ -330,7 +381,8 @@
 
   .calendarGrid {
     flex: 1 1 auto;
-    min-height: 74px;
+    // Seven 4px dots plus the six 3px gaps: below this the heat map stops reading as days.
+    min-height: 46px;
   }
 
   .week {
@@ -468,16 +520,15 @@
 
   @container (min-width: 900px) {
     .gauge {
-      width: min(280px, 25cqw, 48cqh);
+      width: min(140px, 22cqh);
     }
   }
 
   @container (max-height: 460px) {
     .gauge {
-      width: min(100%, 30cqh);
+      width: min(100%, 100px, 20cqh);
     }
   }
-
 }
 
 // Wall TV sizing. Each provider column is ~300px wide on a 1080p layout and ~200px on
@@ -488,21 +539,14 @@
     row-gap: clamp(6px, 3cqw, 12px);
   }
 
-  .providerName {
-    font-size: clamp(16px, 8cqw, 30px);
-
-    small {
-      font-size: 0.55em;
-    }
-  }
-
   .gauge {
-    width: min(100%, 260px, 44cqh);
+    width: min(100%, 150px, 22cqh);
   }
 
   .reading {
     strong {
-      font-size: clamp(32px, 16cqw, 60px);
+      font-size: clamp(34px, 17cqw, 64px);
+      font-weight: 500;
     }
 
     span {
@@ -572,12 +616,25 @@
   // dropping the activity data entirely.
   @container (max-height: 540px) {
     .calendar {
+      margin-top: 4px;
       max-height: 120px;
-      min-height: 72px;
     }
 
     .activityStats {
       margin-top: 4px;
+    }
+
+    .reading {
+      margin: 4px 0;
+    }
+
+    .forecast,
+    .sessionLimit {
+      margin-top: 4px;
+    }
+
+    .connectionStatus {
+      margin-top: 2px;
     }
   }
 

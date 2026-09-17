@@ -22,17 +22,16 @@ const Home = React.memo(() => {
   const archiveLinkRef = useRef(null);
   const [t] = useTranslation();
 
+  // Falls back instead of rendering nothing, so a stored view this build no
+  // longer knows about cannot blank the page.
   let View;
   switch (view) {
     case HomeViews.GRID_PROJECTS:
       View = GridProjectsView;
 
       break;
-    case HomeViews.GROUPED_PROJECTS:
-      View = GroupedProjectsView;
-
-      break;
     default:
+      View = GroupedProjectsView;
   }
 
   return (

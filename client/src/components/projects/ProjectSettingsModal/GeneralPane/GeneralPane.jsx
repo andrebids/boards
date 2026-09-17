@@ -16,6 +16,7 @@ import { usePopupInClosableContext } from '../../../../hooks';
 import EditInformation from './EditInformation';
 import ArchiveSection from './ArchiveSection';
 import CardMembersSection from './CardMembersSection';
+import TransversalSection from './TransversalSection';
 import ConfirmationStep from '../../../common/ConfirmationStep';
 import { useGantt } from '../../../gantt';
 
@@ -207,6 +208,7 @@ const GeneralPane = React.memo(() => {
           )}
         </section>
       )}
+      {canEdit && <TransversalSection key={project.id} />}
       <ArchiveSection />
       {canEdit && (
         <section className={styles.section}>

@@ -42,27 +42,10 @@
     }
   }
 
-  .buttonGroup {
-    .button {
-      border-radius: 0;
-
-      &:enabled {
-        background: rgba(0, 0, 0, 0.08);
-
-        &:hover {
-          background: rgba(0, 0, 0, 0.12);
-        }
-      }
-
-      &:first-child {
-        border-top-left-radius: 3px;
-        border-bottom-left-radius: 3px;
-      }
-
-      &:last-child {
-        border-top-right-radius: 3px;
-        border-bottom-right-radius: 3px;
-      }
-    }
+  .svgIcon {
+    fill: currentColor;
+    height: 15px;
+    vertical-align: middle;
+    width: 17px;
   }
 }

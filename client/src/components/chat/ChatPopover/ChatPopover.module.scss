@@ -196,17 +196,6 @@
     position: relative;
   }
 
-  .onlineIndicator {
-    background: var(--chat-success);
-    border: 2px solid var(--chat-surface);
-    border-radius: 50%;
-    bottom: -1px;
-    height: 9px;
-    position: absolute;
-    right: -1px;
-    width: 9px;
-  }
-
   .empty {
     color: var(--chat-muted);
     font-size: var(--chat-font-body);

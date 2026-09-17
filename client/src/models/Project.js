@@ -22,6 +22,8 @@ export default class extends BaseModel {
     isArchived: attr({ getDefault: () => false }),
     isArchiveSubmitting: attr({ getDefault: () => false }),
     chatMode: attr(),
+    transversalMode: attr({ getDefault: () => 'disabled' }),
+    transversalUserIds: attr({ getDefault: () => [] }),
     autoAddBoardMembersToCards: attr({
       getDefault: () => false,
     }),

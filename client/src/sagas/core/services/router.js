@@ -105,6 +105,7 @@ export function* handleLocationChange() {
       break;
     case Paths.PROJECTS:
     case Paths.GANTT:
+    case Paths.TRANSVERSAL:
     case Paths.PRESENTATION: {
       const boardIds = yield select(selectors.selectBoardIdsForCurrentProject);
 

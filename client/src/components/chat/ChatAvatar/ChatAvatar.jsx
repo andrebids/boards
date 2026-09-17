@@ -13,8 +13,7 @@ const ChatAvatar = React.memo(({ isOnline, isProject, user }) => {
   if (!isProject && user?.id) {
     return (
       <span className={styles.userAvatar}>
-        <UserAvatar id={user.id} size="large" />
-        {isOnline && <span className={styles.online} />}
+        <UserAvatar id={user.id} size="large" withPresence />
       </span>
     );
   }

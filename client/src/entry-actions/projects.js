@@ -24,6 +24,13 @@ const updateProjectsOrder = value => ({
   },
 });
 
+const updateProjectsGridStyle = value => ({
+  type: EntryActionTypes.PROJECTS_GRID_STYLE_UPDATE,
+  payload: {
+    value,
+  },
+});
+
 const toggleHiddenProjects = isVisible => ({
   type: EntryActionTypes.HIDDEN_PROJECTS_TOGGLE,
   payload: {
@@ -83,6 +90,7 @@ export default {
   setProjectArchived,
   searchProjects,
   updateProjectsOrder,
+  updateProjectsGridStyle,
   toggleHiddenProjects,
   createProject,
   handleProjectCreate,

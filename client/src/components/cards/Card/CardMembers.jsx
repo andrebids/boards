@@ -13,38 +13,33 @@ import styles from './CardMembers.module.scss';
 const MAX_VISIBLE_MEMBERS = 3;
 
 const CardMembers = React.memo(({ userIds, creatorUserId, withCreator }) => {
-  const members = [
-    ...(withCreator && creatorUserId
-      ? [
-          {
-            id: creatorUserId,
-            isCreator: true,
-          },
-        ]
-      : []),
-    ...userIds.map((id) => ({
-      id,
-      isCreator: false,
-    })),
-  ];
+  const isCreatorVisible = withCreator && !!creatorUserId;
 
-  if (members.length === 0) {
+  if (!isCreatorVisible && userIds.length === 0) {
     return null;
   }
 
-  const visibleMembers = members.slice(0, MAX_VISIBLE_MEMBERS);
-  const hiddenMembersTotal = members.length - visibleMembers.length;
+  const visibleUserIds = userIds.slice(0, MAX_VISIBLE_MEMBERS);
+  const hiddenMembersTotal = userIds.length - visibleUserIds.length;
 
   return (
     <span className={styles.wrapper}>
-      {visibleMembers.map(({ id, isCreator }) => (
-        <span key={`${isCreator ? 'creator' : 'member'}:${id}`} className={styles.member}>
-          <UserAvatar
-            id={id}
-            size="tiny"
-            withCreatorIndicator={isCreator}
-            className={styles.avatar}
-          />
+      {isCreatorVisible && (
+        <>
+          <span className={styles.member}>
+            <UserAvatar
+              id={creatorUserId}
+              size="tiny"
+              withCreatorIndicator
+              className={styles.avatar}
+            />
+          </span>
+          {userIds.length > 0 && <span className={styles.creatorDivider} />}
+        </>
+      )}
+      {visibleUserIds.map((id) => (
+        <span key={id} className={styles.member}>
+          <UserAvatar id={id} size="tiny" className={styles.avatar} />
         </span>
       ))}
       {hiddenMembersTotal > 0 && <span className={styles.overflow}>+{hiddenMembersTotal}</span>}

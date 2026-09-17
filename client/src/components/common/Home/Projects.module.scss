@@ -3,6 +3,18 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+@keyframes tileIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 :global(#app) {
   .addButton {
     background: transparent;
@@ -112,5 +124,199 @@
 
   .wrapperWithoutTitle {
     margin-top: 14px;
+  }
+
+  /* Shared by the square and gallery styles */
+
+  .fillCard {
+    height: 100%;
+    width: 100%;
+  }
+
+  /* The cell owns the radius; the extra specificity beats the card's own. */
+  .galleryCell .fillCard,
+  .squareCell .fillCard {
+    border-radius: inherit;
+  }
+
+  .addTile {
+    align-items: center;
+    background: rgba(107, 128, 140, 0.08);
+    border: none;
+    border-radius: inherit;
+    color: rgba(255, 255, 255, 0.48);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    justify-content: center;
+    padding: 12px;
+    text-align: center;
+    transition: filter 0.2s ease;
+    width: 100%;
+
+    &:hover {
+      filter: brightness(0.92);
+    }
+  }
+
+  .addTileIcon {
+    fill: rgba(255, 255, 255, 0.48);
+    width: 30px;
+  }
+
+  .addTileText {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  /* Square style */
+
+  .squareGrid {
+    align-items: start;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  .squareCell {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.28), 0 6px 12px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28),
+        0 32px 64px rgba(0, 0, 0, 0.28);
+      transform: translateY(-3px);
+    }
+  }
+
+  /* Gallery style */
+
+  .galleryGrid {
+    display: grid;
+    gap: 14px;
+    grid-auto-flow: row dense;
+    grid-auto-rows: 116px;
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  }
+
+  .galleryCell {
+    animation: tileIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28), 0 10px 24px rgba(0, 0, 0, 0.28);
+    min-width: 0;
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+
+    &::after {
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.18),
+        rgba(255, 255, 255, 0) 42%
+      );
+      content: "";
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      transition: opacity 0.3s ease;
+      z-index: 2;
+    }
+
+    &:hover {
+      box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28),
+        0 30px 66px rgba(0, 0, 0, 0.28);
+      transform: translateY(-4px);
+
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+
+  .tileSmall {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .tileWide {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+
+  .tileTall {
+    grid-column: span 1;
+    grid-row: span 2;
+  }
+
+  .tileLarge {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  /* Fewer, larger tiles on wide screens, so a short project list does not
+     scatter into a wall of thumbnails with half the screen left empty. */
+
+  @media only screen and (width >= 1600px) {
+    .galleryGrid {
+      grid-auto-rows: 140px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .squareGrid {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+  }
+
+  @media only screen and (width >= 2000px) {
+    .galleryGrid {
+      grid-auto-rows: 170px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+
+    .squareGrid {
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+  }
+
+  @media only screen and (width < 560px) {
+    .galleryGrid {
+      gap: 10px;
+      grid-auto-rows: 104px;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .squareGrid {
+      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+  }
+
+  @media only screen and (width < 360px) {
+    .tileWide,
+    .tileLarge {
+      grid-column: span 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .galleryCell {
+      animation: none;
+      transition: none;
+
+      &:hover {
+        transform: none;
+      }
+    }
+
+    .squareCell:hover {
+      transform: none;
+    }
   }
 }

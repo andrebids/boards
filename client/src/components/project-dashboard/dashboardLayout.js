@@ -10,7 +10,7 @@ export const DASHBOARD_WIDGETS = {
   blachereStatic: { minW: 3, editorMinW: 3, minH: 4, maxW: 12, maxH: 10 },
   blachereAnimated: { minW: 3, editorMinW: 3, minH: 4, maxW: 12, maxH: 10 },
   codexUsage: { minW: 4, editorMinW: 4, minH: 4, gridMinH: 7, maxW: 12, maxH: 10 },
-  factorialEntrance: { minW: 2, editorMinW: 2, minH: 2, maxW: 2, maxH: 2 },
+  factorialEntrance: { minW: 2, editorMinW: 2, minH: 1, maxW: 2, maxH: 2 },
 };
 
 export const GANTT_ZOOM_LEVELS = ['day', 'week', 'month', 'quarter'];
