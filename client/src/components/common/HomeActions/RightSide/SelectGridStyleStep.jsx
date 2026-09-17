@@ -12,7 +12,7 @@ import { Popup } from '../../../../lib/custom-ui';
 import { ProjectsGridStyles } from '../../../../constants/Enums';
 import GridStyleIcons from './grid-style-icons';
 
-import styles from './SelectOrderStep.module.scss';
+import styles from './SelectMenuStep.module.scss';
 
 const SelectGridStyleStep = React.memo(({ value, onSelect, onClose }) => {
   const [t] = useTranslation();

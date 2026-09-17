@@ -12,8 +12,7 @@ import { usePopup } from '../../../../lib/popup';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
-import { HomeViewIcons, ProjectOrderIcons } from '../../../../constants/Icons';
-import SelectOrderStep from './SelectOrderStep';
+import { HomeViewIcons } from '../../../../constants/Icons';
 import SelectGridStyleStep from './SelectGridStyleStep';
 import SelectViewStep from './SelectViewStep';
 import GridStyleIcons from './grid-style-icons';
@@ -54,8 +53,6 @@ const RightSide = React.memo(() => {
     dispatch(entryActions.toggleHiddenProjects(!isHiddenVisible));
   }, [isHiddenVisible, dispatch]);
 
-  const SelectOrderPopup = usePopup(SelectOrderStep, { variantClass: 'glass' });
-
   const SelectGridStylePopup = usePopup(SelectGridStyleStep, {
     variantClass: 'glass',
   });
@@ -86,17 +83,6 @@ const RightSide = React.memo(() => {
         </button>
       </div>
       <div className={styles.action}>
-        <SelectOrderPopup value={currentOrder} onSelect={handleOrderSelect}>
-          <button
-            type="button"
-            title={t('common.selectOrder', { context: 'title' })}
-            className={styles.button}
-          >
-            <Icon fitted name={ProjectOrderIcons[currentOrder]} />
-          </button>
-        </SelectOrderPopup>
-      </div>
-      <div className={styles.action}>
         <SelectGridStylePopup
           value={currentGridStyle}
           onSelect={handleGridStyleSelect}
@@ -111,7 +97,12 @@ const RightSide = React.memo(() => {
         </SelectGridStylePopup>
       </div>
       <div className={styles.action}>
-        <SelectViewPopup value={currentView} onSelect={handleViewSelect}>
+        <SelectViewPopup
+          view={currentView}
+          order={currentOrder}
+          onViewSelect={handleViewSelect}
+          onOrderSelect={handleOrderSelect}
+        >
           <button
             type="button"
             title={t('common.selectView', { context: 'title' })}

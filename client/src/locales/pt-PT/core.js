@@ -457,6 +457,7 @@ export default {
       gridLayout: "Disposição da grelha",
       hideHiddenProjects: "Ocultar projetos ocultos",
       showHiddenProjects: "Mostrar projetos ocultos",
+      projectsOrder: "Ordem dos projetos",
       regularGrid: "Grelha normal",
       squareGrid: "Grelha quadrada",
       galleryGrid: "Grelha em galeria",

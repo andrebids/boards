@@ -42,7 +42,9 @@
     background-repeat: no-repeat;
     background-size: cover;
     border-radius: 3px;
-    max-height: 310px;
+    // Sem limite de altura: a caixa toma o racio real da imagem, por isso o
+    // `cover` nunca corta e tambem nao ficam faixas vazias. Um `max-height`
+    // aqui (o Pro usa 310px) cortava as imagens verticais a meio.
     position: relative;
     width: 100%;
   }

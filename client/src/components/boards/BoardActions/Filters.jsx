@@ -359,7 +359,7 @@ const Filters = React.memo(() => {
             onClick={handleMediaTypeFilterReset}
           >
             <span className={styles.filterLabel}>
-              <Icon fitted name="th large" className={styles.filterLabelIcon} />
+              <Icon fitted name="block layout" className={styles.filterLabelIcon} />
               {t('common.all')}
             </span>
           </button>

@@ -15,7 +15,7 @@ Written against: `4b493a5916648dacd0e5ced6ad1cbb5aa3eced48`
 
 ## Design decision
 
-Separar **estilo de grelha** de **agrupamento**, como no Pro. O agrupamento continua em `HomeViews` e responde ao grupo de botões existente. O estilo passa a ser uma segunda preferência, `projectsGridStyle`, com três valores, e qualquer combinação dos dois eixos é válida.
+Separar **estilo de grelha** de **agrupamento**, como no Pro. O agrupamento continua em `HomeViews`, agora escolhido num menu em vez de um grupo de botões. O estilo passa a ser uma segunda preferência, `projectsGridStyle`, com três valores, e qualquer combinação dos dois eixos é válida.
 
 O estilo vive dentro de `Projects.jsx`, que é o componente que já desenha o cabeçalho do grupo. Assim a grelha em galeria aparece por baixo de "My Own" e "Team" na vista agrupada, e sozinha na vista plana, sem código condicional espalhado.
 
@@ -28,7 +28,7 @@ Não se acrescenta uma vista nova. Uma tentativa anterior modelou o mosaico como
 - `ProjectCard`, com uma terceira variante de tamanho. Nenhuma alteração ao comportamento das variantes existentes.
 - `selectors.selectFilteredProjectIdsForCurrentUser` e `selectFilteredProjctIdsByGroupForCurrentUser` — pesquisa, ordenação e projetos ocultos funcionam sem código novo.
 - O caminho completo de `projectsOrder` como molde para `projectsGridStyle`: ação, entry-action, redutor, seletor, saga, watcher, campo pessoal no servidor.
-- `SelectOrderStep` e `SelectOrderStep.module.scss` como molde e folha de estilos do popup de seleção.
+- `SelectOrderStep` como molde dos passos de seleção, e a sua folha de estilos, renomeada para `SelectMenuStep.module.scss`, partilhada pelos dois.
 - `PlusIcon` e `entryActions.openAddProjectModal` para o botão de criar projeto.
 
 ## Changes
@@ -67,20 +67,26 @@ Não se acrescenta uma vista nova. Uma tentativa anterior modelou o mosaico como
    - Rationale: a galeria tem tiles de quatro larguras. Com variantes discretas o título salta entre dois tamanhos; com container queries acompanha a largura real da célula.
    - Preserve: `small` e `large` intactos — grelha regular e sidebar não mudam.
 
-9. `client/src/components/common/HomeActions/RightSide/SelectGridStyleStep.jsx` e `RightSide.jsx`
-   - Change: popup de seleção do estilo, entre a ordenação e o grupo de vistas.
-   - Rationale: popup e não um segundo grupo de botões, porque a barra já rola na horizontal em ecrãs estreitos e mais três botões agravavam isso.
+9. `client/src/components/common/HomeActions/RightSide/`
+   - Change: a barra passa a ter três botões isolados, como a do Pro: projetos ocultos, `Grid layout` e `Select View`. Não há grupo de botões; cada controlo abre um popup.
+   - Change: `SelectGridStyleStep.jsx` escolhe o estilo; `SelectViewStep.jsx` junta agrupamento e ordenação num só menu, separados por `separator` e pela etiqueta de secção `PROJECTS ORDER`, como no popup deles.
+   - Change: `SelectOrderStep.jsx` desaparece e o botão de ordenação com ele; `SelectOrderStep.module.scss` passa a `SelectMenuStep.module.scss`, partilhado pelos dois passos.
+   - Change: `grid-style-icons.js` mapeia cada estilo ao seu glifo SVG. Os três ficheiros em `client/src/assets/images/grid-*-icon.svg` reproduzem a geometria dos deles: regular com 4 rects de 8x6.5, quadrado com 9 de 5x5, galeria com 10x10 mais 8x4, 8x12 e 10x6.
+   - Change: o botão da barra mostra o glifo do estilo ativo, confirmado na demo — com a galeria ativa, o glifo deles muda para o da galeria.
+   - Rationale: popups e não grupos de botões porque é o que o Pro faz, e porque a barra já rola na horizontal em ecrãs estreitos.
 
 10. `client/src/components/common/Home/Home.jsx`
    - Change: o `switch` passa a ter `default` em vez de um caso vazio.
    - Rationale: um valor de vista gravado que o build já não reconheça deixava `View` a `undefined` e deitava a página abaixo com um ecrã de erro. Passa a recuar para a vista agrupada.
 
 11. `client/src/locales/{en-US,en-GB,pt-PT}/core.js`
-   - Change: `regularGrid`, `squareGrid`, `galleryGrid` e `selectGridStyle_title`.
+   - Change: `regularGrid`, `squareGrid`, `galleryGrid`, `selectGridStyle_title`, `selectView_title`, `projectsOrder`, `gridLayout`, `showHiddenProjects`, `hideHiddenProjects`.
+   - Change: `gridProjects` e `groupedProjects` nao tinham etiqueta no Planka original, porque eram so dois icones num grupo de botoes. Num menu precisam de texto: `Overview` e `Grouped view`, as mesmas palavras do Pro.
 
 ## Verify
 
-- O popup mostra os três estilos e marca o ativo.
+- O popup de estilo mostra os três e marca o ativo; o glifo do botão acompanha o estilo escolhido.
+- O popup de vista mostra as duas vistas e as três ordenações, separadas pela etiqueta de secção, e ambas as escolhas produzem efeito.
 - Cada estilo funciona nas duas vistas: agrupada com cabeçalhos por cima da grelha, plana sem cabeçalhos.
 - Escolher um estilo, recarregar, e mantém-se — confirma que o `PATCH` passou a validação e que a coluna existe.
 - Marcar um favorito na galeria promove-o a `2x2` sem recarregar.

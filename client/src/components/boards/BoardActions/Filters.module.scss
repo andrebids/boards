@@ -96,8 +96,15 @@
   }
 
   .filterLabelIcon {
-    line-height: 1;
+    // O icone do "All" usa o alias `block layout` em vez de "th large": este
+    // ultimo trazia tambem a classe de tamanho `large` do Semantic (1.5em).
+    // A largura fica na metrica base do Semantic (1.18em) para o glifo caber
+    // centrado na caixa e todos os chips ficarem iguais.
+    font-size: 12px !important;
+    line-height: 1 !important;
     margin-right: 6px !important;
+    text-align: center;
+    width: 1.18em !important;
   }
 
   .filterTitle {

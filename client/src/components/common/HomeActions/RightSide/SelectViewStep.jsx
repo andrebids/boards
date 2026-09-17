@@ -9,58 +9,100 @@ import { useTranslation } from 'react-i18next';
 import { Icon, Menu } from 'semantic-ui-react';
 import { Popup } from '../../../../lib/custom-ui';
 
-import { HomeViews } from '../../../../constants/Enums';
-import { HomeViewIcons } from '../../../../constants/Icons';
+import { HomeViews, ProjectOrders } from '../../../../constants/Enums';
+import { HomeViewIcons, ProjectOrderIcons } from '../../../../constants/Icons';
 
-import styles from './SelectOrderStep.module.scss';
+import styles from './SelectMenuStep.module.scss';
 
-const SelectViewStep = React.memo(({ value, onSelect, onClose }) => {
-  const [t] = useTranslation();
+const VIEWS = [HomeViews.GRID_PROJECTS, HomeViews.GROUPED_PROJECTS];
 
-  const handleSelectClick = useCallback(
-    (_, { value: nextValue }) => {
-      if (nextValue !== value) {
-        onSelect(nextValue);
-      }
+const ORDERS = [
+  ProjectOrders.BY_DEFAULT,
+  ProjectOrders.ALPHABETICALLY,
+  ProjectOrders.BY_CREATION_TIME,
+];
 
-      onClose();
-    },
-    [value, onSelect, onClose]
-  );
+const SelectViewStep = React.memo(
+  ({ view, order, onViewSelect, onOrderSelect, onClose }) => {
+    const [t] = useTranslation();
 
-  return (
-    <>
-      <Popup.Header>
-        {t('common.selectView', {
-          context: 'title',
-        })}
-      </Popup.Header>
-      <Popup.Content>
-        <Menu secondary vertical className={styles.menu}>
-          {[HomeViews.GRID_PROJECTS, HomeViews.GROUPED_PROJECTS].map(view => (
-            <Menu.Item
-              key={view}
-              value={view}
-              active={view === value}
-              className={styles.menuItem}
-              onClick={handleSelectClick}
-            >
-              <Icon
-                name={HomeViewIcons[view]}
-                className={styles.menuItemIcon}
-              />
-              {t(`common.${view}`)}
-            </Menu.Item>
-          ))}
-        </Menu>
-      </Popup.Content>
-    </>
-  );
-});
+    const handleViewClick = useCallback(
+      (_, { value }) => {
+        if (value !== view) {
+          onViewSelect(value);
+        }
+
+        onClose();
+      },
+      [view, onViewSelect, onClose]
+    );
+
+    const handleOrderClick = useCallback(
+      (_, { value }) => {
+        if (value !== order) {
+          onOrderSelect(value);
+        }
+
+        onClose();
+      },
+      [order, onOrderSelect, onClose]
+    );
+
+    return (
+      <>
+        <Popup.Header>
+          {t('common.selectView', {
+            context: 'title',
+          })}
+        </Popup.Header>
+        <Popup.Content>
+          <Menu secondary vertical className={styles.menu}>
+            {VIEWS.map(item => (
+              <Menu.Item
+                key={item}
+                value={item}
+                active={item === view}
+                className={styles.menuItem}
+                onClick={handleViewClick}
+              >
+                <Icon
+                  name={HomeViewIcons[item]}
+                  className={styles.menuItemIcon}
+                />
+                {t(`common.${item}`)}
+              </Menu.Item>
+            ))}
+            <div className={styles.separator} />
+            <div className={styles.sectionLabel}>
+              {t('common.projectsOrder')}
+            </div>
+            {ORDERS.map(item => (
+              <Menu.Item
+                key={item}
+                value={item}
+                active={item === order}
+                className={styles.menuItem}
+                onClick={handleOrderClick}
+              >
+                <Icon
+                  name={ProjectOrderIcons[item]}
+                  className={styles.menuItemIcon}
+                />
+                {t(`common.${item}`)}
+              </Menu.Item>
+            ))}
+          </Menu>
+        </Popup.Content>
+      </>
+    );
+  }
+);
 
 SelectViewStep.propTypes = {
-  value: PropTypes.string.isRequired,
-  onSelect: PropTypes.func.isRequired,
+  view: PropTypes.string.isRequired,
+  order: PropTypes.string.isRequired,
+  onViewSelect: PropTypes.func.isRequired,
+  onOrderSelect: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
 };
 

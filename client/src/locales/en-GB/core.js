@@ -140,6 +140,7 @@ export default {
       gridLayout: "Grid layout",
       hideHiddenProjects: "Hide hidden projects",
       showHiddenProjects: "Show hidden projects",
+      projectsOrder: "Projects order",
       regularGrid: "Regular grid",
       squareGrid: "Square grid",
       galleryGrid: "Gallery grid",

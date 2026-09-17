@@ -43,3 +43,6 @@ scripts/popular-atividades.js
 .gstack/
 infra/cryptpad/config/*
 !infra/cryptpad/config/config.js.example
+
+# Bundle do PLANKA Pro, lido para investigacao (codigo proprietario, nao versionar)
+pro.js

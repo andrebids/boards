@@ -8,6 +8,7 @@ import actions from '../../../../actions';
 import selectors from '../../../../selectors';
 import { ClosableContext } from '../../../../contexts';
 import { Button } from '../../../../lib/custom-ui';
+import UserAvatar from '../../../users/UserAvatar';
 import styles from './GeneralPane.module.scss';
 
 const TransversalSection = React.memo(() => {
@@ -20,7 +21,7 @@ const TransversalSection = React.memo(() => {
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState(null);
   const [reload, setReload] = useState(0);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const [activateClosable, deactivateClosable] = useContext(ClosableContext);
 
   useEffect(() => {
@@ -29,10 +30,10 @@ const TransversalSection = React.memo(() => {
   }, [project.transversalMode, project.transversalUserIds]);
 
   useEffect(() => {
-    if (!isDropdownOpen) return undefined;
+    if (!openDropdown) return undefined;
     activateClosable();
     return deactivateClosable;
-  }, [isDropdownOpen, activateClosable, deactivateClosable]);
+  }, [openDropdown, activateClosable, deactivateClosable]);
 
   useEffect(() => {
     if (mode !== 'selected') return undefined;
@@ -43,7 +44,7 @@ const TransversalSection = React.memo(() => {
       .getProjectCardMemberOptions(project.id)
       .then(({ items }) => {
         if (cancelled) return;
-        setUsers(items);
+        setUsers(items.sort((a, b) => a.name.localeCompare(b.name)));
         setUserIds((ids) => ids.filter((id) => items.some((user) => user.id === id)));
       })
       .catch(() => {
@@ -75,44 +76,68 @@ const TransversalSection = React.memo(() => {
     <section className={styles.section} aria-busy={isBusy}>
       <h3 className={styles.sectionTitle}>{t('common.transversalTitle')}</h3>
       <p className={styles.hint}>{t('common.transversalSettingsHint')}</p>
-      <div className={styles.accessField}>
-        <label htmlFor="transversal-mode">{t('common.transversalAccess')}</label>
-        <select
+      <div
+        className={`${styles.accessField} ${openDropdown === 'access' ? styles.dropdownOpen : ''}`}
+      >
+        <Form.Select
+          fluid
+          selection
+          upward={false}
           id="transversal-mode"
-          className="ui fluid dropdown"
+          label={t('common.transversalAccess')}
+          aria-label={t('common.transversalAccess')}
+          options={[
+            { value: 'disabled', text: t('common.transversalDisabled') },
+            { value: 'all', text: t('common.transversalEveryone') },
+            { value: 'selected', text: t('common.transversalSelected') },
+          ]}
           value={mode}
           disabled={isBusy}
-          onChange={(event) => {
-            setMode(event.target.value);
+          onChange={(_, { value }) => {
+            setMode(value);
             setError(null);
           }}
-        >
-          <option value="disabled">{t('common.transversalDisabled')}</option>
-          <option value="all">{t('common.transversalEveryone')}</option>
-          <option value="selected">{t('common.transversalSelected')}</option>
-        </select>
+          onOpen={() => setOpenDropdown('access')}
+          onClose={() => setOpenDropdown(null)}
+        />
       </div>
       {mode === 'selected' && (
-        <div className={`${styles.accessField} ${isDropdownOpen ? styles.dropdownOpen : ''}`}>
+        <div
+          className={`${styles.accessField} ${styles.memberField} ${
+            openDropdown === 'people' ? styles.dropdownOpen : ''
+          }`}
+        >
           <Form.Select
             fluid
             multiple
             search
             selection
+            upward={false}
             label={t('common.transversalPeople')}
             aria-label={t('common.transversalPeople')}
+            searchInput={{ 'aria-label': t('common.transversalPeople') }}
             placeholder={t('common.transversalChoosePeople')}
+            noResultsMessage={t('common.bulkCardMembersNoUsers')}
+            renderLabel={({ content }) => ({ content })}
             options={(users || []).map((user) => ({
               key: user.id,
               value: user.id,
               text: user.name,
+              content: (
+                <span className={styles.memberIdentity}>
+                  <span aria-hidden="true">
+                    <UserAvatar id={user.id} fallbackUser={user} size="tiny" withTitle={false} />
+                  </span>
+                  <span className={styles.memberName}>{user.name}</span>
+                </span>
+              ),
             }))}
             value={userIds}
             loading={!users && !error}
-            disabled={isBusy || !users}
+            disabled={isBusy || !users || users.length === 0}
             onChange={(_, { value }) => setUserIds(value)}
-            onOpen={() => setIsDropdownOpen(true)}
-            onClose={() => setIsDropdownOpen(false)}
+            onOpen={() => setOpenDropdown('people')}
+            onClose={() => setOpenDropdown(null)}
           />
           {!userIds.length && <p className={styles.hint}>{t('common.transversalNobody')}</p>}
         </div>
@@ -127,13 +152,15 @@ const TransversalSection = React.memo(() => {
           {t('action.retry')}
         </Button>
       )}
-      <Button
-        variant="primary"
-        disabled={isBusy || (mode === 'selected' && !users)}
-        onClick={handleSave}
-      >
-        {t('action.save')}
-      </Button>
+      <div className={styles.action}>
+        <Button
+          variant="primary"
+          disabled={isBusy || (mode === 'selected' && !users)}
+          onClick={handleSave}
+        >
+          {t('action.save')}
+        </Button>
+      </div>
     </section>
   );
 });
