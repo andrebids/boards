@@ -38,6 +38,10 @@ const InlineContent = React.memo(({ cardId }) => {
     selectNotificationsTotalByCardId(state, cardId)
   );
 
+  const withCreator = useSelector(
+    (state) => selectors.selectCurrentBoard(state).alwaysDisplayCardCreator,
+  );
+
   const listName = useSelector(state => {
     if (!list.name) {
       return null;
@@ -61,9 +65,11 @@ const InlineContent = React.memo(({ cardId }) => {
 
   return (
     <div className={styles.wrapper}>
-      <span className={styles.attachments}>
-        <UserAvatar withCreatorIndicator id={card.creatorUserId} />
-      </span>
+      {withCreator && (
+        <span className={styles.attachments}>
+          <UserAvatar withCreatorIndicator id={card.creatorUserId} />
+        </span>
+      )}
       {(notificationsTotal > 0 || listName) && (
         <span className={styles.attachments}>
           {notificationsTotal > 0 && (

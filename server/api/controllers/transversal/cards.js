@@ -33,22 +33,35 @@ module.exports = {
     if (after) where.id = { '>': after };
     const rows = await Card.find({
       where,
-      select: ['id', 'name', 'boardId', 'listId', 'dueDate'],
+      select: ['id', 'name', 'boardId', 'listId', 'dueDate', 'commentsTotal'],
     })
       .sort('id ASC')
       .limit(PAGE_SIZE + 1);
     const cards = rows.slice(0, PAGE_SIZE);
-    const memberships = cards.length
-      ? await CardMembership.qm.getByCardIds(cards.map(({ id }) => id))
+    const cardIds = cards.map(({ id }) => id);
+    const memberships = cards.length ? await CardMembership.qm.getByCardIds(cardIds) : [];
+    const cardLabels = cards.length ? await CardLabel.qm.getByCardIds(cardIds) : [];
+    const userIds = [...new Set(memberships.map(({ userId }) => userId))];
+    const users = userIds.length ? await User.qm.getByIds(userIds) : [];
+    const labels = cardLabels.length
+      ? await Label.qm.getByIds([...new Set(cardLabels.map(({ labelId }) => labelId))])
       : [];
-    const users = memberships.length
-      ? await User.qm.getByIds([...new Set(memberships.map(({ userId }) => userId))])
-      : [];
-    const usersById = new Map(users.map((user) => [user.id, { id: user.id, name: user.name }]));
+    const usersById = new Map(
+      users.map((user) => {
+        const { id, name, avatar } = sails.helpers.users.presentOne(user);
+        return [id, { id, name, avatar }];
+      }),
+    );
+    const labelsById = new Map(labels.map(({ id, name, color }) => [id, { id, name, color }]));
     const membersByCard = new Map();
     memberships.forEach(({ cardId, userId }) => {
       if (!membersByCard.has(cardId)) membersByCard.set(cardId, []);
       if (usersById.has(userId)) membersByCard.get(cardId).push(usersById.get(userId));
+    });
+    const labelsByCard = new Map();
+    cardLabels.forEach(({ cardId, labelId }) => {
+      if (!labelsByCard.has(cardId)) labelsByCard.set(cardId, []);
+      if (labelsById.has(labelId)) labelsByCard.get(cardId).push(labelsById.get(labelId));
     });
     const boardsById = new Map(boards.map((board) => [board.id, board.name]));
     const listsById = new Map(selectedLists.map((list) => [list.id, list.name]));
@@ -58,6 +71,7 @@ module.exports = {
         boardName: boardsById.get(card.boardId),
         listName: listsById.get(card.listId),
         members: membersByCard.get(card.id) || [],
+        labels: labelsByCard.get(card.id) || [],
       })),
       nextCursor: rows.length > PAGE_SIZE ? cards[cards.length - 1].id : null,
     };

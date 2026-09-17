@@ -12,7 +12,7 @@ import styles from './CardMembers.module.scss';
 
 const MAX_VISIBLE_MEMBERS = 3;
 
-const CardMembers = React.memo(({ userIds, creatorUserId, withCreator }) => {
+const CardMembers = React.memo(({ userIds, creatorUserId, withCreator, fallbackUsersById }) => {
   const isCreatorVisible = withCreator && !!creatorUserId;
 
   if (!isCreatorVisible && userIds.length === 0) {
@@ -29,6 +29,7 @@ const CardMembers = React.memo(({ userIds, creatorUserId, withCreator }) => {
           <span className={styles.member}>
             <UserAvatar
               id={creatorUserId}
+              fallbackUser={fallbackUsersById[creatorUserId]}
               size="tiny"
               withCreatorIndicator
               className={styles.avatar}
@@ -39,7 +40,12 @@ const CardMembers = React.memo(({ userIds, creatorUserId, withCreator }) => {
       )}
       {visibleUserIds.map((id) => (
         <span key={id} className={styles.member}>
-          <UserAvatar id={id} size="tiny" className={styles.avatar} />
+          <UserAvatar
+            id={id}
+            fallbackUser={fallbackUsersById[id]}
+            size="tiny"
+            className={styles.avatar}
+          />
         </span>
       ))}
       {hiddenMembersTotal > 0 && <span className={styles.overflow}>+{hiddenMembersTotal}</span>}
@@ -51,12 +57,15 @@ CardMembers.propTypes = {
   userIds: PropTypes.arrayOf(PropTypes.string),
   creatorUserId: PropTypes.string,
   withCreator: PropTypes.bool,
+  /* eslint-disable-next-line react/forbid-prop-types */
+  fallbackUsersById: PropTypes.object,
 };
 
 CardMembers.defaultProps = {
   userIds: [],
   creatorUserId: undefined,
   withCreator: false,
+  fallbackUsersById: {},
 };
 
 export default CardMembers;

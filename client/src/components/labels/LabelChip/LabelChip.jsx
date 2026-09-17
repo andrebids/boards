@@ -21,10 +21,10 @@ const Sizes = {
   MEDIUM: 'medium',
 };
 
-const LabelChip = React.memo(({ id, size, onClick }) => {
+const LabelChip = React.memo(({ id, fallbackLabel, size, onClick }) => {
   const selectLabelById = useMemo(() => selectors.makeSelectLabelById(), []);
 
-  const label = useSelector(state => selectLabelById(state, id));
+  const label = useSelector(state => selectLabelById(state, id)) || fallbackLabel;
 
   const contentNode = (
     <span
@@ -58,11 +58,16 @@ const LabelChip = React.memo(({ id, size, onClick }) => {
 
 LabelChip.propTypes = {
   id: PropTypes.string.isRequired,
+  fallbackLabel: PropTypes.shape({
+    name: PropTypes.string,
+    color: PropTypes.string.isRequired,
+  }),
   size: PropTypes.oneOf(Object.values(Sizes)),
   onClick: PropTypes.func,
 };
 
 LabelChip.defaultProps = {
+  fallbackLabel: undefined,
   size: Sizes.MEDIUM,
   onClick: undefined,
 };

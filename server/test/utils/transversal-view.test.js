@@ -28,6 +28,8 @@ describe('Transversal view', () => {
         'List',
         'Card',
         'CardMembership',
+        'CardLabel',
+        'Label',
         'sails',
       ].map((key) => [key, global[key]]),
     );
@@ -48,9 +50,14 @@ describe('Transversal view', () => {
         };
       },
     };
+    global.CardLabel = { qm: { getByCardIds: async () => [] } };
+    global.Label = { qm: { getByIds: async () => [] } };
     global.sails = {
       helpers: {
-        users: { isProjectManager: async () => isManager },
+        users: {
+          isProjectManager: async () => isManager,
+          presentOne: ({ id, name }) => ({ id, name, avatar: null }),
+        },
         transversal: {
           getContext: (projectId, user) => ({
             intercept: async (_, mapError) => {

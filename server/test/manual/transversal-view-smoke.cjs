@@ -160,7 +160,9 @@ async function run() {
   const source = result.items[0];
   await insert('card_membership', { card_id: source.id, user_id: viewer.user.id });
   const withMember = await request(`${base}/cards?stage=logistique`, viewer.token);
-  assert.deepEqual(withMember.items[0].members, [{ id: viewer.user.id, name: viewer.user.name }]);
+  assert.deepEqual(withMember.items[0].members, [
+    { id: viewer.user.id, name: viewer.user.name, avatar: null },
+  ]);
   const sourceList = await db('list').where({ id: source.listId }).first();
   await db('list').where({ id: sourceList.id }).update({ name: 'TRANSPORTE QA' });
   assert.equal((await request(`${base}/cards?stage=logistique`, viewer.token)).items.length, 1);

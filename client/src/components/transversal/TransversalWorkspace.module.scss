@@ -29,7 +29,7 @@
     }
   }
 
-  .hint, .columnMessage, .members, .origin {
+  .hint, .columnMessage {
     color: var(--text-secondary, #b8c0ce);
     font-size: 12px;
   }
@@ -67,24 +67,17 @@
   }
 
   .cards { display: flex; flex-direction: column; gap: 8px; padding: 0 8px 8px; overflow-y: auto; }
+  // O aspecto do cartao vem de Card.module.scss / ProjectContent.module.scss;
+  // aqui so tratamos do link que os envolve.
   .card {
-    display: flex;
-    flex-direction: column;
+    display: block;
     flex-shrink: 0;
-    gap: 8px;
-    padding: 12px;
-    background: var(--background-primary, #1d2530);
-    border: 1px solid transparent;
-    border-radius: 6px;
     color: var(--text-primary, #eef0f4);
     overflow-wrap: anywhere;
 
-    &:hover { color: var(--text-primary, #eef0f4); border-color: var(--border-color, #64748b); }
+    &:hover { color: var(--text-primary, #eef0f4); }
     &:focus-visible { outline: 2px solid var(--primary-color, #8fa6f7); outline-offset: 2px; }
   }
-  .origin { font-size: 11px; }
-  .cardTitle { font-size: 14px; font-weight: 500; line-height: 1.4; }
-  .dueDate { font-size: 12px; }
   .columnMessage { margin: 4px; }
 
   @media (max-width: 600px) {

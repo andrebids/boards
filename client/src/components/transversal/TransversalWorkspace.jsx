@@ -1,17 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api';
 import selectors from '../../selectors';
-import Paths from '../../constants/Paths';
 import { Button } from '../../lib/custom-ui';
 import { canUseTransversal, isAccessError } from './access';
+import TransversalCard from './TransversalCard';
 import styles from './TransversalWorkspace.module.scss';
 
 const Column = React.memo(({ projectId, stage, boardId, onDenied }) => {
-  const [t, i18n] = useTranslation();
+  const [t] = useTranslation();
   const [cards, setCards] = useState([]);
   const [cursor, setCursor] = useState(null);
   const [error, setError] = useState(false);
@@ -85,20 +85,7 @@ const Column = React.memo(({ projectId, stage, boardId, onDenied }) => {
       <h2 className={styles.columnTitle}>{stage.name}</h2>
       <div className={styles.cards}>
         {cards.map((card) => (
-          <Link key={card.id} className={styles.card} to={Paths.CARDS.replace(':id', card.id)}>
-            <span className={styles.origin}>{card.boardName}</span>
-            <strong className={styles.cardTitle}>{card.name}</strong>
-            {card.members.length > 0 && (
-              <span className={styles.members}>
-                {card.members.map(({ name }) => name).join(', ')}
-              </span>
-            )}
-            {card.dueDate && (
-              <time className={styles.dueDate} dateTime={card.dueDate}>
-                {new Date(card.dueDate).toLocaleDateString(i18n.resolvedLanguage)}
-              </time>
-            )}
-          </Link>
+          <TransversalCard key={card.id} card={card} />
         ))}
         {hasLoaded && !cards.length && !isLoading && !error && (
           <p className={styles.columnMessage}>{t('common.transversalEmptyColumn')}</p>
