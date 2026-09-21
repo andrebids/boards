@@ -80,6 +80,19 @@ const handleChatConversationCreate = (conversation, chatParticipants, users) => 
   payload: { conversation, chatParticipants, users },
 });
 
+const updateChatConversation = (id) => ({
+  type: ActionTypes.CHAT_CONVERSATION_UPDATE,
+  payload: { id },
+});
+updateChatConversation.success = (id) => ({
+  type: ActionTypes.CHAT_CONVERSATION_UPDATE__SUCCESS,
+  payload: { id },
+});
+updateChatConversation.failure = (id, error) => ({
+  type: ActionTypes.CHAT_CONVERSATION_UPDATE__FAILURE,
+  payload: { id, error },
+});
+
 const handleChatConversationUpdate = (conversation, chatParticipants, users) => ({
   type: ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE,
   payload: { conversation, chatParticipants, users },
@@ -296,6 +309,7 @@ export default {
   fetchChatConversations,
   createChatConversation,
   handleChatConversationCreate,
+  updateChatConversation,
   handleChatConversationUpdate,
   fetchChatMessages,
   createChatMessage,

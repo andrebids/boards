@@ -8,6 +8,7 @@ import {
   BellOff,
   LogOut,
   MoreHorizontal,
+  Pencil,
   Trash2,
   UserPlus,
   Users,
@@ -70,6 +71,7 @@ const ChatWindow = React.memo(({ id }) => {
   );
 
   const conversation = useSelector((state) => selectConversationById(state, id));
+  const groupUpdate = useSelector((state) => state.chat.conversationUpdatesById?.[id]);
   const messages = useSelector((state) => selectMessagesByConversationId(state, id)) || [];
   const isMessagesFetching = useSelector((state) =>
     selectIsMessagesFetchingByConversationId(state, id),
@@ -113,6 +115,7 @@ const ChatWindow = React.memo(({ id }) => {
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [isGroupEditorOpen, setIsGroupEditorOpen] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
+  const groupTitleRef = useRef(null);
   const [shouldFocusComposer, setShouldFocusComposer] = useState(false);
 
   const handleFilesDrop = useCallback((acceptedFiles) => {
@@ -166,6 +169,12 @@ const ChatWindow = React.memo(({ id }) => {
       consumeGroupManager(id);
     }
   }, [consumeGroupManager, conversation, groupManagerConversationId, id]);
+
+  useEffect(() => {
+    if (isGroupEditorOpen) {
+      groupTitleRef.current?.focus();
+    }
+  }, [isGroupEditorOpen]);
 
   useEffect(() => {
     if (isHistoryClearing) {
@@ -356,9 +365,10 @@ const ChatWindow = React.memo(({ id }) => {
     updatePreferences(currentParticipant?.notificationLevel || 'all', date.toISOString());
   };
 
-  const handleGroupTitleSave = () => {
+  const handleGroupTitleSave = (event) => {
+    event.preventDefault();
     const titleValue = groupTitle.trim();
-    if (titleValue && titleValue !== conversation.title) {
+    if (!groupUpdate?.isPending && titleValue && titleValue !== conversation.title) {
       dispatch(entryActions.updateChatConversation(id, { title: titleValue }));
     }
   };
@@ -399,6 +409,7 @@ const ChatWindow = React.memo(({ id }) => {
               type="button"
               className={isGroupEditorOpen ? styles.actionButtonActive : undefined}
               aria-label={t('chat.manageGroup')}
+              title={t('chat.manageGroup')}
               aria-expanded={isGroupEditorOpen}
               onClick={() => {
                 setGroupTitle(conversation.title || '');
@@ -487,6 +498,20 @@ const ChatWindow = React.memo(({ id }) => {
             className={`${styles.headerMenu} ${styles.actionsMenu}`}
             role="menu"
           >
+            {isCustomGroup && isGroupOwner && (
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setGroupTitle(conversation.title || '');
+                  setIsGroupEditorOpen(true);
+                  setIsActionsOpen(false);
+                }}
+              >
+                <Pencil aria-hidden="true" size={15} />
+                {t('chat.editGroupName')}
+              </button>
+            )}
             <button
               type="button"
               role="menuitem"
@@ -523,21 +548,33 @@ const ChatWindow = React.memo(({ id }) => {
               />
             </div>
             {isGroupOwner && (
-              <div className={styles.groupTitleEditor}>
+              <form className={styles.groupTitleEditor} onSubmit={handleGroupTitleSave}>
+                <label htmlFor={`chat-group-title-${id}`}>{t('chat.groupName')}</label>
                 <input
+                  ref={groupTitleRef}
+                  id={`chat-group-title-${id}`}
                   value={groupTitle}
-                  maxLength={128}
+                  maxLength={80}
+                  required
+                  disabled={groupUpdate?.isPending}
                   aria-label={t('chat.groupName')}
                   onChange={(event) => setGroupTitle(event.target.value)}
                 />
                 <button
-                  type="button"
-                  disabled={!groupTitle.trim() || groupTitle.trim() === conversation.title}
-                  onClick={handleGroupTitleSave}
+                  type="submit"
+                  disabled={
+                    groupUpdate?.isPending ||
+                    !groupTitle.trim() ||
+                    groupTitle.trim() === conversation.title
+                  }
                 >
-                  {t('chat.save')}
+                  {t(groupUpdate?.isPending ? 'chat.saving' : 'chat.save')}
                 </button>
-              </div>
+                {groupUpdate?.error && <p role="alert">{t('chat.groupNameSaveFailed')}</p>}
+                {groupUpdate?.isSuccess && groupTitle.trim() === conversation.title && (
+                  <p role="status">{t('chat.groupNameSaved')}</p>
+                )}
+              </form>
             )}
             <div className={styles.groupMembers}>
               {members.map((member) => {

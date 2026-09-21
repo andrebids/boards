@@ -343,10 +343,19 @@
   }
 
   .groupTitleEditor {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     flex: 0 0 auto;
     gap: 7px;
     padding: 0 4px 10px;
+
+    label,
+    p {
+      color: var(--chat-muted);
+      font-size: var(--chat-font-meta);
+      grid-column: 1 / -1;
+      margin: 0;
+    }
 
     input {
       background: var(--chat-default);

@@ -1,7 +1,40 @@
 import reducer from './chat';
 import ActionTypes from '../constants/ActionTypes';
+import actions from '../actions/chat';
 
 describe('chat reducer', () => {
+  test('allows retrying a failed group rename without losing its existing title or other updates', () => {
+    let state = reducer(
+      undefined,
+      actions.handleChatInboxItemUpdate({
+        id: 'group-1',
+        projectId: 'project-1',
+        title: 'Original name',
+      }),
+    );
+    state = reducer(state, actions.updateChatConversation('group-2'));
+    state = reducer(state, actions.updateChatConversation('group-1'));
+    const error = { message: 'Offline' };
+    state = reducer(state, actions.updateChatConversation.failure('group-1', error));
+    expect(state.conversationUpdatesById['group-1']).toEqual({
+      isPending: false,
+      isSuccess: false,
+      error,
+    });
+    expect(state.inboxItemsByConversationId['group-1'].title).toBe('Original name');
+    state = reducer(state, actions.updateChatConversation('group-1'));
+    expect(state.conversationUpdatesById['group-1'].error).toBeNull();
+    state = reducer(state, actions.handleChatInboxItemUpdate({ id: 'group-1', title: 'New name' }));
+    state = reducer(state, actions.updateChatConversation.success('group-1'));
+    expect(state.conversationUpdatesById['group-1']).toEqual({
+      isPending: false,
+      isSuccess: true,
+      error: null,
+    });
+    expect(state.inboxItemsByConversationId['group-1'].title).toBe('New name');
+    expect(state.conversationUpdatesById['group-2'].isPending).toBe(true);
+  });
+
   test('stores a normalized global inbox response and its authoritative metadata', () => {
     const state = reducer(undefined, {
       type: ActionTypes.CHAT_INBOX_FETCH__SUCCESS,

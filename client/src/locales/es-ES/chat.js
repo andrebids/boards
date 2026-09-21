@@ -1,6 +1,12 @@
 export default {
   translation: {
     chat: {
+      editGroupName: 'Editar nombre del grupo',
+      creatingGroup: 'Creando grupo…',
+      createGroupFailed: 'No se pudo crear el grupo. Inténtalo de nuevo.',
+      saving: 'Guardando…',
+      groupNameSaved: 'Nombre del grupo guardado.',
+      groupNameSaveFailed: 'No se pudo guardar el nombre. Inténtalo de nuevo.',
       addEmoji: 'Añadir emoji',
       addToGroup: 'Añadir',
       allAuthorizedMembers: 'Todos los miembros autorizados',

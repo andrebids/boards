@@ -226,6 +226,7 @@ export function* createCustomChatGroup(projectId, data, requestKey = `${projectI
 }
 
 export function* updateChatConversation(id, data) {
+  yield put(actions.updateChatConversation(id));
   try {
     const { item } = yield call(request, api.updateChatConversation, id, data);
     yield put(actions.handleChatInboxItemUpdate(item));
@@ -233,9 +234,10 @@ export function* updateChatConversation(id, data) {
     if (conversation) {
       yield put(actions.handleChatConversationUpdate(item, [], []));
     }
+    yield put(actions.updateChatConversation.success(id));
   } catch (error) {
     reportChatError(error, 'update-conversation');
-    // The server remains the source of truth for the title.
+    yield put(actions.updateChatConversation.failure(id, error));
   }
 }
 

@@ -8,7 +8,7 @@ import { CloseButton } from '../../../lib/custom-ui';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useChat } from '../ChatContext';
-import { getDirectUser, isGeneralConversation } from '../utils';
+import { getConversationTitle, getDirectUser } from '../utils';
 import ChatHeader from '../ChatHeader';
 import ChatSearch from '../ChatSearch';
 import ConversationList from '../ConversationList';
@@ -54,11 +54,16 @@ const ChatPanel = React.memo(
     const [groupTitle, setGroupTitle] = useState('');
     const [selectedMemberIds, setSelectedMemberIds] = useState([]);
     const [pendingGroup, setPendingGroup] = useState(null);
+    const groupCreationError = useSelector(
+      (state) => state.chat.conversationCreationErrorsByKey[pendingGroup?.requestKey],
+    );
+    const isGroupCreating = Boolean(pendingGroup && !groupCreationError);
 
     useEffect(() => {
       const handleKeyDown = (event) => {
         if (event.key === 'Escape' && !event.defaultPrevented) {
           if (isGroupFormOpen) {
+            setPendingGroup(null);
             setGroupTitle('');
             setSelectedMemberIds([]);
             setIsGroupFormOpen(false);
@@ -102,13 +107,14 @@ const ChatPanel = React.memo(
       }
 
       return conversations.filter((conversation) => {
-        const title =
-          getDirectUser(conversation, members, currentUser.id)?.name ||
-          (isGeneralConversation(conversation) ? t('chat.general') : t('chat.conversation'));
+        const title = getConversationTitle(conversation, members, currentUser.id, project?.name, {
+          conversationTitle: t('chat.conversation'),
+          generalTitle: t('chat.general'),
+        });
         const lastMessage = conversation.lastMessage?.text || '';
         return `${title} ${lastMessage}`.toLocaleLowerCase().includes(normalizedQuery);
       });
-    }, [conversations, currentUser.id, members, query, t]);
+    }, [conversations, currentUser.id, members, project?.name, query, t]);
 
     const filteredMembers = useMemo(() => {
       const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -167,6 +173,7 @@ const ChatPanel = React.memo(
     );
 
     const handleGroupFormOpen = useCallback(() => {
+      setPendingGroup(null);
       setQuery('');
       setIsGroupFormOpen(true);
       setActiveTab('members');
@@ -174,6 +181,7 @@ const ChatPanel = React.memo(
     }, []);
 
     const handleGroupFormClose = useCallback(() => {
+      setPendingGroup(null);
       setGroupTitle('');
       setSelectedMemberIds([]);
       setIsGroupFormOpen(false);
@@ -191,7 +199,7 @@ const ChatPanel = React.memo(
       (event) => {
         event.preventDefault();
         const title = groupTitle.trim();
-        if (!title || selectedMemberIds.length === 0) {
+        if (!title || selectedMemberIds.length === 0 || isGroupCreating) {
           return;
         }
         const requestKey = `${project.id}:group:${Date.now()}`;
@@ -208,12 +216,8 @@ const ChatPanel = React.memo(
         setPendingGroup({
           requestKey,
         });
-        setGroupTitle('');
-        setSelectedMemberIds([]);
-        setIsGroupFormOpen(false);
-        setActiveTab('conversations');
       },
-      [dispatch, groupTitle, project?.id, selectedMemberIds],
+      [dispatch, groupTitle, isGroupCreating, project?.id, selectedMemberIds],
     );
 
     const searchPlaceholder =
@@ -464,6 +468,8 @@ const ChatPanel = React.memo(
                             ref={groupTitleRef}
                             id="chat-group-title"
                             value={groupTitle}
+                            disabled={isGroupCreating}
+                            required
                             maxLength={80}
                             placeholder={t('chat.groupNamePlaceholder')}
                             onChange={(event) => setGroupTitle(event.target.value)}
@@ -515,6 +521,7 @@ const ChatPanel = React.memo(
                                     isSelected ? styles.memberOptionSelected : ''
                                   }`}
                                   aria-pressed={isSelected}
+                                  disabled={isGroupCreating}
                                   onClick={() => handleGroupMemberToggle(member.id)}
                                 >
                                   <ChatAvatar user={member} isOnline={member.isOnline} />
@@ -546,15 +553,21 @@ const ChatPanel = React.memo(
                             )}
                           </div>
                         </section>
+                        {groupCreationError && <p role="alert">{t('chat.createGroupFailed')}</p>}
                         <footer className={styles.groupFormFooter}>
                           <button type="button" onClick={handleGroupFormClose}>
                             {t('chat.cancel')}
                           </button>
                           <button
                             type="submit"
-                            disabled={!groupTitle.trim() || selectedMemberIds.length === 0}
+                            disabled={
+                              isGroupCreating ||
+                              !groupTitle.trim() ||
+                              selectedMemberIds.length === 0
+                            }
                           >
-                            <Users aria-hidden="true" size={15} /> {t('chat.createGroup')}
+                            <Users aria-hidden="true" size={15} />
+                            {t(isGroupCreating ? 'chat.creatingGroup' : 'chat.createGroup')}
                           </button>
                         </footer>
                       </form>

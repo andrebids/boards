@@ -92,6 +92,7 @@ const initialState = {
   errorsByScope: {},
   conversationCreationErrorsByKey: {},
   createdConversationIdByRequestKey: {},
+  conversationUpdatesById: {},
   lastMessageAlert: null,
   accessRevocationVersionByProject: {},
   draftsByConversation: {},
@@ -648,6 +649,20 @@ export default (state = initialState, { type, payload }) => {
         conversationCreationErrorsByKey: {
           ...state.conversationCreationErrorsByKey,
           [payload.requestKey]: payload.error,
+        },
+      };
+    case ActionTypes.CHAT_CONVERSATION_UPDATE:
+    case ActionTypes.CHAT_CONVERSATION_UPDATE__SUCCESS:
+    case ActionTypes.CHAT_CONVERSATION_UPDATE__FAILURE:
+      return {
+        ...state,
+        conversationUpdatesById: {
+          ...state.conversationUpdatesById,
+          [payload.id]: {
+            isPending: type === ActionTypes.CHAT_CONVERSATION_UPDATE,
+            isSuccess: type === ActionTypes.CHAT_CONVERSATION_UPDATE__SUCCESS,
+            error: payload.error || null,
+          },
         },
       };
     case ActionTypes.CHAT_MESSAGES_FETCH:
