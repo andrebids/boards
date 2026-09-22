@@ -225,89 +225,6 @@ export function* createCustomChatGroup(projectId, data, requestKey = `${projectI
   }
 }
 
-export function* updateChatConversation(id, data) {
-  yield put(actions.updateChatConversation(id));
-  try {
-    const { item } = yield call(request, api.updateChatConversation, id, data);
-    yield put(actions.handleChatInboxItemUpdate(item));
-    const conversation = yield select(selectors.selectChatConversationById, item.id);
-    if (conversation) {
-      yield put(actions.handleChatConversationUpdate(item, [], []));
-    }
-    yield put(actions.updateChatConversation.success(id));
-  } catch (error) {
-    reportChatError(error, 'update-conversation');
-    yield put(actions.updateChatConversation.failure(id, error));
-  }
-}
-
-export function* addChatConversationParticipants(id, userIds) {
-  try {
-    const body = yield call(request, api.addChatConversationParticipants, id, userIds);
-    yield put(actions.handleChatInboxItemUpdate(body.item));
-    const conversation = yield select(selectors.selectChatConversationById, body.item.id);
-    if (conversation) {
-      yield put(
-        actions.handleChatConversationUpdate(
-          body.item,
-          body.included?.chatParticipants || [],
-          body.included?.users || [],
-        ),
-      );
-    }
-  } catch (error) {
-    reportChatError(error, 'add-participants');
-    // Membership changes are reflected only after server confirmation.
-  }
-}
-
-export function* deleteChatConversationParticipant(id, userId) {
-  try {
-    yield call(request, api.deleteChatConversationParticipant, id, userId);
-  } catch (error) {
-    reportChatError(error, 'remove-participant');
-    // Server events keep authorized participants in sync.
-  }
-}
-
-export function* leaveChatConversation(id) {
-  const conversation = yield select(selectors.selectChatConversationById, id);
-  try {
-    yield call(request, api.leaveChatConversation, id);
-    if (conversation) {
-      yield put(actions.handleChatConversationAccessRevoke(conversation.projectId, id));
-    }
-  } catch (error) {
-    reportChatError(error, 'leave-conversation');
-    // Keep the conversation visible when leaving failed.
-  }
-}
-
-export function* handleChatConversationCreate(conversation, chatParticipants, users) {
-  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
-  if ((accessRevocationVersions[conversation.projectId] || 0) > 0) {
-    const chatState = yield select(selectors.selectChatState);
-    const currentUserId = yield select(selectors.selectCurrentUserId);
-    if (!(chatState.memberIdsByProject[conversation.projectId] || []).includes(currentUserId)) {
-      return;
-    }
-  }
-  yield put(actions.handleChatInboxItemUpdate(conversation));
-  yield put(actions.handleChatConversationCreate(conversation, chatParticipants, users));
-}
-
-export function* handleChatConversationUpdate(conversation, chatParticipants, users) {
-  yield put(actions.handleChatInboxItemUpdate(conversation));
-  const currentConversation = yield select(selectors.selectChatConversationById, conversation.id);
-  if (!currentConversation) {
-    if (conversation.projectId && conversation.historyClearedThroughMessageId) {
-      yield call(fetchChatConversations, conversation.projectId);
-    }
-    return;
-  }
-  yield put(actions.handleChatConversationUpdate(conversation, chatParticipants, users));
-}
-
 export function* fetchChatMessages(conversationId, options = {}) {
   const conversation = yield select(selectors.selectChatConversationById, conversationId);
   if (!conversation) {
@@ -327,18 +244,23 @@ export function* fetchChatMessages(conversationId, options = {}) {
     ? undefined
     : loadedMessages.find((message) => message.isPersisted);
 
-  yield put(actions.fetchChatMessages(conversationId));
+  const requestId = yield call(nanoid);
+  yield put(actions.fetchChatMessages(conversationId, requestId));
 
   let messages;
   let users = [];
   let hasMore;
   let hasMoreAfter;
+  let fetchError;
   try {
-    let parameters = { beforeId: firstPersistedMessage?.id };
+    let parameters = {
+      beforeId: firstPersistedMessage?.id,
+      subscribe: !conversation.isHistorical,
+    };
     if (requestOptions.aroundId) {
-      parameters = { aroundId: requestOptions.aroundId };
+      parameters = { aroundId: requestOptions.aroundId, subscribe: !conversation.isHistorical };
     } else if (requestOptions.afterId) {
-      parameters = { afterId: requestOptions.afterId };
+      parameters = { afterId: requestOptions.afterId, subscribe: !conversation.isHistorical };
     }
     const body = yield call(request, api.getChatMessages, conversationId, parameters);
     messages = body.items;
@@ -346,24 +268,26 @@ export function* fetchChatMessages(conversationId, options = {}) {
     hasMore = body.hasMore ?? body.meta?.hasMore ?? messages.length > 0;
     hasMoreAfter = body.meta?.hasMoreAfter ?? (direction === 'after' ? hasMore : false);
   } catch (error) {
-    const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
-    const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
-    if (
-      !currentConversation ||
-      (currentVersions[conversation.projectId] || 0) !== accessRevocationVersion
-    ) {
-      return;
-    }
-    yield put(actions.fetchChatMessages.failure(conversationId, error));
-    return;
+    fetchError = error;
   }
 
+  const chatState = yield select(selectors.selectChatState);
+  // A replaced or invalidated request must not settle the current request's loading state.
+  if (chatState.messageRequestIdsByConversation[conversationId] !== requestId) {
+    return;
+  }
   const currentConversation = yield select(selectors.selectChatConversationById, conversationId);
   const currentVersions = yield select(selectors.selectChatAccessRevocationVersions);
   if (
     !currentConversation ||
+    Boolean(currentConversation.isHistorical) !== Boolean(conversation.isHistorical) ||
     (currentVersions[conversation.projectId] || 0) !== accessRevocationVersion
   ) {
+    yield put(actions.fetchChatMessages.failure(conversationId, null));
+    return;
+  }
+  if (fetchError) {
+    yield put(actions.fetchChatMessages.failure(conversationId, fetchError));
     return;
   }
   yield put(
@@ -377,6 +301,153 @@ export function* fetchChatMessages(conversationId, options = {}) {
       direction,
     ),
   );
+}
+
+export function* handleChatConversationUpdate(conversation, chatParticipants, users) {
+  const update = conversation.isHistorical
+    ? { ...conversation, unreadCount: 0, hasUnreadMention: false, firstUnreadMessageId: null }
+    : conversation;
+  yield put(actions.handleChatInboxItemUpdate(update));
+  const currentConversation = yield select(selectors.selectChatConversationById, conversation.id);
+  if (!currentConversation) {
+    if (
+      conversation.projectId &&
+      (conversation.historyClearedThroughMessageId ||
+        typeof conversation.isHistorical === 'boolean')
+    ) {
+      yield call(fetchChatConversations, conversation.projectId);
+    }
+    return;
+  }
+  yield put(actions.handleChatConversationUpdate(update, chatParticipants, users));
+  if (
+    typeof conversation.isHistorical === 'boolean' &&
+    Boolean(currentConversation.isHistorical) !== conversation.isHistorical
+  ) {
+    const openConversationIds = yield select(selectors.selectOpenChatConversationIds);
+    if (openConversationIds.includes(conversation.id)) {
+      // Replace the history window and renew the socket subscription on readmission.
+      yield call(fetchChatMessages, conversation.id, { replace: true });
+    }
+  }
+}
+
+function* beginConversationUpdate(id, operation) {
+  const chatState = yield select(selectors.selectChatState);
+  if (chatState.conversationUpdatesById[id]?.isPending) {
+    return false;
+  }
+  yield put(actions.updateChatConversation(id, operation));
+  return true;
+}
+
+export function* updateChatConversation(id, data) {
+  if (!(yield call(beginConversationUpdate, id, 'title'))) {
+    return;
+  }
+  try {
+    const { item } = yield call(request, api.updateChatConversation, id, data);
+    yield put(actions.handleChatInboxItemUpdate(item));
+    const conversation = yield select(selectors.selectChatConversationById, item.id);
+    if (conversation) {
+      yield put(actions.handleChatConversationUpdate(item, [], []));
+    }
+    yield put(actions.updateChatConversation.success(id));
+  } catch (error) {
+    reportChatError(error, 'update-conversation');
+    yield put(actions.updateChatConversation.failure(id, error));
+  }
+}
+
+export function* addChatConversationParticipants(id, userIds) {
+  if (!(yield call(beginConversationUpdate, id, 'add-member'))) {
+    return;
+  }
+  try {
+    const body = yield call(request, api.addChatConversationParticipants, id, userIds);
+    yield call(
+      handleChatConversationUpdate,
+      body.item,
+      body.included?.chatParticipants || [],
+      body.included?.users || [],
+    );
+    yield put(actions.updateChatConversation.success(id));
+  } catch (error) {
+    reportChatError(error, 'add-participants');
+    yield put(actions.updateChatConversation.failure(id, error));
+  }
+}
+
+export function* deleteChatConversationParticipant(id, userId) {
+  if (!(yield call(beginConversationUpdate, id, 'remove-member'))) {
+    return;
+  }
+  try {
+    yield call(request, api.deleteChatConversationParticipant, id, userId);
+    const conversation = yield select(selectors.selectChatConversationById, id);
+    if (conversation) {
+      yield call(fetchChatConversations, conversation.projectId);
+    }
+    yield put(actions.updateChatConversation.success(id));
+  } catch (error) {
+    reportChatError(error, 'remove-participant');
+    yield put(actions.updateChatConversation.failure(id, error));
+  }
+}
+
+export function* leaveChatConversation(id) {
+  if (!(yield call(beginConversationUpdate, id, 'leave'))) {
+    return;
+  }
+  try {
+    const { item: participant } = yield call(request, api.leaveChatConversation, id);
+    const conversation = yield select(selectors.selectChatConversationById, id);
+    if (conversation) {
+      yield call(
+        handleChatConversationUpdate,
+        {
+          id,
+          projectId: conversation.projectId,
+          canWrite: false,
+          isHistorical: true,
+          unreadCount: 0,
+        },
+        [
+          ...conversation.participants.filter(
+            ({ userId, leftAt }) => userId !== participant.userId && !leftAt,
+          ),
+          participant,
+        ],
+        [],
+      );
+    } else {
+      yield put(
+        actions.handleChatInboxItemUpdate({
+          conversationId: id,
+          canWrite: false,
+          isHistorical: true,
+          unreadCount: 0,
+        }),
+      );
+    }
+    yield put(actions.updateChatConversation.success(id));
+  } catch (error) {
+    reportChatError(error, 'leave-conversation');
+    yield put(actions.updateChatConversation.failure(id, error));
+  }
+}
+
+export function* handleChatConversationCreate(conversation, chatParticipants, users) {
+  const accessRevocationVersions = yield select(selectors.selectChatAccessRevocationVersions);
+  if ((accessRevocationVersions[conversation.projectId] || 0) > 0) {
+    const chatState = yield select(selectors.selectChatState);
+    const currentUserId = yield select(selectors.selectCurrentUserId);
+    if (!(chatState.memberIdsByProject[conversation.projectId] || []).includes(currentUserId)) {
+      return;
+    }
+  }
+  yield put(actions.handleChatInboxItemUpdate(conversation));
+  yield put(actions.handleChatConversationCreate(conversation, chatParticipants, users));
 }
 
 const getAttachmentFailureStatus = (error) =>
@@ -715,10 +786,10 @@ export function* updateChatConversationPreferences(id, data) {
   }
 }
 
-export function* clearChatConversationHistory(id) {
+export function* clearChatConversationHistory(id, hideConversation = false) {
   yield put(actions.clearChatConversationHistory(id));
   try {
-    const { item } = yield call(request, api.clearChatConversationHistory, id);
+    const { item } = yield call(request, api.clearChatConversationHistory, id, hideConversation);
     yield put(actions.clearChatConversationHistory.success(item));
   } catch (error) {
     yield put(actions.clearChatConversationHistory.failure(id, error));
@@ -731,6 +802,10 @@ export function* handleChatConversationHistoryClear(historyState) {
 }
 
 export function* updateChatTyping(id, isTyping) {
+  const conversation = yield select(selectors.selectChatConversationById, id);
+  if (!conversation?.canWrite || conversation.isHistorical || conversation.archivedAt) {
+    return;
+  }
   try {
     yield call(request, api.updateChatTyping, id, isTyping);
   } catch (error) {
@@ -817,7 +892,10 @@ export function* openChatConversation(id) {
   yield put(actions.openChatConversation(id));
 
   try {
-    yield call(request, api.subscribeToChatConversation, id);
+    const conversation = yield select(selectors.selectChatConversationById, id);
+    if (!conversation?.isHistorical) {
+      yield call(request, api.subscribeToChatConversation, id);
+    }
   } catch (error) {
     reportChatError(error, 'subscribe-conversation');
     // Fetching the messages also retries the subscription.

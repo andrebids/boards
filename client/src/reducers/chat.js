@@ -87,6 +87,7 @@ const initialState = {
   isConversationsFetchingByProject: {},
   hasFetchedConversationsByProject: {},
   isMessagesFetchingByConversation: {},
+  messageRequestIdsByConversation: {},
   hasMoreMessagesByConversation: {},
   hasMoreNewerMessagesByConversation: {},
   errorsByScope: {},
@@ -120,6 +121,7 @@ export default (state = initialState, { type, payload }) => {
         isConversationsFetchingByProject: {},
         hasFetchedConversationsByProject: {},
         isMessagesFetchingByConversation: {},
+        messageRequestIdsByConversation: {},
         hasMoreMessagesByConversation: {},
         hasMoreNewerMessagesByConversation: {},
         typingByConversation: {},
@@ -290,6 +292,7 @@ export default (state = initialState, { type, payload }) => {
       const nextMessagesFetching = {
         ...state.isMessagesFetchingByConversation,
       };
+      const nextMessageRequestIds = { ...state.messageRequestIdsByConversation };
       const nextHasMoreMessages = { ...state.hasMoreMessagesByConversation };
       const nextHasMoreNewerMessages = {
         ...state.hasMoreNewerMessagesByConversation,
@@ -333,6 +336,7 @@ export default (state = initialState, { type, payload }) => {
         .forEach((key) => delete nextCreatedConversationIds[key]);
       payload.conversationIds.forEach((conversationId) => {
         delete nextMessagesFetching[conversationId];
+        delete nextMessageRequestIds[conversationId];
         delete nextHasMoreMessages[conversationId];
         delete nextHasMoreNewerMessages[conversationId];
         delete nextDrafts[conversationId];
@@ -358,6 +362,7 @@ export default (state = initialState, { type, payload }) => {
         isConversationsFetchingByProject: nextConversationsFetching,
         hasFetchedConversationsByProject: nextFetchedConversations,
         isMessagesFetchingByConversation: nextMessagesFetching,
+        messageRequestIdsByConversation: nextMessageRequestIds,
         hasMoreMessagesByConversation: nextHasMoreMessages,
         hasMoreNewerMessagesByConversation: nextHasMoreNewerMessages,
         errorsByScope: nextErrors,
@@ -395,6 +400,7 @@ export default (state = initialState, { type, payload }) => {
           (id) => id !== payload.conversationId,
         ),
         isMessagesFetchingByConversation: removeKey(state.isMessagesFetchingByConversation),
+        messageRequestIdsByConversation: removeKey(state.messageRequestIdsByConversation),
         hasMoreMessagesByConversation: removeKey(state.hasMoreMessagesByConversation),
         hasMoreNewerMessagesByConversation: removeKey(state.hasMoreNewerMessagesByConversation),
         draftsByConversation: removeKey(state.draftsByConversation),
@@ -554,6 +560,55 @@ export default (state = initialState, { type, payload }) => {
     case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE: {
       const { historyState } = payload;
       const { conversationId } = historyState;
+      if (historyState.hideConversation) {
+        const previousInboxItem = state.inboxItemsByConversationId[conversationId];
+        const inboxItemsByConversationId = { ...state.inboxItemsByConversationId };
+        delete inboxItemsByConversationId[conversationId];
+        return {
+          ...state,
+          inboxItemsByConversationId,
+          inboxMeta: previousInboxItem
+            ? updateInboxMetaForItemChange(state.inboxMeta, previousInboxItem, null)
+            : state.inboxMeta,
+          openConversationIds: state.openConversationIds.filter((id) => id !== conversationId),
+          minimizedConversationIds: state.minimizedConversationIds.filter(
+            (id) => id !== conversationId,
+          ),
+          isHistoryClearingByConversation: {
+            ...state.isHistoryClearingByConversation,
+            [conversationId]: false,
+          },
+          historyClearErrorsByConversation: {
+            ...state.historyClearErrorsByConversation,
+            [conversationId]: null,
+          },
+          isMessagesFetchingByConversation: {
+            ...state.isMessagesFetchingByConversation,
+            [conversationId]: false,
+          },
+          messageRequestIdsByConversation: {
+            ...state.messageRequestIdsByConversation,
+            [conversationId]: null,
+          },
+          hasMoreMessagesByConversation: {
+            ...state.hasMoreMessagesByConversation,
+            [conversationId]: true,
+          },
+          hasMoreNewerMessagesByConversation: {
+            ...state.hasMoreNewerMessagesByConversation,
+            [conversationId]: false,
+          },
+          replyTargetsByConversation: {
+            ...state.replyTargetsByConversation,
+            [conversationId]: null,
+          },
+          typingByConversation: { ...state.typingByConversation, [conversationId]: {} },
+          lastMessageAlert:
+            state.lastMessageAlert?.conversationId === conversationId
+              ? null
+              : state.lastMessageAlert,
+        };
+      }
       if (!historyState.historyClearedThroughMessageId) {
         return {
           ...state,
@@ -659,6 +714,8 @@ export default (state = initialState, { type, payload }) => {
         conversationUpdatesById: {
           ...state.conversationUpdatesById,
           [payload.id]: {
+            operation:
+              payload.operation || state.conversationUpdatesById[payload.id]?.operation || 'title',
             isPending: type === ActionTypes.CHAT_CONVERSATION_UPDATE,
             isSuccess: type === ActionTypes.CHAT_CONVERSATION_UPDATE__SUCCESS,
             error: payload.error || null,
@@ -668,6 +725,11 @@ export default (state = initialState, { type, payload }) => {
     case ActionTypes.CHAT_MESSAGES_FETCH:
       return {
         ...state,
+        messageRequestIdsByConversation: {
+          ...state.messageRequestIdsByConversation,
+          [payload.conversationId]: payload.requestId,
+        },
+        errorsByScope: { ...state.errorsByScope, [`messages:${payload.conversationId}`]: null },
         isMessagesFetchingByConversation: {
           ...state.isMessagesFetchingByConversation,
           [payload.conversationId]: true,
@@ -676,6 +738,10 @@ export default (state = initialState, { type, payload }) => {
     case ActionTypes.CHAT_MESSAGES_FETCH__SUCCESS:
       return {
         ...state,
+        messageRequestIdsByConversation: {
+          ...state.messageRequestIdsByConversation,
+          [payload.conversationId]: null,
+        },
         isMessagesFetchingByConversation: {
           ...state.isMessagesFetchingByConversation,
           [payload.conversationId]: false,
@@ -694,6 +760,10 @@ export default (state = initialState, { type, payload }) => {
     case ActionTypes.CHAT_MESSAGES_FETCH__FAILURE:
       return {
         ...state,
+        messageRequestIdsByConversation: {
+          ...state.messageRequestIdsByConversation,
+          [payload.conversationId]: null,
+        },
         isMessagesFetchingByConversation: {
           ...state.isMessagesFetchingByConversation,
           [payload.conversationId]: false,

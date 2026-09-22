@@ -21,6 +21,8 @@ export default class extends BaseModel {
     lastMessage: attr(),
     lastMessageAt: attr(),
     isBlocked: attr({ getDefault: () => false }),
+    canWrite: attr({ getDefault: () => true }),
+    isHistorical: attr({ getDefault: () => false }),
     createdAt: attr(),
     updatedAt: attr(),
     projectId: fk({
@@ -48,6 +50,10 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE: {
         const conversationModel = ChatConversation.withId(payload.historyState.conversationId);
+        if (payload.historyState.hideConversation) {
+          conversationModel?.delete();
+          break;
+        }
         if (conversationModel && payload.historyState.historyClearedThroughMessageId) {
           conversationModel.update({
             unreadCount: 0,

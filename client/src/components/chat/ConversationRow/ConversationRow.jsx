@@ -42,9 +42,7 @@ const getPreview = (lastMessage, sender, isGeneral, isBlocked, t) => {
     lastMessage.attachments?.length > 0 && !lastMessage.text
       ? t('chat.sentFile')
       : formatTextWithMentions(lastMessage.text || '');
-  return isGeneral && sender
-    ? `${sender.name}: ${text}`
-    : text || t('chat.sentFile');
+  return isGeneral && sender ? `${sender.name}: ${text}` : text || t('chat.sentFile');
 };
 
 const ConversationRow = React.memo(
@@ -64,10 +62,7 @@ const ConversationRow = React.memo(
       () =>
         isGeneral
           ? t('chat.general')
-          : user?.name ||
-            conversation?.title ||
-            conversation?.name ||
-            t('chat.conversation'),
+          : user?.name || conversation?.title || conversation?.name || t('chat.conversation'),
       [conversation?.name, conversation?.title, isGeneral, t, user?.name],
     );
     const id = conversation?.id;
@@ -95,9 +90,7 @@ const ConversationRow = React.memo(
           data-id={id}
           className={styles.primary}
           disabled={isPending}
-          onClick={(event) =>
-            id ? onClick(event.currentTarget.dataset.id) : onClick()
-          }
+          onClick={(event) => (id ? onClick(event.currentTarget.dataset.id) : onClick())}
         >
           <ChatAvatar
             isOnline={user?.isOnline}
@@ -122,22 +115,10 @@ const ConversationRow = React.memo(
                 </span>
               )}
             </span>
-            <small>
-              {getPreview(
-                lastMessage,
-                sender,
-                isGeneral,
-                conversation?.isBlocked,
-                t,
-              )}
-            </small>
+            <small>{getPreview(lastMessage, sender, isGeneral, conversation?.isBlocked, t)}</small>
           </span>
           <span className={styles.meta}>
-            <time>
-              {formatTime(
-                lastMessage?.createdAt || conversation?.lastMessageAt,
-              )}
-            </time>
+            <time>{formatTime(lastMessage?.createdAt || conversation?.lastMessageAt)}</time>
             {hasUnread && (
               <span
                 className={styles.unread}
@@ -150,9 +131,10 @@ const ConversationRow = React.memo(
         </button>
         {id && (
           <ConversationActions
-            canLeave={isCustomGroupConversation(conversation)}
+            canLeave={isCustomGroupConversation(conversation) && !conversation.isHistorical}
             conversationId={id}
             conversationTitle={title}
+            isHistorical={conversation.isHistorical}
             isPinned={isPinned}
             isMuted={isMuted}
             participant={currentParticipant}
@@ -167,14 +149,12 @@ ConversationRow.propTypes = {
   conversation: PropTypes.shape({
     id: PropTypes.string.isRequired,
     isBlocked: PropTypes.bool,
+    isHistorical: PropTypes.bool,
     name: PropTypes.string,
     title: PropTypes.string,
     type: PropTypes.string.isRequired,
     unreadCount: PropTypes.number,
-    lastMessageAt: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.instanceOf(Date),
-    ]),
+    lastMessageAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
   }),
   currentParticipant: PropTypes.shape({
     isMuted: PropTypes.bool,
@@ -187,17 +167,9 @@ ConversationRow.propTypes = {
   isPending: PropTypes.bool,
   lastMessage: PropTypes.shape({
     text: PropTypes.string,
-    deletedAt: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.instanceOf(Date),
-    ]),
-    createdAt: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.instanceOf(Date),
-    ]),
-    attachments: PropTypes.arrayOf(
-      PropTypes.shape({ id: PropTypes.string.isRequired }),
-    ),
+    deletedAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    createdAt: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    attachments: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string.isRequired })),
   }),
   onClick: PropTypes.func.isRequired,
   sender: PropTypes.shape({ name: PropTypes.string.isRequired }),

@@ -1,7 +1,8 @@
-import { call, select } from 'redux-saga/effects';
+import { all, call, select } from 'redux-saga/effects';
+import { runSaga } from 'redux-saga';
 
 import selectors from '../../selectors';
-import { requestConcurrent } from './request';
+import request, { requestConcurrent } from './request';
 
 jest.mock('../../constants/Config', () => ({
   __esModule: true,
@@ -27,5 +28,70 @@ describe('concurrent authenticated requests', () => {
       done: true,
       value: { item: 'attachment-1' },
     });
+  });
+});
+
+describe('queued request failures', () => {
+  const getState = () => ({ auth: { accessToken: 'test-token' } });
+  test('delivers a rejected request to its caller without an unhandled detached-task error', async () => {
+    const failure = { code: 'E_NOT_FOUND', message: 'Conversation not found' };
+    const method = jest.fn().mockRejectedValue(failure);
+    const onError = jest.fn();
+    let caught;
+    await runSaga({ getState, onError }, function* caller() {
+      try {
+        yield call(request, method, 'conversation-1');
+      } catch (error) {
+        caught = error;
+      }
+    }).toPromise();
+    expect(caught).toBe(failure);
+    expect(onError).not.toHaveBeenCalled();
+    expect(method).toHaveBeenCalledWith('conversation-1', { Authorization: 'Bearer test-token' });
+  });
+
+  test('preserves ordering and lets the next queued request complete after a failure', async () => {
+    const failure = new Error('rejected');
+    let rejectFirst;
+    const firstResponse = new Promise((resolve, reject) => {
+      rejectFirst = reject;
+    });
+    const first = jest.fn(() => firstResponse);
+    const second = jest
+      .fn()
+      .mockResolvedValue({ item: 'next response', error: 'valid payload field' });
+    const onError = jest.fn();
+    const task = runSaga({ getState, onError }, function* callers() {
+      return yield all([
+        call(function* firstCaller() {
+          try {
+            return yield call(request, first);
+          } catch (error) {
+            return error;
+          }
+        }),
+        call(request, second),
+      ]);
+    });
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).not.toHaveBeenCalled();
+    rejectFirst(failure);
+    expect(await task.toPromise()).toEqual([
+      failure,
+      { item: 'next response', error: 'valid payload field' },
+    ]);
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  test('still reports genuinely unhandled caller failures', async () => {
+    const failure = new Error('unexpected failure');
+    const onError = jest.fn();
+    const task = runSaga({ getState, onError }, function* caller() {
+      yield call(request, jest.fn().mockRejectedValue(failure));
+    });
+    await expect(task.toPromise()).rejects.toBe(failure);
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0][0]).toBe(failure);
   });
 });

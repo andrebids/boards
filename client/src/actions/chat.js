@@ -80,9 +80,9 @@ const handleChatConversationCreate = (conversation, chatParticipants, users) => 
   payload: { conversation, chatParticipants, users },
 });
 
-const updateChatConversation = (id) => ({
+const updateChatConversation = (id, operation = 'title') => ({
   type: ActionTypes.CHAT_CONVERSATION_UPDATE,
-  payload: { id },
+  payload: { id, operation },
 });
 updateChatConversation.success = (id) => ({
   type: ActionTypes.CHAT_CONVERSATION_UPDATE__SUCCESS,
@@ -98,9 +98,9 @@ const handleChatConversationUpdate = (conversation, chatParticipants, users) => 
   payload: { conversation, chatParticipants, users },
 });
 
-const fetchChatMessages = (conversationId) => ({
+const fetchChatMessages = (conversationId, requestId) => ({
   type: ActionTypes.CHAT_MESSAGES_FETCH,
-  payload: { conversationId },
+  payload: { conversationId, requestId },
 });
 fetchChatMessages.success = (
   conversationId,

@@ -272,6 +272,13 @@ describe('Web Push chat notifications', () => {
 
     global.ChatConversation = {
       Types: { PROJECT_GROUP: 'projectGroup' },
+      findOne: () => ({
+        usingConnection: async () => ({
+          id: 'conversation-1',
+          projectId: 'project-1',
+          type: 'projectGroup',
+        }),
+      }),
       qm: {
         getOneById: async () => ({
           id: 'conversation-1',
@@ -294,6 +301,7 @@ describe('Web Push chat notifications', () => {
     global.ChatParticipant = {
       NotificationLevels: { MENTIONS: 'mentions' },
       isMuted: () => false,
+      find: () => ({ sort: () => ({ usingConnection: async () => [] }) }),
       qm: { getOneByConversationIdAndUserId: async () => null },
     };
     global.Project = { qm: { getOneById: async () => ({ id: 'project-1', name: 'Project' }) } };
@@ -323,6 +331,9 @@ describe('Web Push chat notifications', () => {
       log: { error: () => {}, info: () => {}, warn: () => {} },
       sendNativeQuery: (sql, values) => {
         sqlCalls.push({ sql, values });
+        if (sql.includes('pg_advisory_xact_lock')) {
+          return { usingConnection: async () => ({ rows: [] }) };
+        }
         if (sql.includes('WITH due AS')) {
           return { usingConnection: async () => ({ rows: [row] }) };
         }

@@ -3,6 +3,14 @@ import ActionTypes from '../constants/ActionTypes';
 import actions from '../actions/chat';
 
 describe('chat reducer', () => {
+  test('invalidates message requests and clears loading on reconnect', () => {
+    const pending = reducer(undefined, actions.fetchChatMessages('group-1', 'request-1'));
+    expect(pending.messageRequestIdsByConversation['group-1']).toBe('request-1');
+    const reconnected = reducer(pending, { type: ActionTypes.SOCKET_RECONNECT_HANDLE });
+    expect(reconnected.messageRequestIdsByConversation).toEqual({});
+    expect(reconnected.isMessagesFetchingByConversation).toEqual({});
+  });
+
   test('allows retrying a failed group rename without losing its existing title or other updates', () => {
     let state = reducer(
       undefined,
@@ -17,6 +25,7 @@ describe('chat reducer', () => {
     const error = { message: 'Offline' };
     state = reducer(state, actions.updateChatConversation.failure('group-1', error));
     expect(state.conversationUpdatesById['group-1']).toEqual({
+      operation: 'title',
       isPending: false,
       isSuccess: false,
       error,
@@ -27,6 +36,7 @@ describe('chat reducer', () => {
     state = reducer(state, actions.handleChatInboxItemUpdate({ id: 'group-1', title: 'New name' }));
     state = reducer(state, actions.updateChatConversation.success('group-1'));
     expect(state.conversationUpdatesById['group-1']).toEqual({
+      operation: 'title',
       isPending: false,
       isSuccess: true,
       error: null,

@@ -4,6 +4,7 @@ const os = require('os');
 const path = require('path');
 
 const controller = require('../../api/controllers/chat-message-attachments/create');
+const { isMessageVisible } = require('../../api/helpers/chat/is-message-visible');
 
 describe('Chat message attachment controller', () => {
   let previousGlobals;
@@ -52,7 +53,11 @@ describe('Chat message attachment controller', () => {
           }),
         },
         chat: {
-          getConversationAccess: async () => ({ canWrite: true }),
+          isMessageVisible,
+          getConversationAccess: async () => ({
+            canWrite: true,
+            participant: { userId: 'user-1', leftAt: null },
+          }),
           getMessageExtras: async () => {
             throw new Error('post-persist message query must not run');
           },
@@ -134,7 +139,10 @@ describe('Chat message attachment controller', () => {
     };
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
     fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 
     Object.entries(previousGlobals).forEach(([name, value]) => {
@@ -167,7 +175,7 @@ describe('Chat message attachment controller', () => {
     const result = await controller.fn.call(
       { req: request, res: response },
       { messageId: 'message-1' },
-      {},
+      { success: (payload) => payload },
     );
     await new Promise((resolve) => {
       setImmediate(resolve);
@@ -219,7 +227,7 @@ describe('Chat message attachment controller', () => {
         res: response,
       },
       { messageId: 'message-1', clientAttachmentId: 'client-attachment-1' },
-      {},
+      { success: (payload) => payload },
     );
     await new Promise((resolve) => {
       setImmediate(resolve);
@@ -232,10 +240,7 @@ describe('Chat message attachment controller', () => {
 
   it('schedules an attachment-only push after an attachment is persisted', async () => {
     global.sails.config.custom.webPush = { enabled: true };
-    global.sails.helpers.chat.getConversationRecipientUserIds = async () => [
-      'user-1',
-      'user-2',
-    ];
+    global.sails.helpers.chat.getConversationRecipientUserIds = async () => ['user-1', 'user-2'];
     global.ChatMessage.qm.getOneById = async () => ({
       id: 'message-1',
       conversationId: 'conversation-1',
@@ -260,7 +265,7 @@ describe('Chat message attachment controller', () => {
         res: response,
       },
       { messageId: 'message-1', clientAttachmentId: 'client-attachment-1' },
-      {},
+      { success: (payload) => payload },
     );
 
     expect(scheduledPush).to.deep.include({

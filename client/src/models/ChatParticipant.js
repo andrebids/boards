@@ -16,6 +16,10 @@ export default class extends BaseModel {
     id: attr(),
     lastReadMessageId: attr(),
     historyClearedThroughMessageId: attr(),
+    leftAt: attr(),
+    leftReason: attr(),
+    historyVisibleThroughMessageId: attr(),
+    historyHiddenAt: attr(),
     lastReadAt: attr(),
     isMuted: attr(),
     isPinned: attr(),
@@ -49,7 +53,17 @@ export default class extends BaseModel {
       case ActionTypes.CHAT_CONVERSATION_ACCESS_REVOKE_HANDLE:
         ChatParticipant.filter({ conversationId: payload.conversationId }).delete();
         break;
-      case ActionTypes.CHAT_CONVERSATIONS_FETCH__SUCCESS:
+      case ActionTypes.CHAT_CONVERSATIONS_FETCH__SUCCESS: {
+        const conversationIds = new Set(payload.conversations.map(({ id }) => id));
+        const participants = payload.chatParticipants || [];
+        const participantIds = new Set(participants.map(({ id }) => id));
+        ChatParticipant.filter(({ conversationId }) => conversationIds.has(conversationId))
+          .toModelArray()
+          .filter(({ id }) => !participantIds.has(id))
+          .forEach((participantModel) => participantModel.delete());
+        participants.forEach((participant) => ChatParticipant.upsert(participant));
+        break;
+      }
       case ActionTypes.CHAT_CONVERSATION_CREATE__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_CREATE_HANDLE:
         (payload.chatParticipants || []).forEach((participant) =>
@@ -94,6 +108,10 @@ export default class extends BaseModel {
       }
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE: {
+        if (payload.historyState.hideConversation) {
+          ChatParticipant.filter({ conversationId: payload.historyState.conversationId }).delete();
+          break;
+        }
         const participantModel = ChatParticipant.filter({
           conversationId: payload.historyState.conversationId,
           userId: payload.historyState.userId,

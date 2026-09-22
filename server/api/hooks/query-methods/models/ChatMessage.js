@@ -11,17 +11,27 @@ const createOne = (values) => ChatMessage.create({ ...values }).fetch();
 
 const getByConversationId = (
   conversationId,
-  { beforeId, afterId, minimumId, limit = DEFAULT_LIMIT } = {},
+  { beforeId, afterId, minimumId, maximumId, editedBefore, limit = DEFAULT_LIMIT } = {},
 ) => {
   const criteria = { conversationId };
+  if (editedBefore) {
+    criteria.or = [{ editedAt: null }, { editedAt: { '<=': editedBefore } }];
+  }
+  const idCriteria = {};
 
   if (beforeId) {
-    criteria.id = {
-      '<': beforeId,
-      ...(minimumId && { '>': minimumId }),
-    };
+    idCriteria['<'] = beforeId;
   } else if (afterId || minimumId) {
-    criteria.id = { '>': getGreaterId(afterId, minimumId) };
+    idCriteria['>'] = getGreaterId(afterId, minimumId);
+  }
+  if (minimumId && !idCriteria['>']) {
+    idCriteria['>'] = minimumId;
+  }
+  if (maximumId) {
+    idCriteria['<='] = maximumId;
+  }
+  if (Object.keys(idCriteria).length > 0) {
+    criteria.id = idCriteria;
   }
 
   return ChatMessage.find(criteria)
@@ -35,12 +45,20 @@ const getWindowAroundId = async (
   minimumId,
   beforeLimit = 25,
   afterLimit = 25,
+  maximumId = undefined,
+  editedBefore = undefined,
 ) => {
-  if (isIdAtOrBefore(aroundId, minimumId)) {
+  if (
+    isIdAtOrBefore(aroundId, minimumId) ||
+    (maximumId && isIdAtOrBefore(maximumId, aroundId) && String(maximumId) !== String(aroundId))
+  ) {
     return null;
   }
 
-  const anchor = await ChatMessage.findOne({ id: aroundId, conversationId });
+  const visibleCriteria = editedBefore
+    ? { or: [{ editedAt: null }, { editedAt: { '<=': editedBefore } }] }
+    : {};
+  const anchor = await ChatMessage.findOne({ id: aroundId, conversationId, ...visibleCriteria });
   if (!anchor) {
     return null;
   }
@@ -48,11 +66,20 @@ const getWindowAroundId = async (
   const [before, after] = await Promise.all([
     ChatMessage.find({
       conversationId,
-      id: { '<': aroundId, ...(minimumId && { '>': minimumId }) },
+      ...visibleCriteria,
+      id: {
+        '<': aroundId,
+        ...(minimumId && { '>': minimumId }),
+        ...(maximumId && { '<=': maximumId }),
+      },
     })
       .sort('id DESC')
       .limit(beforeLimit + 1),
-    ChatMessage.find({ conversationId, id: { '>': aroundId } })
+    ChatMessage.find({
+      conversationId,
+      ...visibleCriteria,
+      id: { '>': aroundId, ...(maximumId && { '<=': maximumId }) },
+    })
       .sort('id ASC')
       .limit(afterLimit + 1),
   ]);
@@ -99,6 +126,48 @@ const getLastByConversationIds = async (conversationIds) => {
   return result.rows;
 };
 
+const getLastByConversationIdsForUser = async (conversationIds, userId) => {
+  if (conversationIds.length === 0) {
+    return [];
+  }
+
+  const result = await sails.sendNativeQuery(
+    `SELECT DISTINCT ON (message.conversation_id)
+       message.id,
+       message.conversation_id AS "conversationId",
+       message.user_id AS "userId",
+       message.client_message_id AS "clientMessageId",
+       message.reply_to_message_id AS "replyToMessageId",
+       message.forwarded_from_message_id AS "forwardedFromMessageId",
+       message.forwarded_from_user_id AS "forwardedFromUserId",
+       message.text,
+       message.edited_at AS "editedAt",
+       message.deleted_at AS "deletedAt",
+       message.created_at AS "createdAt",
+       message.updated_at AS "updatedAt"
+     FROM chat_message message
+     JOIN chat_conversation conversation ON conversation.id = message.conversation_id
+     LEFT JOIN chat_participant participant
+       ON participant.conversation_id = message.conversation_id
+      AND participant.user_id = $2
+     WHERE message.conversation_id = ANY($1::bigint[])
+       AND (conversation.type = 'projectGroup' OR participant.id IS NOT NULL)
+       AND message.id > COALESCE(participant.history_cleared_through_message_id, 0)
+       AND (
+         participant.left_at IS NULL
+         OR (
+           participant.history_visible_through_message_id IS NOT NULL
+           AND message.id <= participant.history_visible_through_message_id
+           AND (message.edited_at IS NULL OR message.edited_at <= participant.left_at)
+         )
+       )
+     ORDER BY message.conversation_id, message.id DESC`,
+    [conversationIds, userId],
+  );
+
+  return result.rows;
+};
+
 const updateOne = (criteria, values) => ChatMessage.updateOne(criteria).set({ ...values });
 
 const updateOneIfNotDeleted = (id, values) =>
@@ -111,6 +180,7 @@ module.exports = {
   getOneById,
   getLastByConversationId,
   getLastByConversationIds,
+  getLastByConversationIdsForUser,
   updateOne,
   updateOneIfNotDeleted,
 };

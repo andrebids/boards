@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { isHistoricalExtraVisible } = require('../../../utils/chat-history');
 const { prepareFileStream } = require('../../../utils/stream-file');
 
 const Errors = {
@@ -36,6 +37,8 @@ module.exports = {
     if (
       !attachment ||
       !access ||
+      !isHistoricalExtraVisible(attachment, access.participant) ||
+      !sails.helpers.chat.isMessageVisible(message, access.participant) ||
       message.deletedAt ||
       !attachment.data.video ||
       attachment.data.video.status !== 'ready' ||

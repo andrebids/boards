@@ -72,10 +72,12 @@ module.exports = {
          AND (
            participant.id IS NULL
            OR (
+             participant.left_at IS NULL
+             AND
              participant.notification_level <> 'none'
              AND (participant.muted_until IS NULL OR participant.muted_until <= NOW())
              AND (
-               participant.notification_level = 'all'
+             participant.notification_level = 'all'
                OR candidate.kind = 'mention'
              )
            )

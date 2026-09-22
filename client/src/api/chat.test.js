@@ -1,5 +1,6 @@
 import http from './http';
 import chat from './chat';
+import socket from './socket';
 
 jest.mock('./http', () => ({
   __esModule: true,
@@ -7,10 +8,29 @@ jest.mock('./http', () => ({
 }));
 jest.mock('./socket', () => ({
   __esModule: true,
-  default: {},
+  default: { post: jest.fn(), delete: jest.fn() },
 }));
 
 describe('chat attachment API', () => {
+  test('transforms departure metadata returned by leave', async () => {
+    socket.post.mockResolvedValue({ item: { id: 'p1', leftAt: '2026-09-21T12:00:00Z' } });
+    const result = await chat.leaveChatConversation('g1', { Authorization: 'Bearer test' });
+    expect(socket.post).toHaveBeenCalledWith('/chat-conversations/g1/leave', undefined, {
+      Authorization: 'Bearer test',
+    });
+    expect(result.item.leftAt).toEqual(new Date('2026-09-21T12:00:00Z'));
+  });
+
+  test('passes hideConversation separately from authentication headers', async () => {
+    socket.delete.mockResolvedValue({ item: { conversationId: 'g1', hideConversation: true } });
+    await chat.clearChatConversationHistory('g1', true, { Authorization: 'Bearer test' });
+    expect(socket.delete).toHaveBeenCalledWith(
+      '/chat-conversations/g1/history',
+      { hideConversation: true },
+      { Authorization: 'Bearer test' },
+    );
+  });
+
   test('sends the stable client id and transforms the attachment response', async () => {
     http.post.mockResolvedValue({
       messageId: 'message-1',

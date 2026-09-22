@@ -178,6 +178,7 @@ const MessageList = React.memo(
           (conversation) =>
             conversation.id !== conversationId &&
             !conversation.isBlocked &&
+            conversation.canWrite !== false &&
             !isDirectConversation(conversation),
         ),
       [conversationId, conversations],
@@ -302,6 +303,14 @@ const MessageList = React.memo(
       setIsReactionEmojiPickerOpen(false);
       setReactionEmojiPickerPosition(null);
     }, []);
+
+    useEffect(() => {
+      if (isDisabled) {
+        closeMenus();
+        setPendingDeleteMessageId(null);
+        setPendingForward(null);
+      }
+    }, [closeMenus, isDisabled]);
 
     useEffect(() => {
       if (!activeActionsMessageId && !forwardingMessageId) {
@@ -585,6 +594,7 @@ const MessageList = React.memo(
                             type="button"
                             key={emoji}
                             className={styles.quickReactionButton}
+                            disabled={isDisabled}
                             aria-label={`${t('chat.addEmoji')}: ${emoji}`}
                             onClick={() => chooseReaction(message.id, emoji)}
                           >
@@ -596,6 +606,7 @@ const MessageList = React.memo(
                             type="button"
                             data-message-id={message.id}
                             aria-label={t('chat.addEmoji')}
+                            disabled={isDisabled}
                             onClick={handleReactionMenuToggle}
                           >
                             <SmilePlus aria-hidden="true" size={15} />
@@ -632,6 +643,7 @@ const MessageList = React.memo(
                         <button
                           type="button"
                           className={styles.replyAction}
+                          disabled={isDisabled}
                           aria-label={t('chat.reply')}
                           onClick={() => handleMessageAction('reply', message)}
                         >
@@ -683,6 +695,7 @@ const MessageList = React.memo(
                               </button>
                               <button
                                 type="button"
+                                disabled={isDisabled}
                                 onClick={() => handleMessageAction('forward', message)}
                               >
                                 <Forward aria-hidden="true" size={14} /> {t('chat.forwardMessage')}
@@ -691,6 +704,7 @@ const MessageList = React.memo(
                                 <button
                                   type="button"
                                   className={styles.destructiveAction}
+                                  disabled={isDisabled}
                                   onClick={() => handleMessageAction('delete', message)}
                                 >
                                   <Trash2 aria-hidden="true" size={14} /> {t('chat.deleteMessage')}
@@ -768,6 +782,7 @@ const MessageList = React.memo(
                       }
                       imageAttachments={imageAttachments}
                       messageId={message.id}
+                      isDisabled={isDisabled}
                       otherAttachments={otherAttachments}
                       pendingFiles={message.pendingFiles}
                       onLoad={handleAttachmentLoad}
@@ -793,6 +808,7 @@ const MessageList = React.memo(
                             key={reaction.emoji}
                             data-message-id={message.id}
                             data-emoji={reaction.emoji}
+                            disabled={isDisabled}
                             className={
                               reaction.userIds.includes(currentUserId) ? styles.reacted : ''
                             }
@@ -825,6 +841,7 @@ const MessageList = React.memo(
                           <button
                             type="button"
                             title={getAttachmentDeliveryErrorMessage(message.error, t)}
+                            disabled={isDisabled}
                             onClick={() =>
                               dispatch(entryActions.retryChatMessage(message.localId || message.id))
                             }

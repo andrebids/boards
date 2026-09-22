@@ -112,8 +112,10 @@ export default function* chatWatchers() {
     takeEvery(EntryActionTypes.CHAT_CONVERSATION_READ_HANDLE, ({ payload: { readState } }) =>
       services.handleChatConversationRead(readState),
     ),
-    takeEvery(EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR, ({ payload: { id } }) =>
-      services.clearChatConversationHistory(id),
+    takeEvery(
+      EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR,
+      ({ payload: { id, hideConversation } }) =>
+        services.clearChatConversationHistory(id, hideConversation),
     ),
     takeEvery(
       EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE,

@@ -51,6 +51,23 @@ export default {
       available: 'Disponível',
       backToConversations: 'Voltar às conversas',
       blockedConversation: 'Já não é possível enviar mensagens nesta conversa.',
+      singleMemberGroup: '1 membro',
+      singleMemberNotice:
+        'És o único membro deste grupo. Adiciona alguém para continuar a conversa.',
+      leftGroup: 'Saíste deste grupo',
+      removedFromGroup: 'Foste removido deste grupo',
+      leftGroupHistoryNotice:
+        'Saíste deste grupo. Podes ler o histórico, mas não podes enviar conteúdo novo.',
+      removedGroupHistoryNotice:
+        'Foste removido deste grupo. Podes ler o histórico, mas não podes enviar conteúdo novo.',
+      rejoinGroupNotice:
+        'Ao readicionar alguém, essa pessoa recebe o histórico atual do grupo, incluindo as mensagens enviadas durante a sua ausência. O histórico que apagou apenas para si mantém-se oculto.',
+      leaveGroupFailed: 'Não foi possível sair do grupo. Verifica a ligação e tenta novamente.',
+      loadMessagesFailed: 'Não foi possível carregar as mensagens. Tenta novamente.',
+      addGroupMemberFailed:
+        'Não foi possível adicionar esta pessoa. Verifica a ligação e se ainda tens permissão para gerir o grupo.',
+      removeGroupMemberFailed:
+        'Não foi possível remover esta pessoa. Verifica a ligação, se a pessoa ainda é membro e se ainda podes gerir o grupo.',
       cancel: 'Cancelar',
       cancelReply: 'Cancelar resposta',
       chooseEmoji: 'Escolher emoji',
@@ -69,6 +86,9 @@ export default {
       confirmDeleteMessage: 'Tens a certeza de que queres eliminar esta mensagem?',
       confirmRemoveConversationHistory:
         'Queres remover o histórico de "{{conversation}}" apenas para ti? As outras pessoas continuarão a vê-lo. Esta ação não pode ser anulada.',
+      removeConversationFromList: 'Remover da minha lista',
+      confirmRemoveConversationFromList:
+        'Queres remover "{{conversation}}" da tua lista e apagar o histórico local? A conversa volta a aparecer se fores readicionado.',
       deleteMessage: 'Eliminar mensagem',
       directConversations: 'Conversas diretas',
       downloadFile: 'Transferir ficheiro',
@@ -93,6 +113,10 @@ export default {
       groupNamePlaceholder: 'Por exemplo: Equipa de design',
       groups: 'Grupos',
       confirmLeaveGroup: 'Queres mesmo sair do grupo "{{group}}"?',
+      confirmLeaveGroupOwner:
+        'Queres mesmo sair do grupo "{{group}}"? A propriedade passa para o membro restante mais antigo.',
+      confirmRemoveGroupMember:
+        'Remover {{member}} deste grupo? A pessoa mantém acesso ao histórico existente antes da remoção.',
       leaveGroup: 'Sair do grupo',
       loadingMessages: 'A carregar mensagens',
       manageGroup: 'Gerir grupo',

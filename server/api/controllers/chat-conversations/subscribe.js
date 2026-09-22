@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { withConversationLock, joinConversationRoom } = require('../../../utils/chat-lifecycle');
 
 const Errors = {
   CONVERSATION_NOT_FOUND: { conversationNotFound: 'Conversation not found' },
@@ -28,21 +29,23 @@ module.exports = {
       throw Errors.SOCKET_REQUIRED;
     }
 
-    const conversation = await ChatConversation.qm.getOneById(inputs.id);
-    const access =
-      conversation &&
-      (await sails.helpers.chat.getConversationAccess.with({
-        conversation,
-        user: this.req.currentUser,
-        ensureParticipant: true,
-      }));
+    return withConversationLock(inputs.id, async () => {
+      const conversation = await ChatConversation.qm.getOneById(inputs.id);
+      const access =
+        conversation &&
+        (await sails.helpers.chat.getConversationAccess.with({
+          conversation,
+          user: this.req.currentUser,
+          ensureParticipant: conversation.type === ChatConversation.Types.PROJECT_GROUP,
+        }));
 
-    if (!access) {
-      sails.sockets.leave(this.req, `chatConversation:${inputs.id}`);
-      throw Errors.CONVERSATION_NOT_FOUND;
-    }
+      if (!access || access.isHistorical) {
+        sails.sockets.leave(this.req, `chatConversation:${inputs.id}`);
+        throw Errors.CONVERSATION_NOT_FOUND;
+      }
 
-    sails.sockets.join(this.req, `chatConversation:${conversation.id}`);
-    return { item: conversation };
+      await joinConversationRoom(this.req, conversation.id);
+      return { item: conversation };
+    });
   },
 };

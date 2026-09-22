@@ -57,7 +57,11 @@ describe('Chat message creation contract', () => {
           createMessage: {
             with: (inputs) => {
               createMessageInputs = inputs;
-              return { intercept: async () => createdMessage };
+              const pending = {
+                intercept: () => pending,
+                then: (resolve, reject) => Promise.resolve(createdMessage).then(resolve, reject),
+              };
+              return pending;
             },
           },
           presentMessage: (message) => message,

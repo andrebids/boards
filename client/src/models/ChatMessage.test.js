@@ -2,6 +2,25 @@ import ChatMessage from './ChatMessage';
 import ActionTypes from '../constants/ActionTypes';
 
 describe('ChatMessage optimistic reconciliation', () => {
+  test('keeps history through the departure cursor and removes only later persisted messages', () => {
+    const messages = ['41', '42', '43'].map((id) => ({ id, delete: jest.fn() }));
+    const pending = { id: 'local:1', isPending: true, delete: jest.fn() };
+    ChatMessage.reducer(
+      {
+        type: ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE,
+        payload: {
+          conversation: { id: 'group-1', isHistorical: true },
+          chatParticipants: [{ leftAt: '2026-09-21', historyVisibleThroughMessageId: '42' }],
+        },
+      },
+      { filter: () => ({ toModelArray: () => [...messages, pending] }) },
+    );
+    expect(messages[0].delete).not.toHaveBeenCalled();
+    expect(messages[1].delete).not.toHaveBeenCalled();
+    expect(messages[2].delete).toHaveBeenCalledTimes(1);
+    expect(pending.delete).not.toHaveBeenCalled();
+  });
+
   test('removes persisted history while preserving pending and failed local messages', () => {
     const messages = [
       { id: '41', conversationId: 'conversation-1', delete: jest.fn() },

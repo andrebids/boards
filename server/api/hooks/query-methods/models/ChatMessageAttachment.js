@@ -3,10 +3,20 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const { assertConversationWritable } = require('../../../../utils/chat-lifecycle');
+
 const defaultFind = (criteria) => ChatMessageAttachment.find(criteria).sort('id');
 
-const createOne = (values, { maxAttachmentsPerMessage } = {}) =>
+const createOne = (values, { maxAttachmentsPerMessage, conversationId, userId } = {}) =>
   sails.getDatastore().transaction(async (db) => {
+    if (conversationId && userId) {
+      await sails
+        .sendNativeQuery('SELECT pg_advisory_xact_lock(hashtext($1))', [
+          `chat-conversation:${conversationId}`,
+        ])
+        .usingConnection(db);
+      await assertConversationWritable(conversationId, userId, db);
+    }
     const messageResult = await sails
       .sendNativeQuery(
         'SELECT id FROM chat_message WHERE id = $1 AND deleted_at IS NULL FOR UPDATE',

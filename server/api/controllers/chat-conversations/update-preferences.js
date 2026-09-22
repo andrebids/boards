@@ -33,9 +33,9 @@ module.exports = {
       (await sails.helpers.chat.getConversationAccess.with({
         conversation,
         user: this.req.currentUser,
-        ensureParticipant: true,
+        ensureParticipant: conversation.type === ChatConversation.Types.PROJECT_GROUP,
       }));
-    if (!access || !access.participant) {
+    if (!access || !access.participant || access.isHistorical) {
       throw Errors.CONVERSATION_NOT_FOUND;
     }
 

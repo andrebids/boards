@@ -23,6 +23,9 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false,
     },
+    participant: {
+      type: 'ref',
+    },
   },
 
   exits: {
@@ -30,20 +33,34 @@ module.exports = {
   },
 
   async fn(inputs) {
+    let participant =
+      inputs.participant ||
+      (await sails.helpers.chat.ensureParticipant(inputs.conversation.id, inputs.user.id));
     let message;
     if (inputs.messageId) {
       message = await ChatMessage.qm.getOneById(inputs.messageId);
-      if (!message || message.conversationId !== inputs.conversation.id) {
+      if (
+        !message ||
+        message.conversationId !== inputs.conversation.id ||
+        !sails.helpers.chat.isMessageVisible(message, participant)
+      ) {
         throw 'messageNotFound';
       }
     } else if (!inputs.skipLatestMessage) {
-      message = await ChatMessage.qm.getLastByConversationId(inputs.conversation.id);
+      if (participant.leftAt && participant.historyVisibleThroughMessageId) {
+        const messages = await ChatMessage.qm.getByConversationId(inputs.conversation.id, {
+          minimumId: participant.historyClearedThroughMessageId,
+          maximumId: participant.historyVisibleThroughMessageId,
+          editedBefore: participant.leftAt,
+          limit: 1,
+        });
+        message = messages.find((candidate) =>
+          sails.helpers.chat.isMessageVisible(candidate, participant),
+        );
+      } else if (!participant.leftAt) {
+        message = await ChatMessage.qm.getLastByConversationId(inputs.conversation.id);
+      }
     }
-
-    let participant = await sails.helpers.chat.ensureParticipant(
-      inputs.conversation.id,
-      inputs.user.id,
-    );
 
     if (message) {
       participant = await ChatParticipant.qm.advanceReadCursor(
@@ -67,12 +84,13 @@ module.exports = {
       unreadCount: unreadCounts[inputs.conversation.id] || 0,
     };
 
-    sails.sockets.broadcast(
-      `chatConversation:${inputs.conversation.id}`,
-      'chatConversationRead',
-      { item },
-      inputs.request,
-    );
+    if (!participant.leftAt)
+      sails.sockets.broadcast(
+        `chatConversation:${inputs.conversation.id}`,
+        'chatConversationRead',
+        { item },
+        inputs.request,
+      );
     sails.sockets.broadcast(`@user:${inputs.user.id}`, 'chatConversationRead', { item });
 
     return item;

@@ -33,7 +33,16 @@ SendingStatus.propTypes = {
 };
 
 const MessageAttachments = React.memo(
-  ({ caption, imageAttachments, messageId, onLoad, onPreview, otherAttachments, pendingFiles }) => {
+  ({
+    caption,
+    imageAttachments,
+    isDisabled,
+    messageId,
+    onLoad,
+    onPreview,
+    otherAttachments,
+    pendingFiles,
+  }) => {
     const dispatch = useDispatch();
     const [t] = useTranslation();
     const [loadedImageAttachmentIds, setLoadedImageAttachmentIds] = useState(() => new Set());
@@ -171,6 +180,7 @@ const MessageAttachments = React.memo(
                     <button
                       type="button"
                       title={getAttachmentDeliveryErrorMessage(pendingFile.error, t)}
+                      disabled={isDisabled}
                       onClick={() =>
                         dispatch(
                           entryActions.retryChatMessageAttachment(
@@ -210,6 +220,7 @@ const attachmentShape = PropTypes.shape({
 MessageAttachments.propTypes = {
   caption: PropTypes.node,
   imageAttachments: PropTypes.arrayOf(attachmentShape),
+  isDisabled: PropTypes.bool,
   messageId: PropTypes.string,
   onLoad: PropTypes.func.isRequired,
   onPreview: PropTypes.func.isRequired,
@@ -231,6 +242,7 @@ MessageAttachments.propTypes = {
 MessageAttachments.defaultProps = {
   caption: null,
   imageAttachments: [],
+  isDisabled: false,
   messageId: undefined,
   otherAttachments: [],
   pendingFiles: [],

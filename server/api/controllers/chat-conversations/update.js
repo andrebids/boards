@@ -4,6 +4,10 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const {
+  withConversationLock,
+  publishCurrentConversationState,
+} = require('../../../utils/chat-lifecycle');
 
 const Errors = {
   CONVERSATION_NOT_FOUND: { conversationNotFound: 'Conversation not found' },
@@ -21,25 +25,27 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const conversation = await ChatConversation.qm.getOneById(inputs.id);
-    const access =
-      conversation &&
-      (await sails.helpers.chat.getConversationAccess(conversation, this.req.currentUser));
-    if (!access || conversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP) {
-      throw Errors.CONVERSATION_NOT_FOUND;
-    }
-    if (access.participant.role !== ChatParticipant.Roles.OWNER) {
-      throw Errors.NOT_ENOUGH_RIGHTS;
-    }
+    const result = await withConversationLock(inputs.id, async ({ db, conversation }) => {
+      const access =
+        conversation &&
+        (await sails.helpers.chat.getConversationAccess(conversation, this.req.currentUser));
+      if (!access || conversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP) {
+        throw Errors.CONVERSATION_NOT_FOUND;
+      }
+      if (access.isHistorical || !access.canManage) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
 
-    const title = inputs.title.trim();
-    if (!title) {
-      throw Errors.CONVERSATION_NOT_FOUND;
-    }
-    const item = await ChatConversation.qm.updateOne(conversation.id, { title });
-    access.participants.forEach(({ userId }) => {
-      sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', { item });
+      const title = inputs.title.trim();
+      if (!title) {
+        throw Errors.CONVERSATION_NOT_FOUND;
+      }
+      const item = await ChatConversation.updateOne(conversation.id)
+        .set({ title })
+        .usingConnection(db);
+      return { item };
     });
-    return { item };
+    await publishCurrentConversationState(inputs.id);
+    return result;
   },
 };

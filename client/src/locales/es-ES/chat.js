@@ -15,6 +15,23 @@ export default {
       available: 'Disponible',
       backToConversations: 'Volver a las conversaciones',
       blockedConversation: 'Ya no puedes enviar mensajes en esta conversación.',
+      singleMemberGroup: '1 miembro',
+      singleMemberNotice:
+        'Eres la única persona de este grupo. Añade a alguien para continuar la conversación.',
+      leftGroup: 'Has salido de este grupo',
+      removedFromGroup: 'Te han quitado de este grupo',
+      leftGroupHistoryNotice:
+        'Has salido de este grupo. Puedes leer el historial, pero no enviar contenido nuevo.',
+      removedGroupHistoryNotice:
+        'Te han quitado de este grupo. Puedes leer el historial, pero no enviar contenido nuevo.',
+      rejoinGroupNotice:
+        'Al volver a añadir a alguien, verá el historial actual del grupo, incluidos los mensajes enviados durante su ausencia. El historial que borró solo para sí seguirá oculto.',
+      leaveGroupFailed: 'No se pudo salir del grupo. Comprueba tu conexión e inténtalo de nuevo.',
+      loadMessagesFailed: 'No se pudieron cargar los mensajes. Inténtalo de nuevo.',
+      addGroupMemberFailed:
+        'No se pudo añadir a esta persona. Comprueba tu conexión y si aún tienes permiso para gestionar el grupo.',
+      removeGroupMemberFailed:
+        'No se pudo quitar a esta persona. Comprueba tu conexión, si sigue siendo miembro y si aún puedes gestionar el grupo.',
       cancel: 'Cancelar',
       cancelReply: 'Cancelar respuesta',
       chatScope: 'Ámbito de las conversaciones',
@@ -34,6 +51,9 @@ export default {
       confirmDeleteMessage: '¿Seguro que quieres eliminar este mensaje?',
       confirmRemoveConversationHistory:
         '¿Quieres eliminar el historial de "{{conversation}}" solo para ti? Las demás personas seguirán viéndolo. Esta acción no se puede deshacer.',
+      removeConversationFromList: 'Quitar de mi lista',
+      confirmRemoveConversationFromList:
+        '¿Quieres quitar "{{conversation}}" de tu lista y borrar su historial local? Volverá a aparecer si te añaden de nuevo.',
       currentProject: 'Proyecto actual',
       deleteMessage: 'Eliminar mensaje',
       directConversations: 'Conversaciones directas',
@@ -71,6 +91,10 @@ export default {
       groupNamePlaceholder: 'Por ejemplo: Equipo de diseño',
       groups: 'Grupos',
       confirmLeaveGroup: '¿Seguro que quieres salir del grupo "{{group}}"?',
+      confirmLeaveGroupOwner:
+        '¿Seguro que quieres salir del grupo "{{group}}"? La propiedad pasará al miembro restante más antiguo.',
+      confirmRemoveGroupMember:
+        '¿Quitar a {{member}} de este grupo? Mantendrá el acceso al historial anterior a la retirada.',
       leaveGroup: 'Salir del grupo',
       loadingGlobalInbox: 'Cargando conversaciones de todos los proyectos',
       loadingOlderConversations: 'Cargando conversaciones anteriores…',

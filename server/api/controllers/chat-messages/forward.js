@@ -28,7 +28,13 @@ module.exports = {
     const sourceAccess =
       sourceConversation &&
       (await sails.helpers.chat.getConversationAccess(sourceConversation, this.req.currentUser));
-    if (!sourceMessage || sourceMessage.deletedAt || !sourceAccess) {
+    if (
+      !sourceMessage ||
+      sourceMessage.deletedAt ||
+      !sourceAccess ||
+      sourceAccess.isHistorical ||
+      !sails.helpers.chat.isMessageVisible(sourceMessage, sourceAccess.participant)
+    ) {
       throw Errors.MESSAGE_NOT_FOUND;
     }
 
@@ -44,14 +50,22 @@ module.exports = {
       throw Errors.TARGET_NOT_FOUND;
     }
 
-    const item = await sails.helpers.chat.forwardMessage.with({
-      sourceMessage,
-      targetConversation,
-      targetAccess,
-      user: this.req.currentUser,
-      clientMessageId: inputs.clientMessageId,
-      request: this.req,
-    });
+    let item;
+    try {
+      item = await sails.helpers.chat.forwardMessage.with({
+        sourceMessage,
+        targetConversation,
+        targetAccess,
+        user: this.req.currentUser,
+        clientMessageId: inputs.clientMessageId,
+        request: this.req,
+      });
+    } catch (error) {
+      if (error.code === 'conversationBlocked') {
+        throw Errors.TARGET_NOT_FOUND;
+      }
+      throw error;
+    }
     return { item: sails.helpers.chat.presentMessage(item) };
   },
 };

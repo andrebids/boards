@@ -93,5 +93,23 @@ module.exports = {
       model: 'ChatMessage',
       columnName: 'history_cleared_through_message_id',
     },
+    leftAt: {
+      type: 'ref',
+      columnName: 'left_at',
+    },
+    leftReason: {
+      type: 'string',
+      isIn: ['left', 'removed'],
+      allowNull: true,
+      columnName: 'left_reason',
+    },
+    historyVisibleThroughMessageId: {
+      model: 'ChatMessage',
+      columnName: 'history_visible_through_message_id',
+    },
+    historyHiddenAt: {
+      type: 'ref',
+      columnName: 'history_hidden_at',
+    },
   },
 };

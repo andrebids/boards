@@ -72,7 +72,7 @@ module.exports = {
       (await sails.helpers.chat.getConversationAccess.with({
         conversation,
         user: currentUser,
-        ensureParticipant: true,
+        ensureParticipant: conversation.type === ChatConversation.Types.PROJECT_GROUP,
       }));
     if (!access) {
       sails.log.warn('[CHAT_MESSAGE][REQUEST_REJECTED]', {
@@ -119,7 +119,8 @@ module.exports = {
           user: currentUser,
           request: this.req,
         })
-        .intercept('replyMessageNotFound', () => Errors.REPLY_MESSAGE_NOT_FOUND);
+        .intercept('replyMessageNotFound', () => Errors.REPLY_MESSAGE_NOT_FOUND)
+        .intercept('conversationBlocked', () => Errors.CONVERSATION_BLOCKED);
     } catch (error) {
       sails.log.error('[CHAT_MESSAGE][REQUEST_ERROR]', {
         ...logContext,

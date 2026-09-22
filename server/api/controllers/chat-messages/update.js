@@ -51,6 +51,9 @@ module.exports = {
     if (!message || !access) {
       throw Errors.MESSAGE_NOT_FOUND;
     }
+    if (!sails.helpers.chat.isMessageVisible(message, access.participant)) {
+      throw Errors.MESSAGE_NOT_FOUND;
+    }
     if (message.userId !== currentUser.id) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
@@ -72,16 +75,24 @@ module.exports = {
       throw Errors.MENTION_NOT_ALLOWED;
     }
 
-    const updatedMessage = await sails.helpers.chat.updateMessage.with({
-      message,
-      conversation,
-      recipientUserIds:
-        conversation.type === ChatConversation.Types.PROJECT_GROUP
-          ? access.memberUserIds
-          : sails.helpers.utils.mapRecords(access.participants, 'userId', true),
-      text,
-      request: this.req,
-    });
+    const updatedMessage = await sails.helpers.chat.updateMessage
+      .with({
+        message,
+        conversation,
+        recipientUserIds:
+          conversation.type === ChatConversation.Types.PROJECT_GROUP
+            ? access.memberUserIds
+            : sails.helpers.utils.mapRecords(access.participants, 'userId', true),
+        text,
+        userId: currentUser.id,
+        request: this.req,
+      })
+      .catch((error) => {
+        if (error.code === 'conversationBlocked') {
+          throw Errors.CONVERSATION_BLOCKED;
+        }
+        throw error;
+      });
     if (!updatedMessage) {
       const currentMessage = await ChatMessage.qm.getOneById(message.id);
       if (currentMessage && currentMessage.deletedAt) {

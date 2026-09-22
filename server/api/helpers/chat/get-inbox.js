@@ -155,7 +155,10 @@ module.exports = {
     });
 
     const accessibleConversations = projectConversations.filter((conversation) => {
-      if (conversation.archivedAt) {
+      if (
+        conversation.archivedAt &&
+        conversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP
+      ) {
         return false;
       }
 
@@ -174,9 +177,20 @@ module.exports = {
         );
       }
       if (conversation.type === ChatConversation.Types.PROJECT_CUSTOM_GROUP) {
+        const participant = participants.find(({ userId }) => userId === inputs.user.id);
+        const isHistorical = Boolean(
+          participant && participant.leftAt && !participant.historyHiddenAt,
+        );
         return (
-          participants.some(({ userId }) => userId === inputs.user.id) &&
-          participants.filter(({ userId }) => access.memberUserIds.includes(userId)).length >= 2
+          participant &&
+          !participant.historyHiddenAt &&
+          (isHistorical ||
+            (!conversation.archivedAt &&
+              !participant.leftAt &&
+              participants.filter(
+                ({ userId, leftAt }) => !leftAt && access.memberUserIds.includes(userId),
+              ).length >= 1 &&
+              access.memberUserIds.includes(inputs.user.id)))
         );
       }
       return false;
@@ -184,7 +198,10 @@ module.exports = {
 
     const conversationIds = sails.helpers.utils.mapRecords(accessibleConversations);
     const [lastMessages, unreadDetailsByConversationId] = await Promise.all([
-      ChatMessage.qm.getLastByConversationIds(conversationIds),
+      (ChatMessage.qm.getLastByConversationIdsForUser || ChatMessage.qm.getLastByConversationIds)(
+        conversationIds,
+        inputs.user.id,
+      ),
       sails.helpers.chat.getUnreadDetails(conversationIds, inputs.user.id),
     ]);
     const lastMessagesByConversationId = new Map(
@@ -230,9 +247,14 @@ module.exports = {
 
     const allItems = accessibleConversations
       .map((conversation) => {
-        const { project } = projectAccessById.get(conversation.projectId);
+        const { project, memberUserIds: projectMemberUserIds } = projectAccessById.get(
+          conversation.projectId,
+        );
         const participants = participantsByConversationId.get(conversation.id) || [];
         const currentParticipant = participants.find(({ userId }) => userId === inputs.user.id);
+        const isHistorical = Boolean(
+          currentParticipant && currentParticipant.leftAt && !currentParticipant.historyHiddenAt,
+        );
         const avatarUser =
           conversation.type === ChatConversation.Types.PROJECT_DIRECT
             ? participants.find(({ userId }) => userId !== inputs.user.id)
@@ -240,6 +262,9 @@ module.exports = {
         const avatarUserId = avatarUser ? avatarUser.userId : null;
         const lastMessage = lastMessagesByConversationId.get(conversation.id);
         if (
+          (!lastMessage &&
+            currentParticipant &&
+            currentParticipant.historyClearedThroughMessageId) ||
           isIdAtOrBefore(
             lastMessage && lastMessage.id,
             currentParticipant && currentParticipant.historyClearedThroughMessageId,
@@ -263,12 +288,18 @@ module.exports = {
             (avatarUserId && userById.get(avatarUserId) && userById.get(avatarUserId).name) ||
             null,
           avatarUserId,
-          lastMessageAt:
-            conversation.lastMessageAt || (lastMessage && lastMessage.createdAt) || null,
+          lastMessageAt: lastMessage ? lastMessage.createdAt : null,
           lastMessage: lastMessage ? sails.helpers.chat.presentMessage(lastMessage) : null,
           firstUnreadMessageId: unreadDetails.firstUnreadMessageId,
           unreadCount: unreadDetails.unreadCount,
           hasUnreadMention: unreadDetails.hasUnreadMention,
+          canWrite:
+            !isHistorical &&
+            (conversation.type === ChatConversation.Types.PROJECT_GROUP ||
+              participants.filter(
+                ({ userId, leftAt }) => !leftAt && projectMemberUserIds.includes(userId),
+              ).length >= 2),
+          isHistorical,
           lastReadMessageId: currentParticipant ? currentParticipant.lastReadMessageId : null,
           historyClearedThroughMessageId: currentParticipant
             ? currentParticipant.historyClearedThroughMessageId

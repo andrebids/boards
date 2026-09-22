@@ -18,8 +18,9 @@ const enrichConversation = (conversationModel) => {
 
   return {
     ...conversationModel.ref,
-    participantUserIds: participants.map((participant) => participant.userId),
+    participantUserIds: participants.filter(({ leftAt }) => !leftAt).map(({ userId }) => userId),
     participantUsers: participantModels
+      .filter(({ leftAt }) => !leftAt)
       .map((participantModel) => participantModel.user?.ref)
       .filter(Boolean),
     participants,
@@ -128,8 +129,11 @@ export const makeSelectChatDraftByConversationId = () => (state, conversationId)
 export const makeSelectChatReplyTargetByConversationId = () => (state, conversationId) =>
   selectChatState(state).replyTargetsByConversation[conversationId] || null;
 
-export const makeSelectChatTypingUserIdsByConversationId = () => (state, conversationId) =>
-  Object.keys(selectChatState(state).typingByConversation[conversationId] || {});
+export const makeSelectChatTypingUserIdsByConversationId = () =>
+  createReselector(
+    (state, conversationId) => selectChatState(state).typingByConversation[conversationId],
+    (typing) => Object.keys(typing || {}),
+  );
 
 export const selectHasFetchedChatConversationsForCurrentProject = (state) => {
   const { projectId } = selectPath(state);

@@ -41,7 +41,12 @@ function* queueRequest(previousRequestTask, method, ...args) {
     }
   }
 
-  return yield* authenticatedRequest(method, ...args);
+  // The detached queue must settle normally; its caller owns request error handling.
+  try {
+    return { result: yield* authenticatedRequest(method, ...args) };
+  } catch (error) {
+    return { error };
+  }
 }
 
 export function* requestConcurrent(method, ...args) {
@@ -52,5 +57,9 @@ export default function* request(method, ...args) {
   const previousRequestTask = lastRequestTask;
   lastRequestTask = yield spawn(queueRequest, previousRequestTask, method, ...args);
 
-  return yield join(lastRequestTask);
+  const outcome = yield join(lastRequestTask);
+  if ('error' in outcome) {
+    throw outcome.error;
+  }
+  return outcome.result;
 }

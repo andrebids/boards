@@ -4,6 +4,7 @@
  */
 
 const { buildEmail } = require('../../../utils/chat-email-notifications');
+const { withConversationLock } = require('../../../utils/chat-lifecycle');
 
 const PROCESSING_STALE_AFTER_MINUTES = 15;
 const MAX_ERROR_LENGTH = 2000;
@@ -134,20 +135,23 @@ const isMessageRead = (participant, messageId) =>
     participant.lastReadMessageId && BigInt(participant.lastReadMessageId) >= BigInt(messageId),
   );
 
-const loadBatchContext = async (rows) => {
-  const [{ conversationId, userId }] = rows;
-  const [conversation, recipient, participant] = await Promise.all([
-    ChatConversation.qm.getOneById(conversationId),
-    User.qm.getOneById(userId, { withDeactivated: true }),
-    ChatParticipant.qm.getOneByConversationIdAndUserId(conversationId, userId),
-  ]);
+const loadBatchContext = async (rows, { conversation, participants }) => {
+  const [{ userId }] = rows;
   if (!conversation) {
     return { reason: 'Conversation no longer exists' };
   }
+  if (conversation.archivedAt) {
+    return { reason: 'Conversation is archived' };
+  }
+  const participant = participants.find((candidate) => String(candidate.userId) === String(userId));
+  const recipient = await User.qm.getOneById(userId, { withDeactivated: true });
   if (!recipient || recipient.isDeactivated || !recipient.email) {
     return { reason: 'Recipient is missing, deactivated, or has no email' };
   }
-  if (!participant && conversation.type !== ChatConversation.Types.PROJECT_GROUP) {
+  if (
+    (participant && participant.leftAt) ||
+    (!participant && conversation.type !== ChatConversation.Types.PROJECT_GROUP)
+  ) {
     return { reason: 'Recipient is no longer a conversation participant' };
   }
   if (participant && ChatParticipant.isMuted(participant)) {
@@ -249,58 +253,61 @@ module.exports = {
       result.batches += 1;
       let retryRows = rows;
       try {
-        const context = await loadBatchContext(rows);
-        if (context.reason) {
-          await markSkipped(
-            rows.map(({ id }) => id),
-            context.reason,
+        // Departure must not commit between the fresh authorization and delivery.
+        await withConversationLock(rows[0].conversationId, async (lockedConversation) => {
+          const context = await loadBatchContext(rows, lockedConversation);
+          if (context.reason) {
+            await markSkipped(
+              rows.map(({ id }) => id),
+              context.reason,
+            );
+            result.skipped += rows.length;
+            return;
+          }
+
+          if (context.skippedRows.length > 0) {
+            await markSkipped(
+              context.skippedRows.map(({ id }) => id),
+              'Message was read, deleted, missing, or filtered by notification preferences',
+            );
+            result.skipped += context.skippedRows.length;
+          }
+          retryRows = context.eligibleRows;
+          if (context.eligibleRows.length === 0) {
+            return;
+          }
+
+          const email = buildEmail({
+            baseUrl: sails.config.custom.baseUrl,
+            conversation: context.conversation,
+            messages: context.eligibleRows.map(({ message }) => message),
+            project: context.project,
+            recipient: context.recipient,
+          });
+          const html = await sails.helpers.utils.compileEmailTemplate.with({
+            templateName: 'chat-notification',
+            data: email.templateData,
+          });
+          const deterministicMessageId = `<boards-chat-${context.recipient.id}-${context.conversation.id}-${context.eligibleRows[0].id}@boards.dsproject.pt>`;
+          const info = await sails.helpers.utils.sendEmail.with({
+            to: context.recipient.email,
+            subject: email.subject,
+            text: email.text,
+            html,
+            messageId: deterministicMessageId,
+          });
+
+          await markSent(
+            context.eligibleRows.map(({ id }) => id),
+            info.messageId || deterministicMessageId,
           );
-          result.skipped += rows.length;
-          continue;
-        }
-
-        if (context.skippedRows.length > 0) {
-          await markSkipped(
-            context.skippedRows.map(({ id }) => id),
-            'Message was read, deleted, missing, or filtered by notification preferences',
-          );
-          result.skipped += context.skippedRows.length;
-        }
-        retryRows = context.eligibleRows;
-        if (context.eligibleRows.length === 0) {
-          continue;
-        }
-
-        const email = buildEmail({
-          baseUrl: sails.config.custom.baseUrl,
-          conversation: context.conversation,
-          messages: context.eligibleRows.map(({ message }) => message),
-          project: context.project,
-          recipient: context.recipient,
-        });
-        const html = await sails.helpers.utils.compileEmailTemplate.with({
-          templateName: 'chat-notification',
-          data: email.templateData,
-        });
-        const deterministicMessageId = `<boards-chat-${context.recipient.id}-${context.conversation.id}-${context.eligibleRows[0].id}@boards.dsproject.pt>`;
-        const info = await sails.helpers.utils.sendEmail.with({
-          to: context.recipient.email,
-          subject: email.subject,
-          text: email.text,
-          html,
-          messageId: deterministicMessageId,
-        });
-
-        await markSent(
-          context.eligibleRows.map(({ id }) => id),
-          info.messageId || deterministicMessageId,
-        );
-        result.sent += context.eligibleRows.length;
-        sails.log.info('[CHAT_EMAIL_NOTIFICATION][SENT]', {
-          conversationId: context.conversation.id,
-          messageCount: context.eligibleRows.length,
-          messageId: info.messageId || deterministicMessageId,
-          userId: context.recipient.id,
+          result.sent += context.eligibleRows.length;
+          sails.log.info('[CHAT_EMAIL_NOTIFICATION][SENT]', {
+            conversationId: context.conversation.id,
+            messageCount: context.eligibleRows.length,
+            messageId: info.messageId || deterministicMessageId,
+            userId: context.recipient.id,
+          });
         });
       } catch (error) {
         if (retryRows.length > 0) {

@@ -47,6 +47,14 @@ describe('Chat domain', () => {
     expect(ChatParticipantDefinition.attributes.historyClearedThroughMessageId.columnName).to.equal(
       'history_cleared_through_message_id',
     );
+    expect(ChatParticipantDefinition.attributes.leftAt.columnName).to.equal('left_at');
+    expect(ChatParticipantDefinition.attributes.leftReason.columnName).to.equal('left_reason');
+    expect(ChatParticipantDefinition.attributes.historyVisibleThroughMessageId.columnName).to.equal(
+      'history_visible_through_message_id',
+    );
+    expect(ChatParticipantDefinition.attributes.historyHiddenAt.columnName).to.equal(
+      'history_hidden_at',
+    );
   });
 
   it('creates projects with chat available to all project members by default', async () => {
@@ -553,6 +561,7 @@ describe('Chat domain', () => {
     const broadcasts = [];
 
     global.ChatConversation = {
+      Types: ChatConversationDefinition.Types,
       qm: {
         getOneById: async () => ({ id: '10', projectId: '20', type: 'projectDirect' }),
       },
@@ -765,6 +774,9 @@ describe('Chat domain', () => {
     global.sails = {
       getDatastore: () => ({ transaction: async (callback) => callback({}) }),
       sendNativeQuery: () => ({ usingConnection: async () => ({ rows: [] }) }),
+      helpers: {
+        chat: { getConversationAccess: async () => ({ canWrite: true, memberUserIds: ['3'] }) },
+      },
       sockets: {
         broadcast: () => {
           broadcastCount += 1;
@@ -773,6 +785,7 @@ describe('Chat domain', () => {
     };
     global.ChatConversation = {
       Types: { PROJECT_GROUP: 'projectGroup' },
+      findOne: () => ({ usingConnection: async () => ({ id: '10', type: 'projectGroup' }) }),
     };
     global.ChatMessage = {
       findOne: () => ({ usingConnection: async () => existingMessage }),

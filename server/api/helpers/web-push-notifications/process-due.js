@@ -4,6 +4,7 @@
  */
 
 const { buildPayload, classifyWebPushError } = require('../../../utils/web-push-notifications');
+const { withConversationLock } = require('../../../utils/chat-lifecycle');
 
 const CLAIM_BATCH_SIZE = 25;
 const DELIVERY_CONCURRENCY = 4;
@@ -143,16 +144,20 @@ const loadSubscriptions = async (userIds) => {
   return subscriptionsByUserId;
 };
 
-const loadContext = async (row) => {
-  const [conversation, message, recipient, participant] = await Promise.all([
-    ChatConversation.qm.getOneById(row.conversationId),
+const loadContext = async (row, { conversation, participants }) => {
+  const participant = participants.find(
+    (candidate) => String(candidate.userId) === String(row.userId),
+  );
+  const [message, recipient] = await Promise.all([
     ChatMessage.qm.getOneById(row.messageId),
     User.qm.getOneById(row.userId, { withDeactivated: true }),
-    ChatParticipant.qm.getOneByConversationIdAndUserId(row.conversationId, row.userId),
   ]);
 
   if (!conversation || !message || message.deletedAt) {
     return { reason: 'MESSAGE_MISSING_OR_DELETED' };
+  }
+  if (conversation.archivedAt) {
+    return { reason: 'CONVERSATION_ARCHIVED' };
   }
   if (String(message.userId) === String(row.userId)) {
     return { reason: 'SENDER_IS_RECIPIENT' };
@@ -166,7 +171,10 @@ const loadContext = async (row) => {
   if (recipient.notificationLevel === User.NotificationLevels.ESSENTIAL && row.kind === 'general') {
     return { reason: 'USER_ESSENTIAL_ONLY' };
   }
-  if (!participant && conversation.type !== ChatConversation.Types.PROJECT_GROUP) {
+  if (
+    (participant && participant.leftAt) ||
+    (!participant && conversation.type !== ChatConversation.Types.PROJECT_GROUP)
+  ) {
     return { reason: 'RECIPIENT_NOT_PARTICIPANT' };
   }
   if (participant && ChatParticipant.isMuted(participant)) {
@@ -227,36 +235,44 @@ const deliverRow = async (row, subscriptions) => {
     await markSkipped(row.id, 'JOB_EXPIRED');
     return { state: 'skipped' };
   }
-  const context = await loadContext(row);
-  if (context.reason) {
-    await markSkipped(row.id, context.reason);
-    return { state: 'skipped' };
-  }
   if (subscriptions.length === 0) {
     await markSkipped(row.id, 'NO_ACTIVE_SUBSCRIPTIONS');
     return { state: 'skipped' };
   }
 
-  const deliveryResults = await mapWithConcurrency(
-    subscriptions,
-    DELIVERY_CONCURRENCY,
-    async (subscription) => {
-      try {
-        await sails.helpers.webPushNotifications.sendOne.with({
-          subscription,
-          payload: context.payload,
-        });
-        return { state: 'sent', subscriptionId: subscription.id };
-      } catch (error) {
-        return {
-          state: classifyWebPushError(error),
-          statusCode: Number(error && error.statusCode) || null,
-          subscriptionId: subscription.id,
-          error: errorSummary(error),
-        };
-      }
-    },
-  );
+  // Keep every subscription delivery ordered before or after departure.
+  const delivery = await withConversationLock(row.conversationId, async (lockedConversation) => {
+    const context = await loadContext(row, lockedConversation);
+    if (context.reason) {
+      return { reason: context.reason };
+    }
+    const results = await mapWithConcurrency(
+      subscriptions,
+      DELIVERY_CONCURRENCY,
+      async (subscription) => {
+        try {
+          await sails.helpers.webPushNotifications.sendOne.with({
+            subscription,
+            payload: context.payload,
+          });
+          return { state: 'sent', subscriptionId: subscription.id };
+        } catch (error) {
+          return {
+            state: classifyWebPushError(error),
+            statusCode: Number(error && error.statusCode) || null,
+            subscriptionId: subscription.id,
+            error: errorSummary(error),
+          };
+        }
+      },
+    );
+    return { results };
+  });
+  if (delivery.reason) {
+    await markSkipped(row.id, delivery.reason);
+    return { state: 'skipped' };
+  }
+  const deliveryResults = delivery.results;
 
   const expiredSubscriptionIds = deliveryResults
     .filter(({ state }) => state === 'expired')

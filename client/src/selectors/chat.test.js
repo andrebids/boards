@@ -1,4 +1,6 @@
 import {
+  makeSelectChatConversationById,
+  makeSelectChatTypingUserIdsByConversationId,
   selectChatInboxItems,
   selectChatInboxNotificationItems,
   selectChatInboxUnreadConversationTotal,
@@ -6,6 +8,7 @@ import {
   selectChatInboxUnreadTotalsByProjectId,
   selectIsChatAvailableForCurrentUser,
 } from './chat';
+import orm from '../orm';
 
 jest.mock('../constants/Config', () => ({
   __esModule: true,
@@ -25,7 +28,37 @@ jest.mock('../constants/StaticUsers', () => ({
 
 const makeState = (chat) => ({ chat });
 
+describe('typing selector stability', () => {
+  test('reuses the result for unchanged typing state and updates when users start or stop', () => {
+    const selectTyping = makeSelectChatTypingUserIdsByConversationId();
+    const state = makeState({ typingByConversation: {} });
+    const empty = selectTyping(state, 'group-1');
+    expect(selectTyping(state, 'group-1')).toBe(empty);
+    const started = makeState({ typingByConversation: { 'group-1': { 'user-1': 1 } } });
+    const users = selectTyping(started, 'group-1');
+    expect(users).toEqual(['user-1']);
+    expect(selectTyping({ ...started, unrelated: true }, 'group-1')).toBe(users);
+    expect(selectTyping(state, 'group-1')).toEqual([]);
+  });
+});
+
 describe('chat inbox selectors', () => {
+  test('keeps departure metadata without treating former members as active group members', () => {
+    const session = orm.session(orm.getEmptyState());
+    session.ChatConversation.create({ id: 'group-1', type: 'projectCustomGroup' });
+    session.ChatParticipant.create({ id: 'active', conversationId: 'group-1', userId: 'user-1' });
+    session.ChatParticipant.create({
+      id: 'left',
+      conversationId: 'group-1',
+      userId: 'user-2',
+      leftAt: '2026-09-21',
+    });
+    const conversation = makeSelectChatConversationById().resultFunc(session, 'group-1');
+    expect(conversation.participantUserIds).toEqual(['user-1']);
+    expect(conversation.participants).toHaveLength(2);
+    expect(conversation.participants.find(({ userId }) => userId === 'user-2').leftAt).toBeTruthy();
+  });
+
   test('selects the three most recent accessible conversations with unread messages', () => {
     const state = makeState({
       inboxItemsByConversationId: {

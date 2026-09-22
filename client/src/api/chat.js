@@ -44,7 +44,14 @@ export const transformChatInboxItem = (item) => ({
 });
 
 export const transformChatParticipant = (participant) =>
-  transformDates(participant, ['createdAt', 'updatedAt', 'lastReadAt', 'mutedUntil']);
+  transformDates(participant, [
+    'createdAt',
+    'updatedAt',
+    'lastReadAt',
+    'mutedUntil',
+    'leftAt',
+    'historyHiddenAt',
+  ]);
 
 const transformIncluded = (included) => ({
   ...included,
@@ -119,7 +126,10 @@ const deleteChatConversationParticipant = (id, userId, headers) =>
   socket.delete(`/chat-conversations/${id}/participants/${userId}`, undefined, headers);
 
 const leaveChatConversation = (id, headers) =>
-  socket.post(`/chat-conversations/${id}/leave`, undefined, headers);
+  socket.post(`/chat-conversations/${id}/leave`, undefined, headers).then((body) => ({
+    ...body,
+    item: transformChatParticipant(body.item),
+  }));
 
 const updateChatConversationPreferences = (id, data, headers) =>
   socket.patch(`/chat-conversations/${id}/preferences`, data, headers).then((body) => ({
@@ -195,9 +205,9 @@ const markChatConversationAsRead = (conversationId, data, headers) =>
     item: transformDates(body.item, ['lastReadAt']),
   }));
 
-const clearChatConversationHistory = (conversationId, headers) =>
+const clearChatConversationHistory = (conversationId, hideConversation, headers) =>
   socket
-    .delete(`/chat-conversations/${conversationId}/history`, undefined, headers)
+    .delete(`/chat-conversations/${conversationId}/history`, { hideConversation }, headers)
     .then((body) => ({
       ...body,
       item: transformDates(body.item, ['lastReadAt']),

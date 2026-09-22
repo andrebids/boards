@@ -4,6 +4,13 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const {
+  withConversationLock,
+  getActiveParticipants,
+  getHistoryUpperBound,
+  leaveConversationRooms,
+  publishCurrentConversationState,
+} = require('../../../utils/chat-lifecycle');
 
 const Errors = {
   CONVERSATION_NOT_FOUND: { conversationNotFound: 'Conversation not found' },
@@ -21,41 +28,70 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const conversation = await ChatConversation.qm.getOneById(inputs.conversationId);
-    const access =
-      conversation &&
-      (await sails.helpers.chat.getConversationAccess(conversation, this.req.currentUser));
-    if (!access || conversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP) {
+    const { currentUser } = this.req;
+    const initialConversation = await ChatConversation.qm.getOneById(inputs.conversationId);
+    const initialAccess =
+      initialConversation &&
+      (await sails.helpers.chat.getConversationAccess(initialConversation, currentUser));
+    if (
+      !initialAccess ||
+      initialConversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP ||
+      initialAccess.isHistorical
+    ) {
       throw Errors.CONVERSATION_NOT_FOUND;
     }
-    if (access.participant.role !== ChatParticipant.Roles.OWNER) {
-      throw Errors.NOT_ENOUGH_RIGHTS;
-    }
 
-    const target = access.participants.find(({ userId }) => userId === inputs.userId);
-    if (!target) {
-      throw Errors.CONVERSATION_NOT_FOUND;
-    }
-    if (target.role === ChatParticipant.Roles.OWNER) {
-      throw Errors.NOT_ENOUGH_RIGHTS;
-    }
+    let result;
+    await withConversationLock(
+      inputs.conversationId,
+      async ({ db, conversation, participants }) => {
+        const memberUserIds = await sails.helpers.chat.getProjectMemberUserIds(
+          initialAccess.project,
+        );
+        const owner = participants.find(
+          ({ userId, role, leftAt }) =>
+            userId === currentUser.id && !leftAt && role === ChatParticipant.Roles.OWNER,
+        );
+        const target = participants.find(
+          ({ userId, leftAt }) => userId === inputs.userId && !leftAt,
+        );
+        if (
+          !conversation ||
+          conversation.archivedAt ||
+          !owner ||
+          !memberUserIds.includes(currentUser.id)
+        ) {
+          throw Errors.NOT_ENOUGH_RIGHTS;
+        }
+        if (!target) {
+          throw Errors.CONVERSATION_NOT_FOUND;
+        }
+        if (target.role === ChatParticipant.Roles.OWNER) {
+          throw Errors.NOT_ENOUGH_RIGHTS;
+        }
 
-    await ChatParticipant.qm.deleteOne(target.id);
-    sails.sockets.removeRoomMembersFromRooms(
-      `@user:${target.userId}`,
-      `chatConversation:${conversation.id}`,
+        const historyVisibleThroughMessageId = await getHistoryUpperBound(conversation.id, db);
+        const leftParticipant = await ChatParticipant.updateOne(target.id)
+          .set({
+            leftAt: new Date().toISOString(),
+            leftReason: 'removed',
+            historyVisibleThroughMessageId,
+            role: ChatParticipant.Roles.MEMBER,
+          })
+          .fetch()
+          .usingConnection(db);
+        const activeParticipants = getActiveParticipants(participants, memberUserIds).filter(
+          ({ id }) => id !== target.id,
+        );
+        await leaveConversationRooms(conversation.id, inputs.userId);
+        result = { conversation, leftParticipant, activeParticipants };
+      },
     );
-    sails.sockets.broadcast(`@user:${target.userId}`, 'chatConversationAccessRevoke', {
-      item: { conversationId: conversation.id, projectId: conversation.projectId },
+
+    await publishCurrentConversationState(inputs.conversationId, {
+      historicalUserIds: [inputs.userId],
     });
 
-    const participants = access.participants.filter(({ id }) => id !== target.id);
-    participants.forEach(({ userId }) => {
-      sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', {
-        item: conversation,
-        included: { chatParticipants: participants },
-      });
-    });
-    return { item: target };
+    return { item: result.leftParticipant };
   },
 };

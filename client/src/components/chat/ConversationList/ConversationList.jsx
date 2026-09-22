@@ -67,7 +67,9 @@ const ConversationList = React.memo(
           lastMessage={conversation.lastMessage}
           onClick={onConversationOpen}
           sender={
-            isGeneral && members.find((member) => member.id === conversation.lastMessage?.userId)
+            isGeneral
+              ? members.find((member) => member.id === conversation.lastMessage?.userId)
+              : undefined
           }
           user={getDirectUser(conversation, members, currentUser.id)}
         />

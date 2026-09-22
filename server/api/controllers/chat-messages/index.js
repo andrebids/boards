@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { withConversationLock, joinConversationRoom } = require('../../../utils/chat-lifecycle');
 
 const Errors = {
   CONVERSATION_NOT_FOUND: { conversationNotFound: 'Conversation not found' },
@@ -35,74 +36,94 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const { currentUser } = this.req;
-    const conversation = await ChatConversation.qm.getOneById(inputs.conversationId);
-    const access =
-      conversation &&
-      (await sails.helpers.chat.getConversationAccess.with({
-        conversation,
-        user: currentUser,
-        ensureParticipant: true,
-      }));
+    return withConversationLock(inputs.conversationId, async () => {
+      const { currentUser } = this.req;
+      const conversation = await ChatConversation.qm.getOneById(inputs.conversationId);
+      const access =
+        conversation &&
+        (await sails.helpers.chat.getConversationAccess.with({
+          conversation,
+          user: currentUser,
+          ensureParticipant: conversation.type === ChatConversation.Types.PROJECT_GROUP,
+        }));
 
-    if (!access) {
-      if (this.req.isSocket) {
-        sails.sockets.leave(this.req, `chatConversation:${inputs.conversationId}`);
-      }
-      throw Errors.CONVERSATION_NOT_FOUND;
-    }
-
-    if (inputs.subscribe && this.req.isSocket) {
-      sails.sockets.join(this.req, `chatConversation:${conversation.id}`);
-    }
-
-    let messages;
-    let meta;
-    const minimumId = access.participant && access.participant.historyClearedThroughMessageId;
-    if (inputs.aroundId) {
-      const window = await ChatMessage.qm.getWindowAroundId(
-        conversation.id,
-        inputs.aroundId,
-        minimumId,
-        Math.floor(inputs.limit / 2),
-        Math.ceil(inputs.limit / 2),
-      );
-      if (!window) {
+      if (!access) {
+        if (this.req.isSocket) {
+          sails.sockets.leave(this.req, `chatConversation:${inputs.conversationId}`);
+        }
         throw Errors.CONVERSATION_NOT_FOUND;
       }
-      messages = window.messages;
-      meta = {
-        hasMore: window.hasMoreBefore,
-        hasMoreBefore: window.hasMoreBefore,
-        hasMoreAfter: window.hasMoreAfter,
-        anchorMessageId: inputs.aroundId,
-      };
-    } else {
-      const records = await ChatMessage.qm.getByConversationId(conversation.id, {
-        beforeId: inputs.beforeId,
-        afterId: inputs.afterId,
-        minimumId,
-        limit: inputs.limit + 1,
-      });
-      const hasMore = records.length > inputs.limit;
-      messages = records.slice(0, inputs.limit);
-      meta = { hasMore };
-    }
-    const extrasByMessageId = await sails.helpers.chat.getMessageExtras(
-      messages.map((message) => message.id),
-      currentUser.id,
-    );
-    const userIds = sails.helpers.utils.mapRecords(messages, 'userId', true, true);
-    const users = await User.qm.getByIds(userIds);
 
-    return {
-      items: messages.map((message) =>
-        sails.helpers.chat.presentMessage({ ...message, ...extrasByMessageId[message.id] }),
-      ),
-      included: {
-        users: sails.helpers.users.presentMany(users, currentUser),
-      },
-      meta,
-    };
+      if (inputs.subscribe && this.req.isSocket && !access.isHistorical) {
+        await joinConversationRoom(this.req, conversation.id);
+      }
+
+      let messages;
+      let meta;
+      const minimumId = access.participant && access.participant.historyClearedThroughMessageId;
+      const maximumId = access.isHistorical
+        ? access.participant.historyVisibleThroughMessageId
+        : undefined;
+      if (access.isHistorical && !maximumId) {
+        return {
+          items: [],
+          included: { users: [] },
+          meta: { hasMore: false, hasMoreBefore: false, hasMoreAfter: false },
+        };
+      }
+      if (inputs.aroundId) {
+        const window = await ChatMessage.qm.getWindowAroundId(
+          conversation.id,
+          inputs.aroundId,
+          minimumId,
+          Math.floor(inputs.limit / 2),
+          Math.ceil(inputs.limit / 2),
+          maximumId,
+          access.isHistorical ? access.participant.leftAt : undefined,
+        );
+        if (!window) {
+          throw Errors.CONVERSATION_NOT_FOUND;
+        }
+        messages = window.messages;
+        meta = {
+          hasMore: window.hasMoreBefore,
+          hasMoreBefore: window.hasMoreBefore,
+          hasMoreAfter: window.hasMoreAfter,
+          anchorMessageId: inputs.aroundId,
+        };
+      } else {
+        const records = await ChatMessage.qm.getByConversationId(conversation.id, {
+          beforeId: inputs.beforeId,
+          afterId: inputs.afterId,
+          minimumId,
+          maximumId,
+          editedBefore: access.isHistorical ? access.participant.leftAt : undefined,
+          limit: inputs.limit + 1,
+        });
+        const hasMore = records.length > inputs.limit;
+        messages = records.slice(0, inputs.limit);
+        meta = { hasMore };
+      }
+      messages = messages.filter((message) =>
+        sails.helpers.chat.isMessageVisible(message, access.participant),
+      );
+      const extrasByMessageId = await sails.helpers.chat.getMessageExtras(
+        messages.map((message) => message.id),
+        currentUser.id,
+        access.participant,
+      );
+      const userIds = sails.helpers.utils.mapRecords(messages, 'userId', true, true);
+      const users = await User.qm.getByIds(userIds);
+
+      return {
+        items: messages.map((message) =>
+          sails.helpers.chat.presentMessage({ ...message, ...extrasByMessageId[message.id] }),
+        ),
+        included: {
+          users: sails.helpers.users.presentMany(users, currentUser),
+        },
+        meta,
+      };
+    });
   },
 };

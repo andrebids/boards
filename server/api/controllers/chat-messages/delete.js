@@ -32,7 +32,13 @@ module.exports = {
     if (!message || !access) {
       throw Errors.MESSAGE_NOT_FOUND;
     }
+    if (!sails.helpers.chat.isMessageVisible(message, access.participant)) {
+      throw Errors.MESSAGE_NOT_FOUND;
+    }
     if (message.userId !== currentUser.id) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+    if (!access.canWrite) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
@@ -40,15 +46,23 @@ module.exports = {
       return { item: sails.helpers.chat.presentMessage(message) };
     }
 
-    const deletedMessage = await sails.helpers.chat.deleteMessage.with({
-      message,
-      conversation,
-      recipientUserIds:
-        conversation.type === ChatConversation.Types.PROJECT_GROUP
-          ? access.memberUserIds
-          : sails.helpers.utils.mapRecords(access.participants, 'userId', true),
-      request: this.req,
-    });
+    const deletedMessage = await sails.helpers.chat.deleteMessage
+      .with({
+        message,
+        conversation,
+        recipientUserIds:
+          conversation.type === ChatConversation.Types.PROJECT_GROUP
+            ? access.memberUserIds
+            : sails.helpers.utils.mapRecords(access.participants, 'userId', true),
+        request: this.req,
+        userId: currentUser.id,
+      })
+      .catch((error) => {
+        if (error.code === 'conversationBlocked') {
+          throw Errors.NOT_ENOUGH_RIGHTS;
+        }
+        throw error;
+      });
     if (!deletedMessage) {
       throw Errors.MESSAGE_NOT_FOUND;
     }

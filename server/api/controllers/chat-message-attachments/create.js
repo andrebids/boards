@@ -105,6 +105,9 @@ module.exports = {
       });
       throw Errors.MESSAGE_NOT_FOUND;
     }
+    if (!sails.helpers.chat.isMessageVisible(message, access.participant)) {
+      throw Errors.MESSAGE_NOT_FOUND;
+    }
     if (!access.canWrite || message.userId !== currentUser.id) {
       sails.log.warn('[CHAT_UPLOAD][WRITE_ACCESS_REJECTED]', {
         ...logContext,
@@ -251,6 +254,8 @@ module.exports = {
         },
         {
           maxAttachmentsPerMessage: sails.config.custom.chatAttachmentsPerMessageLimit,
+          conversationId: conversation.id,
+          userId: currentUser.id,
         },
       ));
     } catch (error) {
@@ -276,6 +281,9 @@ module.exports = {
       if (error === 'messageNotFound') {
         throw Errors.MESSAGE_DELETED;
       }
+      if (error.code === 'conversationBlocked') {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
 
       return exits.uploadError(error.message || 'Could not persist attachment');
     }
@@ -294,15 +302,10 @@ module.exports = {
       }
     }
 
-    if (
-      !message.text &&
-      sails.config.custom.webPush &&
-      sails.config.custom.webPush.enabled
-    ) {
+    if (!message.text && sails.config.custom.webPush && sails.config.custom.webPush.enabled) {
       try {
-        const recipientUserIds = await sails.helpers.chat.getConversationRecipientUserIds(
-          conversation,
-        );
+        const recipientUserIds =
+          await sails.helpers.chat.getConversationRecipientUserIds(conversation);
         await sails.helpers.webPushNotifications.schedule.with({
           message,
           conversation,
@@ -354,6 +357,6 @@ module.exports = {
 
     this.res.status(isCreated ? 201 : 200);
 
-    return isCreated ? payload : { ...payload, reused: true };
+    return exits.success(isCreated ? payload : { ...payload, reused: true });
   },
 };

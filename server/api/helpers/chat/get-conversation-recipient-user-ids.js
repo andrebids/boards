@@ -38,7 +38,11 @@ module.exports = {
 
     const participants = await ChatParticipant.qm.getByConversationId(inputs.conversation.id);
     return sails.helpers.utils
-      .mapRecords(participants, 'userId', true)
+      .mapRecords(
+        participants.filter(({ leftAt }) => !leftAt),
+        'userId',
+        true,
+      )
       .filter((userId) => memberUserIds.includes(userId));
   },
 };

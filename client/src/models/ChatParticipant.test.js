@@ -2,6 +2,24 @@ import ChatParticipant from './ChatParticipant';
 import ActionTypes from '../constants/ActionTypes';
 
 describe('ChatParticipant group reconciliation', () => {
+  test('drops members omitted by a project refetch after removal without a socket event', () => {
+    const staleParticipant = { id: 'removed', delete: jest.fn() };
+    const keptParticipant = { id: 'kept', conversationId: 'group-1', userId: 'owner' };
+    const model = {
+      filter: () => ({ toModelArray: () => [staleParticipant, keptParticipant] }),
+      upsert: jest.fn(),
+    };
+    ChatParticipant.reducer(
+      {
+        type: ActionTypes.CHAT_CONVERSATIONS_FETCH__SUCCESS,
+        payload: { conversations: [{ id: 'group-1' }], chatParticipants: [keptParticipant] },
+      },
+      model,
+    );
+    expect(staleParticipant.delete).toHaveBeenCalledTimes(1);
+    expect(model.upsert).toHaveBeenCalledWith(keptParticipant);
+  });
+
   test('removes participants omitted from an authoritative group update', () => {
     const keptParticipant = { id: 'participant-1', conversationId: 'conversation-1' };
     const removedParticipant = {

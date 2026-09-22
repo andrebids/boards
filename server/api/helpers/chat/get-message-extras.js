@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const { isHistoricalExtraVisible } = require('../../../utils/chat-history');
+
 module.exports = {
   inputs: {
     messageIds: {
@@ -12,6 +14,9 @@ module.exports = {
     userId: {
       type: 'string',
     },
+    participant: {
+      type: 'ref',
+    },
   },
 
   async fn(inputs) {
@@ -19,21 +24,35 @@ module.exports = {
       return {};
     }
 
-    const messages = await ChatMessage.find({ id: inputs.messageIds });
+    const loadedMessages = await ChatMessage.find({ id: inputs.messageIds });
+    const messages = inputs.participant
+      ? loadedMessages.filter((message) =>
+          sails.helpers.chat.isMessageVisible(message, inputs.participant),
+        )
+      : loadedMessages;
+    const visibleMessageIds = messages.map(({ id }) => id);
     const replyMessageIds = messages
       .map(({ replyToMessageId }) => replyToMessageId)
       .filter(Boolean);
     const [attachments, reactions, replyMessages, linkAssociations] = await Promise.all([
-      ChatMessageAttachment.find({ messageId: inputs.messageIds }).sort('id'),
-      ChatMessageReaction.find({ messageId: inputs.messageIds }).sort('id'),
+      ChatMessageAttachment.find({ messageId: visibleMessageIds }).sort('id'),
+      ChatMessageReaction.find({ messageId: visibleMessageIds }).sort('id'),
       replyMessageIds.length > 0 ? ChatMessage.find({ id: replyMessageIds }) : [],
-      ChatMessageLinkPreview.qm.getByMessageIds(inputs.messageIds),
+      ChatMessageLinkPreview.qm.getByMessageIds(visibleMessageIds),
     ]);
+    const isExtraVisible = (extra) => isHistoricalExtraVisible(extra, inputs.participant);
 
     const linkPreviews = await ChatLinkPreview.qm.getByIds([
       ...new Set(linkAssociations.map(({ linkPreviewId }) => linkPreviewId)),
     ]);
-    const replyMessagesById = new Map(replyMessages.map((message) => [message.id, message]));
+    const replyMessagesById = new Map(
+      replyMessages
+        .filter(
+          (message) =>
+            !inputs.participant || sails.helpers.chat.isMessageVisible(message, inputs.participant),
+        )
+        .map((message) => [message.id, message]),
+    );
     const linkPreviewsById = new Map(linkPreviews.map((preview) => [preview.id, preview]));
 
     const extrasByMessageId = Object.fromEntries(
@@ -48,7 +67,7 @@ module.exports = {
     );
     const reactionsByMessageIdAndEmoji = new Map();
 
-    attachments.forEach((attachment) => {
+    attachments.filter(isExtraVisible).forEach((attachment) => {
       if (extrasByMessageId[attachment.messageId]) {
         extrasByMessageId[attachment.messageId].attachments.push(
           sails.helpers.chatMessageAttachments.presentOne(attachment),
@@ -56,7 +75,7 @@ module.exports = {
       }
     });
 
-    reactions.forEach((reaction) => {
+    reactions.filter(isExtraVisible).forEach((reaction) => {
       const key = `${reaction.messageId}\u0000${reaction.emoji}`;
       let groupedReaction = reactionsByMessageIdAndEmoji.get(key);
       if (!groupedReaction) {
@@ -94,6 +113,8 @@ module.exports = {
       const preview = linkPreviewsById.get(association.linkPreviewId);
       if (
         preview &&
+        isExtraVisible(association) &&
+        isExtraVisible(preview) &&
         preview.status === ChatLinkPreview.Statuses.READY &&
         extrasByMessageId[association.messageId]
       ) {

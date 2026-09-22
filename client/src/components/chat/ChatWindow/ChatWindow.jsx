@@ -23,6 +23,7 @@ import { useChat } from '../ChatContext';
 import ChatAvatar from '../ChatAvatar';
 import MessageComposer from '../MessageComposer';
 import MessageList from '../MessageList';
+import LeaveGroupDialog from '../LeaveGroupDialog';
 import useChatParticipantMuteState from '../useChatParticipantMuteState';
 import { consumeReplyIntent } from '../deep-link';
 import { compareIds } from '../../../utils/id-helpers';
@@ -72,6 +73,7 @@ const ChatWindow = React.memo(({ id }) => {
 
   const conversation = useSelector((state) => selectConversationById(state, id));
   const groupUpdate = useSelector((state) => state.chat.conversationUpdatesById?.[id]);
+  const messagesError = useSelector((state) => state.chat.errorsByScope[`messages:${id}`]);
   const messages = useSelector((state) => selectMessagesByConversationId(state, id)) || [];
   const isMessagesFetching = useSelector((state) =>
     selectIsMessagesFetchingByConversationId(state, id),
@@ -113,6 +115,9 @@ const ChatWindow = React.memo(({ id }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [pendingMemberRemoval, setPendingMemberRemoval] = useState(null);
+  const [hasSubmittedMemberRemoval, setHasSubmittedMemberRemoval] = useState(false);
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const [isGroupEditorOpen, setIsGroupEditorOpen] = useState(false);
   const [groupTitle, setGroupTitle] = useState('');
   const groupTitleRef = useRef(null);
@@ -125,12 +130,30 @@ const ChatWindow = React.memo(({ id }) => {
     filesDropHandlerRef.current = handler;
   }, []);
   const { getRootProps, isDragActive } = useDropzone({
-    disabled: !conversation || conversation.isBlocked,
+    disabled: !conversation || conversation.isBlocked || conversation.canWrite === false,
     multiple: true,
     noClick: true,
     noKeyboard: true,
     onDrop: handleFilesDrop,
   });
+
+  useEffect(() => {
+    if (conversation?.isHistorical) {
+      setIsGroupEditorOpen(false);
+      setPendingMemberRemoval(null);
+    }
+  }, [conversation?.isHistorical]);
+
+  useEffect(() => {
+    if (
+      hasSubmittedMemberRemoval &&
+      groupUpdate?.operation === 'remove-member' &&
+      groupUpdate.isSuccess
+    ) {
+      setPendingMemberRemoval(null);
+      setHasSubmittedMemberRemoval(false);
+    }
+  }, [groupUpdate, hasSubmittedMemberRemoval]);
 
   useEffect(() => {
     if (!conversation) {
@@ -161,7 +184,7 @@ const ChatWindow = React.memo(({ id }) => {
   }, [conversation, id]);
 
   useEffect(() => {
-    if (conversation && groupManagerConversationId === id) {
+    if (conversation && !conversation.isHistorical && groupManagerConversationId === id) {
       setGroupTitle(conversation.title || '');
       setIsGroupEditorOpen(true);
       setIsOptionsOpen(false);
@@ -340,18 +363,35 @@ const ChatWindow = React.memo(({ id }) => {
   });
 
   let statusText = t('chat.project');
-  if (conversation.isBlocked) {
+  const isWriteDisabled = conversation.isBlocked || conversation.canWrite === false;
+  if (conversation.isHistorical) {
+    statusText =
+      currentParticipant?.leftReason === 'removed'
+        ? t('chat.removedFromGroup')
+        : t('chat.leftGroup');
+  } else if (conversation.isBlocked) {
     statusText = t('chat.conversationUnavailable');
+  } else if (isCustomGroupConversation(conversation) && !conversation.canWrite) {
+    statusText = t('chat.singleMemberGroup');
   } else if (directUser?.isOnline) {
     statusText = t('chat.available');
   } else if (isCustomGroupConversation(conversation)) {
     statusText = t('chat.groupMemberCount', {
-      count: conversation.participants?.length || 0,
+      count: conversation.participantUserIds?.length || 0,
     });
   }
 
   const isCustomGroup = isCustomGroupConversation(conversation);
-  const isGroupOwner = currentParticipant?.role === 'owner';
+  let writeDisabledNotice = 'chat.singleMemberNotice';
+  if (conversation.isHistorical) {
+    writeDisabledNotice =
+      currentParticipant?.leftReason === 'removed'
+        ? 'chat.removedGroupHistoryNotice'
+        : 'chat.leftGroupHistoryNotice';
+  } else if (conversation.isBlocked) {
+    writeDisabledNotice = 'chat.blockedConversation';
+  }
+  const isGroupOwner = !conversation.isHistorical && currentParticipant?.role === 'owner';
   const participantUserIds = new Set(conversation.participantUserIds || []);
 
   const updatePreferences = (notificationLevel, mutedUntil = null) => {
@@ -404,7 +444,7 @@ const ChatWindow = React.memo(({ id }) => {
           </span>
         </div>
         <div className={styles.actions}>
-          {isCustomGroup && (
+          {isCustomGroup && !conversation.isHistorical && (
             <button
               type="button"
               className={isGroupEditorOpen ? styles.actionButtonActive : undefined}
@@ -522,11 +562,15 @@ const ChatWindow = React.memo(({ id }) => {
               }}
             >
               <Trash2 aria-hidden="true" size={15} />
-              {t('chat.removeConversationHistory')}
+              {t(
+                conversation.isHistorical
+                  ? 'chat.removeConversationFromList'
+                  : 'chat.removeConversationHistory',
+              )}
             </button>
           </div>
         )}
-        {isGroupEditorOpen && (
+        {isGroupEditorOpen && !conversation.isHistorical && (
           <div className={styles.groupEditor} role="dialog" aria-label={t('chat.manageGroup')}>
             <div className={styles.groupEditorHeader}>
               <span className={styles.groupEditorIcon}>
@@ -536,7 +580,7 @@ const ChatWindow = React.memo(({ id }) => {
                 <strong>{t('chat.manageGroup')}</strong>
                 <small>
                   {t('chat.groupMemberCount', {
-                    count: conversation.participants?.length || 0,
+                    count: conversation.participantUserIds?.length || 0,
                   })}
                 </small>
               </span>
@@ -570,13 +614,23 @@ const ChatWindow = React.memo(({ id }) => {
                 >
                   {t(groupUpdate?.isPending ? 'chat.saving' : 'chat.save')}
                 </button>
-                {groupUpdate?.error && <p role="alert">{t('chat.groupNameSaveFailed')}</p>}
-                {groupUpdate?.isSuccess && groupTitle.trim() === conversation.title && (
-                  <p role="status">{t('chat.groupNameSaved')}</p>
+                {groupUpdate?.operation === 'title' && groupUpdate.error && (
+                  <p role="alert">{t('chat.groupNameSaveFailed')}</p>
                 )}
+                {groupUpdate?.operation === 'title' &&
+                  groupUpdate.isSuccess &&
+                  groupTitle.trim() === conversation.title && (
+                    <p role="status">{t('chat.groupNameSaved')}</p>
+                  )}
               </form>
             )}
             <div className={styles.groupMembers}>
+              {isGroupOwner && (
+                <p className={styles.groupMemberNotice}>{t('chat.rejoinGroupNotice')}</p>
+              )}
+              {groupUpdate?.operation === 'add-member' && groupUpdate.error && (
+                <p role="alert">{t('chat.addGroupMemberFailed')}</p>
+              )}
               {members.map((member) => {
                 const isParticipant = participantUserIds.has(member.id);
                 return (
@@ -589,16 +643,18 @@ const ChatWindow = React.memo(({ id }) => {
                     {isGroupOwner && member.id !== currentUser.id && (
                       <button
                         type="button"
+                        disabled={groupUpdate?.isPending}
                         className={
                           isParticipant ? styles.removeMemberButton : styles.addMemberButton
                         }
-                        onClick={() =>
-                          dispatch(
-                            isParticipant
-                              ? entryActions.deleteChatConversationParticipant(id, member.id)
-                              : entryActions.addChatConversationParticipants(id, [member.id]),
-                          )
-                        }
+                        onClick={() => {
+                          if (isParticipant) {
+                            setHasSubmittedMemberRemoval(false);
+                            setPendingMemberRemoval(member);
+                          } else {
+                            dispatch(entryActions.addChatConversationParticipants(id, [member.id]));
+                          }
+                        }}
                       >
                         {isParticipant ? t('chat.removeFromGroup') : t('chat.addToGroup')}
                       </button>
@@ -610,10 +666,8 @@ const ChatWindow = React.memo(({ id }) => {
             <button
               type="button"
               className={styles.leaveGroup}
-              onClick={() => {
-                dispatch(entryActions.leaveChatConversation(id));
-                closeConversation(id);
-              }}
+              disabled={groupUpdate?.isPending}
+              onClick={() => setIsLeaveDialogOpen(true)}
             >
               <LogOut aria-hidden="true" size={15} /> {t('chat.leaveGroup')}
             </button>
@@ -621,8 +675,22 @@ const ChatWindow = React.memo(({ id }) => {
         )}
       </header>
 
-      {conversation.isBlocked && (
-        <div className={styles.blocked}>{t('chat.blockedConversation')}</div>
+      {isWriteDisabled && (
+        <div className={styles.blocked} role="status">
+          {t(writeDisabledNotice)}
+        </div>
+      )}
+      {messagesError && (
+        <div className={styles.blocked} role="alert">
+          {t('chat.loadMessagesFailed')}{' '}
+          <button
+            type="button"
+            disabled={isMessagesFetching}
+            onClick={() => dispatch(entryActions.fetchChatMessages(id, { replace: true }))}
+          >
+            {t('chat.retry')}
+          </button>
+        </div>
       )}
       <MessageList
         conversationId={id}
@@ -633,7 +701,7 @@ const ChatWindow = React.memo(({ id }) => {
         initialLastReadMessageId={initialReadStateRef.current.lastReadMessageId}
         initialUnreadCount={initialReadStateRef.current.unreadCount}
         isDirect={conversation.type === 'projectDirect'}
-        isDisabled={conversation.isBlocked}
+        isDisabled={isWriteDisabled}
         isFetching={isMessagesFetching}
         members={members}
         messages={messages}
@@ -646,22 +714,69 @@ const ChatWindow = React.memo(({ id }) => {
       <MessageComposer
         autoFocus={shouldFocusComposer}
         conversationId={id}
-        isDisabled={conversation.isBlocked}
+        isDisabled={isWriteDisabled}
         onFilesDropHandlerChange={handleFilesDropHandlerChange}
       />
       <AlertDialog
         cancelLabel={t('action.cancel')}
-        confirmLabel={t('chat.removeConversationHistory')}
-        description={t('chat.confirmRemoveConversationHistory', { conversation: title })}
+        confirmLabel={t(
+          conversation.isHistorical
+            ? 'chat.removeConversationFromList'
+            : 'chat.removeConversationHistory',
+        )}
+        description={t(
+          conversation.isHistorical
+            ? 'chat.confirmRemoveConversationFromList'
+            : 'chat.confirmRemoveConversationHistory',
+          { conversation: title },
+        )}
         isPending={isHistoryClearing}
         open={isHistoryDialogOpen}
-        title={t('chat.removeConversationHistory')}
+        title={t(
+          conversation.isHistorical
+            ? 'chat.removeConversationFromList'
+            : 'chat.removeConversationHistory',
+        )}
         tone="danger"
         onCancel={() => setIsHistoryDialogOpen(false)}
-        onConfirm={() => dispatch(entryActions.clearChatConversationHistory(id))}
+        onConfirm={() => {
+          if (conversation.isHistorical) {
+            dispatch(entryActions.clearChatConversationHistory(id, true));
+          } else {
+            dispatch(entryActions.clearChatConversationHistory(id));
+          }
+        }}
       >
         {historyClearError && <span role="alert">{t('chat.removeConversationHistoryFailed')}</span>}
       </AlertDialog>
+      <AlertDialog
+        cancelLabel={t('action.cancel')}
+        confirmLabel={t('chat.removeFromGroup')}
+        description={t('chat.confirmRemoveGroupMember', { member: pendingMemberRemoval?.name })}
+        open={Boolean(pendingMemberRemoval)}
+        isPending={Boolean(groupUpdate?.isPending)}
+        title={t('chat.removeFromGroup')}
+        tone="danger"
+        onCancel={() => setPendingMemberRemoval(null)}
+        onConfirm={() => {
+          if (pendingMemberRemoval && !groupUpdate?.isPending) {
+            setHasSubmittedMemberRemoval(true);
+            dispatch(entryActions.deleteChatConversationParticipant(id, pendingMemberRemoval.id));
+          }
+        }}
+      >
+        {hasSubmittedMemberRemoval &&
+          groupUpdate?.operation === 'remove-member' &&
+          groupUpdate.error && <span role="alert">{t('chat.removeGroupMemberFailed')}</span>}
+      </AlertDialog>
+      {isLeaveDialogOpen && (
+        <LeaveGroupDialog
+          conversationId={id}
+          conversationTitle={title}
+          isOwner={isGroupOwner}
+          onClose={() => setIsLeaveDialogOpen(false)}
+        />
+      )}
     </section>
   );
 });

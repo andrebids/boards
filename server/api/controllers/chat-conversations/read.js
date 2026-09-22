@@ -34,7 +34,7 @@ module.exports = {
     const access = await sails.helpers.chat.getConversationAccess.with({
       conversation,
       user: currentUser,
-      ensureParticipant: true,
+      ensureParticipant: conversation.type === ChatConversation.Types.PROJECT_GROUP,
     });
     if (!access) {
       throw Errors.CONVERSATION_NOT_FOUND;
@@ -45,6 +45,7 @@ module.exports = {
         conversation,
         user: currentUser,
         messageId: inputs.messageId,
+        participant: access.participant,
         request: this.req,
       })
       .intercept('messageNotFound', () => Errors.MESSAGE_NOT_FOUND);

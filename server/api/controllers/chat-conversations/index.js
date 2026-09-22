@@ -53,7 +53,10 @@ module.exports = {
       projectConversations.map(async (conversation) => {
         const conversationParticipants = participantsByConversationId.get(conversation.id) || [];
 
-        if (conversation.archivedAt) {
+        if (
+          conversation.archivedAt &&
+          conversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP
+        ) {
           return null;
         }
 
@@ -83,14 +86,30 @@ module.exports = {
           };
         }
 
-        if (
-          conversation.type === ChatConversation.Types.PROJECT_CUSTOM_GROUP &&
-          conversationParticipants.some(({ userId }) => userId === currentUser.id)
-        ) {
-          const activeParticipants = conversationParticipants.filter(({ userId }) =>
-            memberUserIdsSet.has(userId),
+        if (conversation.type === ChatConversation.Types.PROJECT_CUSTOM_GROUP) {
+          const currentParticipant = conversationParticipants.find(
+            ({ userId }) => userId === currentUser.id,
           );
-          return activeParticipants.length >= 2 ? { ...conversation, isBlocked: false } : null;
+          const isHistorical = Boolean(
+            currentParticipant && currentParticipant.leftAt && !currentParticipant.historyHiddenAt,
+          );
+          const activeParticipants = conversationParticipants.filter(
+            ({ userId, leftAt }) => !leftAt && memberUserIdsSet.has(userId),
+          );
+          if (
+            !currentParticipant ||
+            currentParticipant.historyHiddenAt ||
+            (conversation.archivedAt && !isHistorical) ||
+            (!isHistorical && !memberUserIdsSet.has(currentUser.id))
+          ) {
+            return null;
+          }
+          return {
+            ...conversation,
+            isBlocked: false,
+            canWrite: !isHistorical && activeParticipants.length >= 2,
+            isHistorical,
+          };
         }
 
         return null;
@@ -101,9 +120,9 @@ module.exports = {
     const accessibleConversationIds = new Set(
       sails.helpers.utils.mapRecords(accessibleConversations),
     );
-    const lastMessages = await ChatMessage.qm.getLastByConversationIds([
-      ...accessibleConversationIds,
-    ]);
+    const getLastMessages =
+      ChatMessage.qm.getLastByConversationIdsForUser || ChatMessage.qm.getLastByConversationIds;
+    const lastMessages = await getLastMessages([...accessibleConversationIds], currentUser.id);
     const lastMessagesByConversationId = new Map(
       lastMessages.map((message) => [message.conversationId, message]),
     );
@@ -117,14 +136,20 @@ module.exports = {
         currentParticipant && currentParticipant.historyClearedThroughMessageId,
       );
 
-      if (isHistoryCleared && conversation.type !== ChatConversation.Types.PROJECT_GROUP) {
+      if (
+        (isHistoryCleared ||
+          (!lastMessage &&
+            currentParticipant &&
+            currentParticipant.historyClearedThroughMessageId)) &&
+        conversation.type !== ChatConversation.Types.PROJECT_GROUP
+      ) {
         return [];
       }
 
       return [
         {
           ...conversation,
-          lastMessageAt: isHistoryCleared ? null : conversation.lastMessageAt,
+          lastMessageAt: isHistoryCleared || !lastMessage ? null : lastMessage.createdAt,
           lastMessage:
             lastMessage && !isHistoryCleared
               ? sails.helpers.chat.presentMessage(lastMessage)
@@ -135,9 +160,10 @@ module.exports = {
     const conversationIds = sails.helpers.utils.mapRecords(conversations);
     const visibleConversationIds = new Set(conversationIds);
     const participants = allParticipants.filter(
-      ({ conversationId, userId }) =>
+      ({ conversationId, userId, leftAt }) =>
         visibleConversationIds.has(conversationId) &&
-        (!groupConversationIds.has(conversationId) || memberUserIdsSet.has(userId)),
+        (!groupConversationIds.has(conversationId) || memberUserIdsSet.has(userId)) &&
+        (!leftAt || userId === currentUser.id),
     );
     groupConversationIds.forEach((conversationId) => {
       if (!visibleConversationIds.has(conversationId)) {

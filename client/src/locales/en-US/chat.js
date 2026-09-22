@@ -51,6 +51,23 @@ export default {
       available: 'Available',
       backToConversations: 'Back to conversations',
       blockedConversation: 'You can no longer send messages in this conversation.',
+      singleMemberGroup: '1 member',
+      singleMemberNotice:
+        'You are the only member of this group. Add someone to continue chatting.',
+      leftGroup: 'You left this group',
+      removedFromGroup: 'You were removed from this group',
+      leftGroupHistoryNotice:
+        'You left this group. You can read the history, but cannot send new content.',
+      removedGroupHistoryNotice:
+        'You were removed from this group. You can read the history, but cannot send new content.',
+      rejoinGroupNotice:
+        'Adding someone back gives them the current group history, including messages sent during their absence. History they privately cleared remains hidden.',
+      leaveGroupFailed: 'Could not leave the group. Check your connection and try again.',
+      loadMessagesFailed: 'Could not load the messages. Please try again.',
+      addGroupMemberFailed:
+        'Could not add this person. Check your connection and whether you still have permission to manage the group.',
+      removeGroupMemberFailed:
+        'Could not remove this person. Check your connection and whether they are still a member and you still manage the group.',
       cancel: 'Cancel',
       cancelReply: 'Cancel reply',
       chooseEmoji: 'Choose emoji',
@@ -69,6 +86,9 @@ export default {
       confirmDeleteMessage: 'Are you sure you want to delete this message?',
       confirmRemoveConversationHistory:
         'Remove the history of "{{conversation}}" for you only? Other people will still see it. This action cannot be undone.',
+      removeConversationFromList: 'Remove from my list',
+      confirmRemoveConversationFromList:
+        'Remove "{{conversation}}" from your list and delete its local history? You can see it again if you are added back.',
       deleteMessage: 'Delete message',
       directConversations: 'Direct conversations',
       downloadFile: 'Download file',
@@ -92,6 +112,10 @@ export default {
       groupNamePlaceholder: 'For example: Design team',
       groups: 'Groups',
       confirmLeaveGroup: 'Are you sure you want to leave "{{group}}"?',
+      confirmLeaveGroupOwner:
+        'Are you sure you want to leave "{{group}}"? Ownership will pass to the oldest remaining member.',
+      confirmRemoveGroupMember:
+        'Remove {{member}} from this group? They will keep access to the history that existed before removal.',
       leaveGroup: 'Leave group',
       loadingMessages: 'Loading messages',
       manageGroup: 'Manage group',

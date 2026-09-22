@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { isHistoricalExtraVisible } = require('../../../utils/chat-history');
 
 const Errors = {
   ATTACHMENT_NOT_FOUND: { attachmentNotFound: 'Attachment not found' },
@@ -33,7 +34,13 @@ module.exports = {
     const access =
       conversation &&
       (await sails.helpers.chat.getConversationAccess(conversation, this.req.currentUser));
-    if (!attachment || !access || message.deletedAt) {
+    if (
+      !attachment ||
+      !access ||
+      !isHistoricalExtraVisible(attachment, access.participant) ||
+      !sails.helpers.chat.isMessageVisible(message, access.participant) ||
+      message.deletedAt
+    ) {
       throw Errors.ATTACHMENT_NOT_FOUND;
     }
 

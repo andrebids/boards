@@ -81,6 +81,13 @@ export default class extends BaseModel {
         break;
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR__SUCCESS:
       case ActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE:
+        if (payload.historyState.hideConversation) {
+          ChatMessage.filter({ conversationId: payload.historyState.conversationId })
+            .toModelArray()
+            .filter(({ isPending, isFailed }) => !isPending && !isFailed)
+            .forEach((messageModel) => messageModel.delete());
+          break;
+        }
         ChatMessage.filter({
           conversationId: payload.historyState.conversationId,
         })
@@ -102,11 +109,25 @@ export default class extends BaseModel {
         }
         payload.messages.forEach((message) => ChatMessage.upsert(message));
         break;
-      case ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE:
-        if (payload.conversation.lastMessage) {
+      case ActionTypes.CHAT_CONVERSATION_UPDATE_HANDLE: {
+        if (payload.conversation.isHistorical) {
+          const participant = payload.chatParticipants?.find(({ leftAt }) => leftAt);
+          ChatMessage.filter({ conversationId: payload.conversation.id })
+            .toModelArray()
+            .filter(
+              ({ id, isPending, isFailed }) =>
+                !isPending &&
+                !isFailed &&
+                participant &&
+                !isIdAtOrBefore(id, participant.historyVisibleThroughMessageId),
+            )
+            .forEach((messageModel) => messageModel.delete());
+        }
+        if (!payload.conversation.isHistorical && payload.conversation.lastMessage) {
           ChatMessage.upsert(payload.conversation.lastMessage);
         }
         break;
+      }
       case ActionTypes.CHAT_MESSAGE_CREATE:
         ChatMessage.upsert(payload.message);
         break;

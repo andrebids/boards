@@ -4,6 +4,7 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const { assertConversationWritable } = require('../../../utils/chat-lifecycle');
 
 const Errors = {
   MESSAGE_NOT_FOUND: { messageNotFound: 'Message not found' },
@@ -41,6 +42,9 @@ module.exports = {
     if (!message || !access) {
       throw Errors.MESSAGE_NOT_FOUND;
     }
+    if (!sails.helpers.chat.isMessageVisible(message, access.participant)) {
+      throw Errors.MESSAGE_NOT_FOUND;
+    }
     if (message.deletedAt) {
       throw Errors.MESSAGE_DELETED;
     }
@@ -48,37 +52,52 @@ module.exports = {
       throw Errors.CONVERSATION_BLOCKED;
     }
 
-    const isMessageDeleted = await sails.getDatastore().transaction(async (db) => {
-      const lockResult = await sails
-        .sendNativeQuery(
-          `SELECT deleted_at
+    const isMessageDeleted = await sails
+      .getDatastore()
+      .transaction(async (db) => {
+        await sails
+          .sendNativeQuery('SELECT pg_advisory_xact_lock(hashtext($1))', [
+            `chat-conversation:${message.conversationId}`,
+          ])
+          .usingConnection(db);
+        await assertConversationWritable(conversation.id, currentUser.id, db);
+        const lockResult = await sails
+          .sendNativeQuery(
+            `SELECT deleted_at
            FROM chat_message
            WHERE id = $1
            FOR UPDATE`,
-          [message.id],
-        )
-        .usingConnection(db);
-      if (lockResult.rows.length === 0 || lockResult.rows[0].deleted_at) {
-        return true;
-      }
+            [message.id],
+          )
+          .usingConnection(db);
+        if (lockResult.rows.length === 0 || lockResult.rows[0].deleted_at) {
+          return true;
+        }
 
-      const existing = await ChatMessageReaction.findOne({
-        messageId: message.id,
-        userId: currentUser.id,
-        emoji: inputs.emoji,
-      }).usingConnection(db);
-      if (existing) {
-        await ChatMessageReaction.destroyOne(existing.id).usingConnection(db);
-      } else {
-        await ChatMessageReaction.create({
+        const existing = await ChatMessageReaction.findOne({
           messageId: message.id,
           userId: currentUser.id,
           emoji: inputs.emoji,
         }).usingConnection(db);
-      }
+        if (existing) {
+          await ChatMessageReaction.destroyOne(existing.id).usingConnection(db);
+        } else {
+          await ChatMessageReaction.create({
+            messageId: message.id,
+            userId: currentUser.id,
+            emoji: inputs.emoji,
+          }).usingConnection(db);
+        }
 
-      return false;
-    });
+        return false;
+      })
+      .catch((error) => {
+        if (error.code === 'conversationBlocked') throw Errors.CONVERSATION_BLOCKED;
+        throw error;
+      });
+    if (isMessageDeleted === 'blocked') {
+      throw Errors.CONVERSATION_BLOCKED;
+    }
     if (isMessageDeleted) {
       throw Errors.MESSAGE_DELETED;
     }

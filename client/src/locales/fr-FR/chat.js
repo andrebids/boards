@@ -52,6 +52,23 @@ export default {
       available: 'Disponible',
       backToConversations: 'Retour aux conversations',
       blockedConversation: 'Vous ne pouvez plus envoyer de messages dans cette conversation.',
+      singleMemberGroup: '1 membre',
+      singleMemberNotice:
+        'Vous êtes la seule personne de ce groupe. Ajoutez quelqu’un pour continuer la conversation.',
+      leftGroup: 'Vous avez quitté ce groupe',
+      removedFromGroup: 'Vous avez été retiré de ce groupe',
+      leftGroupHistoryNotice:
+        'Vous avez quitté ce groupe. Vous pouvez lire l’historique, mais pas envoyer de nouveau contenu.',
+      removedGroupHistoryNotice:
+        'Vous avez été retiré de ce groupe. Vous pouvez lire l’historique, mais pas envoyer de nouveau contenu.',
+      rejoinGroupNotice:
+        'Ajouter à nouveau une personne lui donne l’historique actuel du groupe, y compris les messages envoyés pendant son absence. L’historique qu’elle a effacé uniquement pour elle reste masqué.',
+      leaveGroupFailed: 'Impossible de quitter le groupe. Vérifiez votre connexion et réessayez.',
+      loadMessagesFailed: 'Impossible de charger les messages. Réessayez.',
+      addGroupMemberFailed:
+        'Impossible d’ajouter cette personne. Vérifiez votre connexion et votre autorisation de gérer le groupe.',
+      removeGroupMemberFailed:
+        'Impossible de retirer cette personne. Vérifiez votre connexion, si elle est toujours membre et votre autorisation de gérer le groupe.',
       cancel: 'Annuler',
       cancelReply: 'Annuler la réponse',
       chooseEmoji: 'Choisir un emoji',
@@ -70,6 +87,9 @@ export default {
       confirmDeleteMessage: 'Voulez-vous vraiment supprimer ce message ?',
       confirmRemoveConversationHistory:
         'Supprimer l’historique de « {{conversation}} » uniquement pour vous ? Les autres personnes continueront à le voir. Cette action est irréversible.',
+      removeConversationFromList: 'Retirer de ma liste',
+      confirmRemoveConversationFromList:
+        'Retirer « {{conversation}} » de votre liste et supprimer son historique local ? La conversation réapparaîtra si vous êtes ajouté à nouveau.',
       deleteMessage: 'Supprimer le message',
       directConversations: 'Conversations directes',
       downloadFile: 'Télécharger le fichier',
@@ -93,6 +113,10 @@ export default {
       groupNamePlaceholder: 'Par exemple : Équipe design',
       groups: 'Groupes',
       confirmLeaveGroup: 'Voulez-vous vraiment quitter le groupe « {{group}} » ?',
+      confirmLeaveGroupOwner:
+        'Voulez-vous vraiment quitter le groupe « {{group}} » ? La propriété passera au membre restant le plus ancien.',
+      confirmRemoveGroupMember:
+        'Retirer {{member}} de ce groupe ? Cette personne conservera l’historique antérieur à son retrait.',
       leaveGroup: 'Quitter le groupe',
       loadingMessages: 'Chargement des messages',
       manageGroup: 'Gérer le groupe',

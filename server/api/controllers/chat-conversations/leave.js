@@ -4,6 +4,13 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const {
+  withConversationLock,
+  getActiveParticipants,
+  getHistoryUpperBound,
+  leaveConversationRooms,
+  publishCurrentConversationState,
+} = require('../../../utils/chat-lifecycle');
 
 const Errors = {
   CONVERSATION_NOT_FOUND: { conversationNotFound: 'Conversation not found' },
@@ -14,53 +21,77 @@ module.exports = {
   exits: { conversationNotFound: { responseType: 'notFound' } },
 
   async fn(inputs) {
-    const conversation = await ChatConversation.qm.getOneById(inputs.id);
-    const access =
-      conversation &&
-      (await sails.helpers.chat.getConversationAccess(conversation, this.req.currentUser));
-    if (!access || conversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP) {
+    const { currentUser } = this.req;
+    const initialConversation = await ChatConversation.qm.getOneById(inputs.id);
+    const initialAccess =
+      initialConversation &&
+      (await sails.helpers.chat.getConversationAccess(initialConversation, currentUser));
+    if (
+      !initialAccess ||
+      initialConversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP ||
+      initialAccess.isHistorical
+    ) {
       throw Errors.CONVERSATION_NOT_FOUND;
     }
 
-    const remainingParticipants = access.participants.filter(
-      ({ id }) => id !== access.participant.id,
-    );
-    let archivedConversation = null;
-    await sails.getDatastore().transaction(async (db) => {
-      await ChatParticipant.destroyOne(access.participant.id).usingConnection(db);
-      if (remainingParticipants.length < 2) {
+    let result;
+    await withConversationLock(inputs.id, async ({ db, conversation, participants }) => {
+      const memberUserIds = await sails.helpers.chat.getProjectMemberUserIds(initialAccess.project);
+      const participant = participants.find(
+        ({ userId, leftAt }) => userId === currentUser.id && !leftAt,
+      );
+      if (
+        !conversation ||
+        conversation.archivedAt ||
+        conversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP ||
+        !participant ||
+        !memberUserIds.includes(currentUser.id)
+      ) {
+        throw Errors.CONVERSATION_NOT_FOUND;
+      }
+
+      const activeParticipants = getActiveParticipants(participants, memberUserIds);
+      const historyVisibleThroughMessageId = await getHistoryUpperBound(conversation.id, db);
+      const leftAt = new Date().toISOString();
+      const leftParticipant = await ChatParticipant.updateOne(participant.id)
+        .set({
+          leftAt,
+          leftReason: 'left',
+          historyVisibleThroughMessageId,
+          ...(participant.role === ChatParticipant.Roles.OWNER && {
+            role: ChatParticipant.Roles.MEMBER,
+          }),
+        })
+        .fetch()
+        .usingConnection(db);
+
+      const remainingParticipants = activeParticipants.filter(({ id }) => id !== participant.id);
+      let archivedConversation = conversation;
+      if (remainingParticipants.length === 0) {
         archivedConversation = await ChatConversation.updateOne(conversation.id)
-          .set({ archivedAt: new Date().toISOString() })
+          .set({ archivedAt: leftAt })
+          .fetch()
           .usingConnection(db);
-      } else if (access.participant.role === ChatParticipant.Roles.OWNER) {
-        await ChatParticipant.updateOne(remainingParticipants[0].id)
+      } else if (participant.role === ChatParticipant.Roles.OWNER) {
+        const nextOwner = remainingParticipants[0];
+        await ChatParticipant.updateOne(nextOwner.id)
           .set({ role: ChatParticipant.Roles.OWNER })
           .usingConnection(db);
-        remainingParticipants[0].role = ChatParticipant.Roles.OWNER;
+        nextOwner.role = ChatParticipant.Roles.OWNER;
       }
+
+      await leaveConversationRooms(conversation.id, currentUser.id);
+      result = {
+        conversation: archivedConversation,
+        leftParticipant,
+        activeParticipants: remainingParticipants,
+      };
     });
 
-    const revokedUserIds = archivedConversation
-      ? [this.req.currentUser.id, ...remainingParticipants.map(({ userId }) => userId)]
-      : [this.req.currentUser.id];
-    revokedUserIds.forEach((userId) => {
-      sails.sockets.removeRoomMembersFromRooms(
-        `@user:${userId}`,
-        `chatConversation:${conversation.id}`,
-      );
-      sails.sockets.broadcast(`@user:${userId}`, 'chatConversationAccessRevoke', {
-        item: { conversationId: conversation.id, projectId: conversation.projectId },
-      });
+    await publishCurrentConversationState(inputs.id, {
+      historicalUserIds: [currentUser.id],
     });
 
-    if (!archivedConversation) {
-      remainingParticipants.forEach(({ userId }) => {
-        sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', {
-          item: conversation,
-          included: { chatParticipants: remainingParticipants },
-        });
-      });
-    }
-    return { item: access.participant };
+    return { item: result.leftParticipant };
   },
 };

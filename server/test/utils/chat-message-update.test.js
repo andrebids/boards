@@ -2,6 +2,7 @@ const { expect } = require('chai');
 
 const controller = require('../../api/controllers/chat-messages/update');
 const helper = require('../../api/helpers/chat/update-message');
+const { isMessageVisible } = require('../../api/helpers/chat/is-message-visible');
 
 describe('Chat message editing', () => {
   let previousGlobals;
@@ -16,6 +17,7 @@ describe('Chat message editing', () => {
       sails: global.sails,
       ChatMessage: global.ChatMessage,
       ChatConversation: global.ChatConversation,
+      ChatParticipant: global.ChatParticipant,
     };
     message = {
       id: '10',
@@ -25,28 +27,48 @@ describe('Chat message editing', () => {
       createdAt: '2020-01-01T10:00:00.000Z',
       attachments: [{ id: '40' }],
     };
-    access = { canWrite: true, memberUserIds: ['30', '31'], participants: [] };
+    access = {
+      canWrite: true,
+      memberUserIds: ['30', '31'],
+      participants: [],
+      participant: { userId: '30', leftAt: null },
+    };
     writes = [];
     events = [];
     request = { currentUser: { id: '30' } };
     const conversation = { id: '20', projectId: '50', type: 'projectGroup' };
     global.ChatMessage = {
+      updateOne: ({ id }) => ({
+        set: (values) => {
+          const query = {
+            fetch: () => query,
+            usingConnection: async () => {
+              writes.push({ id, values });
+              return { ...message, ...values };
+            },
+          };
+          return query;
+        },
+      }),
       qm: {
         getOneById: async () => message,
         getLastByConversationId: async () => message,
-        updateOneIfNotDeleted: async (id, values) => {
-          writes.push({ id, values });
-          return { ...message, ...values };
-        },
       },
     };
     global.ChatConversation = {
       Types: { PROJECT_GROUP: 'projectGroup', PROJECT_DIRECT: 'projectDirect' },
       qm: { getOneById: async () => conversation },
+      findOne: () => ({ usingConnection: async () => conversation }),
+    };
+    global.ChatParticipant = {
+      find: () => ({ sort: () => ({ usingConnection: async () => access.participants }) }),
     };
     global.sails = {
+      getDatastore: () => ({ transaction: (callback) => callback('db') }),
+      sendNativeQuery: () => ({ usingConnection: async () => ({ rows: [] }) }),
       helpers: {
         chat: {
+          isMessageVisible,
           getConversationAccess: async () => access,
           updateMessage: { with: (inputs) => helper.fn(inputs) },
           getMessageExtras: async () => ({

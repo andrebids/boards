@@ -27,6 +27,7 @@ module.exports = {
          ON p.conversation_id = c.id AND p.user_id = $1
        LEFT JOIN chat_message m
          ON m.conversation_id = c.id
+        AND p.left_at IS NULL
         AND m.id > GREATEST(
           COALESCE(p.last_read_message_id, 0),
           COALESCE(p.history_cleared_through_message_id, 0)

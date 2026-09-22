@@ -32,9 +32,13 @@ module.exports = {
 
     let participants = await ChatParticipant.qm.getByConversationId(inputs.conversation.id);
     let participant = participants.find(({ userId }) => userId === inputs.user.id);
+    const isActive = (candidate) => !candidate.leftAt;
+    const historicalParticipant =
+      participant && !isActive(participant) && !participant.historyHiddenAt ? participant : null;
+    participant = participant && isActive(participant) ? participant : null;
 
     if (inputs.conversation.type === ChatConversation.Types.PROJECT_DIRECT) {
-      if (!participant || participants.length !== 2) {
+      if (inputs.conversation.archivedAt || !participant || participants.length !== 2) {
         return null;
       }
 
@@ -45,17 +49,36 @@ module.exports = {
         participants,
         memberUserIds,
         canWrite: participants.every(({ userId }) => memberUserIds.includes(userId)),
+        isHistorical: false,
       };
     }
 
     if (inputs.conversation.type === ChatConversation.Types.PROJECT_CUSTOM_GROUP) {
-      if (!participant || inputs.conversation.archivedAt) {
+      const activeParticipants = participants.filter(
+        ({ userId, leftAt }) => !leftAt && memberUserIds.includes(userId),
+      );
+
+      if (!participant && !historicalParticipant) {
+        return null;
+      }
+      if (inputs.conversation.archivedAt && !historicalParticipant) {
         return null;
       }
 
-      const activeParticipants = participants.filter(({ userId }) =>
-        memberUserIds.includes(userId),
-      );
+      if (historicalParticipant) {
+        return {
+          conversation: inputs.conversation,
+          project,
+          participant: historicalParticipant,
+          participants: activeParticipants,
+          memberUserIds,
+          canWrite: false,
+          canManage: false,
+          isHistorical: true,
+          canReadHistory: true,
+        };
+      }
+
       return {
         conversation: inputs.conversation,
         project,
@@ -63,6 +86,9 @@ module.exports = {
         participants: activeParticipants,
         memberUserIds,
         canWrite: activeParticipants.length >= 2,
+        canManage: participant.role === ChatParticipant.Roles.OWNER,
+        isHistorical: false,
+        canReadHistory: true,
       };
     }
 
@@ -85,6 +111,7 @@ module.exports = {
       participants,
       memberUserIds,
       canWrite: true,
+      isHistorical: false,
     };
   },
 };

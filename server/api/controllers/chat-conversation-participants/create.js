@@ -4,6 +4,11 @@
  */
 
 const { idInput } = require('../../../utils/inputs');
+const {
+  withConversationLock,
+  getActiveParticipants,
+  publishCurrentConversationState,
+} = require('../../../utils/chat-lifecycle');
 
 const Errors = {
   CONVERSATION_NOT_FOUND: { conversationNotFound: 'Conversation not found' },
@@ -23,21 +28,28 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const conversation = await ChatConversation.qm.getOneById(inputs.conversationId);
-    const access =
-      conversation &&
-      (await sails.helpers.chat.getConversationAccess(conversation, this.req.currentUser));
-    if (!access || conversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP) {
+    const { currentUser } = this.req;
+    const initialConversation = await ChatConversation.qm.getOneById(inputs.conversationId);
+    const initialAccess =
+      initialConversation &&
+      (await sails.helpers.chat.getConversationAccess(initialConversation, currentUser));
+    if (
+      !initialAccess ||
+      initialConversation.type !== ChatConversation.Types.PROJECT_CUSTOM_GROUP ||
+      initialAccess.isHistorical
+    ) {
       throw Errors.CONVERSATION_NOT_FOUND;
     }
-    if (access.participant.role !== ChatParticipant.Roles.OWNER) {
+    if (initialAccess.participant.role !== ChatParticipant.Roles.OWNER) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     const userIds = Array.isArray(inputs.userIds) ? [...new Set(inputs.userIds)] : [];
     if (
       userIds.length === 0 ||
-      userIds.some((userId) => typeof userId !== 'string' || !access.memberUserIds.includes(userId))
+      userIds.some(
+        (userId) => typeof userId !== 'string' || !initialAccess.memberUserIds.includes(userId),
+      )
     ) {
       throw Errors.INVALID_USERS;
     }
@@ -46,24 +58,78 @@ module.exports = {
       throw Errors.INVALID_USERS;
     }
 
-    const newParticipants = await Promise.all(
-      userIds
-        .filter(
-          (userId) => !access.participants.some((participant) => participant.userId === userId),
-        )
-        .map((userId) => sails.helpers.chat.ensureParticipant(conversation.id, userId)),
+    let result;
+    await withConversationLock(
+      inputs.conversationId,
+      async ({ db, conversation, participants }) => {
+        const owner = participants.find(
+          ({ userId, role, leftAt }) =>
+            userId === currentUser.id && !leftAt && role === ChatParticipant.Roles.OWNER,
+        );
+        if (!conversation || conversation.archivedAt || !owner) {
+          throw Errors.NOT_ENOUGH_RIGHTS;
+        }
+
+        const memberUserIds = await sails.helpers.chat.getProjectMemberUserIds(
+          initialAccess.project,
+        );
+        if (!memberUserIds.includes(currentUser.id)) {
+          throw Errors.NOT_ENOUGH_RIGHTS;
+        }
+        if (userIds.some((userId) => !memberUserIds.includes(userId))) {
+          throw Errors.INVALID_USERS;
+        }
+
+        const changedParticipants = [];
+        // Apply participant writes sequentially on the shared transaction connection.
+        /* eslint-disable no-restricted-syntax, no-await-in-loop */
+        for (const userId of userIds) {
+          const existing = participants.find((participant) => participant.userId === userId);
+          if (existing && existing.leftAt) {
+            const participant = await ChatParticipant.updateOne(existing.id)
+              .set({
+                leftAt: null,
+                leftReason: null,
+                historyVisibleThroughMessageId: null,
+                historyHiddenAt: null,
+              })
+              .fetch()
+              .usingConnection(db);
+            changedParticipants.push(participant);
+          } else if (!existing) {
+            const participant = await ChatParticipant.create({
+              conversationId: conversation.id,
+              userId,
+              role: ChatParticipant.Roles.MEMBER,
+            })
+              .fetch()
+              .usingConnection(db);
+            changedParticipants.push(participant);
+          }
+        }
+        /* eslint-enable no-restricted-syntax, no-await-in-loop */
+
+        const allParticipants = participants
+          .filter(({ id }) => !changedParticipants.some((participant) => participant.id === id))
+          .concat(changedParticipants);
+        const activeParticipants = getActiveParticipants(allParticipants, memberUserIds);
+        result = { conversation, participants: activeParticipants, changedParticipants };
+      },
     );
-    const participants = [...access.participants, ...newParticipants];
 
     const payload = {
-      item: conversation,
+      item: {
+        ...result.conversation,
+        canWrite: result.participants.length >= 2,
+        isHistorical: false,
+      },
       included: {
-        chatParticipants: participants,
-        users: sails.helpers.users.presentMany(users, this.req.currentUser),
+        chatParticipants: result.participants,
+        users: sails.helpers.users.presentMany(users, currentUser),
       },
     };
-    participants.forEach(({ userId }) => {
-      sails.sockets.broadcast(`@user:${userId}`, 'chatConversationUpdate', payload);
+    await publishCurrentConversationState(inputs.conversationId, {
+      users: payload.included.users,
     });
     return payload;
   },

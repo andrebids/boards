@@ -20,6 +20,7 @@ import entryActions from '../../../entry-actions';
 import selectors from '../../../selectors';
 import { AlertDialog } from '../../../lib/custom-ui';
 import { useChat } from '../ChatContext';
+import LeaveGroupDialog from '../LeaveGroupDialog';
 
 import styles from './ConversationActions.module.scss';
 
@@ -27,7 +28,15 @@ const MENU_GAP = 6;
 const VIEWPORT_GAP = 8;
 
 const ConversationActions = React.memo((props) => {
-  const { canLeave, conversationId, conversationTitle, isMuted, isPinned, participant } = props;
+  const {
+    canLeave,
+    conversationId,
+    conversationTitle,
+    isHistorical,
+    isMuted,
+    isPinned,
+    participant,
+  } = props;
   const [t] = useTranslation();
   const dispatch = useDispatch();
   const { openGroupManager } = useChat();
@@ -175,19 +184,18 @@ const ConversationActions = React.memo((props) => {
     window.requestAnimationFrame(() => buttonRef.current?.focus());
   }, []);
 
-  const handleLeaveGroupConfirm = useCallback(() => {
-    setIsLeaveDialogOpen(false);
-    dispatch(entryActions.leaveChatConversation(conversationId));
-  }, [conversationId, dispatch]);
-
   const handleClearHistoryCancel = useCallback(() => {
     setIsHistoryDialogOpen(false);
     window.requestAnimationFrame(() => buttonRef.current?.focus());
   }, []);
 
   const handleClearHistoryConfirm = useCallback(() => {
-    dispatch(entryActions.clearChatConversationHistory(conversationId));
-  }, [conversationId, dispatch]);
+    if (isHistorical) {
+      dispatch(entryActions.clearChatConversationHistory(conversationId, true));
+    } else {
+      dispatch(entryActions.clearChatConversationHistory(conversationId));
+    }
+  }, [conversationId, dispatch, isHistorical]);
 
   useEffect(() => {
     if (isHistoryClearing) {
@@ -296,31 +304,40 @@ const ConversationActions = React.memo((props) => {
                 onClick={handleClearHistoryClick}
               >
                 <Trash2 aria-hidden="true" size={15} />
-                {t('chat.removeConversationHistory')}
+                {t(
+                  isHistorical
+                    ? 'chat.removeConversationFromList'
+                    : 'chat.removeConversationHistory',
+                )}
               </button>
             </div>,
             portalTarget,
           )}
       </span>
+      {isLeaveDialogOpen && (
+        <LeaveGroupDialog
+          conversationId={conversationId}
+          conversationTitle={conversationTitle}
+          isOwner={participant?.role === 'owner'}
+          onClose={handleLeaveGroupCancel}
+        />
+      )}
       <AlertDialog
         cancelLabel={t('action.cancel')}
-        confirmLabel={t('chat.leaveGroup')}
-        description={t('chat.confirmLeaveGroup', { group: conversationTitle })}
-        open={isLeaveDialogOpen}
-        title={t('chat.leaveGroup')}
-        tone="danger"
-        onCancel={handleLeaveGroupCancel}
-        onConfirm={handleLeaveGroupConfirm}
-      />
-      <AlertDialog
-        cancelLabel={t('action.cancel')}
-        confirmLabel={t('chat.removeConversationHistory')}
-        description={t('chat.confirmRemoveConversationHistory', {
-          conversation: conversationTitle,
-        })}
+        confirmLabel={t(
+          isHistorical ? 'chat.removeConversationFromList' : 'chat.removeConversationHistory',
+        )}
+        description={t(
+          isHistorical
+            ? 'chat.confirmRemoveConversationFromList'
+            : 'chat.confirmRemoveConversationHistory',
+          { conversation: conversationTitle },
+        )}
         isPending={isHistoryClearing}
         open={isHistoryDialogOpen}
-        title={t('chat.removeConversationHistory')}
+        title={t(
+          isHistorical ? 'chat.removeConversationFromList' : 'chat.removeConversationHistory',
+        )}
         tone="danger"
         onCancel={handleClearHistoryCancel}
         onConfirm={handleClearHistoryConfirm}
@@ -335,6 +352,7 @@ ConversationActions.propTypes = {
   canLeave: PropTypes.bool,
   conversationId: PropTypes.string.isRequired,
   conversationTitle: PropTypes.string,
+  isHistorical: PropTypes.bool,
   isMuted: PropTypes.bool,
   isPinned: PropTypes.bool,
   participant: PropTypes.shape({
@@ -347,6 +365,7 @@ ConversationActions.propTypes = {
 
 ConversationActions.defaultProps = {
   canLeave: false,
+  isHistorical: false,
   conversationTitle: undefined,
   isMuted: false,
   isPinned: false,

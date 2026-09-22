@@ -122,9 +122,9 @@ const handleChatConversationRead = (readState) => ({
   type: EntryActionTypes.CHAT_CONVERSATION_READ_HANDLE,
   payload: { readState },
 });
-const clearChatConversationHistory = (id) => ({
+const clearChatConversationHistory = (id, hideConversation = false) => ({
   type: EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR,
-  payload: { id },
+  payload: { id, hideConversation },
 });
 const handleChatConversationHistoryClear = (historyState) => ({
   type: EntryActionTypes.CHAT_CONVERSATION_HISTORY_CLEAR_HANDLE,
